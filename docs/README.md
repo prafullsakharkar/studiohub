@@ -236,6 +236,30 @@ Current ADRs include:
 
 ---
 
+# Bulk create and update (CSV formats)
+
+The Sequences, Shots, Assets and Tasks lists have a **Bulk** menu once the list is on one project (its Project filter, or the project's tab): *Bulk create* and *Bulk update*, each shown with the entity's `*.create` / `*.update` permission for that project. Rows come from a CSV file or are pasted into the grid (tab-separated text from a spreadsheet works). **Download template** gives the header row for the project.
+
+The flow is: rows → **Check rows** (a backend dry run: the same serializers, validators, permission and scope checks as a single create or edit, then rolled back) → the outcome of each row (Create, Update, Skip, Error and why) → **Create N / Update N** → the result. By default a batch is all or nothing; tick *Skip invalid rows* to store the valid rows and leave the others. **Download error report** gives the refused rows as CSV (`row,code,column,message`; row 1 is the first row under the header).
+
+Rules for every file:
+
+* The first row is the header. Column names are matched without case; spaces and dashes count as `_`; the API field name is accepted too (`episode_id` for `episode`). An unknown column, a repeated one or a missing required one is refused before anything is sent.
+* `code` is the row's key: unique in the project, upper-cased, no spaces or slashes. Bulk update finds each row by its code in the project; a code cannot be changed in bulk (a shot's code changes with *Rename code* on the shot).
+* Parents are written by **code** and resolved inside the project: `episode` (EP101), `sequence` (SQ010), `asset_type` and `task_type` (catalog codes), `entity` (the shot, asset or sequence code of a task). An unknown parent, or one of another project, is "Unknown ...".
+* An empty cell means "not given": a create uses the default, an update leaves the field as it is.
+* At most 500 rows and 2 MB per file; split bigger ones.
+* Quoted fields follow RFC 4180 (`"Smith, J"`, `"He said ""go"""`, line breaks inside quotes).
+
+| Entity | Columns (bold = required) | Only on create | Only on an episodic project |
+|---|---|---|---|
+| Sequences | **code**, name, description, episode, frame_in, frame_out, status | | `episode` (required there by the backend; refused on a standard project) |
+| Shots | **code**, name, description, sequence, episode, frame_in, frame_out, handle_frames, status | | `episode` (refused on a standard project) |
+| Assets | **code**, **name**, description, asset_type, category, status | | |
+| Tasks | **code**, **title**, description, entity_type, entity, task_type, status, priority, due_date (YYYY-MM-DD), estimated_hours | `entity_type`, `entity` | |
+
+Selected rows can also be changed together: tick them, **Edit fields**, tick the fields to set and give their values; every row changes or none does. What bulk update may change per entity, and the API (`dry_run`, `atomic`, `errors`, the 500-item limit), is in `docs/production/CONTRACTS.md` (C-57 to C-62); the decisions are D-39 to D-42 in `docs/production/DECISIONS.md`.
+
 # Architecture Summary
 
 StudioHub is based on:

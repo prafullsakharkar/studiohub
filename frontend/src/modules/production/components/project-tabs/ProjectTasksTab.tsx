@@ -1,10 +1,8 @@
 import type React from 'react';
 import { useState } from 'react';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
-import { BulkAddButton } from '@/modules/production/work/BulkAddButton';
 import { TaskBoard } from '@/modules/production/work/TaskBoard';
 import { useTasksListConfig } from '@/modules/production/work/tasks';
-import { TaskBulkManager } from '@/modules/tasks';
 import { Button } from '@/shared/components/Button';
 import type { Project } from '@/api/production/structure';
 
@@ -27,10 +25,10 @@ export const ProjectTasksTab: React.FC<ProjectTasksTabProps> = ({ project }) => 
     <DirectoryListPage
       config={{
         ...config,
-        headerExtra: () => (
+        headerExtra: (filters) => (
           <>
             {switcher}
-            <BulkAddButton projectId={project.id} noun="tasks" Manager={TaskBulkManager} />
+            {config.headerExtra?.(filters)}
           </>
         ),
       }}

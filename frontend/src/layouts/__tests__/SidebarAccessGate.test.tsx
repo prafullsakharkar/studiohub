@@ -1,11 +1,17 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render as renderDom, screen } from '@testing-library/react';
+import type React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('@/core/auth/useCurrentUser', () => ({ useCurrentUser: vi.fn() }));
 
 import { Sidebar } from '../Sidebar';
 import { useCurrentUser } from '@/core/auth/useCurrentUser';
+
+// The Sidebar reads the chosen project (Episodes item, CR-47), so it renders under a query client as in the app.
+const render = (ui: React.ReactElement) =>
+  renderDom(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>{ui}</QueryClientProvider>);
 
 const userSpy = useCurrentUser as unknown as { mockReturnValue: (v: unknown) => void };
 

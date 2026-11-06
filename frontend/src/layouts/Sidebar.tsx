@@ -26,11 +26,14 @@ import {
   Workflow,
   Building2,
   Briefcase,
+  ListVideo,
+  Tv,
 } from 'lucide-react';
 import { useSidebarStore } from '@/shared/stores/useSidebarStore';
 import { useCurrentUser } from '@/core/auth/useCurrentUser';
 import { useProductionStore } from '@/core/production/useProductionStore';
 import { evaluateUserPermission, hasElevatedAccess } from '@/core/permissions/rbac';
+import { useActiveProjectIsEpisodic } from '@/modules/production';
 import { cn } from '@/shared/utils/cn';
 
 export interface NavItemConfig {
@@ -53,6 +56,8 @@ export const Sidebar: React.FC = () => {
   const { isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen } = useSidebarStore();
   const { user } = useCurrentUser();
   const { activeProjectId } = useProductionStore();
+  // Episodes only while the chosen project is episodic (CR-47); re-read from the project query on every switch.
+  const { isEpisodic } = useActiveProjectIsEpisodic();
 
   const evalContext = {
     projectId: activeProjectId || undefined,
@@ -160,6 +165,26 @@ export const Sidebar: React.FC = () => {
           pagePermission: 'page.projects',
           permissions: ['project.view'],
           hotkey: '2',
+        },
+        ...(isEpisodic
+          ? [
+              {
+                id: 'episodes',
+                to: '/episodes',
+                label: 'Episodes',
+                icon: Tv,
+                pagePermission: 'page.project.episodes',
+                permissions: ['episode.view'],
+              },
+            ]
+          : []),
+        {
+          id: 'sequences',
+          to: '/sequences',
+          label: 'Sequences',
+          icon: ListVideo,
+          pagePermission: 'page.project.sequences',
+          permissions: ['sequence.view'],
         },
         {
           id: 'shots',

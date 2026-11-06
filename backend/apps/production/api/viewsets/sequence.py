@@ -1,5 +1,4 @@
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.sequence import SequenceFilterSet
@@ -9,12 +8,10 @@ from apps.production.api.serializers.sequence.list import SequenceListSerializer
 from apps.production.api.serializers.sequence.update import SequenceUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.api.viewsets.bulk import ProductionBulkMixin
-from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import SequencePermissions
-from apps.production.models import Episode
-from apps.production.selectors.episode import EpisodeSelector
 from apps.production.selectors.sequence import SequenceSelector
 from apps.production.services.sequence import SequenceService
+from apps.production.validators.episodic import apply_sequence_episode_rule
 
 
 class SequenceViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
@@ -23,6 +20,18 @@ class SequenceViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright:
     pagination_class = StandardPagination
     filterset_class = SequenceFilterSet
     detail_serializer_class = SequenceDetailSerializer
+
+    # CR-48: what bulk-update may change; never project, code, show, ownership or approval fields.
+    bulk_update_fields = (
+        "name",
+        "description",
+        "status",
+        "episode_id",
+        "frame_in",
+        "frame_out",
+        "department",
+        "tags",
+    )
 
     serializer_map = {
         "list": SequenceListSerializer,
@@ -64,51 +73,12 @@ class SequenceViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright:
         return self._bulk_lifecycle_results(ids=self._ids_list(), action="restore")
 
     def prepare_create(self, serializer, project):
-        self._enforce_episode_rule(serializer, project=project, creating=True)
-
-    def perform_update(self, serializer):
-        instance = serializer.instance
-        self._enforce_episode_rule(serializer, project=instance.project, creating=False)
-        super().perform_update(serializer)
-
-    def _enforce_episode_rule(self, serializer, *, project, creating):
-        """
-        The project's episode rule for a sequence (D-12).
-
-        * Episodic project: a new sequence needs an episode of that project. An existing
-          sequence keeps what it has (older rows may have none) but cannot be cleared.
-        * Standard project: no episode; sending one is a 400, sending an empty value is fine.
-
-        The episode is looked up inside the project, so one of another project reads like
-        one that does not exist.
-        """
         data = serializer.validated_data if isinstance(serializer.validated_data, dict) else {}
-        if project is None:
-            return
-        supplied = "episode" in data
-        raw = data.get("episode") if supplied else None
-        given = isinstance(raw, Episode) or bool(str(raw or "").strip())
+        self._enforce_episode_rule(data, project=project, creating=True)
 
-        if project.workflow_type != ProjectWorkflowType.EPISODIC:
-            if given:
-                raise ValidationError(
-                    {"episode_id": ["Episodes are not used on standard projects."]}
-                )
-            if supplied:
-                data["episode"] = None
-            return
+    def prepare_update(self, instance, data):
+        self._enforce_episode_rule(data, project=instance.project, creating=False)
 
-        if not supplied:
-            if creating:
-                raise ValidationError(
-                    {"episode_id": ["An episode is required for sequences on episodic projects."]}
-                )
-            return
-        if not given:
-            raise ValidationError(
-                {"episode_id": ["An episode is required for sequences on episodic projects."]}
-            )
-        episode = EpisodeSelector.resolve_in_project(project, raw)
-        if episode is None:
-            raise ValidationError({"episode_id": ["Unknown episode."]})
-        data["episode"] = episode
+    def _enforce_episode_rule(self, data, *, project, creating):
+        """The project's episode rule for a sequence (D-12; ``validators/episodic.py``)."""
+        apply_sequence_episode_rule(data, project=project, creating=creating)

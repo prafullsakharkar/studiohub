@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Any, ClassVar
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.http import Http404
 from rest_framework.decorators import action
@@ -106,6 +107,26 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         """Hook: narrow what the caller may see beyond project membership (e.g. own records)."""
         return queryset
 
+    def bulk_scope(self, queryset):
+        """
+        The rows of ``queryset`` the caller may act on: the narrowing of the single routes (project
+        membership, show, department and external grants, then ``narrow_queryset``). Every bulk
+        route resolves its ids through this, so a bulk call never reaches a row a single call
+        would answer 404 for (CR-46).
+        """
+        return self.narrow_queryset(
+            ProductionBaseSelector.scope_by_project_membership(queryset, request=self.request)
+        )
+
+    def _fetch_instance(self, instance_id):
+        """A row by id, only when the caller may see it (existence answers and recovery, CR-46)."""
+        try:
+            return self.bulk_scope(
+                self.service_class.model.all_objects.filter(id=instance_id)
+            ).first()
+        except (ValueError, TypeError, DjangoValidationError):
+            return None
+
     def guard_mutable(self, instance):
         """Hook: raise when ``instance`` may no longer be edited, deleted or archived."""
 
@@ -198,7 +219,8 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             items,
             user=request.user,
         )
-        return self._existence_response(items, results)
+        hide = getattr(self, "hide_unseen", None)
+        return self._existence_response(items, hide(results) if hide else results)
 
     @action(detail=False, methods=["post"], url_path="existence-check")
     def existence_check(self, request, *args, **kwargs):
@@ -214,8 +236,8 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         if instance is None and project_id and code:
             project = service._get_project(project_id=project_id)
             if project is not None:
-                instance = service.model.all_objects.filter(
-                    project=project, code=code,
+                instance = self.bulk_scope(
+                    service.model.all_objects.filter(project=project, code__iexact=code)
                 ).first()
         if instance is None or not instance.is_deleted:
             return {
@@ -257,11 +279,13 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         if action == "restore":
             results = self.service_class.bulk_restore(
                 ids,
+                scope=self.bulk_scope,
                 user=self.request.user,
             )
             return self._bulk_archive_union(results, count_key="restoredCount")
         results = self.service_class.bulk_archive(
             ids,
+            scope=self.bulk_scope,
             user=self.request.user,
         )
         return self._bulk_archive_union(results, count_key="archivedCount")
@@ -451,12 +475,22 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
 
     def perform_update(self, serializer):  # pyright: ignore[reportIncompatibleMethodOverride]
         instance = serializer.instance
-        self.guard_mutable(instance)
         data = serializer.validated_data if isinstance(serializer.validated_data, dict) else {}
-        self.validate_references(getattr(instance, "project", None), data, instance=instance)
-        self._guard_privileged_values(data, instance=instance)
-        self._resolve_show(getattr(instance, "project", None), data)
+        self.check_update(instance, data)
         serializer.instance = self._apply_update(instance, dict(data))
+
+    def check_update(self, instance, data):
+        """
+        Everything an update of ``instance`` with ``data`` must pass before it is saved; resolves
+        references in ``data`` in place. The single update and every bulk-update item run this
+        same chain (CR-46).
+        """
+        project = getattr(instance, "project", None)
+        self.guard_mutable(instance)
+        self.prepare_update(instance, data)
+        self.validate_references(project, data, instance=instance)
+        self._guard_privileged_values(data, instance=instance)
+        self._resolve_show(project, data)
 
     # -- status workflow ------------------------------------------------
 
@@ -533,6 +567,13 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         Runs after the project is resolved and authorized, for single create and
         for every item of a bulk create. May rewrite ``serializer.validated_data``
         (e.g. resolve references); raise a ``ValidationError`` to refuse.
+        """
+
+    def prepare_update(self, instance, data):
+        """
+        Hook: resolve and validate what depends on the stored record before an update (e.g. the
+        episode rule). Runs for a single update and for every bulk-update item; rewrites ``data``
+        in place, raises a ``ValidationError`` to refuse.
         """
 
     def validate_references(self, project, data, instance=None):

@@ -85,6 +85,15 @@ class BulkOperationService(BusinessService):
             ).values_list("project_id", flat=True)
         )
 
+    @staticmethod
+    def _scoped(queryset, scope, allowed):
+        """``queryset`` narrowed by the caller's ``scope`` (the single route's), else by project memberships."""
+        if scope is not None:
+            return scope(queryset)
+        if allowed is not None:
+            return queryset.filter(project_id__in=allowed)
+        return queryset
+
     @classmethod
     def _get_project(cls, *, project_id, organization=None):
         from django.core.exceptions import ValidationError as DjangoValidationError
@@ -350,9 +359,13 @@ class BulkOperationService(BusinessService):
         return fields
 
     @classmethod
-    def bulk_update(cls, items, *, validate, update=None, user=None, organization=None):
+    def bulk_update(cls, items, *, validate, update=None, scope=None, user=None, organization=None):
         """
-        Update multiple entities by id (project-membership scoped).
+        Update multiple entities by id.
+
+        ``scope(queryset)`` narrows the rows the caller may touch exactly like the single route
+        (show, department and external narrowing, CR-46); an id outside it reports ``not_found``.
+        Without it the lookup falls back to the caller's project memberships.
 
         Per-item statuses: ``updated`` | ``not_found`` | ``invalid``.
         ``validate(instance, data)`` returns ``(validated_data, None)`` or
@@ -369,12 +382,7 @@ class BulkOperationService(BusinessService):
                     {"index": index, "status": cls.INVALID, "error": "id is required."}
                 )
                 continue
-            lookup = cls.model.all_objects.filter(
-                id=item_id,
-            )
-            if allowed is not None:
-                lookup = lookup.filter(project_id__in=allowed)
-            instance = lookup.first()
+            instance = cls._scoped(cls.model.all_objects.filter(id=item_id), scope, allowed).first()
             if instance is None or instance.is_deleted:
                 results.append(
                     {"index": index, "status": cls.NOT_FOUND, "error": f"{cls.model.__name__} not found."}
@@ -412,7 +420,7 @@ class BulkOperationService(BusinessService):
     # ------------------------------------------------------------------
 
     @classmethod
-    def bulk_archive(cls, ids, *, user=None, organization=None):
+    def bulk_archive(cls, ids, *, scope=None, user=None, organization=None):
         """
         Soft-delete (archive) multiple entities by id.
         Per-item statuses: ``archived`` | ``not_found``.
@@ -420,12 +428,7 @@ class BulkOperationService(BusinessService):
         allowed = cls._allowed_project_ids(user)
         results = []
         for index, item_id in enumerate(ids):
-            lookup = cls.model.objects.filter(
-                id=item_id,
-            )
-            if allowed is not None:
-                lookup = lookup.filter(project_id__in=allowed)
-            instance = lookup.first()
+            instance = cls._scoped(cls.model.objects.filter(id=item_id), scope, allowed).first()
             if instance is None:
                 results.append(
                     {"index": index, "id": item_id, "status": cls.NOT_FOUND}
@@ -453,7 +456,7 @@ class BulkOperationService(BusinessService):
         return results
 
     @classmethod
-    def bulk_restore(cls, ids, *, user=None, organization=None):
+    def bulk_restore(cls, ids, *, scope=None, user=None, organization=None):
         """
         Restore soft-deleted entities by id.
         Per-item statuses: ``restored`` | ``not_found``.
@@ -461,12 +464,7 @@ class BulkOperationService(BusinessService):
         allowed = cls._allowed_project_ids(user)
         results = []
         for index, item_id in enumerate(ids):
-            lookup = cls.model.all_objects.filter(
-                id=item_id,
-            )
-            if allowed is not None:
-                lookup = lookup.filter(project_id__in=allowed)
-            instance = lookup.first()
+            instance = cls._scoped(cls.model.all_objects.filter(id=item_id), scope, allowed).first()
             if instance is None or not instance.is_deleted:
                 results.append(
                     {"index": index, "id": item_id, "status": cls.NOT_FOUND}

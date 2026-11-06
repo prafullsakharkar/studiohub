@@ -8,11 +8,9 @@ import {
   FileSpreadsheet,
   AlertCircle,
   CheckCircle2,
-  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/shared/components/Button';
 import { Modal } from '@/shared/components/Modal';
-import { BulkOperationEngine } from './BulkOperationEngine';
 
 export interface GridColumn {
   key: string;
@@ -28,16 +26,17 @@ interface BulkImportGridProps {
   columns: GridColumn[];
   rows: Record<string, any>[];
   onChange: (rows: Record<string, any>[]) => void;
-  sampleRows?: Record<string, any>[];
   className?: string;
+  /** Takes pasted text: the caller parses it, checks the header row and reports problems. */
+  onPaste: (text: string) => void;
 }
 
 export const BulkImportGrid: React.FC<BulkImportGridProps> = ({
   columns,
   rows,
   onChange,
-  sampleRows,
   className = '',
+  onPaste,
 }) => {
   const [pasteModalOpen, setPasteModalOpen] = useState(false);
   const [pastedRawText, setPastedRawText] = useState('');
@@ -80,20 +79,9 @@ export const BulkImportGrid: React.FC<BulkImportGridProps> = ({
 
   const handleApplyPaste = () => {
     if (!pastedRawText.trim()) return;
-    const parsed = BulkOperationEngine.parseInput(
-      pastedRawText,
-      columns[0]?.key || 'code',
-      columns.map((c) => c.key)
-    );
-    onChange(parsed);
+    onPaste(pastedRawText);
     setPastedRawText('');
     setPasteModalOpen(false);
-  };
-
-  const loadSample = () => {
-    if (sampleRows && sampleRows.length > 0) {
-      onChange(sampleRows);
-    }
   };
 
   return (
@@ -123,18 +111,6 @@ export const BulkImportGrid: React.FC<BulkImportGridProps> = ({
             <span>Paste TSV / CSV</span>
           </Button>
 
-          {sampleRows && (
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={loadSample}
-              className="flex items-center gap-1 text-xs font-mono text-slate-400 hover:text-slate-200"
-            >
-              <Sparkles className="w-3 h-3 text-amber-400" />
-              <span>Load Template</span>
-            </Button>
-          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -184,11 +160,11 @@ export const BulkImportGrid: React.FC<BulkImportGridProps> = ({
                 </tr>
               ) : (
                 rows.map((row, rIdx) => {
-                  // Check frame validation if applicable
-                  const frameIn = row.frame_in !== undefined ? Number(row.frame_in) : undefined;
-                  const frameOut = row.frame_out !== undefined ? Number(row.frame_out) : undefined;
+                  // A frame range must not run backwards (the backend allows first == last).
+                  const frameIn = row.frame_in !== undefined && row.frame_in !== '' ? Number(row.frame_in) : undefined;
+                  const frameOut = row.frame_out !== undefined && row.frame_out !== '' ? Number(row.frame_out) : undefined;
                   const hasFrameError =
-                    frameIn !== undefined && frameOut !== undefined && frameOut <= frameIn;
+                    frameIn !== undefined && frameOut !== undefined && frameOut < frameIn;
 
                   return (
                     <tr

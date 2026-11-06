@@ -392,7 +392,8 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
             <span>{project.name}</span>
           </span>
 
-          {contextEpisode && (
+          {/* Breadcrumb: an episode only means something on an episodic project (CR-47). */}
+          {contextEpisode && isEpisodicProject(project) && (
             <>
               <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
               <button

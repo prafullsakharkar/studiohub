@@ -13,7 +13,7 @@ from rest_framework.test import APIClient
 
 from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.rbac_helpers import grant_all_known_codes
-from apps.production.models import Asset, Episode, ProjectMembership, Sequence, Shot
+from apps.production.models import Asset, Episode, Project, ProjectMembership, Sequence, Shot
 from apps.production.tests.factories import (
     AssetFactory,
     EpisodeFactory,
@@ -27,8 +27,15 @@ MODELS = {
     "shots": (Shot, ShotFactory),
     "assets": (Asset, AssetFactory),
     "sequences": (Sequence, SequenceFactory),
-    "episodes": (Episode, EpisodeFactory),
+    "episodes": (Episode, lambda **kw: _episode_on_episodic(**kw)),
 }
+
+
+def _episode_on_episodic(*, project, **kwargs):
+    """Episodes exist only on episodic projects (CR-47): the shared project becomes one for them."""
+    Project.objects.filter(pk=project.pk).update(workflow_type="episodic")
+    project.workflow_type = "episodic"
+    return EpisodeFactory(project=project, **kwargs)
 
 
 def _client(user):

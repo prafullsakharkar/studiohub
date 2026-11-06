@@ -57,6 +57,8 @@ export interface ListColumn<T> {
   cell: (row: T) => React.ReactNode;
   /** Backend `ordering` field; makes the header clickable. Must be one the route supports. */
   sortField?: string;
+  /** Show the column only while this holds for the active filters (the Episode column only for an episodic project). */
+  visible?: (filters: Record<string, unknown>) => boolean;
 }
 
 export interface ListFilter {
@@ -65,8 +67,10 @@ export interface ListFilter {
   label: string;
   /** Fixed choices. */
   options?: ReadonlyArray<{ value: string; label: string }>;
-  /** Or choices loaded from another list route (all rows, e.g. every department). */
-  optionsFrom?: { queryKey: readonly unknown[]; fetchPage: PageFetcher<{ id: string }>; getLabel: (row: never) => string };
+  /** Or choices loaded from another list route (all rows, e.g. every department). `params` narrows them by the active filters (the chosen project's episodes). */
+  optionsFrom?: { queryKey: readonly unknown[]; fetchPage: PageFetcher<{ id: string }>; getLabel: (row: never) => string; params?: (filters: Record<string, unknown>) => Record<string, string>; /** Offer only these rows (no server filter for it: only episodic projects). */ keep?: (row: never) => boolean };
+  /** Offer the filter only while this holds for the active filters; a hidden filter is cleared. */
+  visible?: (filters: Record<string, unknown>) => boolean;
 }
 
 export interface DirectoryListConfig<T extends { id: string }> {

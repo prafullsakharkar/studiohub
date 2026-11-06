@@ -5,6 +5,7 @@ import { ClientPicker, VendorMultiPicker } from '@/modules/directory/pickers';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RelatedRecordsConfig } from '@/modules/directory/types';
 import { Badge } from '@/shared/components/Badge';
 import { StatusBadge } from '@/shared/components/StatusBadge';
+import { EpisodeCode } from '../work/episodic';
 
 const opts = (values: readonly string[]) => values.map((v) => ({ value: v, label: v }));
 const MANAGE_PROJECT = 'project.update';
@@ -160,6 +161,7 @@ const episodeField: FieldDef = {
   ),
 };
 
+/** A project's sequences on an episodic project: each is filed under an episode. */
 export const sequencesConfig: RelatedRecordsConfig<Sequence> = {
   ...base,
   noun: 'sequence',
@@ -176,6 +178,7 @@ export const sequencesConfig: RelatedRecordsConfig<Sequence> = {
   columns: [
     { header: 'Code', cell: (s) => <span className="font-mono">{s.code}</span> },
     { header: 'Name', cell: (s) => s.name || '—' },
+    { header: 'Episode', cell: (s) => <EpisodeCode projectId={s.project_id} episodeId={s.episode_id} /> },
     { header: 'Frames', cell: (s) => `${s.frame_in}–${s.frame_out}` },
     { header: 'Shots', cell: (s) => s.shots_count },
     { header: 'Status', cell: (s) => s.status },
@@ -215,3 +218,13 @@ export const tracksConfig: RelatedRecordsConfig<EditorialTrack> = {
     { kind: 'number', name: 'track_number', label: 'Track number' },
   ],
 };
+
+/** A standard project's sequences: no episode anywhere, neither column nor picker (CR-47). */
+export const standardSequencesConfig: RelatedRecordsConfig<Sequence> = {
+  ...sequencesConfig,
+  columns: sequencesConfig.columns.filter((column) => column.header !== 'Episode'),
+  fields: sequencesConfig.fields.filter((field) => field.name !== 'episode_id'),
+};
+
+/** The sequences config for a project of this workflow. */
+export const sequencesConfigFor = (episodic: boolean): RelatedRecordsConfig<Sequence> => (episodic ? sequencesConfig : standardSequencesConfig);
