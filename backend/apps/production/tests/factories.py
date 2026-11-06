@@ -89,7 +89,8 @@ class EpisodeFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeAr
         model = Episode
         django_get_or_create = ("code", "project")
 
-    project = factory.SubFactory(ProjectFactory)
+    # Episodes exist only on episodic projects (CR-47).
+    project = factory.SubFactory(ProjectFactory, workflow_type="episodic")
     code = factory.Sequence(lambda n: f"EP{n:03d}")
     name = factory.Sequence(lambda n: f"Episode {n}")
     season_number = 1

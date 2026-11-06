@@ -4,6 +4,7 @@ import type { Shot } from '@/api/production/work';
 import { useCan } from '@/core/permissions/useCan';
 import type { BulkAction, DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } from '@/modules/directory/types';
 import { Badge } from '@/shared/components/Badge';
+import { EpisodicOnly, episodeColumn, episodeFilter, useEpisodicProjectIds } from './episodic';
 import { StatusMenu } from './StatusMenu';
 import { EpisodePicker, MemberSelect, ProjectPicker, SequencePicker } from './pickers';
 
@@ -27,6 +28,7 @@ const bulkShotActions: ReadonlyArray<BulkAction> = [
 export function useShotsListConfig(scope?: { projectId: string }): DirectoryListConfig<Shot> {
   const canUpdate = useCan('shot.update');
   const canRename = useCan('production.code.rename');
+  const episodic = useEpisodicProjectIds();
   return {
     title: 'Shots',
     noun: 'shot',
@@ -47,10 +49,12 @@ export function useShotsListConfig(scope?: { projectId: string }): DirectoryList
     createQuery: scope ? `project=${scope.projectId}` : undefined,
     filters: [
       { key: 'project_id', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } },
+      episodeFilter(episodic),
       { key: 'status', label: 'Status', options: options(SHOT_STATUSES.filter((s) => s !== 'Archived')) },
     ],
     columns: [
       { header: 'Shot', cell: (row) => `${row.code}${row.name ? ` · ${row.name}` : ''}`, sortField: 'code' },
+      episodeColumn<Shot>(episodic),
       { header: 'Sequence', cell: (row) => row.sequence_code || '—' },
       { header: 'Frames', cell: (row) => `${row.frame_in}–${row.frame_out} (${row.frame_count})` },
       { header: 'Artist', cell: (row) => row.assigned_artist_name || '—' },
@@ -77,7 +81,12 @@ export const shotsFormFields: ReadonlyArray<FieldDef> = [
   { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 30, hint: 'Upper case, no spaces or slashes. Once a version exists, change it with Rename code.' },
   { kind: 'text', name: 'name', label: 'Name', maxLength: 255 },
   { kind: 'entity', name: 'sequence_id', rowKey: 'sequence_id', label: 'Sequence', render: (p) => <SequencePicker label="Sequence" value={p.value} onChange={(id) => p.onChange(id ?? '')} filters={{ project: String(p.values.project ?? '') }} disabled={!p.values.project} error={p.error} /> },
-  { kind: 'entity', name: 'episode_id', rowKey: 'episode_id', label: 'Episode', render: (p) => <EpisodePicker label="Episode (required on episodic projects)" value={p.value} onChange={(id) => p.onChange(id ?? '')} filters={{ project: String(p.values.project ?? '') }} disabled={!p.values.project} error={p.error} /> },
+  { kind: 'entity', name: 'episode_id', rowKey: 'episode_id', label: 'Episode', render: (p) => (
+      // Only an episodic project has episodes, and there every shot needs one (CR-47).
+      <EpisodicOnly projectId={String(p.values.project ?? '')}>
+        <EpisodePicker label="Episode *" value={p.value} onChange={(id) => p.onChange(id ?? '')} filters={{ project: String(p.values.project ?? '') }} error={p.error} />
+      </EpisodicOnly>
+    ) },
   { kind: 'number', name: 'frame_in', label: 'Frame in' },
   { kind: 'number', name: 'frame_out', label: 'Frame out' },
   { kind: 'number', name: 'handle_frames', label: 'Handle frames' },

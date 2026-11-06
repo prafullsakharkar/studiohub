@@ -97,8 +97,8 @@ class TestEpisodeCreateAndScopedList:
     def test_list_filter_by_project_id_excludes_other_projects(
         self, staff_client, staff_user
     ):
-        project_a = ProjectFactory.create()
-        project_b = ProjectFactory.create()
+        project_a = ProjectFactory.create(workflow_type="episodic")
+        project_b = ProjectFactory.create(workflow_type="episodic")
         _member(staff_user, project_a)
         _member(staff_user, project_b)
         EpisodeFactory.create(project=project_a, code="EP101")
@@ -112,8 +112,8 @@ class TestEpisodeCreateAndScopedList:
         assert project_ids == {str(project_a.id)}
 
     def test_list_is_scoped_to_membership(self, staff_client, staff_user):
-        project_a = ProjectFactory.create()
-        project_b = ProjectFactory.create()
+        project_a = ProjectFactory.create(workflow_type="episodic")
+        project_b = ProjectFactory.create(workflow_type="episodic")
         _member(staff_user, project_a)
         EpisodeFactory.create(project=project_a, code="EPA01")
         EpisodeFactory.create(project=project_b, code="EPB01")

@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
 import { useState } from 'react';
 import { episodesApi, projectsApi, sequencesApi } from '@/api/production/structure';
+import { isEpisodicProject } from '@/modules/production';
 import { Button } from '@/shared/components/Button';
 import { fetchAllRows } from '@/shared/data/listing';
 import { ShotBulkManager } from './bulk/ShotBulkManager';
@@ -16,7 +17,7 @@ export const ShotBulkAdd: React.FC<{ projectId: string | undefined; onDone?: () 
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const project = useQuery({ queryKey: projectsApi.keys.detail(projectId ?? ''), queryFn: ({ signal }) => projectsApi.get(projectId as string, signal), enabled: Boolean(projectId) });
-  const isEpisodic = project.data?.workflow_type === 'episodic';
+  const isEpisodic = isEpisodicProject(project.data);
   const episodes = useQuery({ queryKey: [...episodesApi.keys.lists(), 'all', projectId], queryFn: ({ signal }) => fetchAllRows(episodesApi.list, { project: projectId as string }, { signal }), enabled: Boolean(projectId) && isEpisodic });
   const sequences = useQuery({ queryKey: [...sequencesApi.keys.lists(), 'all', projectId], queryFn: ({ signal }) => fetchAllRows(sequencesApi.list, { project: projectId as string }, { signal }), enabled: Boolean(projectId) && isEpisodic });
   if (!projectId) return null;

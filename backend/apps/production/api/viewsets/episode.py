@@ -1,5 +1,4 @@
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.episode import EpisodeFilterSet
@@ -13,6 +12,7 @@ from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import EpisodePermissions
 from apps.production.selectors.episode import EpisodeSelector
 from apps.production.services.episode import EpisodeService
+from apps.production.validators.episodic import require_episodic_project
 
 
 class EpisodeViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
@@ -61,13 +61,14 @@ class EpisodeViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: 
         """Bulk restore with per-item ``not_found`` reporting."""
         return self._bulk_lifecycle_results(ids=self._ids_list(), action="restore")
 
-    def prepare_create(self, serializer, project):
-        """Gate episode creation on the project's workflow type.
-
-        Episodes belong to ``episodic`` projects only; ``standard`` projects
-        reject episode creation with 400 (fail closed without leaking).
+    def narrow_queryset(self, queryset):
         """
-        if project is not None and project.workflow_type != ProjectWorkflowType.EPISODIC:
-            raise ValidationError(
-                {"project": "Episodes can only be created on episodic projects."}
-            )
+        Episodes exist only on episodic projects (CR-47). A standard project's episodes (left by
+        seeds, the admin or older data) are outside every route: detail, update, archive, restore
+        and the bulk routes answer 404 / ``not_found``, and its list is empty.
+        """
+        return queryset.filter(project__workflow_type=ProjectWorkflowType.EPISODIC)
+
+    def prepare_create(self, serializer, project):
+        """Episodes are created on episodic projects only: a standard one is a 400 on ``project``."""
+        require_episodic_project(project)
