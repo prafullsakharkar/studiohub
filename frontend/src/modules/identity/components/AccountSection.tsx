@@ -63,6 +63,22 @@ const NoLogin: React.FC<{ personId: string; personEmail?: string; onLinked: () =
   const canCreate = useCan('identity.user.create');
   const canLink = useCan('people.update');
   const users = useUsersIndex();
+  // Linking copies the login's e-mail onto the person, so a login can be linked here only when it has no person of its own
+  // (every login gets one when it is created, DOM-MD-PER-10; unlinking frees it) and no OTHER person uses its e-mail (the
+  // person it was unlinked from keeps it). The user list says neither; the people list does.
+  const peopleIndex = useQuery({
+    queryKey: [...peopleApi.keys.all, 'login-links'],
+    queryFn: async ({ signal }) => {
+      const rows = await fetchAllRows(peopleApi.list, {}, { signal });
+      return {
+        owners: new Set(rows.map((p) => p.user).filter(Boolean) as string[]),
+        emails: new Set(rows.filter((p) => p.id !== personId && p.email).map((p) => String(p.email).toLowerCase())),
+      };
+    },
+    enabled: canLink,
+    staleTime: 60_000,
+  });
+  const linkable = peopleIndex.isError ? users.users : users.users.filter((u) => !peopleIndex.data?.owners.has(u.id) && !peopleIndex.data?.emails.has(u.email.toLowerCase())); // if the people list cannot be read, offer all and let the server refuse
   const [orphan, setOrphan] = useState<{ id: string; email: string } | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
   const [existingId, setExistingId] = useState('');
@@ -152,24 +168,32 @@ const NoLogin: React.FC<{ personId: string; personEmail?: string; onLinked: () =
           }}
         >
           <h4 className="text-xs font-bold text-white">Or link an existing login</h4>
-          <Field id="link-existing" label="User">
-            <select id="link-existing" className={inputClass()} value={existingId} onChange={(e) => setExistingId(e.target.value)}>
-              <option value="">Choose a user…</option>
-              {users.users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.email}
-                </option>
-              ))}
-            </select>
-          </Field>
-          {linkError && !orphan && (
-            <p role="alert" className="text-[11px] text-rose-400">
-              {linkError}
-            </p>
+          {peopleIndex.isLoading ? (
+            <p className="text-xs text-slate-500">Looking for logins that are not linked to a person…</p>
+          ) : linkable.length === 0 ? (
+            <p className="text-xs text-slate-400">No existing login can be linked to this person: each one belongs to a person already, or shares an e-mail address with another person. Create a new login above.</p>
+          ) : (
+            <>
+              <Field id="link-existing" label="User" hint="Logins that belong to no person and whose e-mail no other person uses.">
+                <select id="link-existing" className={inputClass()} value={existingId} onChange={(e) => setExistingId(e.target.value)}>
+                  <option value="">Choose a user…</option>
+                  {linkable.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.email}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              {linkError && !orphan && (
+                <p role="alert" className="text-[11px] text-rose-400">
+                  {linkError}
+                </p>
+              )}
+              <Button type="submit" variant="outline" size="sm" disabled={!existingId} isLoading={link.isPending}>
+                Link login
+              </Button>
+            </>
           )}
-          <Button type="submit" variant="outline" size="sm" disabled={!existingId} isLoading={link.isPending}>
-            Link login
-          </Button>
         </form>
       )}
 
