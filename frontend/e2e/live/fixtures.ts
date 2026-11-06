@@ -74,6 +74,24 @@ export async function signIn(page: Page, role: RoleKey) {
   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 60_000 });
 }
 
+/**
+ * Open a page and make sure the app mounted. Chrome can leave a page blank when a request is aborted (the host's network
+ * changes, a lazy module fails to load); that says nothing about the page, so it is reloaded up to three times, and every
+ * reload is logged so a run that needed one says so.
+ */
+export async function open(page: Page, path: string, label = 'page') {
+  await page.goto(path);
+  for (let attempt = 1; ; attempt++) {
+    const mounted = await page.waitForFunction(() => document.body.innerText.trim().length > 0, undefined, { timeout: 15_000 }).then(() => true, () => false);
+    // A lazy module that failed to load lands on the error boundary: that is the same kind of miss as a blank page.
+    const failed = mounted && (await page.getByRole('heading', { name: 'Something went wrong' }).count()) > 0;
+    if (mounted && !failed) return;
+    if (attempt === 3) throw new Error(`${label} ${path} stayed blank after ${attempt} loads`);
+    console.log(`[${label}:blank-reload] ${path} rendered nothing (attempt ${attempt}); loading it again`);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+  }
+}
+
 export const test = base.extend({
   context: async ({ context }, use) => {
     await proxyToBackend(context);

@@ -59,7 +59,9 @@ class TestPlacement:
         detail = client.get(f"/api/v1/shots/{by_id.json()['id']}/").json()
         assert (detail["sequence_id"], detail["sequence_code"]) == (str(sequence.id), "SQ010")
 
-    def test_a_new_shot_needs_a_sequence_but_an_old_one_without_may_be_edited(self, client, project):
+    def test_a_new_shot_needs_a_sequence_but_an_old_one_without_may_be_edited(
+        self, client, project
+    ):
         """CR-49 (D-43; was D-11/Q3, "a shot may have no sequence"): required on create only."""
         resp = client.post(
             "/api/v1/shots/",
@@ -205,3 +207,70 @@ def test_a_sequence_with_shots_cannot_be_hard_deleted(project):
 
     with pytest.raises(ProtectedError):
         sequence.hard_delete()
+
+
+class TestHasSequenceFilter:
+    """CR-50: find the shots that belong to no sequence (made before a new shot needed one)."""
+
+    @pytest.fixture
+    def shots(self, project):
+        sequence = SequenceFactory.create(project=project, code="SEQ01P_SQ1")
+        return {
+            "placed": ShotFactory.create(project=project, code="SEQ01P_A", sequence=sequence),
+            "loose": ShotFactory.create(project=project, code="SEQ01P_B", sequence=None),
+            "loose2": ShotFactory.create(project=project, code="SEQ01P_C", sequence=None),
+        }
+
+    @staticmethod
+    def _codes(client, query):
+        body = client.get(f"/api/v1/shots/?{query}").json()
+        rows = body["results"] if isinstance(body, dict) else body
+        return sorted(row["code"] for row in rows)
+
+    def test_false_lists_the_shots_with_no_sequence(self, client, project, shots):
+        assert self._codes(client, f"project_id={project.id}&has_sequence=false") == [
+            "SEQ01P_B",
+            "SEQ01P_C",
+        ]
+
+    def test_true_lists_the_shots_that_have_one(self, client, project, shots):
+        assert self._codes(client, f"project_id={project.id}&has_sequence=true") == ["SEQ01P_A"]
+
+    @pytest.mark.parametrize("value", ["", "maybe"])
+    def test_absent_empty_or_not_a_boolean_is_no_filter(self, client, project, shots, value):
+        everything = ["SEQ01P_A", "SEQ01P_B", "SEQ01P_C"]
+        assert self._codes(client, f"project_id={project.id}") == everything
+        assert self._codes(client, f"project_id={project.id}&has_sequence={value}") == everything
+
+    def test_it_combines_with_the_other_filters_and_search(self, client, project, shots):
+        assert self._codes(
+            client, f"project_id={project.id}&has_sequence=false&search=SEQ01P_C"
+        ) == ["SEQ01P_C"]
+        assert self._codes(client, f"project_id={project.id}&has_sequence=false&status=Nope") == []
+
+    def test_archived_shots_stay_out_and_other_projects_are_not_seen(self, client, project, shots):
+        ShotFactory.create(project=project, code="SEQ01P_GONE", sequence=None, is_deleted=True)
+        stranger = ProjectFactory.create(code="SEQ99P")
+        ShotFactory.create(project=stranger, code="SEQ99P_X", sequence=None)
+
+        assert self._codes(client, "has_sequence=false") == ["SEQ01P_B", "SEQ01P_C"]
+
+    def test_filling_a_loose_shots_sequence_takes_it_off_the_list(self, client, project, shots):
+        sequence = SequenceFactory.create(project=project, code="SEQ01P_SQ2")
+
+        resp = client.post(
+            "/api/v1/shots/bulk-update/",
+            {
+                "project_id": str(project.id),
+                "atomic": True,
+                "items": [
+                    {"code": "SEQ01P_B", "sequence_id": sequence.code},
+                    {"code": "SEQ01P_C", "sequence_id": sequence.code},
+                ],
+            },
+            format="json",
+        )
+
+        assert resp.status_code == 200, resp.json()
+        assert resp.json()["committed"] is True
+        assert self._codes(client, f"project_id={project.id}&has_sequence=false") == []

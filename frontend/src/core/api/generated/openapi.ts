@@ -49521,6 +49521,7 @@ export interface operations {
             query?: {
                 code?: string;
                 episode_id?: string;
+                has_sequence?: boolean;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
                 /** @description A page number within the paginated result set. */
@@ -49731,6 +49732,7 @@ export interface operations {
             query?: {
                 code?: string;
                 episode_id?: string;
+                has_sequence?: boolean;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
                 /** @description A page number within the paginated result set. */
@@ -49899,6 +49901,7 @@ export interface operations {
             query?: {
                 code?: string;
                 episode_id?: string;
+                has_sequence?: boolean;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
                 /** @description A page number within the paginated result set. */

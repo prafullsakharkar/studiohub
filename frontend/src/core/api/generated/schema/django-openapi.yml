@@ -26161,6 +26161,10 @@ paths:
         name: episode_id
         schema:
           type: string
+      - in: query
+        name: has_sequence
+        schema:
+          type: boolean
       - name: ordering
         required: false
         in: query
@@ -26591,6 +26595,10 @@ paths:
         name: episode_id
         schema:
           type: string
+      - in: query
+        name: has_sequence
+        schema:
+          type: boolean
       - name: ordering
         required: false
         in: query
@@ -26886,6 +26894,10 @@ paths:
         name: episode_id
         schema:
           type: string
+      - in: query
+        name: has_sequence
+        schema:
+          type: boolean
       - name: ordering
         required: false
         in: query

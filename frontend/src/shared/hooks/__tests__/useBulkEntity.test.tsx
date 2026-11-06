@@ -68,6 +68,38 @@ describe('useBulkEntity', () => {
     expect(last.title).toContain('Asset');
   });
 
+  describe('the toasts say "1 asset", not "1 assets"', () => {
+    const lastNote = () => {
+      return useNotificationStore.getState().notifications[0].message; // the newest comes first
+    };
+    const run = async (counts: Record<string, number>, call: (hook: ReturnType<typeof useBulkEntity>) => Promise<unknown>) => {
+      useNotificationStore.setState({ notifications: [], toasts: [], recentDedupKeys: new Map() });
+      const service = makeService();
+      const answer = { summary: { ...summary, ...counts }, results: [] };
+      for (const op of ['bulkCreate', 'bulkUpdate', 'bulkArchive', 'bulkRestore'] as const) service[op] = vi.fn(async () => answer) as never;
+      const { W } = wrapper();
+      const { result } = renderHook(() => useBulkEntity({ service, queryKeyAll: ['assets'], projectQueryKeyAll: ['projects'], labels }), { wrapper: W });
+      await act(async () => {
+        await call(result.current);
+      });
+      return lastNote();
+    };
+
+    it('create', async () => {
+      expect(await run({ createdCount: 1, recoveredCount: 0 }, (h) => h.bulkCreate({ items: [] } as never))).toBe('Successfully processed 1 asset (1 created, 0 recovered).');
+      expect(await run({ createdCount: 1, recoveredCount: 1 }, (h) => h.bulkCreate({ items: [] } as never))).toBe('Successfully processed 2 assets (1 created, 1 recovered).');
+    });
+    it('update', async () => {
+      expect(await run({ updatedCount: 1 }, (h) => h.bulkUpdate({ items: [] } as never))).toBe('Updated 1 asset successfully.');
+      expect(await run({ updatedCount: 3 }, (h) => h.bulkUpdate({ items: [] } as never))).toBe('Updated 3 assets successfully.');
+    });
+    it('archive and restore', async () => {
+      expect(await run({ archivedCount: 1 }, (h) => h.bulkArchive({ ids: [] } as never))).toBe('Archived 1 asset.');
+      expect(await run({ restoredCount: 1 }, (h) => h.bulkRestore({ ids: [] } as never))).toBe('Restored 1 asset to active library.');
+      expect(await run({ restoredCount: 0 }, (h) => h.bulkRestore({ ids: [] } as never))).toBe('Restored 0 assets to active library.');
+    });
+  });
+
   it('exposes the bulk operations contract (flags idle by default)', async () => {
     // isPending is a direct TanStack passthrough (identical pattern to the
     // production twins this hook replaces); pin the contract, not the scheduler.

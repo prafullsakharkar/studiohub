@@ -425,3 +425,7 @@ Clients that renamed rows or moved them to another show through `bulk-update` ge
 
 Clients that created records with bare codes or sequence-less shots (scripts, importers, the old Bulk screens) now get these 400s. The React app already sends prefixed codes and a sequence (`frontend/src/modules/production/codePrefix.ts`). `report_production_data` lists, as information, how many live records have the prefix and which shots have no sequence. Evidence: `docs/sync/backend-cr-49-verification.md`.
 
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-66 | `GET /api/v1/shots/`, `archived/` (CR-50) | No way to list the shots that belong to no sequence. | Optional query parameter `has_sequence`: `false` lists shots with no sequence, `true` the ones that have one; absent, empty or not a boolean is no filter. It combines with every other filter and keeps the list's own narrowing; nothing is written. |
+
