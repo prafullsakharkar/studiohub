@@ -16167,6 +16167,8 @@ export interface components {
         LinkUser: {
             /** Format: uuid */
             user: string;
+            /** @default false */
+            move: boolean;
         };
         /** @description Serializer for Localization. */
         Localization: {

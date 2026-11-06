@@ -121,3 +121,27 @@ class TestLinkRace:
 
         assert sorted(statuses) == [200, 409], statuses
         assert Person.objects.filter(user=user).count() == 1
+
+    def test_two_moves_of_one_login_leave_exactly_one_holder(self, writer):
+        user = UserFactory.create(
+            email="moved-twice@example.com"
+        )  # has a person of its own (DOM-MD-PER-10)
+        first, second = PersonFactory(email=""), PersonFactory(email="")
+
+        def move(person):
+            return lambda: (
+                _api(writer)
+                .post(
+                    f"{API}/people/{person.pk}/link-user/",
+                    {"user": str(user.pk), "move": True},
+                    format="json",
+                )
+                .status_code
+            )
+
+        statuses = _race(move(first), move(second))
+
+        assert statuses == [200, 200], (
+            statuses
+        )  # one after the other: the second takes it from the first
+        assert Person.objects.filter(user=user).count() == 1

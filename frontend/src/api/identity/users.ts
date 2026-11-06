@@ -45,8 +45,12 @@ export const usersApi = {
   requireMfa: (id: string, required: boolean) => apiClient.post<{ mfa_required: boolean }>(`/api/v1/identity/users/${id}/require-mfa/`, { required }),
 };
 
-/** `POST /people/{id}/link-user/` and `/unlink-user/` (masterdata). 409 if the user is linked to another person. */
+/**
+ * `POST /people/{id}/link-user/` and `/unlink-user/` (masterdata). 409 if the user is linked to another person, unless `move`
+ * (CR-45): then that person is unlinked and loses its e-mail, and the login goes to this one.
+ */
 export const personLinkApi = {
-  link: (personId: string, userId: string) => apiClient.post<{ id: string; user: string | null }>(`/api/v1/people/${personId}/link-user/`, { user: userId }),
+  link: (personId: string, userId: string, move = false) =>
+    apiClient.post<{ id: string; user: string | null }>(`/api/v1/people/${personId}/link-user/`, move ? { user: userId, move: true } : { user: userId }),
   unlink: (personId: string) => apiClient.post<{ id: string; user: string | null }>(`/api/v1/people/${personId}/unlink-user/`, {}),
 };

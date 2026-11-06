@@ -38,9 +38,8 @@ import { useCurrentUser } from '@/core/auth/useCurrentUser';
 import { evaluateUserPermission, hasElevatedAccess } from '@/core/permissions/rbac';
 import { useThemeMode } from '@/providers/ThemeProvider';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
-import { type CommandItem, type EntityType } from '@/types/common';
+import type { CommandItem } from '@/types/common';
 import type { PermissionKey } from '@/types/identity';
-import { ActionDispatcherModal, type ActionModalType } from './ActionDispatcherModals';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import { useDialogLayer } from './useDialogLayer';
 
@@ -82,8 +81,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   // Sub-dialog triggers
-  const [actionModal, setActionModal] = useState<ActionModalType>(null);
-  const [actionEntityType, setActionEntityType] = useState<EntityType>('shot');
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isDbInspectorOpen, setIsDbInspectorOpen] = useState(false);
 
@@ -109,11 +106,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   // from the palette (shortcuts, quick actions) while one is open, so it closes that dialog and not the palette.
   useDialogLayer({ isOpen, onClose, containerRef: dialogRef });
 
-  // Handle Action launch helper
-  const openAction = (type: ActionModalType, targetEntityType: EntityType = 'shot') => {
-    setActionEntityType(targetEntityType);
-    setActionModal(type);
-  };
+  // A command that opens a page; `executeItem` closes the palette after any command.
+  const go = (path: string) => navigate(path);
 
   // Commands List (respects permissions)
   const commandsList = useMemo<CommandItem[]>(() => {
@@ -126,7 +120,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         category: 'Create',
         icon: Briefcase,
         permission: 'client.create',
-        action: () => openAction('create_entity', 'client'),
+        action: () => go('/clients/new'),
         keywords: ['client', 'studio', 'partner', 'wb', 'netflix', 'disney'],
       },
       {
@@ -136,7 +130,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         category: 'Create',
         icon: Users,
         permission: 'vendor.create',
-        action: () => openAction('create_entity', 'vendor'),
+        action: () => go('/vendors/new'),
         keywords: ['vendor', 'outsource', 'contractor', 'partner', 'fx'],
       },
       {
@@ -146,7 +140,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         category: 'Create',
         icon: Users,
         permission: 'people.create',
-        action: () => openAction('create_entity', 'person'),
+        action: () => go('/people/new'),
         keywords: ['person', 'user', 'artist', 'crew', 'invite', 'member', 'roster'],
       },
       {
@@ -156,7 +150,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         category: 'Create',
         icon: Workflow,
         permission: 'department.create',
-        action: () => openAction('create_entity', 'department'),
+        action: () => go('/departments/new'),
         keywords: ['department', 'division', 'lighting', 'comp', 'fx', 'art'],
       },
       {
@@ -166,7 +160,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         category: 'Create',
         icon: Users,
         permission: 'team.create',
-        action: () => openAction('create_entity', 'team'),
+        action: () => go('/teams/new'),
         keywords: ['team', 'squad', 'group', 'crew', 'create'],
       },
       {
@@ -176,7 +170,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         category: 'Create',
         icon: MapPin,
         permission: 'office.create',
-        action: () => openAction('create_entity', 'office'),
+        action: () => go('/offices/new'),
         keywords: ['office', 'location', 'site', 'branch', 'facility', 'london', 'vancouver'],
       },
       {
@@ -186,7 +180,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         category: 'Create',
         icon: Film,
         permission: 'project.create',
-        action: () => openAction('create_entity', 'project'),
+        action: () => go('/projects/new'),
         keywords: ['project', 'show', 'film', 'series', 'commercial', 'init'],
       },
       {
@@ -196,7 +190,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         category: 'Create',
         icon: Clapperboard,
         permission: 'shot.create',
-        action: () => openAction('create_entity', 'shot'),
+        action: () => go('/shots/new'),
         keywords: ['shot', 'sequence', 'cut', 'plate', 'create'],
       },
       {
@@ -206,18 +200,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         category: 'Create',
         icon: Box,
         permission: 'asset.create',
-        action: () => openAction('create_entity', 'asset'),
+        action: () => go('/assets/new'),
         keywords: ['asset', 'model', 'usd', 'prop', 'environment', 'character'],
-      },
-      {
-        id: 'cmd-create-sequence',
-        title: 'Create Sequence',
-        subtitle: 'Group related shots under a narrative sequence header',
-        category: 'Create',
-        icon: Layers,
-        permission: 'sequence.create',
-        action: () => openAction('create_entity', 'shot'),
-        keywords: ['sequence', 'seq', 'scene', 'act', 'create'],
       },
       {
         id: 'cmd-create-task',
@@ -226,7 +210,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         category: 'Create',
         icon: CheckSquare,
         permission: 'task.create',
-        action: () => openAction('create_entity', 'task'),
+        action: () => go('/tasks/new'),
         keywords: ['task', 'assignment', 'todo', 'milestone', 'hours'],
       },
       {
@@ -236,18 +220,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         category: 'Create',
         icon: History,
         permission: 'version.create',
-        action: () => openAction('create_entity', 'asset'),
+        action: () => go('/versions/new'),
         keywords: ['submit', 'version', 'publish', 'render', 'exr', 'usd'],
-      },
-      {
-        id: 'cmd-approve-review',
-        title: 'Approve Review Item',
-        subtitle: 'Grant supervisor or client sign-off on active screening item',
-        category: 'Actions',
-        icon: CheckCircle2,
-        permission: 'review.approve',
-        action: () => openAction('change_status', 'shot'),
-        keywords: ['approve', 'signoff', 'review', 'supervisor', 'client'],
       },
       {
         id: 'cmd-create-delivery',
@@ -256,10 +230,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         category: 'Create',
         icon: Sparkles,
         permission: 'delivery.create',
-        action: () => {
-          navigate('/deliveries');
-          onClose();
-        },
+        action: () => go('/deliveries/new'),
         keywords: ['delivery', 'package', 'aspera', 'client', 'turnover', 'dispatch'],
       },
 
@@ -418,56 +389,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         keywords: ['database', 'db', 'storage', 'reset', 'backup', 'export', 'import', 'persistence'],
       },
       // --- ACTIONS COMMANDS ---
-      {
-        id: 'cmd-action-assign-project',
-        title: 'Assign Project',
-        subtitle: 'Allocate project show to lead supervisor or client rep',
-        category: 'Actions',
-        icon: Briefcase,
-        permission: 'project.update',
-        action: () => openAction('assign_project', 'project'),
-        keywords: ['assign', 'project', 'lead', 'supervisor'],
-      },
-      {
-        id: 'cmd-action-assign-team',
-        title: 'Assign Team',
-        subtitle: 'Deploy specialized artist squad to active project',
-        category: 'Actions',
-        icon: Users,
-        permission: 'team.update',
-        action: () => openAction('assign_team', 'team'),
-        keywords: ['assign', 'team', 'squad', 'deploy'],
-      },
-      {
-        id: 'cmd-action-archive',
-        title: 'Archive Entity',
-        subtitle: 'Move active record or shot to cold storage archive',
-        category: 'Actions',
-        icon: Box,
-        permission: 'shot.archive',
-        action: () => openAction('archive_entity', 'shot'),
-        keywords: ['archive', 'freeze', 'cold', 'store', 'remove'],
-      },
-      {
-        id: 'cmd-action-restore',
-        title: 'Restore Entity',
-        subtitle: 'Reactivate archived shot, asset, or team record',
-        category: 'Actions',
-        icon: ArrowUpDown,
-        permission: 'shot.update',
-        action: () => openAction('restore_entity', 'shot'),
-        keywords: ['restore', 'unarchive', 'reactivate', 'bring back'],
-      },
-      {
-        id: 'cmd-action-change-status',
-        title: 'Change Status',
-        subtitle: 'Update production status (e.g. In Progress ➔ Approved)',
-        category: 'Actions',
-        icon: CheckCircle2,
-        permission: 'shot.update',
-        action: () => openAction('change_status', 'shot'),
-        keywords: ['status', 'state', 'approve', 'progress', 'review'],
-      },
       {
         id: 'cmd-action-toggle-theme',
         title: `Switch to ${themeMode === 'dark' ? 'Light' : 'Dark'} Mode`,
@@ -807,13 +728,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       </div>
 
       {/* Sub-Dialogs */}
-      <ActionDispatcherModal
-        type={actionModal}
-        entityType={actionEntityType}
-        isOpen={!!actionModal}
-        onClose={() => setActionModal(null)}
-      />
-
       <KeyboardShortcutsModal
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
