@@ -55,9 +55,9 @@ const createSchema = z.object({
 type CreateValues = z.infer<typeof createSchema>;
 
 /**
- * "Create login" is TWO calls (`POST /identity/users/`, then `POST /people/{id}/link-user/`) that
- * are not atomic. If the second fails the user already exists, so we keep its id and offer
- * "Retry link" rather than creating it again (which would fail as a duplicate email).
+ * "Create login" makes the user (`POST /identity/users/`); the server links it to this person by e-mail (DOM-MD-PER-10), and
+ * the link is checked afterwards. If the server did not link it, the user already exists, so we keep its id and offer
+ * "Retry link" (`POST /people/{id}/link-user/`) rather than creating it again (which would fail as a duplicate email).
  */
 const NoLogin: React.FC<{ personId: string; personEmail?: string; onLinked: () => Promise<void> | void }> = ({ personId, personEmail, onLinked }) => {
   const canCreate = useCan('identity.user.create');
@@ -87,10 +87,28 @@ const NoLogin: React.FC<{ personId: string; personEmail?: string; onLinked: () =
   } = useServerForm<CreateValues>({ resolver: zodResolver(createSchema), defaultValues: { email: personEmail ?? '', password: '' } });
 
   const onCreate = submit(async (values) => {
-    const created = await usersApi.create({ email: values.email, password: values.password });
+    // A new user gets a person by itself (DOM-MD-PER-10): the unlinked person with the same e-mail is adopted, otherwise a
+    // second person is made and this one could never be linked ("already linked to another person"). So this person's
+    // e-mail becomes the login's first, which is what linking copied across anyway. If the login is refused, put it back.
+    const before = await peopleApi.get(personId);
+    const previousEmail = before.email ?? '';
+    const changeEmail = previousEmail.toLowerCase() !== values.email.toLowerCase();
+    if (changeEmail) await peopleApi.update(personId, { email: values.email });
+    let created: Awaited<ReturnType<typeof usersApi.create>>;
+    try {
+      created = await usersApi.create({ email: values.email, password: values.password });
+    } catch (error) {
+      if (changeEmail) await peopleApi.update(personId, { email: previousEmail }).catch(() => undefined);
+      throw error;
+    }
     reset();
-    setOrphan({ id: created.id, email: created.email });
     notify.success(`Login ${created.email} was created.`);
+    if ((await peopleApi.get(personId)).user === created.id) {
+      await onLinked();
+      return;
+    }
+    // The server did not link it: keep the user and offer the link again rather than creating it twice.
+    setOrphan({ id: created.id, email: created.email });
     await link.mutateAsync(created.id).catch(() => undefined); // failure is shown with a retry
   });
 

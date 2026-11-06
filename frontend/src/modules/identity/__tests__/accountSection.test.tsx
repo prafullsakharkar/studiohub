@@ -48,9 +48,26 @@ function renderSection(user: User, props: { userId: string | null }, refreshUser
   return { refreshUser };
 }
 
+/**
+ * The person as the server answers it: unlinked (a captured Person) until the login is created, then linked to it, as when the
+ * server adopts the person by e-mail (DOM-MD-PER-10). `adopts: false` keeps it unlinked.
+ */
+const unlinkedPerson = { ...flow.people_unlink_user.body, id: PERSON, user: null, email: 'linda@studio.test' };
+const linkedPerson = { ...flow.people_link_user.body, id: PERSON, user: flow.users_create.body.id, email: 'linda@studio.test' };
+const people = { adopts: true, created: false, email: 'linda@studio.test' as string | null };
+const personReply = (): MockReply => ({ body: people.adopts && people.created ? { ...linkedPerson, email: people.email } : { ...unlinkedPerson, email: people.email } });
+
 const server = (call: MockCall): MockReply => {
   const p = path(call);
-  if (p === '/api/v1/identity/users/' && call.method === 'POST') return reply(flow.users_create);
+  if (p === `/api/v1/people/${PERSON}/` && call.method === 'PATCH') {
+    people.email = (call.body as { email: string }).email;
+    return personReply();
+  }
+  if (p === `/api/v1/people/${PERSON}/`) return personReply();
+  if (p === '/api/v1/identity/users/' && call.method === 'POST') {
+    people.created = true;
+    return reply(flow.users_create);
+  }
   if (p === '/api/v1/identity/users/') return bare(flow.users_list);
   if (p === `/api/v1/identity/users/${target.id}/`) return reply(flow.users_detail);
   if (p.endsWith('/activate/')) return reply(flow.users_activate);
@@ -68,6 +85,7 @@ const server = (call: MockCall): MockReply => {
 };
 
 beforeEach(() => {
+  Object.assign(people, { adopts: true, created: false, email: 'linda@studio.test' });
   localStorage.clear();
   tokenStorage.setTokens({ access: 'a1', refresh: 'r1' });
 });
@@ -78,7 +96,7 @@ afterEach(() => {
 });
 
 describe('person account: no login yet', () => {
-  it('creates the user, then links it to the person, in that order', async () => {
+  it('creates the login and lets the server link the person it adopts by e-mail: no link call', async () => {
     const { calls } = mockFetch(server);
     renderSection(superuser, { userId: null });
 
@@ -86,14 +104,41 @@ describe('person account: no login yet', () => {
     expect((screen.getByLabelText('Email') as HTMLInputElement).value).toBe('linda@studio.test');
     fireEvent.click(screen.getByRole('button', { name: 'Create login' }));
 
-    await waitFor(() => expect(calls.some((c) => path(c).endsWith('/link-user/'))).toBe(true));
-    const writes = calls.filter((c) => c.method === 'POST');
-    expect(writes.map((c) => path(c))).toEqual(['/api/v1/identity/users/', `/api/v1/people/${PERSON}/link-user/`]);
+    await waitFor(() => expect(calls.filter((c) => path(c) === `/api/v1/people/${PERSON}/`).length).toBeGreaterThanOrEqual(2)); // read before, read after
+    const writes = calls.filter((c) => c.method !== 'GET');
+    expect(writes.map((c) => `${c.method} ${path(c)}`)).toEqual(['POST /api/v1/identity/users/']); // the e-mail already matched; the server linked the person
     expect(writes[0].body).toEqual({ email: 'linda@studio.test', password: 'correct-horse-battery' });
-    expect(writes[1].body).toEqual({ user: flow.users_create.body.id });
+    expect(screen.queryByRole('button', { name: 'Retry link' })).toBeNull();
   });
 
-  it('when linking fails after the user was created, offers a retry that does NOT create the user again', async () => {
+  it('gives the person the login’s e-mail first when they differ, so the server adopts it instead of making a second person', async () => {
+    people.email = 'old@studio.test';
+    const { calls } = mockFetch(server);
+    renderSection(superuser, { userId: null });
+
+    fireEvent.change(await screen.findByLabelText('Initial password'), { target: { value: 'correct-horse-battery' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create login' }));
+
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    await waitFor(() => expect(calls.filter((c) => path(c) === `/api/v1/people/${PERSON}/`).length).toBeGreaterThanOrEqual(3));
+    expect(calls.filter((c) => c.method !== 'GET').map((c) => `${c.method} ${path(c)}`)).toEqual([`PATCH /api/v1/people/${PERSON}/`, 'POST /api/v1/identity/users/']);
+    expect(calls.find((c) => c.method === 'PATCH')!.body).toEqual({ email: 'linda@studio.test' });
+  });
+
+  it('puts the person’s e-mail back when the login is refused', async () => {
+    people.email = 'old@studio.test';
+    const { calls } = mockFetch((c) => (c.method === 'POST' && path(c) === '/api/v1/identity/users/' ? reply(flow.users_create_weak) : server(c)));
+    renderSection(superuser, { userId: null });
+
+    fireEvent.change(await screen.findByLabelText('Initial password'), { target: { value: 'short' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create login' }));
+
+    expect(await screen.findByText(/at least 12 characters/i)).toBeTruthy();
+    await waitFor(() => expect(calls.filter((c) => c.method === 'PATCH').map((c) => c.body)).toEqual([{ email: 'linda@studio.test' }, { email: 'old@studio.test' }]));
+  });
+
+  it('when the server did not link the new login, offers a retry that does NOT create the user again', async () => {
+    people.adopts = false;
     let linkAttempts = 0;
     const { calls } = mockFetch((c) => {
       if (path(c).endsWith('/link-user/')) {
