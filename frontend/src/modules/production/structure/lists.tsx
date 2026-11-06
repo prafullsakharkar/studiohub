@@ -2,7 +2,7 @@ import { projectsApi } from '@/api/production/structure';
 import { episodesApi, sequencesApi } from '@/api/production/structure';
 import type { Episode, Project, Sequence } from '@/api/production/structure';
 import type { BulkAction, DirectoryFormConfig, DirectoryListConfig, FieldDef } from '@/modules/directory/types';
-import { BulkMenu } from '../bulk/BulkMenu';
+import { StagedBulkAdd } from '../bulk/StagedBulkAdd';
 import { editFieldsAction } from '../bulk/editFields';
 import { STRUCTURE_STATUSES, sequenceBulkSpec } from '../bulk/specs';
 import { isEpisodicProject } from '../projectWorkflow';
@@ -138,7 +138,7 @@ export function useSequencesListConfig(scope?: { projectId: string }): Directory
       { header: 'Frame out', value: (r) => r.frame_out },
       { header: 'Status', value: (r) => r.status },
     ],
-    headerExtra: (filters) => <BulkMenu spec={sequenceBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} locked={Boolean(scope)} />,
+    headerExtra: (filters) => <StagedBulkAdd spec={sequenceBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} />,
     bulk: { actions: [archiveAction('sequence', sequencesApi.bulkArchive), editFieldsAction(sequenceBulkSpec, episodic)] },
   };
 }

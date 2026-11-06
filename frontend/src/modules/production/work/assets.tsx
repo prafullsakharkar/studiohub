@@ -3,7 +3,7 @@ import { ASSET_CATEGORIES, ASSET_STATUSES, assetsApi } from '@/api/production/wo
 import type { Asset } from '@/api/production/work';
 import { useCan } from '@/core/permissions/useCan';
 import type { BulkAction, DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } from '@/modules/directory/types';
-import { BulkMenu } from '../bulk/BulkMenu';
+import { StagedBulkAdd } from '../bulk/StagedBulkAdd';
 import { editFieldsAction } from '../bulk/editFields';
 import { assetBulkSpec } from '../bulk/specs';
 import { StatusMenu } from './StatusMenu';
@@ -67,7 +67,7 @@ export function useAssetsListConfig(scope?: { projectId: string }): DirectoryLis
     ],
     rowActions: (row): RowAction[] =>
       canRename ? [{ label: 'Rename code', confirm: `Rename ${row.code}. Use this once versions exist: the code is in published file names.`, askText: { label: 'New code', required: true }, run: (_date, code) => assetsApi.renameCode(row.id, code as string) }] : [],
-    headerExtra: (filters) => <BulkMenu spec={assetBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} locked={Boolean(scope)} />,
+    headerExtra: (filters) => <StagedBulkAdd spec={assetBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} />,
     bulk: { actions: [...bulkAssetActions, editFieldsAction(assetBulkSpec)] },
   };
 }

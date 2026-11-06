@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { BulkImportDialog } from '@/modules/production/bulk/BulkImportDialog';
+import { StagedBulkManager } from '@/modules/production/bulk/StagedBulkManager';
 import { assetBulkSpec } from '@/modules/production/bulk/specs';
 
 vi.mock('@/providers/ThemeProvider', () => ({ useThemeMode: () => ({ mode: 'dark', toggleTheme: vi.fn() }) }));
@@ -27,7 +27,7 @@ const pressEscape = () => fireEvent.keyDown(document.activeElement ?? document.b
 function renderAssets(onClose = vi.fn()) {
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <BulkImportDialog spec={assetBulkSpec} mode="create" projectId="p-1" projectCode="ALPHA" episodic={false} onClose={onClose} />
+      <StagedBulkManager spec={assetBulkSpec} projectId="p-1" projectCode="ALPHA" episodic={false} onClose={onClose} />
     </QueryClientProvider>
   );
   return onClose;
@@ -36,7 +36,7 @@ function renderAssets(onClose = vi.fn()) {
 describe('the bulk dialog on Modal', () => {
   it('is a named dialog with the project, locks the page, and Escape closes it', () => {
     const onClose = renderAssets();
-    const dialog = screen.getByRole('dialog', { name: /Bulk create assets · ALPHA/ });
+    const dialog = screen.getByRole('dialog', { name: /Bulk Asset Creation & Staging.*ALPHA/ });
     expect(dialog.getAttribute('aria-modal')).toBe('true');
     expect(document.body.style.overflow).toBe('hidden');
     pressEscape();
@@ -52,7 +52,7 @@ describe('the bulk dialog on Modal', () => {
     pressEscape();
     await waitFor(() => expect(screen.queryByRole('dialog', { name: /Paste TSV \/ CSV Data/ })).toBeNull());
     expect(onClose).not.toHaveBeenCalled();
-    expect(screen.getByRole('dialog', { name: /Bulk create assets · ALPHA/ })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: /Bulk Asset Creation & Staging.*ALPHA/ })).toBeTruthy();
   });
 });
 

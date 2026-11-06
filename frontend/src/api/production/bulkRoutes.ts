@@ -1,12 +1,14 @@
 import { apiClient } from '@/api/client/ApiClient';
 import type { BulkEntityService } from '@/shared/hooks/useBulkEntity';
-import type { Shot } from './work';
+import type { Sequence } from './structure';
+import type { Asset, Shot, Task } from './work';
 
 /**
- * The bulk routes of shots as the shot bulk manager uses them: the manager's own request is posted as it is and its
+ * The bulk routes of a production entity as the staged bulk managers use them (Bulk add shots, sequences, assets,
+ * tasks): the manager's own request is posted as it is and its
  * richer answer (`summary`, `results[]`) is read back. `POST {base}check-existence|bulk-create|bulk-update|
  * bulk-archive|bulk-restore/` (docs/sync/00-backend-inventory.md). The typed `archivable()` helpers in `work.ts` take
- * simpler arguments and return the smaller `BulkResult`; the manager needs these.
+ * simpler arguments and return the smaller `BulkResult`; the managers need these.
  */
 export function bulkRoutes<T>(base: string): BulkEntityService<T> {
   const post = <R>(route: string, payload: unknown) => apiClient.post<R>(`${base}${route}/`, payload);
@@ -20,6 +22,9 @@ export function bulkRoutes<T>(base: string): BulkEntityService<T> {
 }
 
 export const shotBulk = bulkRoutes<Shot>('/api/v1/shots/');
+export const sequenceBulk = bulkRoutes<Sequence>('/api/v1/sequences/');
+export const assetBulk = bulkRoutes<Asset>('/api/v1/assets/');
+export const taskBulk = bulkRoutes<Task>('/api/v1/tasks/');
 
 /**
  * The bulk routes of sequences, assets and tasks (CR-48): `POST {base}bulk-create/` and `{base}bulk-update/` with a dry

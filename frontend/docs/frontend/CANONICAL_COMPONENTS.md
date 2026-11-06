@@ -74,8 +74,8 @@ Domain behaviour stays in `src/modules/<module>/`.
 | `DirectoryListPage` | `modules/directory/DirectoryListPage` | a list screen from a config (filters, columns, row actions, archive/restore) |
 | `RelatedRecords` | `modules/directory/RelatedRecords` | the records that point at this one, with a server-side count |
 | `EntityHistory` | `components/history/EntityHistory` | the record's audit history |
-| bulk grid | `shared/components/bulk/BulkImportGrid.tsx` | editable rows with a paste dialog; the caller parses pasted text (`onPaste`), else the built-in parser; `sampleRows` adds "Load Template". Bulk create/update of sequences, assets and tasks: `modules/production/bulk/` (`BulkMenu`, `BulkImportDialog`, CR-48); "Edit fields" on selected rows (`editFieldsAction`) for all four |
-| shot bulk manager's screens | `shared/components/bulk/` | validation summary, resolve, archived recovery, preview, result; types in `bulk/types.ts`; used by `modules/shots/components/bulk/ShotBulkManager` |
+| bulk grid | `shared/components/bulk/BulkImportGrid.tsx` | editable rows with a paste dialog; the caller parses pasted text (`onPaste`), else the built-in parser; `sampleRows` adds "Load Template". "Bulk add" of sequences, assets and tasks: `modules/production/bulk/StagedBulkManager` (the shot manager's steps, driven by `specs.ts`); "Edit fields" on selected rows (`editFieldsAction`) for all four |
+| shot bulk manager's screens | `shared/components/bulk/` | validation summary, resolve, archived recovery, preview, result; types in `bulk/types.ts`; used by `ShotBulkManager` and `StagedBulkManager` |
 | delimited text | `shared/utils/csv.ts` | RFC 4180 parse (`parseDelimited`); write with `toCsv` / `downloadCsv` (`shared/data/exportAll.ts`) |
 
 ## Record workspace chrome

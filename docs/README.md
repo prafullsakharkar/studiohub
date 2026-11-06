@@ -236,29 +236,34 @@ Current ADRs include:
 
 ---
 
-# Bulk create and update (CSV formats)
+# Bulk add (CSV formats)
 
-**Shots** use the staged *Bulk add shots* manager (below). The Sequences, Assets and Tasks lists (the Production pages and each project's tabs) have a **Bulk** menu: *Bulk create* and *Bulk update*, each shown with the entity's `*.create` / `*.update` permission. On a project's tab the rows go to that project; on the Production pages the dialog asks for the project, starting from the list's Project filter or the active project, and says so when you may not write in the one chosen. Rows come from a CSV file or are pasted into the grid (tab-separated text from a spreadsheet works). **Download template** gives the header row for the project. **Load template** fills an empty grid: on a create with three example rows that use the project's own episode, sequence, shot or asset codes and the catalog's types (they pass the check as they are; change the codes and names); on an update with the project's current rows (at most 500), parents by code, where only the cells you change are sent and untouched rows are left out.
+Shots, Sequences, Assets and Tasks each have a **Bulk add** button (*Bulk add shots*, *Bulk add sequences*, …) on their Production page, for the list's Project filter or else the active project, and on each project's tab; it is shown with the entity's `*.create` permission. All four work in the same steps (shots in `ShotBulkManager`, the others in `StagedBulkManager`):
 
-The flow is: rows → **Check rows** (a backend dry run: the same serializers, validators, permission and scope checks as a single create or edit, then rolled back) → the outcome of each row (Create, Update, Skip, Error and why) → **Create N / Update N** → the result. By default a batch is all or nothing; tick *Skip invalid rows* to store the valid rows and leave the others. Both the check and the result show the counts as the former bulk screens did: cards (to create or update / created or updated, skipped, errors), a *Batch validation breakdown* whose pills (new, already in the project, archived, twice in the file, not found, validation errors) filter the rows, a badge per row, and on the result a banner with `N created · N updated · N skipped · N failed`; **Download log** gives every row and its outcome as CSV. **Download error report** gives the refused rows as CSV (`row,code,column,message`; row 1 is the first row under the header).
+1. **Grid**: type the rows, paste TSV/CSV from a spreadsheet, upload a CSV file, or **Load Template** (example rows that use the project's own episode, sequence, shot or asset codes and the catalog's types; shots: the sample rows of the shot manager).
+2. **Validate**: a code given twice in the batch is a *batch duplicate*; the backend says which codes are already in the project (*active existing*) or archived (*soft-deleted*) (`check-existence`). For sequences, assets and tasks the new rows are also dry-run (`bulk-create` with `dry_run`), so a row the backend would refuse (an unknown parent, a bad status, a missing name) is a *validation error* now, not after Execute; shots check duplicates and frame ranges in the grid.
+3. **Archived rows**: recover them all, recover some, or skip them.
+4. **Resolve**: the *Batch Validation Breakdown* (All, New, Soft-Deleted, Active Existing, Batch Duplicates, Validation Errors; each pill filters the rows) and per row: create, skip or recover, or remove it. Uploading the same file again shows its rows as *active existing*.
+5. **Preview**: what will be created, recovered and skipped; **Execute**.
+6. **Result**: `N created · N recovered · N skipped · N failed`, a log per row (CSV / JSON export), and *Retry failed rows*.
+
+Rows are stored one by one: a refused row does not stop the others. There is no bulk update from a file; change existing rows with **Edit fields** on the selected rows (below).
 
 Rules for every file:
 
 * The first row is the header. Column names are matched without case; spaces and dashes count as `_`; the API field name is accepted too (`episode_id` for `episode`). An unknown column, a repeated one or a missing required one is refused before anything is sent.
-* `code` is the row's key: unique in the project, upper-cased, no spaces or slashes. Bulk update finds each row by its code in the project; a code cannot be changed in bulk (a shot's code changes with *Rename code* on the shot).
+* `code` is the row's key: unique in the project, upper-cased, no spaces or slashes (a shot's code changes later with *Rename code* on the shot).
 * Parents are written by **code** and resolved inside the project: `episode` (EP101), `sequence` (SQ010), `asset_type` and `task_type` (catalog codes), `entity` (the shot, asset or sequence code of a task). An unknown parent, or one of another project, is "Unknown ...".
-* An empty cell means "not given": a create uses the default, an update leaves the field as it is.
+* An empty cell means "not given": the field takes its default.
 * At most 500 rows and 2 MB per file; split bigger ones.
 * Quoted fields follow RFC 4180 (`"Smith, J"`, `"He said ""go"""`, line breaks inside quotes).
 
-| Entity | Columns (bold = required) | Only on create | Only on an episodic project |
-|---|---|---|---|
-| Sequences | **code**, name, description, episode, frame_in, frame_out, status | | `episode` (required there by the backend; refused on a standard project) |
-| Shots | **code**, name, description, sequence, episode, frame_in, frame_out, handle_frames, status | | `episode` (refused on a standard project) |
-| Assets | **code**, **name**, description, asset_type, category, status | | |
-| Tasks | **code**, **title**, description, entity_type, entity, task_type, status, priority, due_date (YYYY-MM-DD), estimated_hours | `entity_type`, `entity` | |
-
-**Bulk add shots** (Shots page, for the Project filter or else the active project, and each project's Shots tab) works in separate steps: fill the grid (paste TSV/CSV or *Load Template*) → *Validate* (duplicate codes and frame ranges in the grid, then the backend's `check-existence`) → archived shots: recover or skip → *Resolve*: the breakdown (new, archived, existing, duplicates, errors) and per row create, skip or recover → *Preview* → *Execute* → the result (counts, a log per row, CSV/JSON export, retry the failed rows). On an episodic project it takes the episode and can create a missing episode or sequence on the spot. It creates only; there is no bulk update of shots from a file.
+| Entity | Columns (bold = required) | Only on an episodic project |
+|---|---|---|
+| Sequences | **code**, name, description, episode, frame_in, frame_out, status | `episode` (required there by the backend; refused on a standard project) |
+| Shots | the shot manager's grid: **code**, **sequence_code**, name, status, priority, department, frame_in, frame_out, handle_frames, notes | `episode_id` |
+| Assets | **code**, **name**, description, asset_type, category, status | |
+| Tasks | **code**, **title**, description, entity_type, entity, task_type, status, priority, due_date (YYYY-MM-DD), estimated_hours | |
 
 Selected rows can also be changed together: tick them, **Edit fields**, tick the fields to set and give their values; every row changes or none does. What bulk update may change per entity, and the API (`dry_run`, `atomic`, `errors`, the 500-item limit), is in `docs/production/CONTRACTS.md` (C-57 to C-62); the decisions are D-39 to D-42 in `docs/production/DECISIONS.md`.
 

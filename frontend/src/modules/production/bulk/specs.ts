@@ -1,7 +1,8 @@
-import { assetBatch, sequenceBatch, shotBatch, taskBatch } from '@/api/production/bulkRoutes';
+import { assetBatch, assetBulk, sequenceBatch, sequenceBulk, shotBatch, shotBulk, taskBatch, taskBulk } from '@/api/production/bulkRoutes';
 import type { BulkBatchRoutes } from '@/api/production/bulkRoutes';
 import { sequencesApi } from '@/api/production/structure';
 import type { PageFetcher } from '@/shared/data/listing';
+import type { BulkEntityService } from '@/shared/hooks/useBulkEntity';
 import { ASSET_CATEGORIES, ASSET_STATUSES, SHOT_STATUSES, TASK_ENTITY_TYPES, TASK_PRIORITIES, TASK_STATUSES, assetsApi, shotsApi, tasksApi } from '@/api/production/work';
 
 /**
@@ -52,6 +53,8 @@ export interface BulkSpec {
   noun: string;
   plural: string;
   routes: BulkBatchRoutes;
+  /** The routes the staged "Bulk add" manager uses: check-existence, and bulk-create with a create / skip / recover per item. */
+  staged: BulkEntityService<object>;
   createPermission: string;
   updatePermission: string;
   /** Invalidated after a batch is stored. */
@@ -80,6 +83,7 @@ export const sequenceBulkSpec: BulkSpec = {
   noun: 'sequence',
   plural: 'sequences',
   routes: sequenceBatch,
+  staged: sequenceBulk,
   createPermission: 'sequence.create',
   updatePermission: 'sequence.update',
   queryKey: sequencesApi.keys.all,
@@ -95,6 +99,7 @@ export const shotBulkSpec: BulkSpec = {
   noun: 'shot',
   plural: 'shots',
   routes: shotBatch,
+  staged: shotBulk,
   createPermission: 'shot.create',
   updatePermission: 'shot.update',
   queryKey: shotsApi.keys.all,
@@ -129,6 +134,7 @@ export const assetBulkSpec: BulkSpec = {
   noun: 'asset',
   plural: 'assets',
   routes: assetBatch,
+  staged: assetBulk,
   createPermission: 'asset.create',
   updatePermission: 'asset.update',
   queryKey: assetsApi.keys.all,
@@ -157,6 +163,7 @@ export const taskBulkSpec: BulkSpec = {
   noun: 'task',
   plural: 'tasks',
   routes: taskBatch,
+  staged: taskBulk,
   createPermission: 'task.create',
   updatePermission: 'task.update',
   queryKey: tasksApi.keys.all,

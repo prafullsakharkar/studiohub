@@ -28,7 +28,8 @@ async function episodeCodes(projectId: string, episodic: boolean, signal?: Abort
 
 export async function templateParents(spec: BulkSpec, projectId: string, episodic: boolean, signal?: AbortSignal): Promise<TemplateParents> {
   const needs = new Set(spec.template.needs);
-  const one = { project: projectId, page_size: 1 };
+  // "First" is the lowest code: the list routes otherwise answer newest first.
+  const one = { project: projectId, page_size: 1, ordering: 'code' };
   const [episodes, sequence, shot, asset, assetTypes, taskTypes] = await Promise.all([
     optional(episodeCodes(projectId, episodic && (needs.has('episode') || needs.has('sequence')), signal)).then((codes) => codes ?? new Map<string, string>()),
     needs.has('sequence') ? first(sequencesApi.list(one, signal)) : undefined,
@@ -65,7 +66,7 @@ export interface CurrentRows {
 /** The project's rows as the update columns hold them: values as they are, parents by code. */
 export async function currentRows(spec: BulkSpec, columns: readonly BulkColumn[], projectId: string, episodic: boolean, signal?: AbortSignal): Promise<CurrentRows> {
   const [page, episodes] = await Promise.all([
-    spec.list({ project: projectId, page_size: BULK_MAX_ITEMS }, signal),
+    spec.list({ project: projectId, page_size: BULK_MAX_ITEMS, ordering: 'code' }, signal),
     episodeCodes(projectId, episodic && columns.some((c) => c.episodic), signal),
   ]);
   const rows = (page.results as Row[]).map((row) =>

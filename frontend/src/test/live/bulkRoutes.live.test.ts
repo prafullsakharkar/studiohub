@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { assetBatch, sequenceBatch, shotBatch, shotBulk, taskBatch } from '@/api/production/bulkRoutes';
+import { assetBatch, assetBulk, sequenceBatch, sequenceBulk, shotBatch, shotBulk, taskBatch, taskBulk } from '@/api/production/bulkRoutes';
 import { projectsApi } from '@/api/production/structure';
 import { assetsApi, shotsApi, tasksApi } from '@/api/production/work';
 import { tokenStorage } from '@/core/auth/tokenStorage';
@@ -132,6 +132,35 @@ describe('the Bulk add shots manager (the staged one shots kept)', () => {
     const recovered = (await shotBulk.bulkCreate({ project_id: project, items: [{ code, action: 'recover', data: {} }] } as never)) as unknown as Created;
     expect(recovered.results[0]).toMatchObject({ status: 'recovered', success: true });
     expect((await shotsApi.get(row.id)).code).toBe(code);
+  });
+});
+
+describe('Bulk add sequences, assets and tasks (the staged manager)', () => {
+  type Existence = { items: Array<{ code: string; state: string }> };
+  type Created = { results: Array<{ status: string; success: boolean; error?: unknown }> };
+
+  it('the same upload again is active existing; an archived row is soft-deleted and recovers; parents go by code', async () => {
+    const seq = `SS${uid}`;
+    const stored = (await sequenceBulk.bulkCreate({ project_id: project, items: [{ code: seq, action: 'create', data: { name: 'Staged' } }] } as never)) as unknown as Created;
+    expect(stored.results[0]).toMatchObject({ status: 'created', success: true });
+    const seqState = async () => ((await sequenceBulk.checkExistence({ project_id: project, codes: [seq] } as never)) as unknown as Existence).items[0].state;
+    expect(await seqState()).toBe('EXISTS');
+
+    const asset = `SA${uid}`;
+    await assetBulk.bulkCreate({ project_id: project, items: [{ code: asset, action: 'create', data: { name: 'Staged asset' } }] } as never);
+    const row = (await assetsApi.list({ project, search: asset })).results[0];
+    await assetsApi.bulkArchive([row.id]);
+    const assetState = async () => ((await assetBulk.checkExistence({ project_id: project, codes: [asset] } as never)) as unknown as Existence).items[0].state;
+    expect(await assetState()).toBe('SOFT_DELETED');
+    const recovered = (await assetBulk.bulkCreate({ project_id: project, items: [{ code: asset, action: 'recover', data: {} }] } as never)) as unknown as Created;
+    expect(recovered.results[0]).toMatchObject({ status: 'recovered', success: true });
+    expect(await assetState()).toBe('EXISTS');
+
+    // A task about the asset, written by its code, stored by the per-row route Execute uses.
+    const task = `ST${uid}`;
+    const tasks = (await taskBulk.bulkCreate({ project_id: project, items: [{ code: task, action: 'create', data: { title: 'Staged task', entity_type: 'Asset', entity_id: asset } }] } as never)) as unknown as Created;
+    expect(tasks.results[0]).toMatchObject({ status: 'created', success: true });
+    expect((await tasksApi.list({ project, search: task })).results[0].entity_code).toBe(asset);
   });
 });
 
