@@ -21,6 +21,7 @@ from apps.production.models import Show
 from apps.production.permissions.checks import has_explicit_permission_code, has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.services.status import StatusService
+from apps.production.validators.code_prefix import apply_project_code_prefix
 from apps.production.validators.references import resolve_in_project, unknown
 
 
@@ -62,6 +63,9 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
     #: moving it away from it, through plain create/update needs the code on top
     #: of the action's own (e.g. ``shot.approve`` to approve a shot with PATCH).
     privileged_values: ClassVar[dict[str, dict[Any, str]]] = {}
+
+    #: A NEW record's code must start with the project's code (CR-49, D-43): create only, single and bulk.
+    requires_project_code_prefix: ClassVar[bool] = False
 
     def get_queryset(self):
         if self._include_deleted() and self._may_view_deleted():
@@ -414,6 +418,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             project=project,
         ):
             raise ValidationError({"project_id": "Unknown project."})
+        self._enforce_project_code_prefix(serializer, project)
         self._enforce_natural_key_uniqueness(project, data)
         self.prepare_create(serializer, project)
         self.validate_references(project, data)
@@ -427,6 +432,16 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         # created_by/updated_by.
         serializer.instance = self.service_class.create(  # pyright: ignore[reportAttributeAccessIssue]
             user=self.request.user, **{**data, "project": project}
+        )
+
+    def _enforce_project_code_prefix(self, serializer, project):
+        """The new code starts with the project's (CR-49); a code the serializer derived is given the prefix."""
+        if not self.requires_project_code_prefix or not isinstance(serializer.validated_data, dict):
+            return
+        apply_project_code_prefix(
+            serializer.validated_data,
+            project=project,
+            derived=bool(getattr(serializer, "code_was_derived", False)),
         )
 
     def _resolve_show(self, project, data):

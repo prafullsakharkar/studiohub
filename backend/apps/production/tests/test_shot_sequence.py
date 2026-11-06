@@ -43,12 +43,12 @@ class TestPlacement:
 
         by_id = client.post(
             "/api/v1/shots/",
-            {"project_id": str(project.id), "code": "S1", "sequence_id": str(sequence.id)},
+            {"project_id": str(project.id), "code": "SEQ01P_S1", "sequence_id": str(sequence.id)},
             format="json",
         )
         by_code = client.post(
             "/api/v1/shots/",
-            {"project_id": str(project.id), "code": "S2", "sequence_id": "sq010"},
+            {"project_id": str(project.id), "code": "SEQ01P_S2", "sequence_id": "sq010"},
             format="json",
         )
 
@@ -59,26 +59,33 @@ class TestPlacement:
         detail = client.get(f"/api/v1/shots/{by_id.json()['id']}/").json()
         assert (detail["sequence_id"], detail["sequence_code"]) == (str(sequence.id), "SQ010")
 
-    def test_a_shot_may_have_no_sequence(self, client, project):
+    def test_a_new_shot_needs_a_sequence_but_an_old_one_without_may_be_edited(self, client, project):
+        """CR-49 (D-43; was D-11/Q3, "a shot may have no sequence"): required on create only."""
         resp = client.post(
-            "/api/v1/shots/", {"project_id": str(project.id), "code": "S1"}, format="json"
+            "/api/v1/shots/",
+            {"project_id": str(project.id), "code": "SEQ01P_S1"},
+            format="json",
         )
+        assert resp.status_code == 400
+        assert resp.json()["sequence_id"] == ["A shot needs a sequence."]
+        assert not Shot.objects.filter(project=project).exists()
 
-        assert resp.status_code == 201, resp.json()
-        shot = Shot.objects.get(id=resp.json()["id"])
-        assert (shot.sequence_id, shot.sequence_code) == (None, "")
+        old = ShotFactory.create(project=project, code="OLD1", sequence=None)
+        edited = client.patch(f"/api/v1/shots/{old.id}/", {"name": "x"}, format="json")
+        assert edited.status_code == 200, edited.json()
+        assert Shot.objects.get(id=old.id).sequence_id is None
 
     def test_a_sequence_of_another_project_reads_like_an_unknown_one(self, client, project):
         foreign = SequenceFactory.create(project=ProjectFactory.create(code="SEQ02P"), code="SQ010")
 
         foreign_id = client.post(
             "/api/v1/shots/",
-            {"project_id": str(project.id), "code": "S1", "sequence_id": str(foreign.id)},
+            {"project_id": str(project.id), "code": "SEQ01P_S1", "sequence_id": str(foreign.id)},
             format="json",
         )
         unknown = client.post(
             "/api/v1/shots/",
-            {"project_id": str(project.id), "code": "S2", "sequence_id": "NOPE"},
+            {"project_id": str(project.id), "code": "SEQ01P_S2", "sequence_id": "NOPE"},
             format="json",
         )
 
@@ -111,7 +118,7 @@ class TestPlacement:
         )
         created = client.post(
             "/api/v1/shots/",
-            {"project_id": str(project.id), "code": "S2", "sequence_code": "SQ010"},
+            {"project_id": str(project.id), "code": "SEQ01P_S2", "sequence_code": "SQ010"},
             format="json",
         )
 
@@ -126,15 +133,15 @@ class TestPlacement:
             "/api/v1/shots/bulk-create/",
             {
                 "items": [
-                    {"project_id": str(project.id), "code": "B1", "sequence_id": "SQ010"},
-                    {"project_id": str(project.id), "code": "B2", "sequence_id": "NOPE"},
+                    {"project_id": str(project.id), "code": "SEQ01P_B1", "sequence_id": "SQ010"},
+                    {"project_id": str(project.id), "code": "SEQ01P_B2", "sequence_id": "NOPE"},
                 ]
             },
             format="json",
         )
 
         assert [row["status"] for row in resp.json()["results"]] == ["created", "invalid"]
-        assert Shot.objects.get(project=project, code="B1").sequence_id == sequence.id
+        assert Shot.objects.get(project=project, code="SEQ01P_B1").sequence_id == sequence.id
 
 
 class TestRenameKeepsShots:

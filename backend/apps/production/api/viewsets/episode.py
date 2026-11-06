@@ -23,6 +23,7 @@ class EpisodeViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: 
     detail_serializer_class = EpisodeDetailSerializer
 
     # CR-48: what bulk-update may change; never project, code, show, ownership or approval fields.
+    requires_project_code_prefix = True
     bulk_update_fields = (
         "name",
         "description",

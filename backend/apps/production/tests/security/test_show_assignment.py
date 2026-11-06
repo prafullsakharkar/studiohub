@@ -58,7 +58,10 @@ def world(db):
     project = ProjectFactory()
     show_a, show_b = ShowFactory(project=project), ShowFactory(project=project)
     foreign_show = ShowFactory(project=ProjectFactory())
+    # A new shot has a sequence and a code starting with the project's (CR-49).
+    sequence = SequenceFactory(project=project, code=f"{project.code}_SQ")
     return {
+        "sequence": sequence,
         "project": project,
         "show_a": show_a,
         "show_b": show_b,
@@ -129,7 +132,8 @@ class TestCreate:
             "/api/v1/shots/",
             {
                 "project_id": str(world["project"].pk),
-                "code": "NEW020",
+                "sequence_id": str(world["sequence"].pk),
+                "code": f"{world['project'].code}_NEW020",
                 "name": "n",
                 "show_id": str(world["show_b"].pk),
             },
@@ -137,14 +141,15 @@ class TestCreate:
         )
 
         assert response.status_code == 201, response.content
-        assert Shot.objects.get(code="NEW020").show_id == world["show_b"].pk
+        assert Shot.objects.get(code=f"{world['project'].code}_NEW020").show_id == world["show_b"].pk
 
     def test_creating_with_a_foreign_show_is_a_400_and_creates_nothing(self, world):
         response = _client(world["full"]).post(
             "/api/v1/shots/",
             {
                 "project_id": str(world["project"].pk),
-                "code": "NEW021",
+                "sequence_id": str(world["sequence"].pk),
+                "code": f"{world['project'].code}_NEW021",
                 "name": "n",
                 "show_id": str(world["foreign_show"].pk),
             },
@@ -152,14 +157,15 @@ class TestCreate:
         )
 
         assert response.status_code == 400, response.content
-        assert not Shot.objects.filter(code="NEW021").exists()
+        assert not Shot.objects.filter(code=f"{world['project'].code}_NEW021").exists()
 
     def test_a_show_bound_member_creating_into_another_show_is_refused(self, world):
         response = _client(world["in_show_a"]).post(
             "/api/v1/shots/",
             {
                 "project_id": str(world["project"].pk),
-                "code": "NEW022",
+                "sequence_id": str(world["sequence"].pk),
+                "code": f"{world['project'].code}_NEW022",
                 "name": "n",
                 "show_id": str(world["show_b"].pk),
             },
@@ -167,17 +173,18 @@ class TestCreate:
         )
 
         assert response.status_code == 400, response.content
-        assert not Shot.objects.filter(code="NEW022").exists()
+        assert not Shot.objects.filter(code=f"{world['project'].code}_NEW022").exists()
 
     def test_a_show_bound_member_without_show_id_still_gets_their_show(self, world):
         response = _client(world["in_show_a"]).post(
             "/api/v1/shots/",
-            {"project_id": str(world["project"].pk), "code": "NEW023", "name": "n"},
+            {"project_id": str(world["project"].pk),
+                "sequence_id": str(world["sequence"].pk), "code": f"{world['project'].code}_NEW023", "name": "n"},
             format="json",
         )
 
         assert response.status_code == 201, response.content
-        assert Shot.objects.get(code="NEW023").show_id == world["show_a"].pk
+        assert Shot.objects.get(code=f"{world['project'].code}_NEW023").show_id == world["show_a"].pk
 
 
 class TestShowBoundMember:

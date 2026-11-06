@@ -54,8 +54,10 @@ def allocate_codes(
     The next ``count`` codes of ``prefix`` for ``project``, ``step`` apart.
 
     The first one is the next multiple of ``step`` above the highest number already used with
-    that prefix (any case, soft-deleted rows included): with ``SH0010`` and ``SH0020`` in use,
-    ``allocate_codes(project, Shot, "SH", 2)`` gives ``SH0030`` and ``SH0040``.
+    that prefix (any case, soft-deleted rows included): with ``TST_SH0010`` and ``TST_SH0020``
+    in use in project ``TST``, ``allocate_codes(project, Shot, "SH", 2)`` gives ``TST_SH0030`` and
+    ``TST_SH0040``. Every new code starts with the project's code (CR-49); a ``prefix`` given with
+    it already (``"TST_SH"``) is not doubled.
     """
     prefix = (prefix or "").strip().upper()
     if not _PREFIX.match(prefix):
@@ -72,15 +74,19 @@ def allocate_codes(
         raise ValidationError({"step": ["The step must be at least 1 and the padding 1 to 10."]})
 
     from apps.production.models import Project
+    from apps.production.validators.code_prefix import project_code_prefix
+
+    project_prefix = project_code_prefix(project)
+    series = prefix if prefix.startswith(project_prefix) else f"{project_prefix}{prefix}"
 
     with transaction.atomic():
         Project.objects.select_for_update().get(pk=project.pk)
-        pattern = re.compile(rf"^{re.escape(prefix)}(\d+)$", re.IGNORECASE)
+        pattern = re.compile(rf"^{re.escape(series)}(\d+)$", re.IGNORECASE)
         highest = 0
-        used = model.all_objects.filter(project=project, code__istartswith=prefix)  # pyright: ignore[reportAttributeAccessIssue]
+        used = model.all_objects.filter(project=project, code__istartswith=series)  # pyright: ignore[reportAttributeAccessIssue]
         for code in used.values_list("code", flat=True):
             match = pattern.match(code)
             if match:
                 highest = max(highest, int(match.group(1)))
         first = (highest // step + 1) * step
-        return [f"{prefix}{first + index * step:0{padding}d}" for index in range(count)]
+        return [f"{series}{first + index * step:0{padding}d}" for index in range(count)]

@@ -30,6 +30,8 @@ is left:
   (they are skipped and printed by the migration; the JSON stays until the contract phase; DECISIONS D-30)
 * as information, the playlist entries migration 0043 cannot turn into rows (a version outside the
   playlist's project, an entry that is not an object; DECISIONS D-31)
+* as information, how many live episodes, sequences, shots, assets and tasks have a code starting with their
+  project's code, and the live shots that have no sequence (new ones need both, CR-49, DECISIONS D-43)
 * tasks whose old stored ``logged_hours`` differs from the sum of their approved timelogs:
   responses now show the sum, so a hand-typed number stops appearing (DECISIONS D-15)
 
@@ -169,7 +171,10 @@ def shots_out_of_step_with_sequence():
 def episodes_on_standard_projects():
     """``[(episode id, project id, code)]`` for episodes of projects that are not episodic (soft-deleted included)."""
     rows = Episode.all_objects.exclude(project__workflow_type=ProjectWorkflowType.EPISODIC)
-    return [(str(pk), project_id, code) for pk, project_id, code in rows.values_list("pk", "project_id", "code")]
+    return [
+        (str(pk), project_id, code)
+        for pk, project_id, code in rows.values_list("pk", "project_id", "code")
+    ]
 
 
 def standard_records_with_episode():
@@ -181,6 +186,32 @@ def standard_records_with_episode():
         )
         found += [(model.__name__, str(pk), code) for pk, code in rows.values_list("pk", "code")]
     return found
+
+
+def codes_without_the_project_prefix():
+    """
+    ``[(model, count of live rows, how many of them start with the project's code)]`` for the five entities whose NEW codes
+    must start with their project's (CR-49). Information only: existing records are never renamed.
+    """
+    from django.db.models import F, Value
+    from django.db.models.functions import Concat, Upper
+
+    counts = []
+    for model in (Episode, Sequence, Shot, Asset, Task):
+        rows = model.objects.all()
+        prefixed = rows.annotate(prefix=Concat(Upper(F("project__code")), Value("_"))).filter(
+            code__istartswith=F("prefix")
+        )
+        counts.append((model.__name__, rows.count(), prefixed.count()))
+    return counts
+
+
+def shots_without_a_sequence():
+    """``[(id, code)]`` for live shots with no sequence (a new shot needs one, CR-49; existing ones are left)."""
+    return [
+        (str(pk), code)
+        for pk, code in Shot.objects.filter(sequence__isnull=True).values_list("pk", "code")
+    ]
 
 
 ARCHIVE_FLAG_TABLES = (
@@ -471,7 +502,9 @@ class Command(BaseCommand):
             self.stdout.write(f"  episode {code} {pk} project={project_id}")
 
         linked = standard_records_with_episode()
-        self.stdout.write(f"Sequences and shots of standard projects with an episode: {len(linked)}")
+        self.stdout.write(
+            f"Sequences and shots of standard projects with an episode: {len(linked)}"
+        )
         for name, pk, code in linked[:50]:
             findings += 1
             self.stdout.write(f"  {name.lower()} {code} {pk}")
@@ -523,6 +556,19 @@ class Command(BaseCommand):
         for pk, code, stored, approved in unbacked[:50]:
             findings += 1
             self.stdout.write(f"  task {code} {pk}: stored {stored}, approved timelogs {approved}")
+
+        self.stdout.write(
+            "Codes starting with their project's code (information, not findings; new records only, CR-49):"
+        )
+        for name, live, prefixed in codes_without_the_project_prefix():
+            self.stdout.write(f"  {name}: {prefixed} of {live} live rows")
+
+        loose = shots_without_a_sequence()
+        self.stdout.write(
+            f"Shots without a sequence (information; a new shot needs one, CR-49): {len(loose)}"
+        )
+        for pk, code in loose[:50]:
+            self.stdout.write(f"  shot {code} {pk}")
 
         self.stdout.write("Archive flag versus soft delete (information, not findings):")
         self.stdout.write(

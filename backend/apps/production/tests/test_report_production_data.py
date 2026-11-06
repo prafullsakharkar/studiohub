@@ -317,3 +317,19 @@ def test_case_variant_codes_and_backwards_ranges_are_found(without_constraints):
     assert "Codes that differ only by case: 2 group(s)" in text
     assert "Frame ranges running backwards: 1" in text
     assert "100 -> 50" in text
+
+
+def test_it_counts_codes_with_the_projects_prefix_and_lists_shots_without_a_sequence():
+    """CR-49 (D-43): information only, so it never makes ``--fail-on-findings`` fail."""
+    project = ProjectFactory.create(code="RPT")
+    sequence = SequenceFactory.create(project=project, code="RPT_SQ1", episode=None)
+    ShotFactory.create(project=project, code="RPT_SH1", sequence=sequence)
+    ShotFactory.create(project=project, code="OLD1", sequence=None)
+
+    out = _report("--fail-on-findings")
+
+    assert "  Shot: 1 of 2 live rows" in out
+    assert "  Sequence: 1 of 1 live rows" in out
+    assert "Shots without a sequence (information; a new shot needs one, CR-49): 1" in out
+    assert "  shot OLD1 " in out
+    assert "  shot RPT_SH1 " not in out

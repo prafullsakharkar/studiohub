@@ -44,11 +44,11 @@ class TestSequenceCRUD:
         _member(staff_user, project)
         resp = staff_client.post(
             _list_url(),
-            data={"project": str(project.id), "code": "SQ001", "name": "First Shot"},
+            data={"project": str(project.id), "code": f"{project.code}_SQ001", "name": "First Shot"},  # a new code starts with the project's (CR-49)
             format="json",
         )
         assert resp.status_code == status.HTTP_201_CREATED, resp.data
-        seq = Sequence.objects.get(code="SQ001")
+        seq = Sequence.objects.get(code=f"{project.code}_SQ001")
         assert not hasattr(seq, "organization")
         assert seq.project_id == project.id
 
@@ -198,8 +198,8 @@ class TestSequenceBulkCreate:
             _action_url("bulk-create"),
             data={
                 "items": [
-                    {"project_id": str(project.id), "code": "BC01", "name": "A"},
-                    {"project_id": str(project.id), "code": "BC02", "name": "B"},
+                    {"project_id": str(project.id), "code": f"{project.code}_BC01", "name": "A"},
+                    {"project_id": str(project.id), "code": f"{project.code}_BC02", "name": "B"},
                 ]
             },
             format="json",
@@ -211,16 +211,16 @@ class TestSequenceBulkCreate:
         assert Sequence.objects.filter(project=project).count() == 2
 
     def test_reports_existing_and_duplicate(self, staff_client, staff_user):
-        seq = SequenceFactory.create(code="BEX01")
+        project = ProjectFactory.create()
+        seq = SequenceFactory.create(project=project, code=f"{project.code}_BEX01")
         _member(staff_user, seq.project)
-        project = seq.project
         resp = staff_client.post(
             _action_url("bulk-create"),
             data={
                 "items": [
-                    {"project_id": str(project.id), "code": "BEX01"},
-                    {"project_id": str(project.id), "code": "BNEW1"},
-                    {"project_id": str(project.id), "code": "BNEW1"},
+                    {"project_id": str(project.id), "code": f"{project.code}_BEX01"},
+                    {"project_id": str(project.id), "code": f"{project.code}_BNEW1"},
+                    {"project_id": str(project.id), "code": f"{project.code}_BNEW1"},
                 ]
             },
             format="json",

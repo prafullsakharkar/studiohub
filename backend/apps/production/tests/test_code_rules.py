@@ -64,6 +64,11 @@ def _client(user):
     return client
 
 
+def _sequence_id(project):
+    """A new shot needs a sequence of its project (CR-49)."""
+    return str(SequenceFactory.create(project=project, code=f"{project.code}_SQ1").id)
+
+
 def _crud(name):
     return [f"{name}.view", f"{name}.create", f"{name}.update"]
 
@@ -83,48 +88,53 @@ class TestUniqueWhateverTheCase:
         client = _client(user)
         url = f"/api/v1/{name}s/"
         body = {"project_id": str(project.id), "name": "n"}
+        if name == "shot":
+            body["sequence_id"] = _sequence_id(project)
 
-        first = client.post(url, {**body, "code": "ab010"}, format="json")
-        second = client.post(url, {**body, "code": "Ab010"}, format="json")
+        first = client.post(url, {**body, "code": "code1_ab010"}, format="json")
+        second = client.post(url, {**body, "code": "Code1_Ab010"}, format="json")
 
         assert first.status_code == 201, first.json()
-        assert FACTORIES[name][0].objects.get(id=first.json()["id"]).code == "AB010"
+        assert FACTORIES[name][0].objects.get(id=first.json()["id"]).code == "CODE1_AB010"
         assert second.status_code == 400
-        assert FACTORIES[name][0].objects.filter(project=project, code__iexact="ab010").count() == 1
+        assert "start with" not in str(second.json())  # refused as a duplicate, not for the prefix
+        assert FACTORIES[name][0].objects.filter(project=project, code__iexact="code1_ab010").count() == 1
 
     def test_a_soft_deleted_row_still_owns_its_code(self, project):
-        shot = ShotFactory.create(project=project, code="GONE1")
+        shot = ShotFactory.create(project=project, code="CODE1_GONE1")
         shot.delete()
         user = _user(project, *_crud("shot"))
 
         resp = _client(user).post(
             "/api/v1/shots/",
-            {"project_id": str(project.id), "code": "gone1", "name": "n"},
+            {"project_id": str(project.id), "code": "code1_gone1", "name": "n", "sequence_id": _sequence_id(project)},
             format="json",
         )
 
         assert resp.status_code == 400
+        assert "start with" not in str(resp.json())  # refused as a duplicate, not for the prefix
 
     def test_bulk_create_sees_a_case_variant_as_existing(self, project):
-        ShotFactory.create(project=project, code="BULK1")
+        ShotFactory.create(project=project, code="CODE1_BULK1")
         user = _user(project, *_crud("shot"))
 
         resp = _client(user).post(
             "/api/v1/shots/bulk-create/",
-            {"items": [{"project_id": str(project.id), "code": "bulk1"}]},
+            {"items": [{"project_id": str(project.id), "code": "code1_bulk1"}]},
             format="json",
         )
 
         assert resp.json()["results"][0]["status"] == "exists"
 
     def test_other_projects_may_reuse_a_code(self, project):
+        # Uniqueness is per project: another project holding the same text does not matter.
         other = ProjectFactory.create(code="CODE2")
-        ShotFactory.create(project=other, code="SH010")
+        ShotFactory.create(project=other, code="CODE1_SH010")
         user = _user(project, *_crud("shot"))
 
         resp = _client(user).post(
             "/api/v1/shots/",
-            {"project_id": str(project.id), "code": "sh010", "name": "n"},
+            {"project_id": str(project.id), "code": "code1_sh010", "name": "n", "sequence_id": _sequence_id(project)},
             format="json",
         )
 
@@ -150,12 +160,12 @@ class TestFormat:
 
         resp = _client(user).post(
             "/api/v1/shots/",
-            {"project_id": str(project.id), "code": "  sh010 ", "name": "n"},
+            {"project_id": str(project.id), "code": "  code1_sh010 ", "name": "n", "sequence_id": _sequence_id(project)},
             format="json",
         )
 
         assert resp.status_code == 201, resp.json()
-        assert Shot.objects.get(id=resp.json()["id"]).code == "SH010"
+        assert Shot.objects.get(id=resp.json()["id"]).code == "CODE1_SH010"
 
 
 class TestUpdateAndFreeze:

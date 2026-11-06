@@ -247,7 +247,7 @@ Shots, Sequences, Assets and Tasks each have a **Bulk add** button (*Bulk add sh
 5. **Preview**: what will be created, recovered, updated and skipped; **Execute**. Asking for the preview first dry-runs the rows set to update, so a row the backend would refuse is a *validation error* and is skipped (you review again to continue).
 6. **Result**: `N created · N recovered · N updated · N skipped · N failed`, a log per row (CSV / JSON export), and *Retry failed rows*.
 
-The single-record forms (*New shot*, *New sequence*, *New asset*, *New task*, *New episode*, and *Add episode* / *Add sequence* on a project's tab) do the same: the project's code is shown in front of the code input (`TST_`) and added when you save; *New shot* needs a sequence and says so when the project has none. Existing records keep their codes, and an existing shot without a sequence can still be saved. The backend does not enforce either rule yet (CR-49, pending).
+The single-record forms (*New shot*, *New sequence*, *New asset*, *New task*, *New episode*, and *Add episode* / *Add sequence* on a project's tab) do the same: the project's code is shown in front of the code input (`TST_`) and added when you save; *New shot* needs a sequence and says so when the project has none. Existing records keep their codes, and an existing shot without a sequence can still be saved. The backend enforces both rules for every client (CR-49): a bare code or a shot with no sequence is a 400, and a derived episode code or a numbered `code_prefix` code carries the prefix too.
 
 Rows are stored one by one: a refused row does not stop the others. Existing rows can also be changed together with **Edit fields** on the selected rows (below).
 

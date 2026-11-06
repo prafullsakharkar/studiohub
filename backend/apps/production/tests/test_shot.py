@@ -16,7 +16,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from apps.production.models import ProjectMembership, Shot
-from apps.production.tests.factories import ProjectFactory, ShotFactory
+from apps.production.tests.factories import ProjectFactory, SequenceFactory, ShotFactory
 
 
 def _member(user, project, **kwargs):
@@ -42,13 +42,19 @@ class TestShotCRUD:
     def test_create_in_member_project(self, staff_client, staff_user):
         project = ProjectFactory.create()
         _member(staff_user, project)
+        sequence = SequenceFactory.create(project=project)
         resp = staff_client.post(
             _list_url(),
-            data={"project": str(project.id), "code": "SH001", "name": "First Shot"},
+            data={
+                "project": str(project.id),
+                "code": f"{project.code}_SH001",  # a new code starts with the project's (CR-49)
+                "name": "First Shot",
+                "sequence_id": str(sequence.id),  # and a new shot has a sequence
+            },
             format="json",
         )
         assert resp.status_code == status.HTTP_201_CREATED, resp.data
-        shot = Shot.objects.get(code="SH001")
+        shot = Shot.objects.get(code=f"{project.code}_SH001")
         assert not hasattr(shot, "organization")
         assert shot.project_id == project.id
 
@@ -194,12 +200,13 @@ class TestShotBulkCreate:
     def test_creates_valid_rows(self, staff_client, staff_user):
         project = ProjectFactory.create()
         _member(staff_user, project)
+        in_it = {"project_id": str(project.id), "sequence_id": str(SequenceFactory.create(project=project).id)}
         resp = staff_client.post(
             _action_url("bulk-create"),
             data={
                 "items": [
-                    {"project_id": str(project.id), "code": "BC01", "name": "A"},
-                    {"project_id": str(project.id), "code": "BC02", "name": "B"},
+                    {**in_it, "code": f"{project.code}_BC01", "name": "A"},
+                    {**in_it, "code": f"{project.code}_BC02", "name": "B"},
                 ]
             },
             format="json",
@@ -211,16 +218,17 @@ class TestShotBulkCreate:
         assert Shot.objects.filter(project=project).count() == 2
 
     def test_reports_existing_and_duplicate(self, staff_client, staff_user):
-        shot = ShotFactory.create(code="BEX01")
+        project = ProjectFactory.create()
+        shot = ShotFactory.create(project=project, code=f"{project.code}_BEX01")
         _member(staff_user, shot.project)
-        project = shot.project
+        in_it = {"project_id": str(project.id), "sequence_id": str(SequenceFactory.create(project=project).id)}
         resp = staff_client.post(
             _action_url("bulk-create"),
             data={
                 "items": [
-                    {"project_id": str(project.id), "code": "BEX01"},
-                    {"project_id": str(project.id), "code": "BNEW1"},
-                    {"project_id": str(project.id), "code": "BNEW1"},
+                    {**in_it, "code": f"{project.code}_BEX01"},
+                    {**in_it, "code": f"{project.code}_BNEW1"},
+                    {**in_it, "code": f"{project.code}_BNEW1"},
                 ]
             },
             format="json",

@@ -323,6 +323,7 @@ class ProductionBulkMixin(BulkActionsMixin):
         if not serializer.is_valid():
             return None, serializer.errors
         try:
+            self._enforce_project_code_prefix(serializer, project)
             self.prepare_create(serializer, project)
             data = {**serializer.validated_data, "project": project}
             self.validate_references(project, data)

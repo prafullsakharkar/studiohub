@@ -39,6 +39,8 @@ def _client(*projects):
 
 
 def _create(api, project, code="T1", **extra):
+    # A new code starts with the project's (CR-49): the tests name them bare, the helper adds the prefix.
+    code = code if code.startswith(f"{project.code}_") else f"{project.code}_{code}"
     return api.post(
         "/api/v1/tasks/",
         {"project_id": str(project.id), "title": "t", "code": code, **extra},
@@ -56,11 +58,11 @@ class TestNamingTheEntity:
         shot = ShotFactory.create(project=project, code="SH010", name="Opening")
         api = _client(project)
 
-        by_id = _create(api, project, "T1", entity_type="Shot", entity_id=str(shot.id))
-        by_code = _create(api, project, "T2", entity_type="shot", entity_id="sh010")
+        by_id = _create(api, project, "ENT1_T1", entity_type="Shot", entity_id=str(shot.id))
+        by_code = _create(api, project, "ENT1_T2", entity_type="shot", entity_id="sh010")
 
         assert by_id.status_code == by_code.status_code == 201, (by_id.json(), by_code.json())
-        for code in ("T1", "T2"):
+        for code in ("ENT1_T1", "ENT1_T2"):
             task = Task.objects.get(code=code)
             assert task.shot_id == shot.id and task.asset_id is None and task.sequence_id is None
             assert (task.entity_type, task.entity_id, task.entity_code, task.entity_name) == (
@@ -72,22 +74,22 @@ class TestNamingTheEntity:
         sequence = SequenceFactory.create(project=project, code="SQ1")
         api = _client(project)
 
-        assert _create(api, project, "T1", entity_type="Asset", entity_id="rock").status_code == 201
+        assert _create(api, project, "ENT1_T1", entity_type="Asset", entity_id="rock").status_code == 201
         assert (
             _create(
-                api, project, "T2", entity_type="Sequence", entity_id=str(sequence.id)
+                api, project, "ENT1_T2", entity_type="Sequence", entity_id=str(sequence.id)
             ).status_code
             == 201
         )
 
-        assert Task.objects.get(code="T1").asset_id == asset.id
-        assert Task.objects.get(code="T2").sequence_id == sequence.id
+        assert Task.objects.get(code="ENT1_T1").asset_id == asset.id
+        assert Task.objects.get(code="ENT1_T2").sequence_id == sequence.id
 
     def test_the_link_is_in_the_responses(self, project):
         shot = ShotFactory.create(project=project, code="SH010")
         api = _client(project)
-        _create(api, project, "T1", entity_type="Shot", entity_id="SH010")
-        task = Task.objects.get(code="T1")
+        _create(api, project, "ENT1_T1", entity_type="Shot", entity_id="SH010")
+        task = Task.objects.get(code="ENT1_T1")
 
         detail = api.get(f"/api/v1/tasks/{task.id}/").json()
 
@@ -110,9 +112,9 @@ class TestNamingTheEntity:
     def test_no_record_named_means_a_general_task(self, project, body):
         api = _client(project)
 
-        assert _create(api, project, "T1", **body).status_code == 201
+        assert _create(api, project, "ENT1_T1", **body).status_code == 201
 
-        task = Task.objects.get(code="T1")
+        task = Task.objects.get(code="ENT1_T1")
         assert (task.shot_id, task.asset_id, task.sequence_id) == (None, None, None)
         assert (task.entity_type, task.entity_id) == ("General", "")
 
@@ -151,7 +153,7 @@ class TestNamingTheEntity:
         shot = ShotFactory.create(project=project, code="SH010")
 
         assert _create(_client(project), project, entity_id="SH010").status_code == 201
-        assert Task.objects.get(code="T1").shot_id == shot.id
+        assert Task.objects.get(code="ENT1_T1").shot_id == shot.id
 
     def test_the_derived_text_may_be_sent_if_it_agrees_and_is_a_400_if_not(self, project):
         ShotFactory.create(project=project, code="SH010", name="Opening")
@@ -160,27 +162,27 @@ class TestNamingTheEntity:
         ok = _create(
             api,
             project,
-            "T1",
+            "ENT1_T1",
             entity_type="Shot",
             entity_id="SH010",
             entity_code="sh010",
             entity_name="Opening",
         )
         wrong = _create(
-            api, project, "T2", entity_type="Shot", entity_id="SH010", entity_code="SH999"
+            api, project, "ENT1_T2", entity_type="Shot", entity_id="SH010", entity_code="SH999"
         )
-        invented = _create(api, project, "T3", entity_code="SH010")
+        invented = _create(api, project, "ENT1_T3", entity_code="SH010")
 
         assert ok.status_code == 201
         assert wrong.status_code == 400 and "entity_code" in wrong.json()
         assert invented.status_code == 400  # a General task has no code to give
-        assert list(Task.objects.values_list("code", flat=True)) == ["T1"]
+        assert list(Task.objects.values_list("code", flat=True)) == ["ENT1_T1"]
 
 
 class TestChanging:
     def _task(self, api, project, **entity):
-        _create(api, project, "T1", **entity)
-        return Task.objects.get(code="T1")
+        _create(api, project, "ENT1_T1", **entity)
+        return Task.objects.get(code="ENT1_T1")
 
     def test_a_task_can_be_moved_to_another_record_and_cleared(self, project):
         a = ShotFactory.create(project=project, code="A")
@@ -291,17 +293,17 @@ class TestFiltersAndBulk:
             ShotFactory.create(project=project, code="B"),
         )
         api = _client(project)
-        _create(api, project, "T1", entity_type="Shot", entity_id="A")
-        _create(api, project, "T2", entity_type="Shot", entity_id="B")
-        _create(api, project, "T3")
+        _create(api, project, "ENT1_T1", entity_type="Shot", entity_id="A")
+        _create(api, project, "ENT1_T2", entity_type="Shot", entity_id="B")
+        _create(api, project, "ENT1_T3")
 
         def codes(query):
             return sorted(r["code"] for r in api.get(f"/api/v1/tasks/?{query}").json()["results"])
 
-        assert codes(f"shot_id={a.id}") == ["T1"]
-        assert codes("shot_id=b") == ["T2"]
+        assert codes(f"shot_id={a.id}") == ["ENT1_T1"]
+        assert codes("shot_id=b") == ["ENT1_T2"]
         assert codes("shot_id=nope") == []
-        assert codes("entity_type=General") == ["T3"]
+        assert codes("entity_type=General") == ["ENT1_T3"]
         assert b.pk
 
     def test_bulk_create_checks_each_item(self, project):
@@ -311,15 +313,15 @@ class TestFiltersAndBulk:
         resp = api.post(
             "/api/v1/tasks/bulk-create/",
             {"items": [
-                {"project_id": str(project.id), "title": "ok", "code": "B1", "entity_type": "Shot", "entity_id": "A"},
-                {"project_id": str(project.id), "title": "bad", "code": "B2", "entity_type": "Shot", "entity_id": "ZZZ"},
+                {"project_id": str(project.id), "title": "ok", "code": "ENT1_B1", "entity_type": "Shot", "entity_id": "A"},
+                {"project_id": str(project.id), "title": "bad", "code": "ENT1_B2", "entity_type": "Shot", "entity_id": "ZZZ"},
             ]},
             format="json",
         )  # fmt: skip
 
         assert [r["status"] for r in resp.json()["results"]] == ["created", "invalid"]
-        assert Task.objects.get(code="B1").shot.code == "A"
-        assert not Task.objects.filter(code="B2").exists()
+        assert Task.objects.get(code="ENT1_B1").shot.code == "A"
+        assert not Task.objects.filter(code="ENT1_B2").exists()
 
 
 class TestTheDatabase:

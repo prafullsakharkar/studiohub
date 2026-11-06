@@ -14,8 +14,13 @@ from rest_framework.test import APIClient
 
 from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.rbac_helpers import grant_permissions
-from apps.production.models import Episode, Project, ProjectMembership, Shot
-from apps.production.tests.factories import EpisodeFactory, ProjectFactory, ShotFactory
+from apps.production.models import Episode, Project, ProjectMembership, Sequence, Shot
+from apps.production.tests.factories import (
+    EpisodeFactory,
+    ProjectFactory,
+    SequenceFactory,
+    ShotFactory,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -38,12 +43,13 @@ def _client(user):
 class TestAuditFields:
     def test_single_create_and_update_record_the_user(self):
         project = ProjectFactory.create(code="SVC1")
+        sequence = SequenceFactory.create(project=project, code="SVC1_SQ")
         user = _user("shot.view", "shot.create", "shot.update", project=project)
         client = _client(user)
 
         created = client.post(
             "/api/v1/shots/",
-            {"project_id": str(project.id), "code": "S1", "name": "n"},
+            {"project_id": str(project.id), "code": "SVC1_S1", "name": "n", "sequence_id": str(sequence.id)},
             format="json",
         )
         assert created.status_code == 201, created.json()
@@ -100,9 +106,23 @@ class TestBulkCreate:
     CODES = ("shot.view", "shot.create")
 
     def post(self, user, items, **extra):
+        # A new code starts with the project's and a new shot has a sequence (CR-49): the tests name them bare.
+        ready = [self._ready(item, extra.get("project_id")) for item in items]
         return _client(user).post(
-            "/api/v1/shots/bulk-create/", {"items": items, **extra}, format="json"
+            "/api/v1/shots/bulk-create/", {"items": ready, **extra}, format="json"
         )
+
+    @staticmethod
+    def _ready(item, default_project):
+        item = {**item, **({"data": dict(item["data"])} if "data" in item else {})}
+        body = item.get("data", item)
+        project = Project.objects.get(id=item.get("project_id") or default_project)
+        if body.get("code"):
+            body["code"] = f"{project.code}_{body['code']}"
+        if "sequence_id" not in body:
+            sequence, _ = Sequence.objects.get_or_create(project=project, code=f"{project.code}_SQ")
+            body["sequence_id"] = str(sequence.id)
+        return item
 
     def test_items_are_stored_like_a_single_create(self):
         project = ProjectFactory.create(code="BULK1")
@@ -111,7 +131,7 @@ class TestBulkCreate:
         resp = self.post(user, [{"project_id": str(project.id), "code": "b1", "name": "One"}])
 
         assert resp.status_code == 200, resp.json()
-        shot = Shot.objects.get(project=project, code="B1")
+        shot = Shot.objects.get(project=project, code="BULK1_B1")
         assert (shot.name, shot.created_by_id) == ("One", user.id)
 
     def test_fields_a_single_create_cannot_set_are_ignored(self):
@@ -132,7 +152,7 @@ class TestBulkCreate:
         )
 
         assert resp.status_code == 200, resp.json()
-        shot = Shot.objects.get(project=project, code="B1")
+        shot = Shot.objects.get(project=project, code="BULK1_B1")
         assert shot.created_by_id == user.id and shot.is_deleted is False
 
     def test_locked_fields_make_the_item_invalid(self):
@@ -144,7 +164,7 @@ class TestBulkCreate:
         )
 
         assert resp.json()["results"][0]["status"] == "invalid"
-        assert not Shot.objects.filter(project=project, code="B1").exists()
+        assert not Shot.objects.filter(project=project, code="BULK1_B1").exists()
 
     def test_form_path_only_takes_serializer_fields(self):
         project = ProjectFactory.create(code="BULK1")
@@ -167,7 +187,7 @@ class TestBulkCreate:
         )
 
         assert resp.status_code == 200, resp.json()
-        shot = Shot.objects.get(project=project, code="B1")
+        shot = Shot.objects.get(project=project, code="BULK1_B1")
         assert shot.is_deleted is False and shot.created_by_id == user.id
 
     def test_episodic_project_requires_an_episode_per_item(self):
@@ -185,8 +205,8 @@ class TestBulkCreate:
 
         statuses = [row["status"] for row in resp.json()["results"]]
         assert statuses == ["invalid", "created"]
-        assert Shot.objects.get(project=project, code="B2").episode_id == episode.id
-        assert not Shot.objects.filter(project=project, code="B1").exists()
+        assert Shot.objects.get(project=project, code="BULK2_B2").episode_id == episode.id
+        assert not Shot.objects.filter(project=project, code="BULK2_B1").exists()
 
     def test_foreign_episode_is_invalid(self):
         project = ProjectFactory.create(code="BULK2", workflow_type="episodic")
@@ -233,7 +253,7 @@ class TestBulkCreate:
 
     def test_a_bad_item_does_not_roll_back_the_others(self):
         project = ProjectFactory.create(code="BULK1")
-        ShotFactory.create(project=project, code="TAKEN")
+        ShotFactory.create(project=project, code="BULK1_TAKEN")
         user = _user(*self.CODES, project=project)
 
         resp = self.post(
@@ -246,5 +266,5 @@ class TestBulkCreate:
         )
 
         assert [row["status"] for row in resp.json()["results"]] == ["created", "exists", "invalid"]
-        assert Shot.objects.filter(project=project, code__in=["OK1", "TAKEN"]).count() == 2
+        assert Shot.objects.filter(project=project, code__in=["BULK1_OK1", "BULK1_TAKEN"]).count() == 2
         assert resp.status_code == status.HTTP_200_OK

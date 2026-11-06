@@ -35,6 +35,7 @@ from apps.identity.tests.rbac_helpers import grant_permissions
 from apps.production.models.project_membership import ProjectMembership
 from apps.production.tests.factories import (
     ProjectFactory,
+    SequenceFactory,
     ShotFactory,
     ShowFactory,
 )
@@ -123,9 +124,15 @@ class TestSuperAdminPersona:
 
     def test_can_act_without_memberships(self, super_admin, project_a):
         client = _client_for(super_admin)
+        sequence = SequenceFactory.create(project=project_a, code=f"{project_a.code}_SQ")
         response = client.post(
             reverse("api:v1:production:shot-list"),
-            data={"project": str(project_a.id), "code": "SH-SA1", "name": "Admin Shot"},
+            data={
+                "project": str(project_a.id),
+                "code": f"{project_a.code}_SH-SA1",  # a new code starts with the project's (CR-49)
+                "name": "Admin Shot",
+                "sequence_id": str(sequence.id),
+            },
             format="json",
         )
         assert response.status_code == status.HTTP_201_CREATED
@@ -205,9 +212,15 @@ class TestProductionAdminPersona:
 
     def test_can_create_within_member_project(self, production_admin, project_a):
         client = _client_for(production_admin)
+        sequence = SequenceFactory.create(project=project_a, code=f"{project_a.code}_SQ")
         response = client.post(
             reverse("api:v1:production:shot-list"),
-            data={"project": str(project_a.id), "code": "SH-PA1", "name": "Scoped Shot"},
+            data={
+                "project": str(project_a.id),
+                "code": f"{project_a.code}_SH-PA1",
+                "name": "Scoped Shot",
+                "sequence_id": str(sequence.id),
+            },
             format="json",
         )
         assert response.status_code == status.HTTP_201_CREATED
