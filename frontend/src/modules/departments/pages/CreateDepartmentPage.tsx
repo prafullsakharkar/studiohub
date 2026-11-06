@@ -51,7 +51,7 @@ export const DepartmentForm: React.FC<{ department?: Department }> = ({ departme
     submit,
     serverError,
     clearServerError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useServerForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: department
@@ -86,6 +86,7 @@ export const DepartmentForm: React.FC<{ department?: Department }> = ({ departme
       backLabel="Departments"
       onSubmit={onSubmit}
       isSubmitting={isSubmitting}
+      isDirty={isDirty}
       serverError={serverError}
       submitLabel={department ? 'Save changes' : 'Create department'}
     >

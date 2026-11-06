@@ -1,17 +1,18 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FormPage } from '../FormPage';
 
 afterEach(cleanup);
 
-const base = { title: 'New client', backTo: '/clients', backLabel: 'Clients', editing: false, onSubmit: vi.fn(), isSubmitting: false, submitLabel: 'Create client' };
+const base = { title: 'New client', backTo: '/clients', backLabel: 'Clients', editing: false, onSubmit: vi.fn(), isSubmitting: false, isDirty: false, submitLabel: 'Create client' };
 const renderPage = (props: Partial<React.ComponentProps<typeof FormPage>> = {}) =>
   render(
-    <MemoryRouter>
-      <FormPage {...base} {...props}>
-        <input aria-label="Name" />
-      </FormPage>
+    <MemoryRouter initialEntries={['/clients/new']}>
+      <Routes>
+        <Route path="/clients/new" element={<FormPage {...base} {...props}><input aria-label="Name" /></FormPage>} />
+        <Route path="/clients" element={<div>the list</div>} />
+      </Routes>
     </MemoryRouter>
   );
 
@@ -38,5 +39,50 @@ describe('FormPage', () => {
     cleanup();
     renderPage({ loading: { isLoading: false, error: null, onRetry: vi.fn(), entityName: 'client' } });
     expect(screen.getByLabelText('Name')).toBeTruthy();
+  });
+});
+
+describe('FormPage leave guard', () => {
+  const leaveVia = [
+    ['the back button', () => fireEvent.click(screen.getByRole('link', { name: /Clients/ }))],
+    ['Cancel', () => fireEvent.click(screen.getByRole('link', { name: 'Cancel' }))],
+  ] as const;
+
+  it.each(leaveVia)('leaves a clean form by %s straight away', async (_name, leave) => {
+    renderPage();
+    leave();
+    expect(await screen.findByText('the list')).toBeTruthy();
+  });
+
+  it.each(leaveVia)('asks before %s throws away typed-in changes: Keep editing stays, Discard goes to the list', async (_name, leave) => {
+    renderPage({ isDirty: true });
+    leave();
+    const ask = await screen.findByRole('dialog', { name: 'Discard changes?' });
+    expect(screen.queryByText('the list')).toBeNull();
+    fireEvent.click(within(ask).getByRole('button', { name: 'Keep editing' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.queryByText('the list')).toBeNull();
+
+    leave();
+    fireEvent.click(within(await screen.findByRole('dialog', { name: 'Discard changes?' })).getByRole('button', { name: 'Discard changes' }));
+    expect(await screen.findByText('the list')).toBeTruthy();
+  });
+
+  it('does not stand in the way of a save that is running', async () => {
+    renderPage({ isDirty: true, isSubmitting: true });
+    fireEvent.click(screen.getByRole('link', { name: /Clients/ }));
+    expect(await screen.findByText('the list')).toBeTruthy();
+  });
+
+  it('has the browser warn on reload or tab close only while the form is dirty', () => {
+    const dirty = renderPage({ isDirty: true });
+    const warned = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(warned);
+    expect(warned.defaultPrevented).toBe(true);
+    dirty.unmount();
+    renderPage();
+    const quiet = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(quiet);
+    expect(quiet.defaultPrevented).toBe(false);
   });
 });

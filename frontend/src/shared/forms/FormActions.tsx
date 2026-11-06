@@ -10,9 +10,9 @@ export interface FormActionsProps {
   isSubmitting: boolean;
   submitVariant?: 'primary' | 'danger';
   submitDisabled?: boolean;
-  /** Cancel runs this (dialog) ... */
-  onCancel?: () => void;
-  /** ... or links here (page). */
+  /** Cancel runs this (dialog), or on a page may stop the link with `preventDefault` ... */
+  onCancel?: (event: React.MouseEvent) => void;
+  /** ... and links here (page). */
   cancelTo?: string;
   cancelLabel?: string;
 }
@@ -30,7 +30,13 @@ export const FormActions: React.FC<FormActionsProps> = ({ layout, submitLabel, i
     );
     return (
       <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-        {cancelTo ? <Link to={cancelTo}>{cancel}</Link> : cancel}
+        {cancelTo ? (
+          <Link to={cancelTo} onClick={onCancel}>
+            {cancel}
+          </Link>
+        ) : (
+          cancel
+        )}
         <Button variant={submitVariant} size="sm" type="submit" isLoading={isSubmitting} disabled={submitDisabled} leftIcon={<Save className="w-4 h-4" />}>
           {submitLabel}
         </Button>

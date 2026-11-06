@@ -36,7 +36,7 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
     reset,
     serverError,
     clearServerError,
-    formState: { errors, isSubmitting, dirtyFields },
+    formState: { errors, isSubmitting, isDirty, dirtyFields },
   } = useServerForm<Values>({ resolver: zodResolver(schema) as never, defaultValues: Object.fromEntries(fields.map((f) => [f.name, !editing && searchParams.get(f.name) !== null ? (searchParams.get(f.name) as string) : blank(f)])) });
   // A new record can be pre-filled from the address (`/tasks/new?project=…&entity_type=Shot`): a parameter named like a field fills it.
 
@@ -89,6 +89,7 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
       backLabel={config.listTitle}
       onSubmit={onSubmit}
       isSubmitting={isSubmitting}
+      isDirty={isDirty}
       serverError={serverError}
       submitLabel={copy.submitLabel}
       loading={{ isLoading: editing && row.isLoading, error: editing ? row.error : null, onRetry: () => void row.refetch(), entityName: config.noun }}

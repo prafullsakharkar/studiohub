@@ -118,7 +118,7 @@ export const TaskTemplateForm: React.FC = () => {
     reset,
     serverError,
     clearServerError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useServerForm<Values>({ resolver: zodResolver(schema), defaultValues: { name: '', description: '', entity_type: 'Shot', project_id: '', is_active: true, items: [] } });
   const items = useFieldArray({ control, name: 'items' });
 
@@ -155,6 +155,7 @@ export const TaskTemplateForm: React.FC = () => {
       backLabel="Task templates"
       onSubmit={onSubmit}
       isSubmitting={isSubmitting}
+      isDirty={isDirty}
       serverError={serverError}
       submitLabel={editing ? 'Save changes' : 'Create template'}
       loading={{ isLoading: editing && row.isLoading, error: editing ? row.error : null, onRetry: () => void row.refetch(), entityName: 'template' }}

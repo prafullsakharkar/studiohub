@@ -213,6 +213,9 @@ The page forms take the department form's look.
 23. Footer is `FormActions layout="page"`: ruled, right-aligned, outlined `Cancel` (a link back to the list) then the
     primary `Save changes` / `Create <noun>` with a save icon.
 24. Success navigates as before (`afterSavePath`); the page never closes itself.
+    Leaving by the back button or Cancel asks "Discard changes?" when the form is dirty (not while a save runs), and the browser
+    warns on reload or a closed tab. Moving away through the menu is not guarded: the app uses `BrowserRouter`, where
+    `useBlocker` is unavailable, and a data router would change the route structure.
 25. Every `DirectoryFormConfig` names its list (`listTitle`) for the back button.
 
 ### Behaviour differences from before (Catalog and others)
@@ -226,6 +229,7 @@ The page forms take the department form's look.
   it starts from the suggested name on every open (the old state outlived the dialog).
 - Role, group, token, reauth, note: required labels now end in ` *`.
 - Department page: errors use the shared banner (the request reference shows for 5xx only).
+- Record pages: Cancel and the back button ask before dropping typed-in changes; the browser warns on reload.
 - Record pages: now full width in a card with a header, and two columns (were a single `max-w-2xl` column with a left footer).
 
 ### Not migrated, and why
@@ -240,4 +244,4 @@ The page forms take the department form's look.
 
 - `RecordActions`/`DirectoryListPage` row-action prompts ask for a date or text with their own markup; they could use `FormDialog`.
 - Inline forms could offer a "dirty" guard on navigation; none does today.
-- Nothing yet guards navigation away from a dirty record page (`useBlocker`); the dialogs are guarded, the pages are not.
+- Menu navigation away from a dirty record page is not guarded (needs a data router, i.e. a route-structure change; decide separately).
