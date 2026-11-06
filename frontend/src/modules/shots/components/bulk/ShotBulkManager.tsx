@@ -241,12 +241,15 @@ export function buildBulkShotItems(
   return resolutionItems
     .filter((it) => it.userAction === 'create' || it.userAction === 'recover' || it.userAction === 'skip')
     .map((it) => {
+      // The backend links a shot through `sequence_id` (an id or the sequence's code); `sequence_code` is read-only there and
+      // is dropped, which left every bulk-made shot without its sequence.
+      const { sequence_code: typedSequence, ...proposed } = (it.proposedData ?? {}) as Record<string, unknown>;
       const baseData = {
-        ...it.proposedData,
+        ...proposed,
         project_id: ctx.projectId,
         project_code: ctx.projectCode,
-        sequence_code: (it.proposedData as any)?.sequence_code || ctx.defaultSequenceCode,
-      } as Partial<Shot>;
+        sequence_id: String(typedSequence || ctx.defaultSequenceCode || '').trim(),
+      } as unknown as Partial<Shot>;
       if (!ctx.isEpisodic) {
         return {
           code: it.code,

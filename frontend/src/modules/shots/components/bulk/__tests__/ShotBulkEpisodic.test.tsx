@@ -509,3 +509,25 @@ describe('bulk shots: the project code in front, and a sequence that exists', ()
     expect(screen.queryByText(/does not exist in this project/)).not.toBeInTheDocument();
   });
 });
+
+describe('bulk shots: the sequence is sent as sequence_id', () => {
+  const ctx = { projectId: 'proj-101', projectCode: 'NEB01', defaultSequenceCode: 'NEB01_010', isEpisodic: false };
+  const item = (proposedData: Record<string, unknown>) => ({ code: 'NEB01_SH010', state: 'NEW', userAction: 'create', proposedData }) as any;
+
+  it('a typed sequence goes as sequence_id (the backend drops sequence_code, so the shot kept no sequence)', () => {
+    const [sent] = buildBulkShotItems([item({ code: 'NEB01_SH010', sequence_code: 'NEB01_SQ010', name: 'Opening' })], ctx);
+    expect(sent.data).toMatchObject({ sequence_id: 'NEB01_SQ010', name: 'Opening', project_id: 'proj-101' });
+    expect('sequence_code' in sent.data).toBe(false);
+  });
+
+  it('a row with no sequence falls back to the default sequence', () => {
+    const [sent] = buildBulkShotItems([item({ code: 'NEB01_SH010' })], ctx);
+    expect((sent.data as any).sequence_id).toBe('NEB01_010');
+  });
+
+  it('episodic payloads carry it too', () => {
+    const [sent] = buildBulkShotItems([item({ code: 'NEB01_SH010', sequence_code: 'NEB01_SQ010' })], { ...ctx, isEpisodic: true, bulkDefaultEpisodeId: 'ep-1', episodesById: { 'ep-1': { id: 'ep-1', code: 'EP101' } } });
+    expect(sent.data).toMatchObject({ sequence_id: 'NEB01_SQ010', episode_id: 'ep-1' });
+    expect('sequence_code' in sent.data).toBe(false);
+  });
+});

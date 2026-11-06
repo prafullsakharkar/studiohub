@@ -3,6 +3,7 @@ import { assetBatch, assetBulk, sequenceBatch, sequenceBulk, shotBatch, shotBulk
 import { projectsApi } from '@/api/production/structure';
 import { assetsApi, shotsApi, tasksApi } from '@/api/production/work';
 import { tokenStorage } from '@/core/auth/tokenStorage';
+import { buildBulkShotItems } from '@/modules/shots/components/bulk/ShotBulkManager';
 import { columnsFor, sequenceBulkSpec, shotBulkSpec, taskBulkSpec } from '@/modules/production/bulk/specs';
 import { toCreateItems } from '@/modules/production/bulk/rows';
 import { exampleRows, templateParents } from '@/modules/production/bulk/template';
@@ -124,6 +125,38 @@ describe('the Bulk add shots manager (the staged one shots kept)', () => {
     const recovered = (await shotBulk.bulkCreate({ project_id: project, items: [{ code, action: 'recover', data: {} }] } as never)) as unknown as Created;
     expect(recovered.results[0]).toMatchObject({ status: 'recovered', success: true });
     expect((await shotsApi.get(row.id)).code).toBe(code);
+  });
+});
+
+describe('Bulk add shots: the sequence a shot is linked to', () => {
+  type Created = { results: Array<{ status: string; success: boolean }> };
+
+  it('sequence_id links the shot to its sequence; sequence_code (read-only) does not', async () => {
+    const seq = `LK${uid}`;
+    await sequenceBulk.bulkCreate({ project_id: project, items: [{ code: seq, action: 'create', data: {} }] } as never);
+    const byId = `LK${uid}A`;
+    const byCode = `LK${uid}B`;
+    const created = (await shotBulk.bulkCreate({
+      project_id: project,
+      items: [
+        { code: byId, action: 'create', data: { sequence_id: seq } },
+        { code: byCode, action: 'create', data: { sequence_code: seq } },
+      ],
+    } as never)) as unknown as Created;
+    expect(created.results.map((r) => r.status)).toEqual(['created', 'created']);
+    const linked = async (code: string) => (await shotsApi.list({ project, search: code })).results.find((r) => r.code === code)?.sequence_code;
+    expect(await linked(byId)).toBe(seq);
+    expect(await linked(byCode)).toBe('');
+  });
+
+  it('the Bulk add shots manager\'s own payload links the shot', async () => {
+    const seq = `LM${uid}`;
+    const code = `LM${uid}S`;
+    await sequenceBulk.bulkCreate({ project_id: project, items: [{ code: seq, action: 'create', data: {} }] } as never);
+    const items = buildBulkShotItems([{ code, state: 'NEW', userAction: 'create', proposedData: { code, sequence_code: seq, name: 'Linked' } } as never], { projectId: project, projectCode: 'X', defaultSequenceCode: '', isEpisodic: false });
+    await shotBulk.bulkCreate({ project_id: project, items } as never);
+    const row = (await shotsApi.list({ project, search: code })).results.find((r) => r.code === code);
+    expect(row?.sequence_code).toBe(seq);
   });
 });
 
