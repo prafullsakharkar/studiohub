@@ -1,12 +1,13 @@
 /**
- * The dialogs that used to draw their own overlay (the bulk managers, the paste dialog, the command palette) now
+ * The dialogs that used to draw their own overlay (the bulk dialog, the paste dialog, the command palette) now
  * share Modal's behaviour: they are named dialogs, Escape closes the top one only, and the page is locked meanwhile.
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AssetBulkManager } from '@/modules/assets/components/bulk/AssetBulkManager';
+import { BulkImportDialog } from '@/modules/production/bulk/BulkImportDialog';
+import { assetBulkSpec } from '@/modules/production/bulk/specs';
 
 vi.mock('@/providers/ThemeProvider', () => ({ useThemeMode: () => ({ mode: 'dark', toggleTheme: vi.fn() }) }));
 vi.mock('@/core/auth/useCurrentUser', () => ({
@@ -26,18 +27,17 @@ const pressEscape = () => fireEvent.keyDown(document.activeElement ?? document.b
 function renderAssets(onClose = vi.fn()) {
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <AssetBulkManager projectId="p-1" projectCode="ALPHA" isOpen onClose={onClose} />
+      <BulkImportDialog spec={assetBulkSpec} mode="create" projectId="p-1" projectCode="ALPHA" episodic={false} onClose={onClose} />
     </QueryClientProvider>
   );
   return onClose;
 }
 
-describe('bulk managers on Modal', () => {
+describe('the bulk dialog on Modal', () => {
   it('is a named dialog with the project, locks the page, and Escape closes it', () => {
     const onClose = renderAssets();
-    const dialog = screen.getByRole('dialog', { name: /Bulk Asset Management/ });
+    const dialog = screen.getByRole('dialog', { name: /Bulk create assets · ALPHA/ });
     expect(dialog.getAttribute('aria-modal')).toBe('true');
-    expect(within(dialog).getByText('Project: ALPHA')).toBeTruthy();
     expect(document.body.style.overflow).toBe('hidden');
     pressEscape();
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -52,7 +52,7 @@ describe('bulk managers on Modal', () => {
     pressEscape();
     await waitFor(() => expect(screen.queryByRole('dialog', { name: /Paste TSV \/ CSV Data/ })).toBeNull());
     expect(onClose).not.toHaveBeenCalled();
-    expect(screen.getByRole('dialog', { name: /Bulk Asset Management/ })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: /Bulk create assets · ALPHA/ })).toBeTruthy();
   });
 });
 
