@@ -247,12 +247,15 @@ Shots, Sequences, Assets and Tasks each have a **Bulk add** button (*Bulk add sh
 5. **Preview**: what will be created, recovered and skipped; **Execute**.
 6. **Result**: `N created · N recovered · N skipped · N failed`, a log per row (CSV / JSON export), and *Retry failed rows*.
 
+The single-record forms (*New shot*, *New sequence*, *New asset*, *New task*, *New episode*, and *Add episode* / *Add sequence* on a project's tab) do the same: the project's code is shown in front of the code input (`TST_`) and added when you save; *New shot* needs a sequence and says so when the project has none. Existing records keep their codes, and an existing shot without a sequence can still be saved. The backend does not enforce either rule yet (CR-49, pending).
+
 Rows are stored one by one: a refused row does not stop the others. There is no bulk update from a file; change existing rows with **Edit fields** on the selected rows (below).
 
 Rules for every file:
 
 * The first row is the header. Column names are matched without case; spaces and dashes count as `_`; the API field name is accepted too (`episode_id` for `episode`). An unknown column, a repeated one or a missing required one is refused before anything is sent.
-* `code` is the row's key: unique in the project, upper-cased, no spaces or slashes (a shot's code changes later with *Rename code* on the shot).
+* `code` is the row's key: unique in the project, upper-cased, no spaces or slashes (a shot's code changes later with *Rename code* on the shot). **A new code starts with the project's code**: in project `TST` the row `SQ0010` is created as `TST_SQ0010` (a code typed with `TST_` already is kept as it is). The grid shows the codes as they were typed; Validate, the breakdown, the preview and the result show them with the prefix. Parent columns (`sequence_code`, `entity`, …) name the real codes of existing records, with their prefix if they have one; a shot's `sequence_code` is also found as `<PROJECT>_<typed>`.
+* **A shot needs a sequence of the project.** A row with none, or with one the project does not have, is a *validation error* ("Sequence X does not exist in this project. Create it first.").
 * Parents are written by **code** and resolved inside the project: `episode` (EP101), `sequence` (SQ010), `asset_type` and `task_type` (catalog codes), `entity` (the shot, asset or sequence code of a task). An unknown parent, or one of another project, is "Unknown ...".
 * An empty cell means "not given": the field takes its default.
 * At most 500 rows and 2 MB per file; split bigger ones.

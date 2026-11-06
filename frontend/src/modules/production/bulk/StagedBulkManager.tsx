@@ -16,6 +16,7 @@ import type { BulkOperationResponse, BulkOperationSummary, EntityResolutionItem,
 import { Button } from '@/shared/components/Button';
 import { Modal } from '@/shared/components/Modal';
 import { useBulkEntity } from '@/shared/hooks/useBulkEntity';
+import { withProjectPrefix, projectCodePrefix } from '../codePrefix';
 import { PROJECT_QUERY_KEYS } from '../hooks/useProjects';
 import { MAX_FILE_BYTES, readRows, rowReports, toCreateItems } from './rows';
 import type { SheetRow } from './rows';
@@ -91,7 +92,8 @@ export const StagedBulkManager: React.FC<StagedBulkManagerProps> = ({ spec, proj
   };
 
   const validate = async () => {
-    const filled = rows.filter((r) => String(r.code ?? '').trim());
+    // Every new code starts with the project's: `SQ0010` in project TST is `TST_SQ0010` (one already typed with it is kept).
+    const filled = rows.filter((r) => String(r.code ?? '').trim()).map((r): SheetRow => ({ ...r, code: withProjectPrefix(projectCode, r.code) }));
     if (filled.length === 0) return;
     setFailure(null);
     setStep('VALIDATING');
@@ -188,7 +190,7 @@ export const StagedBulkManager: React.FC<StagedBulkManagerProps> = ({ spec, proj
 
   const retryFailed = (codes: string[]) => {
     const wanted = new Set(codes.map((c) => c.toUpperCase()));
-    const failed = rows.filter((r) => wanted.has(String(r.code ?? '').trim().toUpperCase()));
+    const failed = rows.filter((r) => wanted.has(withProjectPrefix(projectCode, r.code)));
     setRows(failed.length > 0 ? failed : rows);
     setStep('GRID');
   };
@@ -221,7 +223,7 @@ export const StagedBulkManager: React.FC<StagedBulkManagerProps> = ({ spec, proj
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs text-slate-300 font-mono">
-                Columns: {columns.map((c) => `${c.header}${c.required ? ' (required)' : ''}`).join(', ')}. Parents are written by code.
+                Columns: {columns.map((c) => `${c.header}${c.required ? ' (required)' : ''}`).join(', ')}. Parents are written by code. Each new code gets {projectCodePrefix(projectCode)} in front ({projectCodePrefix(projectCode)}SQ0010 for SQ0010).
               </p>
               <label className="flex items-center gap-2 text-xs font-mono text-slate-300">
                 <span>CSV file</span>

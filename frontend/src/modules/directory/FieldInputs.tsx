@@ -2,6 +2,7 @@ import type React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 import type { Control, FieldErrors, UseFormRegister } from 'react-hook-form';
 import { Field, inputClass } from '@/modules/identity/components/ui';
+import { projectCodePrefix } from '@/modules/production/codePrefix';
 import { type Values, isVisible, joinIds, splitIds } from './formModel';
 import type { FieldDef } from './types';
 
@@ -14,6 +15,8 @@ export interface FieldInputsProps {
   control: Control<Values>;
   errors: FieldErrors<Values>;
   clearServerError: () => void;
+  /** The chosen project's code, for a field with `projectPrefix` (its `CODE_` is shown before the input and added on save). */
+  projectCode?: string;
   /** A page form: two columns on wide screens, long fields (text areas, JSON, several records) across both. A dialog stacks them. */
   grid?: boolean;
 }
@@ -21,7 +24,7 @@ export interface FieldInputsProps {
 const WIDE_KINDS: ReadonlySet<string> = new Set(['textarea', 'json', 'multi-entity']);
 
 /** Renders the inputs of a directory form from its field definitions. */
-export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, editing, immutableOnEdit, register, control, errors, clearServerError, grid = false }) => {
+export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, editing, immutableOnEdit, register, control, errors, clearServerError, projectCode, grid = false }) => {
   const err = (name: string) => (errors[name]?.message as string | undefined) ?? undefined;
   const values = useWatch({ control }) as Values;
   const shown = fields.filter((field) => isVisible(field, values) && !(editing && field.onlyOnCreate));
@@ -55,8 +58,9 @@ export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, edit
         />
       );
     }
+    const prefix = field.kind === 'text' && field.projectPrefix && !editing ? projectCodePrefix(projectCode) : '';
     return (
-      <Field key={field.name} id={id} label={`${field.label}${field.required ? ' *' : ''}`} error={err(field.name)} hint={readOnly ? 'Cannot be changed after creation.' : field.hint}>
+      <Field key={field.name} id={id} label={`${field.label}${field.required ? ' *' : ''}`} error={err(field.name)} hint={readOnly ? 'Cannot be changed after creation.' : prefix ? `${prefix} is added in front of what you type. ${field.hint ?? ''}`.trim() : field.hint}>
         {field.kind === 'json' ? (
           <textarea id={id} rows={10} spellCheck={false} disabled={readOnly} className={`${inputClass(Boolean(err(field.name)))} font-mono`} {...register(field.name, { onChange: clearServerError })} />
         ) : field.kind === 'textarea' ? (
@@ -70,6 +74,13 @@ export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, edit
               </option>
             ))}
           </select>
+        ) : prefix ? (
+          <div className="flex items-stretch gap-2">
+            <span aria-label="Code prefix" className="flex items-center px-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-mono text-sm">
+              {prefix}
+            </span>
+            <input id={id} type="text" disabled={readOnly} maxLength={field.maxLength ? field.maxLength - prefix.length : undefined} className={`${inputClass(Boolean(err(field.name)))} flex-1`} {...register(field.name, { onChange: clearServerError })} />
+          </div>
         ) : (
           <input id={id} type={field.kind === 'text' ? 'text' : field.kind === 'datetime' ? 'datetime-local' : field.kind} disabled={readOnly} maxLength={field.maxLength} className={inputClass(Boolean(err(field.name)))} {...register(field.name, { onChange: clearServerError })} />
         )}

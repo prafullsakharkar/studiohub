@@ -476,3 +476,36 @@ describe('bulk shot creation on episodic projects', () => {
     expect('episode_id' in items[0].data).toBe(false);
   });
 });
+
+describe('bulk shots: the project code in front, and a sequence that exists', () => {
+  // The grid starts with four sample shots in sequences NK_010 (three rows) and NK_020 (one).
+  it('asks about codes with the project code in front, and a shot whose sequence is not the project\'s is a validation error', async () => {
+    render(<ShotBulkManager projectId="proj-101" projectCode="NEB01" sequenceCodes={['NEB01_NK_010']} isOpen onClose={() => undefined} />);
+    fireEvent.click(screen.getByRole('button', { name: /Validate/ }));
+
+    await waitFor(() => expect(mockBulk.checkExistence).toHaveBeenCalled());
+    // NK_010 is found as the project's NEB01_NK_010; the NK_020 shot is refused, so it is not even asked about.
+    expect(mockBulk.checkExistence.mock.calls[0][0]).toMatchObject({ project_id: 'proj-101', codes: ['NEB01_NK_010_030', 'NEB01_NK_010_040', 'NEB01_NK_010_099'] });
+    const errors = await waitFor(() => {
+      const pill = screen.getAllByRole('button').find((b) => /Validation Errors\s*1/.test(b.textContent ?? ''));
+      expect(pill).toBeTruthy();
+      return pill as HTMLElement;
+    });
+    fireEvent.click(errors);
+    expect(screen.getByText('Sequence NK_020 does not exist in this project. Create it first.')).toBeInTheDocument();
+  });
+
+  it('a shot with no sequence is refused too', async () => {
+    render(<ShotBulkManager projectId="proj-101" projectCode="NEB01" sequenceCodes={[]} defaultSequenceCode="" isOpen onClose={() => undefined} />);
+    fireEvent.click(screen.getByRole('button', { name: /Validate/ }));
+    await waitFor(() => expect(screen.getAllByText(/Sequence NK_0\d0 does not exist in this project/).length).toBeGreaterThan(0));
+    expect(mockBulk.checkExistence).toHaveBeenCalledWith(expect.objectContaining({ codes: [] }));
+  });
+
+  it('without the project\'s sequence list nothing is checked here (the backend still refuses an unknown sequence)', async () => {
+    render(<ShotBulkManager projectId="proj-101" projectCode="NEB01" isOpen onClose={() => undefined} />);
+    fireEvent.click(screen.getByRole('button', { name: /Validate/ }));
+    await waitFor(() => expect(mockBulk.checkExistence).toHaveBeenCalled());
+    expect(screen.queryByText(/does not exist in this project/)).not.toBeInTheDocument();
+  });
+});

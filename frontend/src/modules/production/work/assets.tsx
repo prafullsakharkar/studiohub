@@ -74,7 +74,7 @@ export function useAssetsListConfig(scope?: { projectId: string }): DirectoryLis
 
 export const assetsFormFields: ReadonlyArray<FieldDef> = [
   { kind: 'entity', name: 'project', rowKey: 'project_id', label: 'Project', required: true, render: (p) => <ProjectPicker label="Project *" value={p.value} onChange={(id) => p.onChange(id ?? '')} error={p.error} /> },
-  { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 50, hint: 'Upper case, no spaces or slashes. Once a version exists, change it with Rename code.' },
+  { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 50, projectPrefix: true, hint: 'Upper case, no spaces or slashes. Once a version exists, change it with Rename code.' },
   { kind: 'text', name: 'name', label: 'Name', required: true, maxLength: 255 },
   { kind: 'select', name: 'category', label: 'Category', required: true, options: options(ASSET_CATEGORIES) },
   { kind: 'entity', name: 'asset_type_id', rowKey: 'asset_type_id', label: 'Asset type', render: (p) => <AssetTypePicker label="Asset type" value={p.value} onChange={(id) => p.onChange(id ?? '')} error={p.error} /> },

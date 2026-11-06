@@ -170,7 +170,7 @@ const TaskLinkField: React.FC<{ type: string; project: string; value: string; on
 
 export const tasksFormFields: ReadonlyArray<FieldDef> = [
   { kind: 'entity', name: 'project', rowKey: 'project_id', label: 'Project', required: true, render: (p) => <ProjectPicker label="Project *" value={p.value} onChange={(id) => p.onChange(id ?? '')} error={p.error} /> },
-  { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 50 },
+  { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 50, projectPrefix: true },
   { kind: 'text', name: 'title', label: 'Title', required: true, maxLength: 255 },
   // A task is linked with entity_type + entity_id; `shot_id` is read-only and would be dropped by the server.
   { kind: 'select', name: 'entity_type', label: 'About', options: options(TASK_ENTITY_TYPES), initial: 'General' },

@@ -41,7 +41,7 @@ function jsonProblem(shape: 'array' | 'object', text: string): string | undefine
   return ok ? undefined : `must be a JSON ${shape === 'array' ? 'array' : 'object'}.`;
 }
 
-export function buildSchema(fields: ReadonlyArray<FieldDef>) {
+export function buildSchema(fields: ReadonlyArray<FieldDef>, editing = false) {
   const shape: Record<string, z.ZodType> = {};
   for (const field of fields) shape[field.name] = field.kind === 'checkbox' ? z.boolean() : z.string();
   // Rules that depend on what is visible are checked together, so a hidden field is never required.
@@ -49,7 +49,7 @@ export function buildSchema(fields: ReadonlyArray<FieldDef>) {
     for (const field of fields) {
       if (field.kind === 'checkbox' || !isVisible(field, values as Values)) continue;
       const value = String(values[field.name] ?? '').trim();
-      if (field.required && value === '') {
+      if ((field.required || (!editing && field.requiredOnCreate)) && value === '') {
         ctx.addIssue({ code: 'custom', path: [field.name], message: field.kind === 'multi-entity' ? `Choose ${field.label.toLowerCase()}.` : field.kind === 'entity' || field.kind === 'select' ? `Choose a ${field.label.toLowerCase()}.` : `Enter ${field.label.toLowerCase()}.` });
       } else if (field.kind === 'json' && value !== '') {
         const problem = jsonProblem(field.shape, value);

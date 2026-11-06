@@ -928,3 +928,21 @@ Found in the Phase 0 discovery of the episodic/bulk work (`docs/episodic-bulk-di
 **Diff (additive).** `bulk-create` / `bulk-update` accept `dry_run: true` (the real path inside a transaction that is rolled back) and `atomic: true` (any failed row rolls back the batch). Bulk update matches by `id` or by `code` within the batch's `project_id`. Parents resolve by code inside the project. A per-entity whitelist of bulk-updatable fields. At most 500 items per request (400 above). Each result row keeps `error` and the response adds `errors: [{row, field, message}]`. One `AuditLog` row per committed batch. Without the new flags the routes behave as today.
 
 **Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06). Applied as written, with two additions found while building it: bulk update refuses a field outside the whitelist per row ("This field cannot be changed in bulk.") instead of ignoring it, and a row named by code that the caller cannot see answers `not_found` without an id. Verification: `docs/sync/backend-cr-46-48-verification.md`.
+
+### CR-49: new production codes start with the project code; a new shot needs a sequence (**feature**, **PENDING** approval, nothing applied)
+
+Asked by the owner (2026-11-06): "while creating any production entity the code should start with project code (SQ0010 → TST_SQ0010) … for creating a shot the sequence is compulsory, and if it does not exist it should show an error". Decisions this changes: D-10 ("Nothing stricter is imposed (no pattern…): that needs a decision of its own") and D-11 / Q3 ("A shot may have no sequence").
+
+**Done in the frontend already (no backend change).** The create forms (episode, sequence, shot, asset, task, and the project tabs' Add episode / Add sequence) show `TST_` beside the code input and send `TST_<typed>`; Bulk add (all four entities) adds it to every code at Validate; a shot form needs a sequence and says so when the project has none; Bulk add shots refuses a row whose sequence is not one of the project's. Existing records keep their codes; the prefix is only for new ones.
+
+**Problem.** Only the UI enforces it. `POST /shots/` (or `bulk-create`, or an import script) still accepts `SH010` and a shot with no sequence, so the studio's naming and "every shot has a sequence" hold only for people who use this screen.
+
+**Minimal diff (create only, nothing existing is touched).**
+1. `NormalizedCodeMixin.validate_code` on create, and the bulk-create item check: the code must start with `<PROJECT.CODE>_` (any case; stored upper case), else 400 `code: "Codes in project TST start with TST_."`. Applies to episode, sequence, shot, asset and task. Update, `rename-code` and bulk update by code are unchanged (so every existing record can still be edited).
+2. The server-made codes carry it too: an episode left blank becomes `TST_EP101`; bulk `code_prefix: "SH"` numbers `TST_SH0010`, `TST_SH0020` … (the series is counted on the full prefix).
+3. `Shot` create (single and bulk) without a sequence: 400 `sequence_id: "A shot needs a sequence."`; a code or id that is not a sequence of the project keeps today's "not found" error. A shot that has none keeps working on update.
+4. D-10 / D-11 are rewritten, `CONTRACTS.md` gets the rule, seeds and factories use prefixed codes, `report_production_data` lists existing codes without the prefix and shots without a sequence (read-only).
+
+**Why no frontend workaround.** None can bind another client: the rule is the server's to enforce. The frontend part above is already shipped and keeps working whether or not this is approved.
+
+**Compatibility.** Breaking for any API client or script that creates un-prefixed codes or sequence-less shots (they get a 400). Existing data is untouched. **Risk.** Medium: every test and fixture that creates records by code changes; the code length limits (shots 30) now include the prefix. **Alternatives.** (a) Frontend only, as now. (b) An opt-in project setting (`enforce_code_prefix`, default off), so projects choose; costs a column, a migration and a UI switch.

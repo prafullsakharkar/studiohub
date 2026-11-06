@@ -76,7 +76,7 @@ export function useEpisodesListConfig(scope?: { projectId: string }): DirectoryL
 
 const episodeFields: ReadonlyArray<FieldDef> = [
   { kind: 'entity', name: 'project', rowKey: 'project_id', label: 'Project', required: true, render: (p) => <ProjectPicker label="Project * (episodic)" value={p.value} onChange={(id) => p.onChange(id ?? '')} error={p.error} /> },
-  { kind: 'text', name: 'code', label: 'Code', maxLength: 50, hint: 'Left blank, it is made from the season and episode number (EP101).' },
+  { kind: 'text', name: 'code', label: 'Code', maxLength: 50, projectPrefix: true, hint: 'Left blank, the server makes it from the season and episode number (EP101).' },
   { kind: 'text', name: 'name', label: 'Name', maxLength: 255 },
   { kind: 'number', name: 'season_number', label: 'Season' },
   { kind: 'number', name: 'episode_number', label: 'Episode number' },
@@ -145,7 +145,7 @@ export function useSequencesListConfig(scope?: { projectId: string }): Directory
 
 const sequenceFields: ReadonlyArray<FieldDef> = [
   { kind: 'entity', name: 'project', rowKey: 'project_id', label: 'Project', required: true, render: (p) => <ProjectPicker label="Project *" value={p.value} onChange={(id) => p.onChange(id ?? '')} error={p.error} /> },
-  { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 50, hint: 'Upper case, no spaces or slashes; unique in the project.' },
+  { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 50, projectPrefix: true, hint: 'Upper case, no spaces or slashes; unique in the project.' },
   { kind: 'text', name: 'name', label: 'Name', maxLength: 255 },
   {
     kind: 'entity',

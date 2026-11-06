@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { Shot } from '@/api/production/work';
 import { EntityResolutionItem, BulkOperationSummary, BulkOperationResponse, ResolutionUserAction, EntityResolutionState } from '@/shared/components/bulk/types';
+import { withProjectPrefix } from '@/modules/production/codePrefix';
 import { useBulkShots } from '../../hooks/useBulkShots';
 import { BulkImportGrid, GridColumn } from '@/shared/components/bulk/BulkImportGrid';
 import { BulkValidationSummary } from '@/shared/components/bulk/BulkValidationSummary';
@@ -66,6 +67,8 @@ interface ShotBulkManagerProps {
   episodeCode?: string;
   episodes?: BulkEpisodeRef[];
   sequences?: BulkSequenceRef[];
+  /** Every sequence code of the project, when known: a shot whose sequence is not among them is refused at Validate (a shot needs an existing sequence). */
+  sequenceCodes?: string[];
   isEpisodic?: boolean;
   onCreateEpisode?: (input: BulkEpisodeCreateInput) => Promise<BulkCreatedEpisode | undefined>;
   onCreateSequence?: (input: BulkSequenceCreateInput) => Promise<BulkCreatedSequence | undefined>;
@@ -288,6 +291,7 @@ export const ShotBulkManager: React.FC<ShotBulkManagerProps> = ({
   episodeCode,
   episodes,
   sequences,
+  sequenceCodes,
   isEpisodic,
   onCreateEpisode,
   onCreateSequence,
@@ -429,7 +433,15 @@ export const ShotBulkManager: React.FC<ShotBulkManagerProps> = ({
 
   // Step 1 -> Step 2: Validate against backend
   const handleValidateGrid = async () => {
-    const cleanedRows = rows.filter((r) => r.code && r.code.trim().length > 0);
+    // A shot's code starts with the project's (`TST_SH010`); its sequence is the project's own, found as typed or with the prefix.
+    const known = sequenceCodes ? new Map([...sequenceCodes, ...localSequences.map((s) => s.code)].map((c) => [c.toUpperCase(), c])) : undefined;
+    const cleanedRows = rows
+      .filter((r) => r.code && r.code.trim().length > 0)
+      .map((r) => {
+        const typed = String(r.sequence_code ?? '').trim();
+        const sequence = known ? (known.get(typed.toUpperCase()) ?? known.get(withProjectPrefix(projectCode, typed))) : undefined;
+        return { ...r, code: withProjectPrefix(projectCode, r.code), ...(sequence ? { sequence_code: sequence } : {}) };
+      });
     if (cleanedRows.length === 0) return;
 
     // Analyze duplicates and check frame numbers locally
@@ -442,6 +454,15 @@ export const ShotBulkManager: React.FC<ShotBulkManagerProps> = ({
 
     const validatedItems = initialItems.map((item) => {
       const data = item.proposedData as any;
+      if (known) {
+        const sequence = String(data?.sequence_code ?? '').trim();
+        const problem = !sequence
+          ? 'A shot needs a sequence.'
+          : !known.has(sequence.toUpperCase())
+            ? `Sequence ${sequence} does not exist in this project. Create it first.`
+            : undefined;
+        if (problem) return { ...item, state: 'INVALID' as const, errors: [problem], userAction: 'skip' as const };
+      }
       if (data?.frame_in !== undefined && data?.frame_out !== undefined) {
         const frameCheck = BulkOperationEngine.validateFrameRanges(data.frame_in, data.frame_out);
         if (!frameCheck.valid) {

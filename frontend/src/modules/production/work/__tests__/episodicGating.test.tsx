@@ -134,7 +134,7 @@ describe('shot form: the episode picker', () => {
     const { calls } = mockFetch(server);
     renderAt(`/shots/new?project=${standard.id}`, route);
     await waitFor(() => expect(calls.some((c) => path(c) === `/api/v1/projects/${standard.id}/`)).toBe(true));
-    await screen.findByText('Sequence');
+    await screen.findByText('Sequence *');
     expect(screen.queryByText(/^Episode/)).toBeNull();
   });
 });

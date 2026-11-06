@@ -31,14 +31,20 @@ const standard = bulk.projects_detail_standard.body as { id: string; code: strin
 const episodic = bulk.projects_detail_episodic.body as { id: string; code: string };
 
 const path = (c: MockCall) => new URL(c.url).pathname;
-const reply = (c: Captured): MockReply => ({ status: c.status, body: c.body });
+/**
+ * New codes start with the project's (`STD_SQ010`), while the captured answers name the bare codes the backend was asked
+ * about. The same captures with their codes prefixed are what the backend would answer to the prefixed request.
+ */
+const prefixed = <T,>(value: T, project: { code: string }): T => JSON.parse(JSON.stringify(value), (key, v) => (key === 'code' && typeof v === 'string' ? `${project.code}_${v}` : v));
+const reply = (c: Captured, project?: { code: string }): MockReply => ({ status: c.status, body: project ? prefixed(c.body, project) : c.body });
+const projectOf = (c: MockCall) => ((c.body as { project_id?: string }).project_id === episodic.id ? episodic : standard);
 const posts = (calls: MockCall[], route: string) => calls.filter((c) => c.method === 'POST' && path(c) === `/api/v1/sequences/${route}/`);
 
 function server({ dryRun, commit }: { dryRun: Captured; commit?: Captured }) {
   return (c: MockCall): MockReply => {
     const p = path(c);
-    if (c.method === 'POST' && p === '/api/v1/sequences/check-existence/') return reply(structure.sequences_check_existence);
-    if (c.method === 'POST' && p === '/api/v1/sequences/bulk-create/') return reply((c.body as { dry_run?: boolean }).dry_run ? dryRun : (commit ?? dryRun));
+    if (c.method === 'POST' && p === '/api/v1/sequences/check-existence/') return reply(structure.sequences_check_existence, projectOf(c));
+    if (c.method === 'POST' && p === '/api/v1/sequences/bulk-create/') return reply((c.body as { dry_run?: boolean }).dry_run ? dryRun : (commit ?? dryRun), projectOf(c));
     if (p === `/api/v1/projects/${standard.id}/`) return reply(bulk.projects_detail_standard);
     if (p === `/api/v1/projects/${episodic.id}/`) return reply(bulk.projects_detail_episodic);
     if (p === '/api/v1/episodes/') return reply(bulk.episodes_of_episodic);
@@ -112,9 +118,9 @@ describe('Bulk add sequences', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: /Validate/ }));
 
     expect(await within(dialog).findByText('Batch Validation Breakdown')).toBeTruthy();
-    expect(posts(calls, 'check-existence')[0].body).toEqual({ project_id: standard.id, codes: ['SQ010', 'SQ020'] });
+    expect(posts(calls, 'check-existence')[0].body).toEqual({ project_id: standard.id, codes: ['STD_SQ010', 'STD_SQ020'] });
     // Only the row still new is dry-run.
-    expect(posts(calls, 'bulk-create')[0].body).toEqual({ project_id: standard.id, dry_run: true, atomic: false, items: [{ code: 'SQ020', action: 'create', data: { name: 'Chase' } }] });
+    expect(posts(calls, 'bulk-create')[0].body).toEqual({ project_id: standard.id, dry_run: true, atomic: false, items: [{ code: 'STD_SQ020', action: 'create', data: { name: 'Chase' } }] });
     expect(pill(dialog, /New \(Create\)\s*1/)).toBeTruthy();
     expect(pill(dialog, /Active Existing\s*1/)).toBeTruthy();
     expect(pill(dialog, /Batch Duplicates\s*1/)).toBeTruthy();
@@ -126,9 +132,9 @@ describe('Bulk add sequences', () => {
     expect(posts(calls, 'bulk-create')[1].body).toEqual({
       project_id: standard.id,
       items: [
-        { code: 'SQ010', action: 'skip', data: {} },
-        { code: 'SQ020', action: 'create', data: { name: 'Chase' } },
-        { code: 'SQ020', action: 'skip', data: {} },
+        { code: 'STD_SQ010', action: 'skip', data: {} },
+        { code: 'STD_SQ020', action: 'create', data: { name: 'Chase' } },
+        { code: 'STD_SQ020', action: 'skip', data: {} },
       ],
     });
     expect(await within(dialog).findByText(/2 created/)).toBeTruthy();
@@ -143,7 +149,7 @@ describe('Bulk add sequences', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: /Validate/ }));
 
     expect(await within(dialog).findByText('Batch Validation Breakdown')).toBeTruthy();
-    expect(posts(calls, 'bulk-create')[0].body.items).toEqual(bulk.sequences_create_episodic_dry_run.request.body.items);
+    expect(posts(calls, 'bulk-create')[0].body.items).toEqual(prefixed(bulk.sequences_create_episodic_dry_run.request.body.items, episodic));
     expect(pill(dialog, /New \(Create\)\s*1/)).toBeTruthy();
     expect(pill(dialog, /Validation Errors\s*1/)).toBeTruthy();
     expect(within(dialog).getByText('episode: An episode is required for sequences on episodic projects.')).toBeTruthy();
@@ -190,8 +196,8 @@ describe.each([
   it('validates on its own routes and shows the backend\'s refusals as validation errors', async () => {
     const { calls } = mockFetch((c) => {
       const p = path(c);
-      if (c.method === 'POST' && p === `/api/v1/${plural}/check-existence/`) return reply(existence);
-      if (c.method === 'POST' && p === `/api/v1/${plural}/bulk-create/`) return reply(dryRun);
+      if (c.method === 'POST' && p === `/api/v1/${plural}/check-existence/`) return reply(existence, standard);
+      if (c.method === 'POST' && p === `/api/v1/${plural}/bulk-create/`) return reply(dryRun, standard);
       if (p === `/api/v1/projects/${standard.id}/`) return reply(bulk.projects_detail_standard);
       return { status: 200, body: { count: 0, next: null, previous: null, results: [] } };
     });
@@ -218,7 +224,7 @@ describe.each([
 
     expect(await within(dialog).findByText('Batch Validation Breakdown')).toBeTruthy();
     const dry = calls.find((c) => c.method === 'POST' && path(c) === `/api/v1/${plural}/bulk-create/`);
-    expect((dry?.body as { items: unknown } | undefined)?.items).toEqual(dryRun.request.body.items);
+    expect((dry?.body as { items: unknown } | undefined)?.items).toEqual(prefixed(dryRun.request.body.items, standard));
     expect(pill(dialog, /New \(Create\)\s*1/)).toBeTruthy();
     expect(pill(dialog, new RegExp(`Validation Errors\\s*${errors}`))).toBeTruthy();
   });

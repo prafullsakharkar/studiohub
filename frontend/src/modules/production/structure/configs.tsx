@@ -131,7 +131,7 @@ export const episodesConfig: RelatedRecordsConfig<Episode> = {
     { header: 'Status', cell: (e) => e.status },
   ],
   fields: [
-    { kind: 'text', name: 'code', label: 'Code', required: true },
+    { kind: 'text', name: 'code', label: 'Code', required: true, projectPrefix: true },
     { kind: 'text', name: 'name', label: 'Name' },
     { kind: 'number', name: 'season_number', label: 'Season' },
     { kind: 'number', name: 'episode_number', label: 'Episode number' },
@@ -184,7 +184,7 @@ export const sequencesConfig: RelatedRecordsConfig<Sequence> = {
     { header: 'Status', cell: (s) => s.status },
   ],
   fields: [
-    { kind: 'text', name: 'code', label: 'Code', required: true },
+    { kind: 'text', name: 'code', label: 'Code', required: true, projectPrefix: true },
     { kind: 'text', name: 'name', label: 'Name' },
     episodeField,
     { kind: 'textarea', name: 'description', label: 'Description' },
