@@ -67,13 +67,13 @@ describe('shot workspace on the wire', () => {
     const select = (await screen.findByLabelText('Artist')) as HTMLSelectElement;
     await waitFor(() => expect(select.querySelectorAll('option').length).toBeGreaterThan(1), T);
     fireEvent.change(select, { target: { value: fixture.artistUser } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     await waitFor(async () => expect((await shotsApi.get(fixture.shot)).assigned_artist_id).toBe(fixture.artistUser), T);
     fireEvent.click(await screen.findByRole('button', { name: 'Reassign' }, T));
     const again = (await screen.findByLabelText('Artist')) as HTMLSelectElement;
     await waitFor(() => expect(again.querySelectorAll('option').length).toBeGreaterThan(1), T);
     fireEvent.change(again, { target: { value: '' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     await waitFor(async () => expect((await shotsApi.get(fixture.shot)).assigned_artist_id).toBeNull(), T);
 
     // The server refuses an artist who is not a member of the project, for a shot and for an asset (CR-34).
@@ -83,7 +83,7 @@ describe('shot workspace on the wire', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Notes' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Add note' }, T));
-    fireEvent.change(await screen.findByLabelText('Subject'), { target: { value: 'Match the plate' } });
+    fireEvent.change(await screen.findByLabelText(/^Subject/), { target: { value: 'Match the plate' } });
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Add note' }));
     await waitFor(async () => expect(await noteCount('Shot', fixture.shot, fixture.shotCode)).toBe(1), T);
     expect(await screen.findByText('Match the plate', {}, T)).toBeTruthy();
@@ -117,12 +117,12 @@ describe('asset workspace on the wire', () => {
     const select = (await screen.findByLabelText('Artist')) as HTMLSelectElement;
     await waitFor(() => expect(select.querySelectorAll('option').length).toBeGreaterThan(1), T);
     fireEvent.change(select, { target: { value: fixture.artistUser } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     await waitFor(async () => expect((await assetsApi.get(fixture.asset)).assigned_artist_id).toBe(fixture.artistUser), T);
 
     fireEvent.click(screen.getByRole('tab', { name: 'Notes' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Add note' }, T));
-    fireEvent.change(await screen.findByLabelText('Subject'), { target: { value: 'Fix the rig' } });
+    fireEvent.change(await screen.findByLabelText(/^Subject/), { target: { value: 'Fix the rig' } });
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Add note' }));
     await waitFor(async () => expect(await noteCount('Asset', fixture.asset, fixture.assetCode)).toBe(1), T);
 

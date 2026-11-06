@@ -35,13 +35,13 @@ import {
   Tv,
 } from 'lucide-react';
 import { isEpisodicProject } from '../projectWorkflow';
-import { projectsApi, type Project, type ProjectInput } from '@/api/production/structure';
+import { CloneProjectDialog } from './CloneProjectDialog';
+import { projectsApi, type Project } from '@/api/production/structure';
 import { auditKeys } from '@/api/audit/audit';
 import { notify } from '@/core/notifications/notify';
 import { useQueryClient } from '@tanstack/react-query';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
-import { Modal } from '@/shared/components/Modal';
 import { SmartImg } from '@/components/ui/SmartImg';
 import { WorkspaceActionBar } from '@/shared/workspace/canonical/WorkspaceActionBar';
 import { WorkspaceAction } from '@/shared/workspace/canonical/types';
@@ -205,10 +205,6 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
   const switcherRef = useRef<HTMLDivElement>(null);
 
   const [isCloneOpen, setIsCloneOpen] = useState(false);
-  const [cloneData, setCloneData] = useState({
-    name: `${project.name} (Copy)`,
-    code: `${project.code}_CLONE`,
-  });
 
   const navigate = useNavigate();
   const addNotification = useNotificationStore((state) => state.addNotification);
@@ -324,32 +320,6 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
       await refresh();
       notify.success(`${project.name} was archived.`);
       navigate('/projects');
-    } catch (error) {
-      notify.fromError(error);
-    }
-  };
-
-  /** A new project with this one's settings. Its shots, assets, members and files are not copied. */
-  const handleClone = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const settings: ProjectInput = {
-      code: cloneData.code,
-      name: cloneData.name,
-      type: project.type,
-      workflow_type: project.workflow_type,
-      description: project.description,
-      fps: Number(project.fps),
-      resolution: project.resolution,
-      aspect_ratio: project.aspect_ratio,
-      color_space: project.color_space,
-      ...(project.client_id ? { client_id: project.client_id } : {}),
-    };
-    try {
-      const cloned = await projectsApi.create(settings);
-      await refresh();
-      setIsCloneOpen(false);
-      notify.success(`${cloned.name} was created from ${project.code}.`);
-      navigate(`/projects/${cloned.id}`);
     } catch (error) {
       notify.fromError(error);
     }
@@ -801,50 +771,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
         )}
       </div>
 
-      {/* Clone Project Modal */}
-      <Modal
-        isOpen={isCloneOpen}
-        onClose={() => setIsCloneOpen(false)}
-        title="Duplicate project"
-        subtitle={`Create a project with the settings of ${project.code}`}
-      >
-        <form onSubmit={handleClone} className="space-y-3">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">New Project Name</label>
-            <input
-              required
-              type="text"
-              value={cloneData.name}
-              onChange={(e) => setCloneData({ ...cloneData, name: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:ring-1 focus:ring-indigo-500"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">New Project Code</label>
-            <input
-              required
-              type="text"
-              value={cloneData.code}
-              onChange={(e) => setCloneData({ ...cloneData, code: e.target.value.toUpperCase() })}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono focus:ring-1 focus:ring-indigo-500"
-            />
-          </div>
-
-          <p className="text-[11px] text-slate-400">
-            The new project gets this one's type, workflow, color space, resolution, frame rate and client. Its shots, assets, members and files are not copied.
-          </p>
-
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-            <Button variant="ghost" size="sm" onClick={() => setIsCloneOpen(false)} type="button">
-              Cancel
-            </Button>
-            <Button variant="primary" size="sm" type="submit">
-              Duplicate Project
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      {isCloneOpen && <CloneProjectDialog project={project} onClose={() => setIsCloneOpen(false)} />}
 
     </div>
   );

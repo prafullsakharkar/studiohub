@@ -111,11 +111,11 @@ describe('client contracts', () => {
     renderTab(<RelatedRecords config={clientContractsConfig} parentId={CLIENT} />, superuser);
     await screen.findByText(row.contract_number);
     fireEvent.click(screen.getByRole('button', { name: 'Add contract' }));
-    const dialog = await screen.findByRole('dialog');
+    const dialog = await screen.findByRole('dialog', { name: 'New contract' });
     fireEvent.change(within(dialog).getByLabelText(/^Starts as/), { target: { value: 'Draft' } });
     fireEvent.change(within(dialog).getByLabelText(/^Contract number/), { target: { value: 'C-100' } });
     fireEvent.change(within(dialog).getByLabelText(/^Title/), { target: { value: 'New SOW' } });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Add contract' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Create contract' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
     expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ client: CLIENT, status: 'Draft', contract_number: 'C-100', title: 'New SOW', nda_signed: false });
   });

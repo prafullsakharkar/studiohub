@@ -25,7 +25,8 @@ export interface DialogLayerOptions {
 /**
  * What every modal dialog does while it is open: Escape closes it, Tab stays inside it, the page behind does not
  * scroll, focus moves in when it opens and back to what opened it when it closes. Undone on close or on unmount while
- * open. A key a control inside has already handled (`preventDefault`) is left to that control.
+ * open. Put `data-autofocus` on an element inside (a form) to start focus on its first control instead of the header's close
+ * button. A key a control inside has already handled (`preventDefault`) is left to that control.
  * Used by `Modal`; a dialog with its own layout (the command palette) uses it directly.
  */
 export function useDialogLayer({ isOpen, onClose, containerRef }: DialogLayerOptions): void {
@@ -67,8 +68,14 @@ export function useDialogLayer({ isOpen, onClose, containerRef }: DialogLayerOpt
     };
     document.addEventListener('keydown', onKeyDown);
     document.body.style.overflow = 'hidden';
-    // Initial focus: first control, else the dialog itself.
-    const t = setTimeout(() => (focusableIn(containerRef.current)[0] ?? containerRef.current)?.focus(), 0);
+    // Initial focus: the first field of an element marked `data-autofocus` (a form dialog), else the first control,
+    // else the dialog itself.
+    const t = setTimeout(() => {
+      const root = containerRef.current;
+      const marked = root?.querySelector<HTMLElement>('[data-autofocus]') ?? null;
+      const first = marked ? focusableIn(marked)[0] : undefined;
+      (first ?? focusableIn(root)[0] ?? root)?.focus();
+    }, 0);
 
     return () => {
       clearTimeout(t);

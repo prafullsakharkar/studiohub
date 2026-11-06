@@ -7,13 +7,13 @@ import { catalogKeys } from '@/api/masterdata/catalog';
 import type { CatalogListParams, CatalogRowBase } from '@/api/masterdata/catalog';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
-import { Dialog } from '@/components/ui/Dialog';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { FieldInputs } from '@/modules/directory/FieldInputs';
 import { type Values, blank, buildSchema, fromRow, wireValue } from '@/modules/directory/formModel';
 import type { FieldDef } from '@/modules/directory/types';
-import { FormBanner, Table } from '@/modules/identity/components/ui';
+import { Table } from '@/modules/identity/components/ui';
+import { FormDialog, formDialogCopy } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { Badge } from '@/shared/components/Badge';
 import { StatusBadge } from '@/shared/components/StatusBadge';
@@ -46,6 +46,7 @@ export interface CatalogTableProps<Row extends CatalogRowBase> {
 function RowDialog<Row extends CatalogRowBase>({ props, row, onClose }: { props: CatalogTableProps<Row>; row: Row | null; onClose: () => void }) {
   const queryClient = useQueryClient();
   const editing = row !== null;
+  const copy = formDialogCopy(props.noun, editing);
   const schema = useMemo(() => buildSchema(props.fields), [props.fields]);
   const {
     register,
@@ -53,7 +54,7 @@ function RowDialog<Row extends CatalogRowBase>({ props, row, onClose }: { props:
     submit,
     serverError,
     clearServerError,
-    formState: { errors, isSubmitting, dirtyFields },
+    formState: { errors, isSubmitting, isDirty, dirtyFields },
   } = useServerForm<Values>({
     resolver: zodResolver(schema) as never,
     defaultValues: row ? fromRow(props.fields, row as unknown as Record<string, unknown>) : Object.fromEntries(props.fields.map((f) => [f.name, blank(f)])),
@@ -69,25 +70,14 @@ function RowDialog<Row extends CatalogRowBase>({ props, row, onClose }: { props:
     if (editing) await props.api.update((row as Row).id, payload);
     else await props.api.create(payload);
     await queryClient.invalidateQueries({ queryKey: [...catalogKeys.all, ...props.scope] });
-    notify.success(`${props.noun[0].toUpperCase()}${props.noun.slice(1)} ${editing ? 'saved' : 'created'}.`);
+    notify.success(copy.saved);
     onClose();
   });
 
   return (
-    <Dialog isOpen onClose={onClose} title={editing ? `Edit ${props.noun}` : `New ${props.noun}`} size="lg">
-      <form noValidate onSubmit={onSubmit} className="space-y-4">
-        <FormBanner error={serverError} />
-        <FieldInputs fields={props.fields} editing={editing} register={register} control={control} errors={errors} clearServerError={clearServerError} />
-        <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary" isLoading={isSubmitting}>
-            {editing ? 'Save changes' : `Create ${props.noun}`}
-          </Button>
-        </div>
-      </form>
-    </Dialog>
+    <FormDialog title={copy.title} onClose={onClose} onSubmit={onSubmit} isSubmitting={isSubmitting} isDirty={isDirty} serverError={serverError} submitLabel={copy.submitLabel}>
+      <FieldInputs fields={props.fields} editing={editing} register={register} control={control} errors={errors} clearServerError={clearServerError} />
+    </FormDialog>
   );
 }
 

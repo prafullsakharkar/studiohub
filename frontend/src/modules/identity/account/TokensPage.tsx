@@ -11,6 +11,7 @@ import { useAuth } from '@/modules/auth';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { Field, FormBanner, Table, formatDate, inputClass } from '../components/ui';
+import { FormDialog } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -65,7 +66,7 @@ const SecretDialog: React.FC<{ issued: IssuedCredential | null; onClose: () => v
   );
 };
 
-const CreateDialog: React.FC<{ kind: CredentialKind; noun: string; isOpen: boolean; onClose: () => void; onIssued: (issued: IssuedCredential) => void }> = ({ kind, noun, isOpen, onClose, onIssued }) => {
+const CreateForm: React.FC<{ kind: CredentialKind; noun: string; onClose: () => void; onIssued: (issued: IssuedCredential) => void }> = ({ kind, noun, onClose, onIssued }) => {
   const { user } = useAuth();
   const held = useMemo(() => [...(user?.permissions ?? [])].sort(), [user?.permissions]);
   const [scopes, setScopes] = useState<string[]>([]);
@@ -74,20 +75,10 @@ const CreateDialog: React.FC<{ kind: CredentialKind; noun: string; isOpen: boole
   const {
     register,
     submit,
-    reset,
     serverError,
     clearServerError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useServerForm<Values>({ resolver: zodResolver(schema), defaultValues: { name: '', description: '', expires_at: '' } });
-
-  const close = () => {
-    reset();
-    setScopes([]);
-    setFilter('');
-    setScopeError(null);
-    clearServerError();
-    onClose();
-  };
 
   const onSubmit = submit(async (values) => {
     // The API requires a non-empty scope list of codes the caller holds; there is no "unrestricted" option here.
@@ -101,63 +92,63 @@ const CreateDialog: React.FC<{ kind: CredentialKind; noun: string; isOpen: boole
       scopes,
       ...(values.expires_at ? { expires_at: new Date(values.expires_at).toISOString() } : {}),
     });
-    close();
     onIssued(issued);
+    onClose();
   });
 
   const visible = held.filter((code) => code.toLowerCase().includes(filter.trim().toLowerCase()));
 
   return (
-    <Dialog isOpen={isOpen} onClose={close} title={`New ${noun}`} size="lg">
-      <form noValidate onSubmit={onSubmit} className="space-y-4">
-        <FormBanner error={serverError} />
-        <Field id="cred-name" label="Name" error={errors.name?.message}>
-          <input id="cred-name" className={inputClass(Boolean(errors.name))} {...register('name', { onChange: clearServerError })} />
-        </Field>
-        <Field id="cred-description" label="Description (optional)">
-          <input id="cred-description" className={inputClass()} {...register('description')} />
-        </Field>
-        <Field id="cred-expires" label="Expires (optional)">
-          <input id="cred-expires" type="datetime-local" className={inputClass()} {...register('expires_at')} />
-        </Field>
-        <fieldset className="space-y-2">
-          <legend className="text-xs font-mono text-slate-400">Permissions this {noun} may use (only ones you hold)</legend>
-          <input aria-label="Filter permissions" placeholder="Filter…" className={inputClass()} value={filter} onChange={(e) => setFilter(e.target.value)} />
-          <div className="max-h-48 overflow-y-auto rounded-lg border border-slate-800 p-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
-            {visible.map((code) => (
-              <label key={code} className="flex items-center gap-2 text-xs text-slate-300">
-                <input
-                  type="checkbox"
-                  checked={scopes.includes(code)}
-                  onChange={(e) => {
-                    setScopeError(null);
-                    setScopes((current) => (e.target.checked ? [...current, code] : current.filter((c) => c !== code)));
-                  }}
-                />
-                <span className="font-mono">{code}</span>
-              </label>
-            ))}
-            {visible.length === 0 && <p className="text-xs text-slate-500">No permission matches.</p>}
-          </div>
-          <p className="text-[11px] text-slate-500">{scopes.length} selected</p>
-          {scopeError && (
-            <p role="alert" className="text-[11px] text-rose-400">
-              {scopeError}
-            </p>
-          )}
-        </fieldset>
-        <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="ghost" onClick={close}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary" isLoading={isSubmitting}>
-            Create {noun}
-          </Button>
+    <FormDialog
+      title={`New ${noun}`}
+      onClose={onClose}
+      onSubmit={onSubmit}
+      isSubmitting={isSubmitting}
+      isDirty={isDirty || scopes.length > 0 || filter !== ''}
+      serverError={serverError}
+      submitLabel={`Create ${noun}`}
+    >
+      <Field id="cred-name" label="Name *" error={errors.name?.message}>
+        <input id="cred-name" className={inputClass(Boolean(errors.name))} {...register('name', { onChange: clearServerError })} />
+      </Field>
+      <Field id="cred-description" label="Description (optional)">
+        <input id="cred-description" className={inputClass()} {...register('description')} />
+      </Field>
+      <Field id="cred-expires" label="Expires (optional)">
+        <input id="cred-expires" type="datetime-local" className={inputClass()} {...register('expires_at')} />
+      </Field>
+      <fieldset className="space-y-2">
+        <legend className="text-xs font-mono text-slate-400">Permissions this {noun} may use (only ones you hold)</legend>
+        <input aria-label="Filter permissions" placeholder="Filter…" className={inputClass()} value={filter} onChange={(e) => setFilter(e.target.value)} />
+        <div className="max-h-48 overflow-y-auto rounded-lg border border-slate-800 p-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
+          {visible.map((code) => (
+            <label key={code} className="flex items-center gap-2 text-xs text-slate-300">
+              <input
+                type="checkbox"
+                checked={scopes.includes(code)}
+                onChange={(e) => {
+                  setScopeError(null);
+                  setScopes((current) => (e.target.checked ? [...current, code] : current.filter((c) => c !== code)));
+                }}
+              />
+              <span className="font-mono">{code}</span>
+            </label>
+          ))}
+          {visible.length === 0 && <p className="text-xs text-slate-500">No permission matches.</p>}
         </div>
-      </form>
-    </Dialog>
+        <p className="text-[11px] text-slate-500">{scopes.length} selected</p>
+        {scopeError && (
+          <p role="alert" className="text-[11px] text-rose-400">
+            {scopeError}
+          </p>
+        )}
+      </fieldset>
+    </FormDialog>
   );
 };
+
+/** Mounted only while open, so every open starts with no permissions chosen. */
+const CreateDialog: React.FC<{ kind: CredentialKind; noun: string; isOpen: boolean; onClose: () => void; onIssued: (issued: IssuedCredential) => void }> = ({ isOpen, ...rest }) => (isOpen ? <CreateForm {...rest} /> : null);
 
 export const TokensPage: React.FC = () => {
   const queryClient = useQueryClient();

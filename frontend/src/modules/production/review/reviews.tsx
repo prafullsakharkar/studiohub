@@ -69,6 +69,7 @@ export const reviewsFormFields: ReadonlyArray<FieldDef> = [
 // The form never sends `status`: a new review starts Pending Review and moves by the actions (the server now refuses anything else on create, CR-16).
 export const reviewsFormConfig: DirectoryFormConfig<Review> = {
   noun: 'review',
+  listTitle: 'Reviews',
   basePath: '/reviews',
   queryKey: reviewsApi.keys.lists(),
   fields: reviewsFormFields,

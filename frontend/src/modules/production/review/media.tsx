@@ -74,6 +74,7 @@ export const mediaFormFields: ReadonlyArray<FieldDef> = [
 
 export const mediaFormConfig: DirectoryFormConfig<Media> = {
   noun: 'media item',
+  listTitle: 'Media',
   basePath: '/media',
   queryKey: mediaApi.keys.lists(),
   fields: mediaFormFields,

@@ -74,6 +74,41 @@ describe('administrator creates a login, assigns a role, and the user sees the p
   }, 90000);
 });
 
+describe('administrator links an existing login to a person', () => {
+  const offered = () => Array.from((screen.queryByLabelText('User') as HTMLSelectElement | null)?.options ?? []).map((o) => o.value);
+  /** The form is there (or says nothing can be linked): the permissions and the people list have both loaded. */
+  const loaded = () => waitFor(() => expect(screen.queryByLabelText('User') ?? screen.queryByText(/No existing login can be linked/)).toBeTruthy(), { timeout: 15000 });
+
+  it('offers only logins that can be linked: one with no person and no other person on its e-mail', async () => {
+    await signInManager();
+    const stamp = Date.now();
+    const password = 'Live-Link-Pass!42';
+    // Every user gets a person of its own when it is created (DOM-MD-PER-10): `kept` keeps it, `freed` has it unlinked.
+    const kept = await apiClient.post<{ id: string }>('/api/v1/identity/users/', { email: `live-kept-${stamp}@example.test`, password });
+    const freed = await apiClient.post<{ id: string }>('/api/v1/identity/users/', { email: `live-freed-${stamp}@example.test`, password });
+    const former = (await apiClient.get<{ results: Array<{ id: string; user: string | null }> }>(`/api/v1/people/?search=live-freed-${stamp}`)).results.find((p) => p.user === freed.id);
+    expect(former).toBeTruthy();
+    await apiClient.post(`/api/v1/people/${former?.id}/unlink-user/`, {});
+    const stranger = await apiClient.post<{ id: string }>('/api/v1/people/', { name: 'Live Link Stranger' });
+
+    // Another person cannot take `freed`: linking copies its e-mail, which the person it came from still holds.
+    render(tree(<AccountSection personId={stranger.id} personName="Live Link Stranger" userId={null} />));
+    await loaded();
+    expect(offered()).not.toContain(freed.id);
+    expect(offered()).not.toContain(kept.id); // it has a person of its own
+    cleanup();
+
+    // The person it came from can have it back.
+    render(tree(<AccountSection personId={former?.id as string} personName="Live Link Former" userId={null} />));
+    await loaded();
+    expect(offered()).toContain(freed.id);
+    expect(offered()).not.toContain(kept.id);
+    fireEvent.change(screen.getByLabelText('User'), { target: { value: freed.id } });
+    fireEvent.click(screen.getByRole('button', { name: 'Link login' }));
+    await waitFor(async () => expect((await apiClient.get<{ user: string | null }>(`/api/v1/people/${former?.id}/`)).user).toBe(freed.id), { timeout: 15000 });
+  }, 90000);
+});
+
 /** A bearer token for the MFA-enrolled superuser, obtained over raw HTTP so it can act while another user is signed in. */
 async function managerBearer(): Promise<string> {
   const first = await rawPost('/api/v1/auth/login/', live.users.manager);
@@ -157,8 +192,8 @@ describe('MFA from My account, then a sign-in that needs the challenge', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Generate new codes' }, { timeout: 15000 }));
     let dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: /use a recovery code instead/i }));
-    fireEvent.change(within(dialog).getByLabelText('Password'), { target: { value: live.users.selfmfa.password } });
-    fireEvent.change(within(dialog).getByLabelText('Recovery code'), { target: { value: codes[0] } });
+    fireEvent.change(within(dialog).getByLabelText(/^Password/), { target: { value: live.users.selfmfa.password } });
+    fireEvent.change(within(dialog).getByLabelText(/^Recovery code/), { target: { value: codes[0] } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Generate' }));
     const fresh = await screen.findByLabelText('New recovery codes', {}, { timeout: 15000 });
     const freshCodes = [...fresh.querySelectorAll('li')].map((li) => li.textContent as string);
@@ -170,8 +205,8 @@ describe('MFA from My account, then a sign-in that needs the challenge', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Turn off' }, { timeout: 15000 }));
     dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: /use a recovery code instead/i }));
-    fireEvent.change(within(dialog).getByLabelText('Password'), { target: { value: live.users.selfmfa.password } });
-    fireEvent.change(within(dialog).getByLabelText('Recovery code'), { target: { value: freshCodes[0] } });
+    fireEvent.change(within(dialog).getByLabelText(/^Password/), { target: { value: live.users.selfmfa.password } });
+    fireEvent.change(within(dialog).getByLabelText(/^Recovery code/), { target: { value: freshCodes[0] } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Turn off' }));
     expect(await screen.findByRole('button', { name: 'Turn on' }, { timeout: 15000 })).toBeTruthy();
     void totp;

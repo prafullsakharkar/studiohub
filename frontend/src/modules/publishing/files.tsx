@@ -99,6 +99,7 @@ export const filesFormFields: ReadonlyArray<FieldDef> = [
 /** The form picks a root by id; the API takes its code. */
 export const filesFormConfig: DirectoryFormConfig<PublishedFile> = {
   noun: 'published file',
+  listTitle: 'Published files',
   basePath: '/publishing/files',
   queryKey: publishedFilesApi.keys.lists(),
   fields: filesFormFields,

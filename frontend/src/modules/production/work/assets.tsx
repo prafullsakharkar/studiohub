@@ -82,6 +82,7 @@ export const assetsFormFields: ReadonlyArray<FieldDef> = [
 
 export const assetsFormConfig: DirectoryFormConfig<Asset> = {
   noun: 'asset',
+  listTitle: 'Assets',
   basePath: '/assets',
   queryKey: assetsApi.keys.lists(),
   fields: assetsFormFields,

@@ -48,6 +48,7 @@ export const destinationsFormFields: ReadonlyArray<FieldDef> = [
 
 export const destinationsFormConfig: DirectoryFormConfig<DeliveryDestination> = {
   noun: 'destination',
+  listTitle: 'Delivery destinations',
   basePath: '/deliveries/destinations',
   queryKey: destinationsApi.keys.lists(),
   fields: destinationsFormFields,

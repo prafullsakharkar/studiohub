@@ -136,7 +136,7 @@ describe('asset workspace', () => {
     const select = (await screen.findByLabelText('Artist')) as HTMLSelectElement;
     await waitFor(() => expect(select.querySelectorAll('option').length).toBeGreaterThan(1));
     fireEvent.change(select, { target: { value: members[0].user_id } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
     expect(path(calls.find((c) => c.method === 'PATCH') as MockCall)).toBe(`/api/v1/assets/${parent.id}/`);
     expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ assigned_artist: members[0].user_id });
@@ -150,7 +150,7 @@ describe('asset workspace', () => {
     const own = noteRows.find((n) => n.entity_id === assetId) as { subject: string };
     expect(await screen.findByText(own.subject)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Add note' }));
-    fireEvent.change(await screen.findByLabelText('Subject'), { target: { value: 'Fix the rig' } });
+    fireEvent.change(await screen.findByLabelText(/^Subject/), { target: { value: 'Fix the rig' } });
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Add note' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
     expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({ subject: 'Fix the rig', entity_type: 'Asset', entity_id: assetId });

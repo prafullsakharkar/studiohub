@@ -71,6 +71,7 @@ export const workflowsFormFields: ReadonlyArray<FieldDef> = [
 // Activation goes through activate/deactivate, not the form.
 export const workflowsFormConfig: DirectoryFormConfig<Workflow> = {
   noun: 'workflow',
+  listTitle: 'Workflows',
   basePath: '/workflows',
   queryKey: workflowsApi.keys.lists(),
   fields: workflowsFormFields,
