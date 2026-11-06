@@ -167,33 +167,69 @@ describe('person account: no login yet', () => {
     expect(calls.filter((c) => path(c).endsWith('/link-user/')).map((c) => c.body)).toEqual([{ user: flow.users_create.body.id }, { user: flow.users_create.body.id }]);
   });
 
-  it('offers only the logins that have no person (every login gets one when it is created)', async () => {
+  const ownerName = peopleSample.list_admin.body.results[0].name as string;
+
+  it('offers every login, says who has the ones that belong to a person, and links a free one as it is', async () => {
     const free = logins[logins.length - 1];
     people.owners = logins.slice(0, -1).map((u) => u.id);
-    people.blankEmails = true; // their persons say nothing about e-mail: only owning a person keeps them out of the list
+    people.blankEmails = true;
     const { calls } = mockFetch(server);
     renderSection(superuser, { userId: null });
 
     const select = (await screen.findByLabelText('User')) as HTMLSelectElement;
-    expect(Array.from(select.options).map((o) => o.textContent)).toEqual(['Choose a user…', free.email]);
+    expect(Array.from(select.options).map((o) => o.textContent)).toEqual(['Choose a user…', `${logins[0].email} (now ${ownerName})`, `${logins[1].email} (now ${ownerName})`, free.email]);
     fireEvent.change(select, { target: { value: free.id } });
     fireEvent.click(screen.getByRole('button', { name: 'Link login' }));
     await waitFor(() => expect(calls.some((c) => path(c) === `/api/v1/people/${PERSON}/link-user/`)).toBe(true));
-    expect(calls.find((c) => path(c).endsWith('/link-user/'))!.body).toEqual({ user: free.id });
+    expect(calls.find((c) => path(c).endsWith('/link-user/'))!.body).toEqual({ user: free.id }); // no move
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('does not offer a login whose e-mail another person uses (the person it was unlinked from keeps it)', async () => {
+  it('moving a login that belongs to another person asks first, then sends move', async () => {
     people.owners = [logins[0].id];
-    people.strangers = [logins[1].email.toUpperCase()]; // unlinked, still holding the e-mail: compared without case
+    const { calls } = mockFetch(server);
+    renderSection(superuser, { userId: null });
+
+    fireEvent.change(await screen.findByLabelText('User'), { target: { value: logins[0].id } });
+    fireEvent.click(screen.getByRole('button', { name: 'Link login' }));
+    const ask = await screen.findByRole('dialog', { name: 'Move this login?' });
+    expect(ask.textContent).toContain(logins[0].email);
+    expect(ask.textContent).toContain(`leaves ${ownerName} without a login and without an e-mail address`);
+    expect(calls.some((c) => path(c).endsWith('/link-user/'))).toBe(false);
+
+    fireEvent.click(within(ask).getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(calls.some((c) => path(c).endsWith('/link-user/'))).toBe(false); // cancelling sends nothing
+
+    fireEvent.click(screen.getByRole('button', { name: 'Link login' }));
+    fireEvent.click(within(await screen.findByRole('dialog', { name: 'Move this login?' })).getByRole('button', { name: 'Move login' }));
+    await waitFor(() => expect(calls.some((c) => path(c).endsWith('/link-user/'))).toBe(true));
+    expect(calls.find((c) => path(c).endsWith('/link-user/'))!.body).toEqual({ user: logins[0].id, move: true });
+  });
+
+  it('shows why the server refused a move, in the dialog', async () => {
+    people.owners = [logins[0].id];
+    mockFetch((c) => (path(c).endsWith('/link-user/') ? reply(flow.people_link_user_already_linked) : server(c)));
+    renderSection(superuser, { userId: null });
+
+    fireEvent.change(await screen.findByLabelText('User'), { target: { value: logins[0].id } });
+    fireEvent.click(screen.getByRole('button', { name: 'Link login' }));
+    fireEvent.click(within(await screen.findByRole('dialog', { name: 'Move this login?' })).getByRole('button', { name: 'Move login' }));
+    expect(await within(screen.getByRole('dialog', { name: 'Move this login?' })).findByText(/already linked to another person/i)).toBeTruthy();
+  });
+
+  it('does not offer a login whose e-mail a person without a login still holds (the person it was unlinked from)', async () => {
+    people.owners = [logins[0].id];
+    people.strangers = [logins[1].email.toUpperCase()]; // unlinked, holding the e-mail: compared without case
     mockFetch(server);
     renderSection(superuser, { userId: null });
 
     const select = (await screen.findByLabelText('User')) as HTMLSelectElement;
-    expect(Array.from(select.options).map((o) => o.textContent)).toEqual(['Choose a user…', logins[2].email]);
+    expect(Array.from(select.options).map((o) => o.textContent)).toEqual(['Choose a user…', `${logins[0].email} (now ${ownerName})`, logins[2].email]);
   });
 
   it('says so, and offers no form, when no login can be linked', async () => {
-    people.owners = logins.map((u) => u.id);
+    people.strangers = logins.map((u) => u.email);
     mockFetch(server);
     renderSection(superuser, { userId: null });
 

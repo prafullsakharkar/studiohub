@@ -38431,6 +38431,9 @@ components:
         user:
           type: string
           format: uuid
+        move:
+          type: boolean
+          default: false
       required:
       - user
     Localization:

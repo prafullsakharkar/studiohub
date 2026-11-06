@@ -243,6 +243,40 @@ class TestPeople:
         )
         assert response.status_code == 409 and code_of(response) == "conflict"
 
+    def test_move_takes_the_login_from_the_person_that_has_it(self, manager):
+        user = UserFactory.create(email="moved@example.com")
+        old = PersonFactory(user=user, email="moved@example.com")
+        wanted = PersonFactory(email="")
+        refused = manager.post(f"{API}/people/{wanted.pk}/link-user/", {"user": str(user.pk)})
+        assert refused.status_code == 409 and code_of(refused) == "conflict"
+        moved = manager.post(
+            f"{API}/people/{wanted.pk}/link-user/",
+            {"user": str(user.pk), "move": True},
+            format="json",
+        )
+        assert moved.status_code == 200, moved.content
+        assert moved.json()["user"] == str(user.pk)
+        old.refresh_from_db()
+        assert old.user_id is None and old.email == ""
+
+    def test_move_needs_the_directory_permission(self, reader):
+        user = UserFactory.create()
+        PersonFactory(user=user)
+        response = reader.post(
+            f"{API}/people/{PersonFactory().pk}/link-user/",
+            {"user": str(user.pk), "move": True},
+            format="json",
+        )
+        assert response.status_code == 403
+
+    def test_move_must_be_a_boolean(self, manager):
+        response = manager.post(
+            f"{API}/people/{PersonFactory().pk}/link-user/",
+            {"user": str(UserFactory.create().pk), "move": "maybe"},
+            format="json",
+        )
+        assert response.status_code == 400
+
     def test_an_inactive_or_unknown_user_is_400(self, manager):
         person = PersonFactory()
         off = UserFactory.create(is_active=False)

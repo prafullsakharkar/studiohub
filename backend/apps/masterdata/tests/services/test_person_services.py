@@ -183,6 +183,56 @@ class TestLink:
         PersonService.update(actor=actor, instance=person, data={"email": "ada.private@x.io"})
         assert PersonService.link_user(actor=actor, person=PersonFactory(), user=user)
 
+    # ---- CR-45: move a login from the person that has it ----
+
+    def test_move_takes_the_login_and_leaves_its_old_person_without_login_and_e_mail(self, actor):
+        user = make_user()
+        old = PersonService.link_user(actor=actor, person=PersonFactory(), user=user)
+        new = PersonFactory(name="Wanted", email="wanted@x.io")
+        moved = PersonService.link_user(actor=actor, person=new, user=user, move=True)
+        assert moved.user == user and moved.email == "ada@example.com"
+        old.refresh_from_db()
+        assert old.user is None and old.email == ""
+        assert (
+            old.name == "Ada Lovelace" and old.status == "active"
+        )  # still a person, nothing archived or deleted
+        assert Person.objects.filter(user=user).count() == 1
+
+    def test_without_move_a_login_with_a_person_is_still_refused(self, actor):
+        user = make_user()
+        old = PersonService.link_user(actor=actor, person=PersonFactory(), user=user)
+        with pytest.raises(MasterdataConflict) as caught:
+            PersonService.link_user(actor=actor, person=PersonFactory(), user=user, move=False)
+        assert "already linked to another person" in str(caught.value)
+        old.refresh_from_db()
+        assert old.user == user and old.email == "ada@example.com"  # nothing was touched
+
+    def test_move_works_for_a_login_whose_person_was_unlinked_and_keeps_the_email(self, actor):
+        user = make_user()
+        old = PersonService.link_user(actor=actor, person=PersonFactory(), user=user)
+        PersonService.unlink_user(actor=actor, person=old)
+        # unlinked: nobody holds the login, but the old person still uses the e-mail: a plain link is refused, move does not help
+        with pytest.raises(MasterdataConflict) as caught:
+            PersonService.link_user(actor=actor, person=PersonFactory(), user=user, move=True)
+        assert "e-mail" in str(caught.value)
+
+    def test_move_to_a_person_that_already_has_a_login_is_refused(self, actor):
+        user = make_user()
+        PersonService.link_user(actor=actor, person=PersonFactory(), user=user)
+        busy = PersonService.link_user(
+            actor=actor, person=PersonFactory(), user=make_user("other@example.com", "O", "T")
+        )
+        with pytest.raises(MasterdataConflict) as caught:
+            PersonService.link_user(actor=actor, person=busy, user=user, move=True)
+        assert "unlink first" in str(caught.value)
+        assert Person.objects.get(user=user) is not None  # still linked to its own person
+
+    def test_move_with_nobody_holding_the_login_is_a_plain_link(self, actor):
+        user = make_user()
+        Person.all_objects.filter(user=user).delete()
+        linked = PersonService.link_user(actor=actor, person=PersonFactory(), user=user, move=True)
+        assert linked.user == user
+
     def test_unlinking_an_unlinked_person_is_a_conflict(self, actor):
         with pytest.raises(MasterdataConflict):
             PersonService.unlink_user(actor=actor, person=PersonFactory())
@@ -350,3 +400,21 @@ class TestAudit:
         assert [e["event"] for e in events] == ["PersonLinked", "PersonUnlinked"]
         assert events[0]["fields"] == ["user", "email", "name"]
         assert "ada@example.com" not in str(events) and "Lovelace" not in str(events)
+
+    def test_a_move_is_audited_as_an_unlink_of_the_old_person_and_a_link_of_the_new_one(
+        self, actor, django_capture_on_commit_callbacks
+    ):
+        user = make_user()
+        old = PersonService.link_user(actor=actor, person=PersonFactory(), user=user)
+        new = PersonFactory()
+        AuditLog.objects.all().delete()
+        with django_capture_on_commit_callbacks(execute=True):
+            PersonService.link_user(actor=actor, person=new, user=user, move=True)
+        events = list(
+            AuditLog.objects.filter(metadata__event__in=["PersonLinked", "PersonUnlinked"])
+            .order_by("created_at")
+            .values_list("metadata", flat=True)
+        )
+        assert [e["event"] for e in events] == ["PersonUnlinked", "PersonLinked"]
+        assert "ada@example.com" not in str(events)
+        assert old.pk != new.pk

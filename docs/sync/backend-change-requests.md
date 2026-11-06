@@ -862,7 +862,7 @@ At the default page size (25) the audit lists cost about 54 queries and the othe
 
 **Approved** by the owner ("CR-44: approve") and applied as written, with the two relation names above. Nine one-line selector changes, no other backend file.
 
-### CR-45: a login cannot be moved from one person to another: `link-user` refuses it, and no other call does it (**feature**, **PROPOSED**, awaiting approval)
+### CR-45: a login cannot be moved from one person to another: `link-user` refuses it, and no other call does it (**feature**, **APPLIED**, branch `feature/cr-45-move-login`)
 
 Found while verifying the "Or link an existing login" form on a person's Account tab, against the throwaway live backend (`identityAdmin.live.test.tsx`, "offers only logins that can be linked").
 
@@ -903,4 +903,4 @@ Frontend after approval: the form lists every login, marks the ones that belong 
 
 **Compatibility.** None: `move` is optional and defaults to the current behaviour. **Risk.** Low to medium: it deliberately empties another person's e-mail, so the confirmation text and the audit entries matter. **Alternatives.** (a) Do nothing: moving a login stays impossible, and the form stays as it is now. (b) Make `unlink-user` clear the e-mail, so unlink + link works without `move`: smaller, but it changes an existing action for everyone.
 
-**Status.** Proposed; not approved, nothing changed in the backend.
+**Approved** by the owner ("approve CR-45") and applied as written, with the proposed diff and no alternative: `move` on `link-user` (`LinkUserSerializer`, `PersonViewSet.link_user`, `PersonService.link_user`), contract DOM-MD-PER-11, the committed OpenAPI schema and its TypeScript types (`LinkUser.move`). Tests: `test_person_services.py` (move, refusal without `move`, the e-mail clash after an unlink, a person that already has a login, a login nobody holds, audit), `test_organization_api.py` (move, permission, boolean), `test_directory_concurrency.py` (two moves leave one holder); mutation-checked (keep the e-mail, ignore `move`, `move` on by default, no unlink event: each fails a test). Masterdata app: 1,248 passed.

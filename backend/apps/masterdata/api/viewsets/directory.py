@@ -147,7 +147,10 @@ class PersonViewSet(ServiceRecordViewSet):
         body = LinkUserSerializer(data=request.data)
         body.is_valid(raise_exception=True)
         person = PersonService.link_user(
-            actor=request.user, person=self.get_object(), user=body.validated_data["user"]
+            actor=request.user,
+            person=self.get_object(),
+            user=body.validated_data["user"],
+            move=body.validated_data["move"],
         )
         return self._person_response(person)
 
