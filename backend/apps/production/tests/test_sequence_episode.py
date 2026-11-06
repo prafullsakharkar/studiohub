@@ -63,23 +63,23 @@ class TestSequenceEpisodeRule:
         client = _client(show)
 
         missing = client.post(
-            "/api/v1/sequences/", {"project_id": str(show.id), "code": "SQ1"}, format="json"
+            "/api/v1/sequences/", {"project_id": str(show.id), "code": "EPIS1_SQ1"}, format="json"
         )
         blank = client.post(
             "/api/v1/sequences/",
-            {"project_id": str(show.id), "code": "SQ1", "episode_id": ""},
+            {"project_id": str(show.id), "code": "EPIS1_SQ1", "episode_id": ""},
             format="json",
         )
         ok = client.post(
             "/api/v1/sequences/",
-            {"project_id": str(show.id), "code": "SQ1", "episode_id": "ep101"},
+            {"project_id": str(show.id), "code": "EPIS1_SQ1", "episode_id": "ep101"},
             format="json",
         )
 
         assert missing.status_code == blank.status_code == 400
         assert "episode_id" in missing.json() or "episode_id" in str(missing.json())
         assert ok.status_code == 201, ok.json()
-        assert Sequence.objects.get(code="SQ1").episode_id == ep1.id
+        assert Sequence.objects.get(code="EPIS1_SQ1").episode_id == ep1.id
 
     def test_the_episode_must_belong_to_the_project(self, show, flat):
         other = EpisodeFactory.create(project=flat, code="EPX")
@@ -88,7 +88,7 @@ class TestSequenceEpisodeRule:
         for ref in (str(other.id), "EPX", "no-such-episode"):
             resp = client.post(
                 "/api/v1/sequences/",
-                {"project_id": str(show.id), "code": "SQ1", "episode_id": ref},
+                {"project_id": str(show.id), "code": "EPIS1_SQ1", "episode_id": ref},
                 format="json",
             )
             assert resp.status_code == 400
@@ -100,15 +100,15 @@ class TestSequenceEpisodeRule:
 
         refused = client.post(
             "/api/v1/sequences/",
-            {"project_id": str(flat.id), "code": "SQ1", "episode_id": str(episode.id)},
+            {"project_id": str(flat.id), "code": "FLAT1_SQ1", "episode_id": str(episode.id)},
             format="json",
         )
         plain = client.post(
-            "/api/v1/sequences/", {"project_id": str(flat.id), "code": "SQ2"}, format="json"
+            "/api/v1/sequences/", {"project_id": str(flat.id), "code": "FLAT1_SQ2"}, format="json"
         )
         empty = client.post(
             "/api/v1/sequences/",
-            {"project_id": str(flat.id), "code": "SQ3", "episode_id": ""},
+            {"project_id": str(flat.id), "code": "FLAT1_SQ3", "episode_id": ""},
             format="json",
         )
 
@@ -154,16 +154,16 @@ class TestSequenceEpisodeRule:
             "/api/v1/sequences/bulk-create/",
             {
                 "items": [
-                    {"project_id": str(show.id), "code": "BQ1", "episode_id": "EP101"},
-                    {"project_id": str(show.id), "code": "BQ2"},
+                    {"project_id": str(show.id), "code": "EPIS1_BQ1", "episode_id": "EP101"},
+                    {"project_id": str(show.id), "code": "EPIS1_BQ2"},
                 ]
             },
             format="json",
         )
 
         assert [row["status"] for row in resp.json()["results"]] == ["created", "invalid"]
-        assert Sequence.objects.filter(code="BQ1", episode=ep1).exists()
-        assert not Sequence.objects.filter(code="BQ2").exists()
+        assert Sequence.objects.filter(code="EPIS1_BQ1", episode=ep1).exists()
+        assert not Sequence.objects.filter(code="EPIS1_BQ2").exists()
 
 
 class TestShotsFollowTheirSequence:
@@ -173,12 +173,12 @@ class TestShotsFollowTheirSequence:
 
         resp = client.post(
             "/api/v1/shots/",
-            {"project_id": str(show.id), "code": "S1", "sequence_id": str(sequence.id)},
+            {"project_id": str(show.id), "code": "EPIS1_S1", "sequence_id": str(sequence.id)},
             format="json",
         )
 
         assert resp.status_code == 201, resp.json()
-        assert Shot.objects.get(code="S1").episode_id == ep1.id
+        assert Shot.objects.get(code="EPIS1_S1").episode_id == ep1.id
 
     def test_an_episode_that_differs_from_the_sequences_is_a_400(self, show, ep1, ep2):
         sequence = SequenceFactory.create(project=show, code="SQ1", episode=ep1)
@@ -188,7 +188,7 @@ class TestShotsFollowTheirSequence:
             "/api/v1/shots/",
             {
                 "project_id": str(show.id),
-                "code": "S1",
+                "code": "EPIS1_S1",
                 "sequence_id": "SQ1",
                 "episode_id": str(ep2.id),
             },
@@ -198,7 +198,7 @@ class TestShotsFollowTheirSequence:
             "/api/v1/shots/",
             {
                 "project_id": str(show.id),
-                "code": "S2",
+                "code": "EPIS1_S2",
                 "sequence_id": "SQ1",
                 "episode_id": str(ep1.id),
             },
@@ -208,7 +208,7 @@ class TestShotsFollowTheirSequence:
         assert resp.status_code == 400
         assert "episode of the sequence" in str(resp.json())
         assert same.status_code == 201
-        assert not Shot.objects.filter(code="S1").exists()
+        assert not Shot.objects.filter(code="EPIS1_S1").exists()
         assert sequence.episode_id == ep1.id
 
     def test_moving_a_shot_to_another_sequence_moves_its_episode(self, show, ep1, ep2):
@@ -217,7 +217,7 @@ class TestShotsFollowTheirSequence:
         client = _client(show)
         created = client.post(
             "/api/v1/shots/",
-            {"project_id": str(show.id), "code": "S1", "sequence_id": "SQ1"},
+            {"project_id": str(show.id), "code": "EPIS1_S1", "sequence_id": "SQ1"},
             format="json",
         ).json()
 
@@ -226,23 +226,26 @@ class TestShotsFollowTheirSequence:
         )
 
         assert moved.status_code == 200, moved.json()
-        shot = Shot.objects.get(code="S1")
+        shot = Shot.objects.get(code="EPIS1_S1")
         assert (shot.sequence.code, shot.episode_id) == ("SQ2", ep2.id)
 
     def test_a_shot_without_a_sequence_still_needs_its_own_episode(self, show, ep1):
         client = _client(show)
 
         bare = client.post(
-            "/api/v1/shots/", {"project_id": str(show.id), "code": "S1"}, format="json"
+            "/api/v1/shots/", {"project_id": str(show.id), "code": "EPIS1_S1"}, format="json"
         )
         own = client.post(
             "/api/v1/shots/",
-            {"project_id": str(show.id), "code": "S2", "episode_id": "EP101"},
+            {"project_id": str(show.id), "code": "EPIS1_S2", "episode_id": "EP101"},
             format="json",
         )
 
         assert bare.status_code == 400
-        assert own.status_code == 201
+        assert {"episode_id", "sequence_id"} <= set(bare.json())
+        # With its own episode a new shot still needs a sequence (CR-49).
+        assert own.status_code == 400
+        assert "sequence_id" in own.json() and "episode_id" not in own.json()
 
     def test_a_sequence_without_an_episode_leaves_the_shots_episode_alone(self, show, ep1):
         SequenceFactory.create(project=show, code="OLD")
@@ -250,12 +253,12 @@ class TestShotsFollowTheirSequence:
 
         resp = client.post(
             "/api/v1/shots/",
-            {"project_id": str(show.id), "code": "S1", "sequence_id": "OLD", "episode_id": "EP101"},
+            {"project_id": str(show.id), "code": "EPIS1_S1", "sequence_id": "OLD", "episode_id": "EP101"},
             format="json",
         )
 
         assert resp.status_code == 201, resp.json()
-        assert Shot.objects.get(code="S1").episode_id == ep1.id
+        assert Shot.objects.get(code="EPIS1_S1").episode_id == ep1.id
 
     def test_moving_a_sequence_to_another_episode_takes_its_shots(self, show, ep1, ep2):
         sequence = SequenceFactory.create(project=show, code="SQ1", episode=ep1)

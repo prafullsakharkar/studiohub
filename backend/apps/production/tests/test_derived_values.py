@@ -16,6 +16,7 @@ from apps.production.models import ProjectMembership, Timelog, Version
 from apps.production.selectors.rollups import ShotCurrentVersionSelector, TaskHoursSelector
 from apps.production.tests.factories import (
     ProjectFactory,
+    SequenceFactory,
     ShotFactory,
     TaskFactory,
     TimelogFactory,
@@ -140,7 +141,7 @@ class TestTaskHours:
     def test_write_responses_carry_the_derived_values(self, client, project):
         resp = client.post(
             "/api/v1/tasks/",
-            {"project_id": str(project.id), "title": "x", "code": "T3", "entity_type": "Shot"},
+            {"project_id": str(project.id), "title": "x", "code": "DRV1_T3", "entity_type": "Shot"},
             format="json",
         )
 
@@ -234,14 +235,15 @@ class TestShotCurrentVersion:
         echoed = client.patch(
             f"/api/v1/shots/{shot.id}/", {"current_version": "v002", "name": "kept"}, format="json"
         )
+        sequence = SequenceFactory.create(project=project, code="DRV1_SQ")
         new_default = client.post(
             "/api/v1/shots/",
-            {"project_id": str(project.id), "code": "S2", "current_version": "v001"},
+            {"project_id": str(project.id), "code": "DRV1_S2", "sequence_id": str(sequence.id), "current_version": "v001"},
             format="json",
         )
         new_other = client.post(
             "/api/v1/shots/",
-            {"project_id": str(project.id), "code": "S3", "current_version": "v005"},
+            {"project_id": str(project.id), "code": "DRV1_S3", "sequence_id": str(sequence.id), "current_version": "v005"},
             format="json",
         )
 

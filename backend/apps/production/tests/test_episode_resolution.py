@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 from django.urls import reverse
 
-from apps.production.models import ProjectMembership, Shot
+from apps.production.models import ProjectMembership, Sequence, Shot
 from apps.production.selectors.episode import EpisodeSelector
 from apps.production.tests.factories import EpisodeFactory, ProjectFactory, ShotFactory
 
@@ -31,9 +31,17 @@ def _body(resp):
 
 
 def _create(client, project, **extra):
+    # A new code starts with the project's and a new shot has a sequence (CR-49).
+    sequence, _ = Sequence.objects.get_or_create(project=project, code=f"{project.code}_SQ")
     return client.post(
         reverse("api:v1:production:shot-list"),
-        {"project_id": str(project.id), "code": "SH001", "name": "Shot", **extra},
+        {
+            "project_id": str(project.id),
+            "code": f"{project.code}_SH001",
+            "name": "Shot",
+            "sequence_id": str(sequence.id),
+            **extra,
+        },
         format="json",
     )
 
@@ -71,7 +79,7 @@ class TestShotCreate:
         resp = _create(staff_client, project_b, episode_id="EP101")
 
         assert resp.status_code == 201, resp.data
-        assert Shot.objects.get(project=project_b, code="SH001").episode_id == episode_b.id
+        assert Shot.objects.get(project=project_b, code="EPSB_SH001").episode_id == episode_b.id
 
     def test_foreign_episode_id_is_rejected_like_an_unknown_one(self, staff_client, staff_user):
         project_a, _ = _episodic("EPSA", staff_user)
@@ -82,7 +90,7 @@ class TestShotCreate:
 
         assert foreign.status_code == unknown.status_code == 400
         assert _body(foreign) == _body(unknown)
-        assert not Shot.objects.filter(code="SH001").exists()
+        assert not Shot.objects.filter(code="EPSA_SH001").exists()
 
 
 class TestShotEpisodeFilter:

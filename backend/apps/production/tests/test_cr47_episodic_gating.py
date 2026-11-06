@@ -38,12 +38,12 @@ def client(admin_user):
 
 @pytest.fixture
 def standard():
-    return ProjectFactory(workflow_type="standard")
+    return ProjectFactory(code="C47S", workflow_type="standard")  # new codes start with it (CR-49)
 
 
 @pytest.fixture
 def episodic():
-    return ProjectFactory(workflow_type="episodic")
+    return ProjectFactory(code="C47E", workflow_type="episodic")
 
 
 @pytest.fixture
@@ -98,7 +98,7 @@ class TestEpisodeRoutesOnAStandardProject:
 
     def test_create_stays_a_400_on_project(self, client, standard):
         response = client.post(
-            f"{API}/episodes/", {"project_id": str(standard.pk), "code": "EP900"}, format="json"
+            f"{API}/episodes/", {"project_id": str(standard.pk), "code": "C47S_EP900"}, format="json"
         )
         assert response.status_code == 400
         assert "project" in response.json()
@@ -106,11 +106,11 @@ class TestEpisodeRoutesOnAStandardProject:
     def test_bulk_create_is_refused_per_row(self, client, standard):
         body = client.post(
             f"{API}/episodes/bulk-create/",
-            {"items": [{"project_id": str(standard.pk), "code": "EP901"}]},
+            {"items": [{"project_id": str(standard.pk), "code": "C47S_EP901"}]},
             format="json",
         ).json()
         assert body["results"][0]["status"] == "invalid"
-        assert not Episode.all_objects.filter(code="EP901").exists()
+        assert not Episode.all_objects.filter(code="C47S_EP901").exists()
 
 
 class TestEpisodeRoutesOnAnEpisodicProject:
@@ -123,25 +123,37 @@ class TestEpisodeRoutesOnAnEpisodicProject:
 
     def test_create_works(self, client, episodic):
         response = client.post(
-            f"{API}/episodes/", {"project_id": str(episodic.pk), "code": "EP300"}, format="json"
+            f"{API}/episodes/", {"project_id": str(episodic.pk), "code": "C47E_EP300"}, format="json"
         )
         assert response.status_code == 201, response.content
 
 
 class TestShotEpisodeRule:
     def test_a_standard_shot_cannot_be_given_an_episode(self, client, standard, stranded):
+        sequence = SequenceFactory(project=standard, code="SQ1")
         response = client.post(
             f"{API}/shots/",
-            {"project_id": str(standard.pk), "code": "SH010", "episode_id": str(stranded.pk)},
+            {
+                "project_id": str(standard.pk),
+                "code": "C47S_SH010",
+                "sequence_id": str(sequence.pk),
+                "episode_id": str(stranded.pk),
+            },
             format="json",
         )
         assert response.status_code == 400
         assert "episode_id" in response.json()
 
     def test_a_standard_shot_with_an_empty_episode_is_fine(self, client, standard):
+        sequence = SequenceFactory(project=standard, code="SQ1")
         response = client.post(
             f"{API}/shots/",
-            {"project_id": str(standard.pk), "code": "SH011", "episode_id": ""},
+            {
+                "project_id": str(standard.pk),
+                "code": "C47S_SH011",
+                "sequence_id": str(sequence.pk),
+                "episode_id": "",
+            },
             format="json",
         )
         assert response.status_code == 201, response.content
@@ -158,18 +170,21 @@ class TestShotEpisodeRule:
 
     def test_an_episodic_shot_needs_an_episode_in_bulk_create(self, client, episodic):
         EpisodeFactory(project=episodic, code="EPA")
+        # An older sequence with no episode of its own: the shot has to name one.
+        sequence = SequenceFactory(project=episodic, code="SQN")
+        in_it = {"project_id": str(episodic.pk), "sequence_id": str(sequence.pk)}
         body = client.post(
             f"{API}/shots/bulk-create/",
             {
                 "items": [
-                    {"project_id": str(episodic.pk), "code": "SHX"},
-                    {"project_id": str(episodic.pk), "code": "SHY", "episode_id": "epa"},
+                    {**in_it, "code": "C47E_SHX"},
+                    {**in_it, "code": "C47E_SHY", "episode_id": "epa"},
                 ]
             },
             format="json",
         ).json()
         assert [row["status"] for row in body["results"]] == ["invalid", "created"]
-        assert Shot.objects.get(code="SHY").episode.code == "EPA"
+        assert Shot.objects.get(code="C47E_SHY").episode.code == "EPA"
 
 
 class TestSequenceEpisodeRule:
@@ -178,18 +193,18 @@ class TestSequenceEpisodeRule:
             f"{API}/sequences/bulk-create/",
             {
                 "items": [
-                    {"project_id": str(standard.pk), "code": "SQ1", "episode_id": str(stranded.pk)}
+                    {"project_id": str(standard.pk), "code": "C47S_SQ1", "episode_id": str(stranded.pk)}
                 ]
             },
             format="json",
         ).json()
         assert body["results"][0]["status"] == "invalid"
-        assert not Sequence.all_objects.filter(code="SQ1").exists()
+        assert not Sequence.all_objects.filter(code="C47S_SQ1").exists()
 
     def test_bulk_create_on_an_episodic_project_needs_one(self, client, episodic):
         body = client.post(
             f"{API}/sequences/bulk-create/",
-            {"items": [{"project_id": str(episodic.pk), "code": "SQ2"}]},
+            {"items": [{"project_id": str(episodic.pk), "code": "C47E_SQ2"}]},
             format="json",
         ).json()
         assert body["results"][0]["status"] == "invalid"

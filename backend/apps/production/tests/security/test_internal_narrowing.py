@@ -304,12 +304,15 @@ class TestCreatingIntoYourShow:
 
     def test_a_shot_created_through_the_api_lands_in_the_callers_show(self, world):
         client = _client(world["in_show_a"])
+        code = f"{world['project'].code}_NEW010"  # a new code starts with the project's (CR-49)
+        sequence = SequenceFactory(project=world["project"], code=f"{world['project'].code}_SQ")
 
         response = client.post(
             "/api/v1/shots/",
             {
                 "project_id": str(world["project"].pk),
-                "code": "NEW010",
+                "code": code,
+                "sequence_id": str(sequence.pk),
                 "name": "New",
                 "episode_id": str(world["episodes"][0].pk),
             },
@@ -317,8 +320,8 @@ class TestCreatingIntoYourShow:
         )
 
         assert response.status_code == 201, response.content
-        assert Shot.objects.get(code="NEW010").show_id == world["show_a"].pk
-        assert str(Shot.objects.get(code="NEW010").pk) in _ids(client, "/api/v1/shots/")
+        assert Shot.objects.get(code=code).show_id == world["show_a"].pk
+        assert str(Shot.objects.get(code=code).pk) in _ids(client, "/api/v1/shots/")
 
 
 class TestAssignShowsCommand:

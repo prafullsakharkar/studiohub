@@ -45,7 +45,7 @@ class TestTaskType:
             {
                 "project_id": str(project.id),
                 "title": "Block",
-                "code": "T1",
+                "code": f"{project.code}_T1",  # a new code starts with the project's (CR-49)
                 "entity_type": "Shot",
                 **extra,
             },
@@ -58,7 +58,7 @@ class TestTaskType:
         resp = self._create(api, project, task_type_id="anim")
 
         assert resp.status_code == 201, resp.json()
-        task = Task.objects.get(code="T1")
+        task = Task.objects.get(code="CAT1_T1")
         detail = api.get(f"/api/v1/tasks/{task.id}/").json()
         assert (detail["task_type_code"], detail["task_type_name"]) == ("ANIM", "Animation")
         assert (task.task_type_id, task.department) == (anim.id, "Animation")
@@ -68,7 +68,7 @@ class TestTaskType:
 
         self._create(api, project, task_type_id=str(anim.id), department="Layout")
 
-        assert Task.objects.get(code="T1").department == "Layout"
+        assert Task.objects.get(code="CAT1_T1").department == "Layout"
 
     @pytest.mark.parametrize("ref", ["NOPE", "00000000-0000-0000-0000-000000000000", "a b"])
     def test_an_unknown_type_is_a_400_and_nothing_is_created(self, project, anim, ref):
@@ -107,7 +107,7 @@ class TestTaskType:
     ):
         api = _client(project)
         for index in range(6):
-            self._create(api, project, task_type_id="ANIM", code=f"T{index}")
+            self._create(api, project, task_type_id="ANIM", code=f"CAT1_T{index}")
 
         with django_assert_max_num_queries(25):
             assert len(api.get("/api/v1/tasks/").json()["results"]) == 6
@@ -119,7 +119,7 @@ class TestAssetType:
             "/api/v1/assets/",
             {
                 "project_id": str(project.id),
-                "code": code,
+                "code": f"{project.code}_{code}",
                 "name": code,
                 "category": "Prop",
                 **extra,
@@ -134,7 +134,7 @@ class TestAssetType:
         resp = self._create(api, project, asset_type_id="hero")
 
         assert resp.status_code == 201, resp.json()
-        asset = Asset.objects.get(code="A1")
+        asset = Asset.objects.get(code="CAT1_A1")
         assert asset.asset_type_id == kind.id
         detail = api.get(f"/api/v1/assets/{asset.id}/").json()
         assert (detail["asset_type_code"], detail["category"]) == ("HERO", "Prop")
@@ -206,7 +206,7 @@ class TestParentAsset:
             "/api/v1/assets/",
             {
                 "project_id": str(project.id),
-                "code": "N1",
+                "code": "CAT1_N1",
                 "name": "N",
                 "category": "Prop",
                 "parent_asset": str(foreign.id),
@@ -214,4 +214,4 @@ class TestParentAsset:
             format="json",
         )
 
-        assert resp.status_code == 400 and not Asset.objects.filter(code="N1").exists()
+        assert resp.status_code == 400 and not Asset.objects.filter(code="CAT1_N1").exists()

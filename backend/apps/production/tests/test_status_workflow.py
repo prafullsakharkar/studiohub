@@ -23,6 +23,7 @@ from apps.production.services.status import StatusService
 from apps.production.tests.factories import (
     ProjectFactory,
     ReviewFactory,
+    SequenceFactory,
     ShotFactory,
     TaskFactory,
     TimelogFactory,
@@ -187,9 +188,16 @@ class TestPlainUpdate:
 
     def test_create_as_approved_needs_the_code_and_writes_no_history(self, project):
         user = _user(project, "shot.view", "shot.create")
+        sequence = SequenceFactory.create(project=project, code="WFLOW1_SQ")
         resp = _client(user).post(
             "/api/v1/shots/",
-            {"project_id": str(project.id), "code": "S9", "name": "n", "status": "Approved"},
+            {
+                "project_id": str(project.id),
+                "code": "WFLOW1_S9",  # a new code starts with the project's and a new shot has a sequence (CR-49)
+                "sequence_id": str(sequence.id),
+                "name": "n",
+                "status": "Approved",
+            },
             format="json",
         )
         assert resp.status_code == status.HTTP_403_FORBIDDEN

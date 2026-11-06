@@ -14,6 +14,9 @@ from apps.production.services.numbering import episode_code
 
 
 class EpisodeCreateSerializer(NormalizedCodeMixin, FrameRangeMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
+    #: set when a blank code was made from the season and episode numbers
+    code_was_derived = False
+
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
     code = serializers.CharField(max_length=50, required=False, allow_blank=True)
@@ -77,6 +80,7 @@ class EpisodeCreateSerializer(NormalizedCodeMixin, FrameRangeMixin, ProjectRefer
                     season_number = 1
                 derived = episode_code(season_number, episode_number)
                 if derived is not None:
+                    self.code_was_derived = True  # the viewset gives it the project's prefix (CR-49)
                     data["code"] = derived
                     # Keep the stored season consistent with the derived code.
                     if season_missing:

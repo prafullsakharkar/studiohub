@@ -929,7 +929,7 @@ Found in the Phase 0 discovery of the episodic/bulk work (`docs/episodic-bulk-di
 
 **Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06). Applied as written, with two additions found while building it: bulk update refuses a field outside the whitelist per row ("This field cannot be changed in bulk.") instead of ignoring it, and a row named by code that the caller cannot see answers `not_found` without an id. Verification: `docs/sync/backend-cr-46-48-verification.md`.
 
-### CR-49: new production codes start with the project code; a new shot needs a sequence (**feature**, **PENDING** approval, nothing applied)
+### CR-49: new production codes start with the project code; a new shot needs a sequence (**feature**, **APPLIED** on `sync/cr-49-code-prefix`)
 
 Asked by the owner (2026-11-06): "while creating any production entity the code should start with project code (SQ0010 → TST_SQ0010) … for creating a shot the sequence is compulsory, and if it does not exist it should show an error". Decisions this changes: D-10 ("Nothing stricter is imposed (no pattern…): that needs a decision of its own") and D-11 / Q3 ("A shot may have no sequence").
 
@@ -946,3 +946,6 @@ Asked by the owner (2026-11-06): "while creating any production entity the code 
 **Why no frontend workaround.** None can bind another client: the rule is the server's to enforce. The frontend part above is already shipped and keeps working whether or not this is approved.
 
 **Compatibility.** Breaking for any API client or script that creates un-prefixed codes or sequence-less shots (they get a 400). Existing data is untouched. **Risk.** Medium: every test and fixture that creates records by code changes; the code length limits (shots 30) now include the prefix. **Alternatives.** (a) Frontend only, as now. (b) An opt-in project setting (`enforce_code_prefix`, default off), so projects choose; costs a column, a migration and a UI switch.
+
+**Approved** by the owner ("approve CR-49", 2026-11-06) and applied as proposed, with these details settled while building it: the check sits in the shared create hook (single, bulk, dry run, atomic alike) and runs before the uniqueness check; the prefix is compared in any case and counts towards the model's code length (a longer code is a 400); a shot's missing sequence is reported together with the episode errors; clearing a sequence on an existing shot (`sequence_id: ""`) stays allowed; `report_production_data` gained two information sections. Alternative (b), an opt-in project setting, was not taken. Verification: `docs/sync/backend-cr-49-verification.md`.
+
