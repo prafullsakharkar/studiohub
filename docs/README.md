@@ -243,13 +243,15 @@ Shots, Sequences, Assets and Tasks each have a **Bulk add** button (*Bulk add sh
 1. **Grid**: type the rows, paste TSV/CSV from a spreadsheet, upload a CSV file, or **Load Template** (example rows that use the project's own episode, sequence, shot or asset codes and the catalog's types; shots: the sample rows of the shot manager).
 2. **Validate**: a code given twice in the batch is a *batch duplicate*; the backend says which codes are already in the project (*active existing*) or archived (*soft-deleted*) (`check-existence`). For sequences, assets and tasks the new rows are also dry-run (`bulk-create` with `dry_run`), so a row the backend would refuse (an unknown parent, a bad status, a missing name) is a *validation error* now, not after Execute; shots check duplicates and frame ranges in the grid.
 3. **Archived rows**: recover them all, recover some, or skip them.
-4. **Resolve**: the *Batch Validation Breakdown* (All, New, Soft-Deleted, Active Existing, Batch Duplicates, Validation Errors; each pill filters the rows) and per row: create, skip or recover, or remove it. Uploading the same file again shows its rows as *active existing*.
-5. **Preview**: what will be created, recovered and skipped; **Execute**.
-6. **Result**: `N created · N recovered · N skipped · N failed`, a log per row (CSV / JSON export), and *Retry failed rows*.
+4. **Resolve**: the *Batch Validation Breakdown* (All, New, Soft-Deleted, Active Existing, Batch Duplicates, Validation Errors; each pill filters the rows) and per row: create, skip or recover, or remove it. Uploading the same file again shows its rows as *active existing*; set such a row to **Update Existing Entity** to change it from the file (see *Update from a file* below).
+5. **Preview**: what will be created, recovered, updated and skipped; **Execute**. Asking for the preview first dry-runs the rows set to update, so a row the backend would refuse is a *validation error* and is skipped (you review again to continue).
+6. **Result**: `N created · N recovered · N updated · N skipped · N failed`, a log per row (CSV / JSON export), and *Retry failed rows*.
 
 The single-record forms (*New shot*, *New sequence*, *New asset*, *New task*, *New episode*, and *Add episode* / *Add sequence* on a project's tab) do the same: the project's code is shown in front of the code input (`TST_`) and added when you save; *New shot* needs a sequence and says so when the project has none. Existing records keep their codes, and an existing shot without a sequence can still be saved. The backend does not enforce either rule yet (CR-49, pending).
 
-Rows are stored one by one: a refused row does not stop the others. There is no bulk update from a file; change existing rows with **Edit fields** on the selected rows (below).
+Rows are stored one by one: a refused row does not stop the others. Existing rows can also be changed together with **Edit fields** on the selected rows (below).
+
+**Update from a file.** On an *active existing* row choose **Update Existing Entity** instead of Skip. The row is matched by its code (with the project prefix) and only the cells it **fills in** are written; an empty cell leaves the field as it is. A code, a project, and a task's *About* / *entity* are never changed this way (the code changes with *Rename code*), and a column the backend does not update in bulk is refused for that row. Shots update name, status, frame in / out, handle frames, sequence and episode. Rows are updated one by one: a refused row does not stop the others.
 
 Rules for every file:
 

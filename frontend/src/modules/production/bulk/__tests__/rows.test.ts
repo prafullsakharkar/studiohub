@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BulkBatchResponse } from '@/api/production/bulkRoutes';
 import { loadSample } from '@/test/samples';
-import { readRows, rowReports, toCreateItems } from '../rows';
+import { readRows, rowReports, toCreateItems, toUpdateItems } from '../rows';
 import { assetBulkSpec, columnsFor, sequenceBulkSpec, shotBulkSpec, taskBulkSpec } from '../specs';
 
 type Captured = { status: number; body: any; request: { body: any } };
@@ -64,6 +64,13 @@ describe('items on the wire', () => {
     expect(toCreateItems(rows, columns)).toEqual([
       { code: 'SQ020', action: 'create', data: { name: 'Chase', episode_id: 'EP101', frame_in: 1001, frame_out: 'abc' } },
       { code: 'SQ030', action: 'create', data: {} },
+    ]);
+  });
+
+  it('update: the code as the key and only the filled-in fields', () => {
+    expect(toUpdateItems(rows, columns)).toEqual([
+      { code: 'SQ020', name: 'Chase', episode_id: 'EP101', frame_in: 1001, frame_out: 'abc' },
+      { code: 'SQ030' },
     ]);
   });
 

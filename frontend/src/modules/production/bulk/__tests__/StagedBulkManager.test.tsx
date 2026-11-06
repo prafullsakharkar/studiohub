@@ -40,11 +40,12 @@ const reply = (c: Captured, project?: { code: string }): MockReply => ({ status:
 const projectOf = (c: MockCall) => ((c.body as { project_id?: string }).project_id === episodic.id ? episodic : standard);
 const posts = (calls: MockCall[], route: string) => calls.filter((c) => c.method === 'POST' && path(c) === `/api/v1/sequences/${route}/`);
 
-function server({ dryRun, commit }: { dryRun: Captured; commit?: Captured }) {
+function server({ dryRun, commit, update }: { dryRun: Captured; commit?: Captured; update?: { dryRun: Captured; commit: Captured } }) {
   return (c: MockCall): MockReply => {
     const p = path(c);
     if (c.method === 'POST' && p === '/api/v1/sequences/check-existence/') return reply(structure.sequences_check_existence, projectOf(c));
     if (c.method === 'POST' && p === '/api/v1/sequences/bulk-create/') return reply((c.body as { dry_run?: boolean }).dry_run ? dryRun : (commit ?? dryRun), projectOf(c));
+    if (c.method === 'POST' && p === '/api/v1/sequences/bulk-update/' && update) return reply((c.body as { dry_run?: boolean }).dry_run ? update.dryRun : update.commit, projectOf(c));
     if (p === `/api/v1/projects/${standard.id}/`) return reply(bulk.projects_detail_standard);
     if (p === `/api/v1/projects/${episodic.id}/`) return reply(bulk.projects_detail_episodic);
     if (p === '/api/v1/episodes/') return reply(bulk.episodes_of_episodic);
@@ -138,6 +139,66 @@ describe('Bulk add sequences', () => {
       ],
     });
     expect(await within(dialog).findByText(/2 created/)).toBeTruthy();
+  });
+
+  describe('Update Existing Entity', () => {
+    const upload2 = async (calls: MockCall[]) => {
+      const dialog = await openManager();
+      // SQ010 is in the project already; SQ020 is new.
+      upload(dialog, 'code,name,description\nSQ010,,Re-cut\nSQ020,Chase,\n');
+      await within(dialog).findByDisplayValue('Chase');
+      fireEvent.click(within(dialog).getByRole('button', { name: /Validate/ }));
+      expect(await within(dialog).findByText('Batch Validation Breakdown')).toBeTruthy();
+      expect(posts(calls, 'check-existence')).toHaveLength(1);
+      fireEvent.change(within(dialog).getByDisplayValue('Skip (Already Active)'), { target: { value: 'update_existing' } });
+      return dialog;
+    };
+
+    it('sends the filled-in cells of an existing row to bulk-update, after a dry run, and creates the new row', async () => {
+      const { calls } = mockFetch(server({ dryRun: bulk.sequences_create_dry_run_ok, commit: bulk.sequences_create_commit, update: { dryRun: bulk.sequences_update_dry_run, commit: bulk.sequences_update_commit } }));
+      renderList(standard.id);
+      const dialog = await upload2(calls);
+
+      fireEvent.click(within(dialog).getByRole('button', { name: /Review Execution Preview/ }));
+      expect(await within(dialog).findByText('Existing to Update')).toBeTruthy();
+      // The dry run asks about the row to update only; its empty cell (name) is left out.
+      expect(posts(calls, 'bulk-update')).toHaveLength(1);
+      expect(posts(calls, 'bulk-update')[0].body).toEqual({ project_id: standard.id, dry_run: true, atomic: false, items: [{ code: 'STD_SQ010', description: 'Re-cut' }] });
+
+      fireEvent.click(await within(dialog).findByRole('button', { name: /Execute Bulk Operation \(2\)/ }));
+      await waitFor(() => expect(posts(calls, 'bulk-update')).toHaveLength(2));
+      expect(posts(calls, 'bulk-update')[1].body).toEqual({ project_id: standard.id, dry_run: false, atomic: false, items: [{ code: 'STD_SQ010', description: 'Re-cut' }] });
+      // The row set to update is not part of the create call.
+      expect((posts(calls, 'bulk-create')[1].body as { items: unknown }).items).toEqual([{ code: 'STD_SQ020', action: 'create', data: { name: 'Chase' } }]);
+      expect(await within(dialog).findAllByText('updated')).not.toHaveLength(0);
+    });
+
+    it('a row the backend would refuse to update is a validation error before anything is stored', async () => {
+      const { calls } = mockFetch(server({ dryRun: bulk.sequences_create_dry_run_ok, update: { dryRun: bulk.sequences_update_not_bulk_updatable, commit: bulk.sequences_update_commit } }));
+      renderList(standard.id);
+      const dialog = await upload2(calls);
+
+      fireEvent.click(within(dialog).getByRole('button', { name: /Review Execution Preview/ }));
+      expect((await within(dialog).findByRole('alert')).textContent).toMatch(/1 row cannot be updated/);
+      expect(pill(dialog, /Validation Errors\s*1/)).toBeTruthy();
+      expect(within(dialog).getByText('metadata: This field cannot be changed in bulk.')).toBeTruthy();
+      expect(within(dialog).queryByText('Existing to Update')).toBeNull(); // still on the resolve step
+      expect(posts(calls, 'bulk-update')).toHaveLength(1); // only the dry run
+    });
+
+    it('with every existing row left on Skip nothing is sent to bulk-update', async () => {
+      const { calls } = mockFetch(server({ dryRun: bulk.sequences_create_dry_run_ok, commit: bulk.sequences_create_commit }));
+      renderList(standard.id);
+      const dialog = await openManager();
+      upload(dialog, 'code,name\nSQ010,Opening\nSQ020,Chase\n');
+      await within(dialog).findByDisplayValue('Chase');
+      fireEvent.click(within(dialog).getByRole('button', { name: /Validate/ }));
+      await within(dialog).findByText('Batch Validation Breakdown');
+      fireEvent.click(within(dialog).getByRole('button', { name: /Review Execution Preview/ }));
+      fireEvent.click(await within(dialog).findByRole('button', { name: /Execute Bulk Operation \(1\)/ }));
+      await waitFor(() => expect(posts(calls, 'bulk-create')).toHaveLength(2));
+      expect(posts(calls, 'bulk-update')).toHaveLength(0);
+    });
   });
 
   it('a row the backend would refuse is a validation error before anything is stored', async () => {

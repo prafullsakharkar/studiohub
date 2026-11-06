@@ -1,11 +1,11 @@
 import { BULK_MAX_ITEMS } from '@/api/production/bulkRoutes';
-import type { BulkBatchResponse, BulkCreateRow } from '@/api/production/bulkRoutes';
+import type { BulkBatchResponse, BulkCreateRow, BulkUpdateRow } from '@/api/production/bulkRoutes';
 import { headerKey, parseDelimited } from '@/shared/utils/csv';
 import type { BulkColumn } from './specs';
 
 /**
  * Rows of a bulk file or paste, keyed by column `header`, and what they become on the wire (CR-48). An empty cell means
- * "not given": a create leaves the field to its default.
+ * "not given": a create leaves the field to its default, an update leaves it as it is.
  */
 export type SheetRow = Record<string, unknown>;
 
@@ -77,6 +77,10 @@ const codeOf = (row: SheetRow, columns: readonly BulkColumn[]) => {
 
 export const toCreateItems = (rows: readonly SheetRow[], columns: readonly BulkColumn[]): BulkCreateRow[] =>
   rows.map((row) => ({ code: codeOf(row, columns), action: 'create', data: fieldsOf(row, columns) }));
+
+/** An update item: the row's code and the filled-in fields of `columns` (an empty cell leaves the field as it is). */
+export const toUpdateItems = (rows: readonly SheetRow[], columns: readonly BulkColumn[]): BulkUpdateRow[] =>
+  rows.map((row) => ({ code: codeOf(row, columns), ...fieldsOf(row, columns) }));
 
 /** The CSV column an error names; none for a whole-row reason or for the row's `id` (a key, not a column). */
 const columnOf = (field: string | null, labels: ReadonlyMap<string, string>): string | null =>

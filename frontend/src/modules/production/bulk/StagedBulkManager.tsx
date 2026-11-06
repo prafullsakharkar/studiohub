@@ -15,10 +15,11 @@ import { SoftDeletedEntityRecovery } from '@/shared/components/bulk/SoftDeletedE
 import type { BulkOperationResponse, BulkOperationSummary, EntityResolutionItem, EntityResolutionState, ResolutionUserAction } from '@/shared/components/bulk/types';
 import { Button } from '@/shared/components/Button';
 import { Modal } from '@/shared/components/Modal';
+import { mergeBulkResponses } from '@/shared/components/bulk/mergeResponses';
 import { useBulkEntity } from '@/shared/hooks/useBulkEntity';
 import { withProjectPrefix, projectCodePrefix } from '../codePrefix';
 import { PROJECT_QUERY_KEYS } from '../hooks/useProjects';
-import { MAX_FILE_BYTES, readRows, rowReports, toCreateItems } from './rows';
+import { MAX_FILE_BYTES, readRows, rowReports, toCreateItems, toUpdateItems } from './rows';
 import type { SheetRow } from './rows';
 import { columnsFor } from './specs';
 import type { BulkSpec } from './specs';
@@ -33,7 +34,7 @@ interface StagedBulkManagerProps {
 }
 
 type Step = 'GRID' | 'VALIDATING' | 'RECOVERY_PROMPT' | 'RESOLVE' | 'PREVIEW' | 'EXECUTING' | 'RESULT';
-type Item = EntityResolutionItem<object> & { data: Record<string, unknown>; row: SheetRow };
+type Item = EntityResolutionItem<object> & { data: Record<string, unknown>; /** The fields an update of this row sets (code and the filled-in cells of the update columns). */ update: Record<string, unknown>; row: SheetRow };
 
 const title = (word: string) => `${word[0].toUpperCase()}${word.slice(1)}`;
 
@@ -45,6 +46,10 @@ const title = (word: string) => `${word[0].toUpperCase()}${word.slice(1)}`;
  * Validate finds a code twice in the batch, asks the backend which codes exist or are archived (`check-existence`),
  * and dry-runs the new rows (`bulk-create` with `dry_run`) so a row the backend would refuse (an unknown parent, a bad
  * status) is an error here, before anything is stored. Execute stores row by row, as the shot manager does.
+ *
+ * A row that is active existing can be set to "Update Existing Entity": its filled-in cells (not the code or the create-only
+ * columns) are sent to `bulk-update` by code, dry-run when the preview is asked for, so what the backend refuses is an error
+ * before anything is stored; an empty cell leaves the field as it is.
  */
 export const StagedBulkManager: React.FC<StagedBulkManagerProps> = ({ spec, projectId, projectCode, episodic, onClose }) => {
   const Noun = title(spec.noun);
@@ -57,7 +62,8 @@ export const StagedBulkManager: React.FC<StagedBulkManagerProps> = ({ spec, proj
     required: c.required,
     placeholder: c.type === 'date' ? 'YYYY-MM-DD' : undefined,
   }));
-  const { checkExistence, bulkCreate, isBulkCreating } = useBulkEntity<object>({
+  const updateColumns = useMemo(() => columnsFor(spec, { episodic, mode: 'update' }), [spec, episodic]);
+  const { checkExistence, bulkCreate, bulkUpdate, isBulkCreating } = useBulkEntity<object>({
     service: spec.staged,
     queryKeyAll: spec.queryKey,
     projectQueryKeyAll: PROJECT_QUERY_KEYS.all,
@@ -99,12 +105,14 @@ export const StagedBulkManager: React.FC<StagedBulkManagerProps> = ({ spec, proj
     setStep('VALIDATING');
     try {
       const wire = toCreateItems(filled, columns);
+      const edits = toUpdateItems(filled, updateColumns);
       const { items: analyzed } = BulkOperationEngine.analyzeRequestDuplicates(filled, (r) => String(r.code ?? ''));
       let next: Item[] = analyzed.map((it, index) => ({
         ...it,
         name: String(filled[index].name ?? filled[index].title ?? ''),
         proposedData: { name: filled[index].name ?? filled[index].title },
         data: wire[index].data,
+        update: edits[index],
         row: filled[index],
       }));
 
@@ -173,6 +181,36 @@ export const StagedBulkManager: React.FC<StagedBulkManagerProps> = ({ spec, proj
     setStep('RESOLVE');
   };
 
+  const [checking, setChecking] = useState(false);
+  const updateItem = (it: Item) => ({ ...it.update, code: it.code });
+  /** To the preview; first, a dry run of the rows set to update, so the backend's refusals are errors now. */
+  const review = async () => {
+    const updating = items.filter((it) => it.userAction === 'update_existing');
+    if (updating.length === 0) {
+      setStep('PREVIEW');
+      return;
+    }
+    setFailure(null);
+    setChecking(true);
+    try {
+      const dryRun = await spec.routes.update(projectId, updating.map(updateItem), { dry_run: true, atomic: false });
+      const reports = rowReports(dryRun, updateColumns);
+      const refused = new Map(updating.flatMap((it, index) => (reports[index]?.outcome === 'error' ? [[it.code, reports[index].messages] as const] : [])));
+      if (refused.size === 0) {
+        setStep('PREVIEW');
+        return;
+      }
+      setItems((prev) =>
+        prev.map((it) => (refused.has(it.code) ? { ...it, state: 'INVALID', userAction: 'skip', errors: refused.get(it.code)?.length ? refused.get(it.code) : ['The backend refused this update.'] } : it))
+      );
+      setFailure(`${refused.size} row${refused.size === 1 ? '' : 's'} cannot be updated; ${refused.size === 1 ? 'it is' : 'they are'} under Validation Errors and will be skipped. Review again to continue.`);
+    } catch (error) {
+      setFailure(serverMessage(error));
+    } finally {
+      setChecking(false);
+    }
+  };
+
   const execute = async () => {
     setFailure(null);
     setStep('EXECUTING');
@@ -180,11 +218,26 @@ export const StagedBulkManager: React.FC<StagedBulkManagerProps> = ({ spec, proj
       const sent = items
         .filter((it) => it.userAction === 'create' || it.userAction === 'recover' || it.userAction === 'skip')
         .map((it) => ({ code: it.code, action: it.userAction, data: it.userAction === 'create' ? it.data : {} }));
-      setResponse(await bulkCreate({ project_id: projectId, items: sent }));
+      const updating = items.filter((it) => it.userAction === 'update_existing');
+      const created = sent.length > 0 ? await bulkCreate({ project_id: projectId, items: sent }) : undefined;
+      // The create call is stored by now: a failing update call is reported per row, not as a failed run.
+      const updated = updating.length > 0 ? await updateRows(updating) : undefined;
+      const parts = [created, updated].filter((part): part is BulkOperationResponse<object> => Boolean(part));
+      setResponse(parts.length === 1 ? parts[0] : mergeBulkResponses(...parts));
       setStep('RESULT');
     } catch (error) {
       setFailure(serverMessage(error));
       setStep('PREVIEW');
+    }
+  };
+
+  const updateRows = async (updating: Item[]): Promise<BulkOperationResponse<object>> => {
+    try {
+      return await bulkUpdate({ project_id: projectId, items: updating.map(updateItem), dry_run: false, atomic: false } as never);
+    } catch (error) {
+      const message = serverMessage(error);
+      const results = updating.map((it, index) => ({ index, code: it.code, success: false, actionTaken: 'failed', error: message }));
+      return { summary: { total: results.length, failedCount: results.length } as BulkOperationSummary, results, partial_success: false };
     }
   };
 
@@ -275,8 +328,8 @@ export const StagedBulkManager: React.FC<StagedBulkManagerProps> = ({ spec, proj
               <Button size="sm" variant="secondary" onClick={() => setStep('GRID')}>
                 Back to Grid
               </Button>
-              <Button size="sm" variant="primary" onClick={() => setStep('PREVIEW')} disabled={items.length === 0} className="flex items-center gap-1.5">
-                <span>Review Execution Preview</span>
+              <Button size="sm" variant="primary" onClick={review} disabled={items.length === 0 || checking} className="flex items-center gap-1.5">
+                <span>{checking ? 'Checking updates…' : 'Review Execution Preview'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
             </div>

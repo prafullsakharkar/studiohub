@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { assetBatch, assetBulk, sequenceBatch, sequenceBulk, shotBatch, shotBulk, taskBatch, taskBulk } from '@/api/production/bulkRoutes';
-import { projectsApi } from '@/api/production/structure';
+import { projectsApi, sequencesApi } from '@/api/production/structure';
 import { assetsApi, shotsApi, tasksApi } from '@/api/production/work';
 import { tokenStorage } from '@/core/auth/tokenStorage';
-import { buildBulkShotItems } from '@/modules/shots/components/bulk/ShotBulkManager';
-import { columnsFor, sequenceBulkSpec, shotBulkSpec, taskBulkSpec } from '@/modules/production/bulk/specs';
-import { toCreateItems } from '@/modules/production/bulk/rows';
+import { buildBulkShotItems, buildBulkShotUpdates } from '@/modules/shots/components/bulk/ShotBulkManager';
+import { assetBulkSpec, columnsFor, sequenceBulkSpec, shotBulkSpec, taskBulkSpec } from '@/modules/production/bulk/specs';
+import { toCreateItems, toUpdateItems } from '@/modules/production/bulk/rows';
 import { exampleRows, templateParents } from '@/modules/production/bulk/template';
 import { authService } from '@/modules/auth/services/AuthService';
 import { freshTotp, live } from './liveBackend';
@@ -157,6 +157,44 @@ describe('Bulk add shots: the sequence a shot is linked to', () => {
     await shotBulk.bulkCreate({ project_id: project, items } as never);
     const row = (await shotsApi.list({ project, search: code })).results.find((r) => r.code === code);
     expect(row?.sequence_code).toBe(seq);
+  });
+});
+
+describe('Bulk add: Update Existing Entity, as the managers send it', () => {
+  it('a sequence, an asset, a task and a shot are updated by code from the cells the row filled in; the others stay', async () => {
+    // Created first, as an upload of the same rows would find them.
+    const seq = `UP${uid}Q`;
+    const asset = `UP${uid}A`;
+    const task = `UP${uid}T`;
+    const shot = `UP${uid}S`;
+    await sequenceBulk.bulkCreate({ project_id: project, items: [{ code: seq, action: 'create', data: { name: 'Old', description: 'Keep me' } }] } as never);
+    await assetBulk.bulkCreate({ project_id: project, items: [{ code: asset, action: 'create', data: { name: 'Old', category: 'Character' } }] } as never);
+    await taskBulk.bulkCreate({ project_id: project, items: [{ code: task, action: 'create', data: { title: 'Old' } }] } as never);
+    await shotBulk.bulkCreate({ project_id: project, items: [{ code: shot, action: 'create', data: { name: 'Old', sequence_id: seq } }] } as never);
+
+    // The managers' own update items: the update columns of the spec, the shot manager's builder.
+    const update = async (spec: typeof sequenceBulkSpec, row: Record<string, unknown>) => {
+      const items = toUpdateItems([row], columnsFor(spec, { episodic: false, mode: 'update' }));
+      const dry = await spec.routes.update(project, items, { dry_run: true, atomic: false });
+      expect(dry.errors).toEqual([]);
+      const done = await spec.routes.update(project, items, { dry_run: false, atomic: false });
+      expect(done).toMatchObject({ committed: true, errors: [] });
+      expect(statuses(done)).toEqual(['updated']);
+    };
+    await update(sequenceBulkSpec, { code: seq, name: 'New' });
+    await update(assetBulkSpec, { code: asset, name: 'New', category: 'Prop' });
+    // A task's About / entity columns are create-only: the update leaves them out.
+    await update(taskBulkSpec, { code: task, title: 'New', entity_type: 'Shot', entity: shot, priority: 'High' });
+
+    const shotUpdates = buildBulkShotUpdates([{ code: shot, state: 'EXISTS', userAction: 'update_existing', proposedData: { code: shot, name: 'New', sequence_code: seq, priority: 'Low', notes: 'n', frame_in: 1001, frame_out: 1200, handle_frames: 8 } } as never]);
+    const shotDone = await shotBatch.update(project, shotUpdates, { dry_run: false, atomic: false });
+    expect(shotDone).toMatchObject({ committed: true, errors: [] });
+
+    const one = async (list: (p: object) => Promise<{ results: Array<Record<string, unknown>> }>, code: string) => (await list({ project, search: code })).results.find((r) => r.code === code) as Record<string, unknown>;
+    expect(await one(sequencesApi.list as never, seq)).toMatchObject({ name: 'New', description: 'Keep me' }); // description was empty in the row: left as it is
+    expect(await one(assetsApi.list as never, asset)).toMatchObject({ name: 'New', category: 'Prop' });
+    expect(await one(tasksApi.list as never, task)).toMatchObject({ title: 'New', priority: 'High' });
+    expect(await one(shotsApi.list as never, shot)).toMatchObject({ name: 'New', frame_out: 1200, sequence_code: seq });
   });
 });
 

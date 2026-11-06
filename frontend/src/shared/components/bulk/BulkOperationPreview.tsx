@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   RotateCcw,
+  RefreshCw,
   PlusCircle,
   Clock,
   ArrowRight,
@@ -30,14 +31,15 @@ export const BulkOperationPreview: React.FC<BulkOperationPreviewProps> = ({
 }) => {
   const toCreate = items.filter((it) => it.userAction === 'create' || (!it.userAction && it.state === 'NEW'));
   const toRecover = items.filter((it) => it.userAction === 'recover');
-  const toSkip = items.filter((it) => it.userAction === 'skip' || it.state === 'INVALID');
+  const toUpdate = items.filter((it) => it.userAction === 'update_existing');
+  const toSkip = items.filter((it) => it.userAction !== 'update_existing' && (it.userAction === 'skip' || it.state === 'INVALID'));
 
-  const totalActionable = toCreate.length + toRecover.length;
+  const totalActionable = toCreate.length + toRecover.length + toUpdate.length;
 
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Execution Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         {/* Create Card */}
         <div className="bg-emerald-950/20 border border-emerald-500/30 rounded-xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
@@ -61,6 +63,17 @@ export const BulkOperationPreview: React.FC<BulkOperationPreviewProps> = ({
               {toRecover.length}
             </div>
             <div className="text-xs font-mono text-slate-400">Archived to Recover</div>
+          </div>
+        </div>
+
+        {/* Update Card */}
+        <div className="bg-sky-950/20 border border-sky-500/30 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-300">
+            <RefreshCw className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-2xl font-bold font-mono text-sky-300">{toUpdate.length}</div>
+            <div className="text-xs font-mono text-slate-400">Existing to Update</div>
           </div>
         </div>
 
@@ -89,7 +102,8 @@ export const BulkOperationPreview: React.FC<BulkOperationPreviewProps> = ({
           {items.map((item, idx) => {
             const isCreate = item.userAction === 'create' || (!item.userAction && item.state === 'NEW');
             const isRecover = item.userAction === 'recover';
-            const isSkip = !isCreate && !isRecover;
+            const isUpdate = item.userAction === 'update_existing';
+            const isSkip = !isCreate && !isRecover && !isUpdate;
 
             return (
               <div
@@ -116,6 +130,11 @@ export const BulkOperationPreview: React.FC<BulkOperationPreviewProps> = ({
                       Recover Archived
                     </span>
                   )}
+                  {isUpdate && (
+                    <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-sky-500/10 text-sky-300 border border-sky-500/30">
+                      Update Existing
+                    </span>
+                  )}
                   {isSkip && (
                     <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-800 text-slate-400 border border-slate-700">
                       Skip
@@ -132,7 +151,7 @@ export const BulkOperationPreview: React.FC<BulkOperationPreviewProps> = ({
       <div className="flex items-center gap-2 p-3 rounded-lg bg-indigo-950/20 border border-indigo-500/30 text-xs font-mono text-indigo-300">
         <ShieldCheck className="w-4 h-4 text-indigo-400 shrink-0" />
         <span>
-          Audit logs will be generated for every entity created or recovered. Duplicate codes are safely guarded.
+          Audit logs will be generated for every entity created, recovered or updated. Duplicate codes are safely guarded.
         </span>
       </div>
 

@@ -7,6 +7,7 @@ import {
   getBulkEpisodicPrompt,
   applyBulkSequenceCreate,
   buildBulkShotItems,
+  buildBulkShotUpdates,
   ShotBulkManager,
 } from '../ShotBulkManager';
 
@@ -529,5 +530,42 @@ describe('bulk shots: the sequence is sent as sequence_id', () => {
     const [sent] = buildBulkShotItems([item({ code: 'NEB01_SH010', sequence_code: 'NEB01_SQ010' })], { ...ctx, isEpisodic: true, bulkDefaultEpisodeId: 'ep-1', episodesById: { 'ep-1': { id: 'ep-1', code: 'EP101' } } });
     expect(sent.data).toMatchObject({ sequence_id: 'NEB01_SQ010', episode_id: 'ep-1' });
     expect('sequence_code' in sent.data).toBe(false);
+  });
+});
+
+describe('bulk shots: Update Existing Entity', () => {
+  const row = (state: string, userAction: string, proposedData: Record<string, unknown>) => ({ code: String(proposedData.code), state, userAction, proposedData }) as any;
+
+  it('sends the code and the cells the row filled in, with the sequence as sequence_id', () => {
+    const updates = buildBulkShotUpdates([
+      row('EXISTS', 'update_existing', { code: 'NEB01_SH010', name: 'Recut', sequence_code: 'NEB01_SQ010', status: 'In Progress', frame_in: 1001, frame_out: 1100, handle_frames: 8, priority: 'High', notes: 'x', department: 'FX' }),
+    ]);
+    // Priority, notes and department are not shot fields the backend updates in bulk: they are not sent.
+    expect(updates).toEqual([{ code: 'NEB01_SH010', name: 'Recut', status: 'In Progress', frame_in: 1001, frame_out: 1100, handle_frames: 8, sequence_id: 'NEB01_SQ010' }]);
+  });
+
+  it('leaves an empty cell as it is: no name, no sequence, no default episode', () => {
+    const updates = buildBulkShotUpdates([row('EXISTS', 'update_existing', { code: 'NEB01_SH010', name: '', sequence_code: '', frame_in: '', frame_out: 1100 })]);
+    expect(updates).toEqual([{ code: 'NEB01_SH010', frame_out: 1100 }]);
+  });
+
+  it('only rows set to update are updated', () => {
+    const updates = buildBulkShotUpdates([
+      row('EXISTS', 'skip', { code: 'A', name: 'x' }),
+      row('NEW', 'create', { code: 'B', name: 'y' }),
+      row('SOFT_DELETED', 'recover', { code: 'C', name: 'z' }),
+      row('EXISTS', 'update_existing', { code: 'D', name: 'w' }),
+    ]);
+    expect(updates.map((u) => u.code)).toEqual(['D']);
+  });
+
+  it('an episode typed on the row goes as episode_id (a code is looked up)', () => {
+    const updates = buildBulkShotUpdates([row('EXISTS', 'update_existing', { code: 'D', episode_id: 'EP101' })], { episodeLookup: { EP101: { id: 'ep-1', code: 'EP101' } } });
+    expect(updates).toEqual([{ code: 'D', episode_id: 'ep-1' }]);
+  });
+
+  it('the create call does not carry a row set to update', () => {
+    const items = buildBulkShotItems([row('EXISTS', 'update_existing', { code: 'D', name: 'w' }), row('NEW', 'create', { code: 'E', name: 'v' })], { projectId: 'p', projectCode: 'NEB01', defaultSequenceCode: 'S', isEpisodic: false });
+    expect(items.map((i) => i.code)).toEqual(['E']);
   });
 });
