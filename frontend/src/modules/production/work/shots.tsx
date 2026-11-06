@@ -1,15 +1,31 @@
-import { projectsApi } from '@/api/production/structure';
+import { useQuery } from '@tanstack/react-query';
+import { projectsApi, sequencesApi } from '@/api/production/structure';
 import { SHOT_STATUSES, shotsApi } from '@/api/production/work';
 import type { Shot } from '@/api/production/work';
 import { useCan } from '@/core/permissions/useCan';
 import type { BulkAction, DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } from '@/modules/directory/types';
 import { Badge } from '@/shared/components/Badge';
-import { BulkMenu } from '../bulk/BulkMenu';
 import { editFieldsAction } from '../bulk/editFields';
 import { shotBulkSpec } from '../bulk/specs';
 import { EpisodicOnly, episodeColumn, episodeFilter, useEpisodicProjectIds } from './episodic';
 import { StatusMenu } from './StatusMenu';
 import { EpisodePicker, MemberSelect, ProjectPicker, SequencePicker } from './pickers';
+
+/** A shot belongs to a sequence: pick one of the project's, and say so when the project has none yet. */
+const ShotSequenceField: React.FC<{ projectId: string; value: string; onChange: (id: string) => void; error?: string }> = ({ projectId, value, onChange, error }) => {
+  const sequences = useQuery({ queryKey: [...sequencesApi.keys.all, 'any', projectId], queryFn: ({ signal }) => sequencesApi.list({ project: projectId, page_size: 1 }, signal), enabled: Boolean(projectId) });
+  const none = Boolean(projectId) && sequences.data?.count === 0;
+  return (
+    <div className="space-y-1">
+      <SequencePicker label="Sequence *" value={value} onChange={(id) => onChange(id ?? '')} filters={{ project: projectId }} disabled={!projectId} error={error} />
+      {none && (
+        <p role="alert" className="text-xs text-rose-300">
+          This project has no sequences. Create the sequence first; every shot belongs to one.
+        </p>
+      )}
+    </div>
+  );
+};
 
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
 
@@ -75,16 +91,15 @@ export function useShotsListConfig(scope?: { projectId: string }): DirectoryList
     ],
     rowActions: (row): RowAction[] =>
       canRename ? [{ label: 'Rename code', confirm: `Rename ${row.code}. Use this once versions exist: the code is in published file names, and the server rewrites it everywhere.`, askText: { label: 'New code', required: true }, run: (_date, code) => shotsApi.renameCode(row.id, code as string) }] : [],
-    headerExtra: (filters) => <BulkMenu spec={shotBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} />,
     bulk: { actions: [...bulkShotActions, editFieldsAction(shotBulkSpec, episodic)] },
   };
 }
 
 export const shotsFormFields: ReadonlyArray<FieldDef> = [
   { kind: 'entity', name: 'project', rowKey: 'project_id', label: 'Project', required: true, render: (p) => <ProjectPicker label="Project *" value={p.value} onChange={(id) => p.onChange(id ?? '')} error={p.error} /> },
-  { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 30, hint: 'Upper case, no spaces or slashes. Once a version exists, change it with Rename code.' },
+  { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 30, projectPrefix: true, hint: 'Upper case, no spaces or slashes. Once a version exists, change it with Rename code.' },
   { kind: 'text', name: 'name', label: 'Name', maxLength: 255 },
-  { kind: 'entity', name: 'sequence_id', rowKey: 'sequence_id', label: 'Sequence', render: (p) => <SequencePicker label="Sequence" value={p.value} onChange={(id) => p.onChange(id ?? '')} filters={{ project: String(p.values.project ?? '') }} disabled={!p.values.project} error={p.error} /> },
+  { kind: 'entity', name: 'sequence_id', rowKey: 'sequence_id', label: 'Sequence', requiredOnCreate: true, render: (p) => <ShotSequenceField projectId={String(p.values.project ?? '')} value={p.value} onChange={p.onChange} error={p.error} /> },
   { kind: 'entity', name: 'episode_id', rowKey: 'episode_id', label: 'Episode', render: (p) => (
       // Only an episodic project has episodes, and there every shot needs one (CR-47).
       <EpisodicOnly projectId={String(p.values.project ?? '')}>

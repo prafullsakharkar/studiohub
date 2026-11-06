@@ -38,6 +38,13 @@ export interface FieldGate {
   initial?: string | boolean;
   /** The row property that holds the saved value when it is not the write name (a write takes `project`, a read has `project_id`). */
   rowKey?: string;
+  /**
+   * A text field whose value, on a NEW record, starts with the chosen project's code (`TST_`): the form shows the prefix
+   * beside the input, the user types the rest, and the code is sent with the prefix. An edit shows the saved code as it is.
+   */
+  projectPrefix?: boolean;
+  /** Required while creating; an existing record that lacks the value can still be saved (a legacy shot with no sequence). */
+  requiredOnCreate?: boolean;
 }
 
 export type FieldDef = FieldGate &

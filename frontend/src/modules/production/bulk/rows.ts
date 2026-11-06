@@ -1,6 +1,5 @@
 import { BULK_MAX_ITEMS } from '@/api/production/bulkRoutes';
 import type { BulkBatchResponse, BulkCreateRow, BulkUpdateRow } from '@/api/production/bulkRoutes';
-import { toCsv } from '@/shared/data/exportAll';
 import { headerKey, parseDelimited } from '@/shared/utils/csv';
 import type { BulkColumn } from './specs';
 
@@ -79,11 +78,9 @@ const codeOf = (row: SheetRow, columns: readonly BulkColumn[]) => {
 export const toCreateItems = (rows: readonly SheetRow[], columns: readonly BulkColumn[]): BulkCreateRow[] =>
   rows.map((row) => ({ code: codeOf(row, columns), action: 'create', data: fieldsOf(row, columns) }));
 
+/** An update item: the row's code and the filled-in fields of `columns` (an empty cell leaves the field as it is). */
 export const toUpdateItems = (rows: readonly SheetRow[], columns: readonly BulkColumn[]): BulkUpdateRow[] =>
   rows.map((row) => ({ code: codeOf(row, columns), ...fieldsOf(row, columns) }));
-
-/** The header row of a bulk file, for "Download template". */
-export const templateCsv = (columns: readonly BulkColumn[]): string => toCsv<SheetRow>([], columns.map((c) => ({ header: c.header, value: () => '' })));
 
 /** The CSV column an error names; none for a whole-row reason or for the row's `id` (a key, not a column). */
 const columnOf = (field: string | null, labels: ReadonlyMap<string, string>): string | null =>
@@ -93,6 +90,8 @@ export type RowOutcome = 'create' | 'update' | 'skip' | 'error';
 
 export interface RowReport {
   outcome: RowOutcome;
+  /** The backend's word for the row: created, updated, exists, soft_deleted, duplicate, not_found, invalid, … */
+  status: string;
   messages: string[];
 }
 
@@ -101,6 +100,7 @@ export function rowReports(response: BulkBatchResponse, columns: readonly BulkCo
   const labels = new Map(columns.map((c) => [c.key, c.header]));
   const reports: RowReport[] = response.results.map((row) => ({
     outcome: !row.success ? 'error' : row.status === 'skipped' ? 'skip' : row.status === 'updated' ? 'update' : 'create',
+    status: row.status,
     messages: [],
   }));
   for (const error of response.errors) {
@@ -110,15 +110,4 @@ export function rowReports(response: BulkBatchResponse, columns: readonly BulkCo
     report.messages.push(field ? `${field}: ${error.message}` : error.message);
   }
   return reports;
-}
-
-/** The refused rows as a CSV: row number (1 is the first row under the header), code, column and message. */
-export function errorReportCsv(response: BulkBatchResponse, rows: readonly SheetRow[], columns: readonly BulkColumn[]): string {
-  const labels = new Map(columns.map((c) => [c.key, c.header]));
-  return toCsv(response.errors, [
-    { header: 'row', value: (e) => e.row + 1 },
-    { header: 'code', value: (e) => codeOf(rows[e.row] ?? {}, columns) },
-    { header: 'column', value: (e) => columnOf(e.field, labels) ?? '' },
-    { header: 'message', value: (e) => e.message },
-  ]);
 }

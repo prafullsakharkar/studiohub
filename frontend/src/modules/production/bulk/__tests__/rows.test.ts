@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BulkBatchResponse } from '@/api/production/bulkRoutes';
 import { loadSample } from '@/test/samples';
-import { errorReportCsv, readRows, rowReports, templateCsv, toCreateItems, toUpdateItems } from '../rows';
+import { readRows, rowReports, toCreateItems, toUpdateItems } from '../rows';
 import { assetBulkSpec, columnsFor, sequenceBulkSpec, shotBulkSpec, taskBulkSpec } from '../specs';
 
 type Captured = { status: number; body: any; request: { body: any } };
@@ -20,11 +20,6 @@ describe('columns per project', () => {
     expect(update).not.toContain('entity_type');
     expect(update).not.toContain('entity_id');
     expect(columnsFor(taskBulkSpec, { episodic: false, mode: 'create' }).map((c) => c.key)).toContain('entity_id');
-  });
-
-  it('the template is the header row', () => {
-    expect(templateCsv(sequences(false))).toBe('code,name,description,frame_in,frame_out,status\r\n');
-    expect(templateCsv(sequences(true))).toBe('code,name,description,episode,frame_in,frame_out,status\r\n');
   });
 });
 
@@ -89,31 +84,19 @@ describe('items on the wire', () => {
 describe('reports from a captured dry run', () => {
   const response = flow.sequences_create_dry_run_errors.body as BulkBatchResponse;
   const columns = sequences(false);
-  const rows = flow.sequences_create_dry_run_errors.request.body.items.map((item: { code: string }) => ({ code: item.code }));
 
   it('per row: the outcome and the backend reasons with the CSV column', () => {
     expect(rowReports(response, columns)).toEqual([
-      { outcome: 'error', messages: ['code: A record with this code already exists.'] },
-      { outcome: 'create', messages: [] },
-      { outcome: 'error', messages: ['code: Duplicate code within batch.'] },
-      { outcome: 'error', messages: ['code: A code cannot contain spaces or slashes.'] },
-      { outcome: 'error', messages: ['frame_out: Must not be before frame_in.'] },
+      { outcome: 'error', status: 'exists', messages: ['code: A record with this code already exists.'] },
+      { outcome: 'create', status: 'created', messages: [] },
+      { outcome: 'error', status: 'duplicate', messages: ['code: Duplicate code within batch.'] },
+      { outcome: 'error', status: 'invalid', messages: ['code: A code cannot contain spaces or slashes.'] },
+      { outcome: 'error', status: 'invalid', messages: ['frame_out: Must not be before frame_in.'] },
     ]);
   });
 
   it('an unknown row names no column: its id is a key', () => {
     const update = flow.sequences_update_dry_run.body as BulkBatchResponse;
-    expect(rowReports(update, sequences(false, 'update'))[1]).toEqual({ outcome: 'error', messages: ['Sequence not found.'] });
-  });
-
-  it('the error report numbers rows from 1 under the header', () => {
-    expect(errorReportCsv(response, rows, columns).split('\r\n')).toEqual([
-      'row,code,column,message',
-      '1,SQ010,code,A record with this code already exists.',
-      '3,SQ040,code,Duplicate code within batch.',
-      '4,BAD CODE,code,A code cannot contain spaces or slashes.',
-      '5,SQ050,frame_out,Must not be before frame_in.',
-      '',
-    ]);
+    expect(rowReports(update, sequences(false, 'update'))[1]).toEqual({ outcome: 'error', status: 'not_found', messages: ['Sequence not found.'] });
   });
 });
