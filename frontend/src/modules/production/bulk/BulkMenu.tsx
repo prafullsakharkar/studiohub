@@ -7,8 +7,7 @@ import { useProject } from '../hooks/useProjects';
 import { isEpisodicProject } from '../projectWorkflow';
 import { ProjectPicker } from '../work/pickers';
 import { BulkImportDialog } from './BulkImportDialog';
-import type { BulkMode } from './BulkImportDialog';
-import type { BulkSpec } from './specs';
+import type { BulkMode, BulkSpec } from './specs';
 
 interface BulkMenuProps {
   spec: BulkSpec;

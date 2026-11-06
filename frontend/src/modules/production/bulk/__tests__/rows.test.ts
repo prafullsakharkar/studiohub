@@ -93,17 +93,17 @@ describe('reports from a captured dry run', () => {
 
   it('per row: the outcome and the backend reasons with the CSV column', () => {
     expect(rowReports(response, columns)).toEqual([
-      { outcome: 'error', messages: ['code: A record with this code already exists.'] },
-      { outcome: 'create', messages: [] },
-      { outcome: 'error', messages: ['code: Duplicate code within batch.'] },
-      { outcome: 'error', messages: ['code: A code cannot contain spaces or slashes.'] },
-      { outcome: 'error', messages: ['frame_out: Must not be before frame_in.'] },
+      { outcome: 'error', status: 'exists', messages: ['code: A record with this code already exists.'] },
+      { outcome: 'create', status: 'created', messages: [] },
+      { outcome: 'error', status: 'duplicate', messages: ['code: Duplicate code within batch.'] },
+      { outcome: 'error', status: 'invalid', messages: ['code: A code cannot contain spaces or slashes.'] },
+      { outcome: 'error', status: 'invalid', messages: ['frame_out: Must not be before frame_in.'] },
     ]);
   });
 
   it('an unknown row names no column: its id is a key', () => {
     const update = flow.sequences_update_dry_run.body as BulkBatchResponse;
-    expect(rowReports(update, sequences(false, 'update'))[1]).toEqual({ outcome: 'error', messages: ['Sequence not found.'] });
+    expect(rowReports(update, sequences(false, 'update'))[1]).toEqual({ outcome: 'error', status: 'not_found', messages: ['Sequence not found.'] });
   });
 
   it('the error report numbers rows from 1 under the header', () => {

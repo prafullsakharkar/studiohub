@@ -9,13 +9,14 @@ import type { GridColumn } from '@/shared/components/bulk/BulkImportGrid';
 import { Button } from '@/shared/components/Button';
 import { Modal } from '@/shared/components/Modal';
 import { downloadCsv } from '@/shared/data/exportAll';
-import { MAX_FILE_BYTES, byCode, changedRows, errorReportCsv, readRows, rowReports, templateCsv, toCreateItems, toUpdateItems } from './rows';
-import type { RowOutcome, SheetRow } from './rows';
+import { ResultBanner, RowsLog, SummaryCards } from './BatchReport';
+import { MAX_FILE_BYTES, byCode, changedRows, errorReportCsv, logCsv, readRows, rowReports, templateCsv, toCreateItems, toUpdateItems } from './rows';
+import type { RowReport, SheetRow } from './rows';
 import { columnsFor } from './specs';
-import type { BulkSpec } from './specs';
+import type { BulkMode, BulkSpec } from './specs';
 import { currentRows, exampleRows, templateParents } from './template';
 
-export type BulkMode = 'create' | 'update';
+export type { BulkMode } from './specs';
 
 interface BulkImportDialogProps {
   spec: BulkSpec;
@@ -31,13 +32,6 @@ interface BulkImportDialogProps {
   onClose: () => void;
 }
 
-const OUTCOME_LABEL: Record<RowOutcome, string> = { create: 'Create', update: 'Update', skip: 'Skip', error: 'Error' };
-const OUTCOME_CLASS: Record<RowOutcome, string> = {
-  create: 'text-emerald-400',
-  update: 'text-sky-400',
-  skip: 'text-slate-400',
-  error: 'text-rose-400',
-};
 
 /**
  * Bulk create or update of one entity in one project from a CSV file or rows pasted into the grid (CR-48). The rows are
@@ -190,7 +184,15 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ spec, mode, 
         )}
 
         {result ? (
-          <ResultView spec={spec} result={result} onReport={() => downloadCsv(`${fileStem}-errors.csv`, errorReportCsv(result, sent, columns))} />
+          <ResultView
+            spec={spec}
+            mode={mode}
+            result={result}
+            reports={rowReports(result, columns)}
+            codes={sent.map((row) => String(row.code ?? ''))}
+            onReport={() => downloadCsv(`${fileStem}-errors.csv`, errorReportCsv(result, sent, columns))}
+            onLog={() => downloadCsv(`${fileStem}-log.csv`, logCsv(rowReports(result, columns), sent, columns, result.committed))}
+          />
         ) : check ? (
           <>
             <p>
@@ -198,29 +200,8 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ spec, mode, 
               {failed ? `; ${formatNumber(failed)} cannot.` : '.'} Nothing has been stored yet.
               {sent.length < rows.length ? ` ${formatNumber(rows.length - sent.length)} unchanged rows are left out.` : ''}
             </p>
-            <div className="max-h-80 overflow-auto border border-slate-800 rounded-lg">
-              <table aria-label="Checked rows" className="w-full text-left text-xs font-mono">
-                <thead className="bg-slate-900 text-slate-400 sticky top-0">
-                  <tr>
-                    <th className="px-3 py-2">Row</th>
-                    <th className="px-3 py-2">Code</th>
-                    <th className="px-3 py-2">Outcome</th>
-                    <th className="px-3 py-2">Why</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {reports.map((report, index) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: rows have no other identity; the list does not reorder
-                    <tr key={index}>
-                      <td className="px-3 py-1.5 text-slate-500">{index + 1}</td>
-                      <td className="px-3 py-1.5">{String(sent[index]?.code ?? '')}</td>
-                      <td className={`px-3 py-1.5 ${OUTCOME_CLASS[report.outcome]}`}>{OUTCOME_LABEL[report.outcome]}</td>
-                      <td className="px-3 py-1.5 text-slate-300">{report.messages.join(' ')}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <SummaryCards spec={spec} mode={mode} reports={reports} stage="check" />
+            <RowsLog title="Planned batch" label="Checked rows" mode={mode} reports={reports} codes={sent.map((row) => String(row.code ?? ''))} stage="check" />
             {failed > 0 && (
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={skipInvalid} onChange={(e) => setSkipInvalid(e.target.checked)} />
@@ -299,20 +280,31 @@ function subtitleFor(mode: BulkMode, spec: BulkSpec): string {
     : `Existing ${spec.plural}, found by their code in this project. Only the filled-in columns change.`;
 }
 
-const ResultView: React.FC<{ spec: BulkSpec; result: BulkBatchResponse; onReport: () => void }> = ({ spec, result, onReport }) => {
-  const stored = result.committed ? result.successful : 0;
+const ResultView: React.FC<{
+  spec: BulkSpec;
+  mode: BulkMode;
+  result: BulkBatchResponse;
+  reports: readonly RowReport[];
+  codes: readonly string[];
+  onReport: () => void;
+  onLog: () => void;
+}> = ({ spec, mode, result, reports, codes, onReport, onLog }) => {
+  const stage = result.committed ? 'stored' : 'rolled-back';
   return (
-    <div className="space-y-3">
-      <p role="status">
-        {result.committed
-          ? `${formatNumber(stored)} ${stored === 1 ? spec.noun : spec.plural} stored${result.failed ? `; ${formatNumber(result.failed)} rows were not.` : '.'}`
-          : `Nothing was stored: ${formatNumber(result.failed)} rows failed. Check the rows again.`}
-      </p>
-      {result.errors.length > 0 && (
-        <Button size="sm" variant="outline" onClick={onReport}>
-          Download error report
+    <div className="space-y-4">
+      <ResultBanner spec={spec} reports={reports} committed={result.committed} successful={result.successful} failed={result.failed} />
+      <SummaryCards spec={spec} mode={mode} reports={reports} stage={stage} />
+      <RowsLog title="Execution log" label="Stored rows" mode={mode} reports={reports} codes={codes} stage={stage} />
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" onClick={onLog}>
+          Download log
         </Button>
-      )}
+        {result.errors.length > 0 && (
+          <Button size="sm" variant="outline" onClick={onReport}>
+            Download error report
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

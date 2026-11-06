@@ -45,6 +45,8 @@ export interface BulkTemplate {
   example: (n: number, parents: TemplateParents) => Record<string, string>;
 }
 
+export type BulkMode = 'create' | 'update';
+
 export interface BulkSpec {
   /** `sequence`, used in file names and sentences. */
   noun: string;

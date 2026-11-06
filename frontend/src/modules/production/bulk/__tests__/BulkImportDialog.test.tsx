@@ -229,7 +229,9 @@ describe('bulk update', () => {
     await within(dialog).findByText(/1 of 2 rows can be updated; 1 cannot\./);
     expect(posts(calls, 'bulk-update')[0].body).toEqual(bulk.sequences_update_dry_run.request.body);
     expect(within(dialog).getByText('Sequence not found.')).toBeTruthy();
-    expect(within(dialog).getByText('Update')).toBeTruthy();
+    const table = within(dialog).getByRole('table', { name: 'Checked rows' });
+    expect(within(table).getByText('Update')).toBeTruthy();
+    expect(within(table).getByText('Not found')).toBeTruthy();
   });
 });
 
@@ -352,3 +354,83 @@ describe('Load template', () => {
     expect((within(dialog).getByRole('button', { name: 'Load template' }) as HTMLButtonElement).disabled).toBe(true);
   });
 });
+
+describe('counts, as the former bulk screens showed them', () => {
+  const dryRunOr = (dryRun: Captured, commit: Captured) => (c: MockCall) => ((c.body as { dry_run: boolean }).dry_run ? dryRun : commit);
+  const countLine = (dialog: HTMLElement) => within(dialog).getByRole('status').nextElementSibling?.textContent;
+
+  it('the check: cards, the breakdown by reason, and a pill filters the rows', async () => {
+    mockFetch(server(() => bulk.sequences_create_dry_run_errors));
+    renderList(standard.id);
+    const dialog = await openBulk('create');
+    upload(dialog, 'code,frame_in,frame_out\nSQ010,,\nSQ040,,\nSQ040,,\nBAD CODE,,\nSQ050,1100,1001\n');
+    fireEvent.click(await within(dialog).findByRole('button', { name: 'Check rows' }));
+
+    const summary = await within(dialog).findByLabelText('Batch summary');
+    expect(summary.textContent).toBe('1New sequences to create4Rows with errors');
+    const pill = (name: string) => within(dialog).getByRole('button', { name: new RegExp(`^${name}\\s*\\d+$`) });
+    expect(pill('All rows').textContent).toBe('All rows5');
+    expect(pill('New \\(create\\)').textContent).toBe('New (create)1');
+    expect(pill('Already in the project').textContent).toBe('Already in the project1');
+    expect(pill('Twice in the file').textContent).toBe('Twice in the file1');
+    expect(pill('Validation errors').textContent).toBe('Validation errors2');
+    expect((pill('Archived \\(restore it\\)') as HTMLButtonElement).disabled).toBe(true);
+
+    fireEvent.click(pill('Validation errors'));
+    const table = within(dialog).getByRole('table', { name: 'Checked rows' });
+    expect(within(table).getAllByRole('row')).toHaveLength(3);
+    expect(within(table).getByText('frame_out: Must not be before frame_in.')).toBeTruthy();
+    fireEvent.click(pill('All rows'));
+    expect(within(table).getAllByRole('row')).toHaveLength(6);
+  });
+
+  it('a partly stored batch: how many were created and failed, each row, and the log as CSV', async () => {
+    mockFetch(server(dryRunOr(bulk.sequences_create_atomic_fails, bulk.sequences_create_skip_invalid)));
+    renderList(standard.id);
+    const dialog = await openBulk('create');
+    upload(dialog, 'code\nSQ070\nBAD/CODE\n');
+    fireEvent.click(await within(dialog).findByRole('button', { name: 'Check rows' }));
+    fireEvent.click(await within(dialog).findByLabelText(/Skip invalid rows/));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Create 1 sequence' }));
+
+    expect((await within(dialog).findByRole('status')).textContent).toBe('1 sequence stored; 1 rows were not.');
+    expect(countLine(dialog)).toBe('1 created · 0 updated · 0 skipped · 1 failed');
+    expect(within(dialog).getByLabelText('Batch summary').textContent).toBe('1Sequences created1Rows not stored (errors)');
+    const table = within(dialog).getByRole('table', { name: 'Stored rows' });
+    expect(within(table).getByText('Created')).toBeTruthy();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Download log' }));
+    const log = (await blobs[0].text()).split('\r\n');
+    expect(log[0]).toBe('row,code,outcome,message');
+    expect(log[1]).toBe('1,SQ070,created,');
+    expect(log[2]).toMatch(/^2,BAD\/CODE,error,/);
+  });
+
+  it('a rolled-back batch counts nothing as created and marks its valid rows "Not stored"', async () => {
+    mockFetch(server(dryRunOr(bulk.sequences_create_dry_run_ok, bulk.sequences_create_atomic_fails)));
+    renderList(standard.id);
+    const dialog = await openBulk('create');
+    upload(dialog, 'code\nSQ020\nSQ030\n');
+    fireEvent.click(await within(dialog).findByRole('button', { name: 'Check rows' }));
+    fireEvent.click(await within(dialog).findByRole('button', { name: 'Create 2 sequences' }));
+    await within(dialog).findByRole('status');
+    expect(countLine(dialog)).toBe('0 created · 0 updated · 0 skipped · 1 failed');
+    expect(within(within(dialog).getByRole('table', { name: 'Stored rows' })).getByText('Not stored')).toBeTruthy();
+    expect(within(dialog).getByLabelText('Batch summary').textContent).toBe('0Sequences created1Rows not stored (errors)');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Download log' }));
+    expect((await blobs[0].text()).split('\r\n')[1]).toBe('1,SQ020,not stored,');
+  });
+
+  it('an update counts updated rows', async () => {
+    mockFetch(server(() => bulk.sequences_update_commit));
+    renderList(standard.id);
+    const dialog = await openBulk('update');
+    upload(dialog, 'code,name\nSQ010,A\nSQ020,B\n');
+    fireEvent.click(await within(dialog).findByRole('button', { name: 'Check rows' }));
+    expect((await within(dialog).findByLabelText('Batch summary')).textContent).toBe('2Existing sequences to update0Rows with errors');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Update 2 sequences' }));
+    expect((await within(dialog).findByRole('status')).textContent).toBe('2 sequences stored.');
+    expect(countLine(dialog)).toBe('0 created · 2 updated · 0 skipped · 0 failed');
+  });
+});
+

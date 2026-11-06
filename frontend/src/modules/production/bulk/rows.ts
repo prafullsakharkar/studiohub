@@ -119,6 +119,8 @@ export type RowOutcome = 'create' | 'update' | 'skip' | 'error';
 
 export interface RowReport {
   outcome: RowOutcome;
+  /** The backend's word for the row: created, updated, exists, soft_deleted, duplicate, not_found, invalid, … */
+  status: string;
   messages: string[];
 }
 
@@ -127,6 +129,7 @@ export function rowReports(response: BulkBatchResponse, columns: readonly BulkCo
   const labels = new Map(columns.map((c) => [c.key, c.header]));
   const reports: RowReport[] = response.results.map((row) => ({
     outcome: !row.success ? 'error' : row.status === 'skipped' ? 'skip' : row.status === 'updated' ? 'update' : 'create',
+    status: row.status,
     messages: [],
   }));
   for (const error of response.errors) {
@@ -138,6 +141,12 @@ export function rowReports(response: BulkBatchResponse, columns: readonly BulkCo
   return reports;
 }
 
+export type OutcomeCounts = Record<RowOutcome, number>;
+
+/** How many rows each outcome has, for the summary above the rows. */
+export const countOutcomes = (reports: readonly RowReport[]): OutcomeCounts =>
+  reports.reduce<OutcomeCounts>((counts, r) => ({ ...counts, [r.outcome]: counts[r.outcome] + 1 }), { create: 0, update: 0, skip: 0, error: 0 });
+
 /** The refused rows as a CSV: row number (1 is the first row under the header), code, column and message. */
 export function errorReportCsv(response: BulkBatchResponse, rows: readonly SheetRow[], columns: readonly BulkColumn[]): string {
   const labels = new Map(columns.map((c) => [c.key, c.header]));
@@ -147,4 +156,17 @@ export function errorReportCsv(response: BulkBatchResponse, rows: readonly Sheet
     { header: 'column', value: (e) => columnOf(e.field, labels) ?? '' },
     { header: 'message', value: (e) => e.message },
   ]);
+}
+
+/** Every sent row as a CSV log: row number, code, outcome (stored or not) and the reasons. */
+export function logCsv(reports: readonly RowReport[], rows: readonly SheetRow[], columns: readonly BulkColumn[], committed: boolean): string {
+  return toCsv(
+    reports.map((report, index) => ({ report, index })),
+    [
+      { header: 'row', value: (r) => r.index + 1 },
+      { header: 'code', value: (r) => codeOf(rows[r.index] ?? {}, columns) },
+      { header: 'outcome', value: (r) => (r.report.outcome === 'error' ? 'error' : committed ? r.report.status : 'not stored') },
+      { header: 'message', value: (r) => r.report.messages.join(' ') },
+    ]
+  );
 }
