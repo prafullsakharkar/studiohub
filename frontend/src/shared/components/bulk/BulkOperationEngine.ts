@@ -4,6 +4,9 @@ export interface ParsedRow {
   [key: string]: any;
 }
 
+/** Header words a pasted sheet may use for a grid column's key (the shot grid's labels are "Shot Code" and "Sequence"). */
+const HEADER_ALIASES: Record<string, string> = { shot_code: 'code', sequence: 'sequence_code' };
+
 export class BulkOperationEngine {
   /**
    * Parse raw text (TSV, CSV, or line-delimited codes) into structured rows
@@ -44,7 +47,11 @@ export class BulkOperationEngine {
     const hasHeaderMatch = firstRowTokens.some((t) => commonHeaderNames.includes(t));
 
     if (hasHeaderMatch) {
-      headerTokens = firstRowTokens;
+      // A header may be the grid's own label ("Shot Code", "Sequence"): it fills the column whose key it names.
+      headerTokens = firstRowTokens.map((token) => {
+        const key = HEADER_ALIASES[token];
+        return key && expectedHeaders && !expectedHeaders.includes(token) && expectedHeaders.includes(key) ? key : token;
+      });
       dataLines = lines.slice(1);
     } else if (expectedHeaders && expectedHeaders.length > 0) {
       headerTokens = expectedHeaders;

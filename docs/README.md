@@ -260,6 +260,7 @@ Rules for every file:
 * **A shot needs a sequence of the project.** A row with none, or with one the project does not have, is a *validation error* ("Sequence X does not exist in this project. Create it first.").
 * Parents are written by **code** and resolved inside the project: `episode` (EP101), `sequence` (SQ010), `asset_type` and `task_type` (catalog codes), `entity` (the shot, asset or sequence code of a task). An unknown parent, or one of another project, is "Unknown ...".
 * An empty cell means "not given": the field takes its default.
+* **Shots, pasting into the grid:** the first row may name the columns by the grid's own labels (`Shot Code`, `Sequence`, `Name`, …) or by their keys (`code`, `sequence_code`); without a header row the cells fill the grid's columns in order.
 * At most 500 rows and 2 MB per file; split bigger ones.
 * Quoted fields follow RFC 4180 (`"Smith, J"`, `"He said ""go"""`, line breaks inside quotes).
 

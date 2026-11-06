@@ -105,7 +105,7 @@ export const BulkOperationResult: React.FC<BulkOperationResultProps> = ({
               : `Bulk Operation Encountered Errors`}
           </h3>
           <p className="text-xs text-slate-400 mt-0.5 font-mono">
-            {summary.createdCount} created · {summary.recoveredCount} recovered · {summary.skippedCount} skipped · {summary.failedCount} failed
+            {summary.createdCount} created · {summary.recoveredCount} recovered · {summary.updatedCount ?? 0} updated · {summary.skippedCount} skipped · {summary.failedCount} failed
           </p>
         </div>
       </div>
