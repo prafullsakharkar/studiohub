@@ -4,6 +4,7 @@
 #
 #   docs/sync/tools/run_role_smoke.sh                    # all six roles and the phone-width pass, 35 to 50 minutes
 #   docs/sync/tools/run_role_smoke.sh --grep "no role"   # one role
+#   docs/sync/tools/run_role_smoke.sh --grep "create forms and Bulk add"   # the create forms and Bulk add in a browser, about 1 minute; screenshots in frontend/test-results/bulk-add-smoke
 #   docs/sync/tools/run_role_smoke.sh --vitest src/test/live/settings.live.test.tsx   # a live vitest file, fresh seed
 #
 # State (backend log, connection details) is kept in frontend/test-results/live, which Git ignores.
