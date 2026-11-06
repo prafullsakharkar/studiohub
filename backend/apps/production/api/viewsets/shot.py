@@ -102,16 +102,13 @@ class ShotViewSet(
         require_assignable_artist(project, data, instance)
 
     def prepare_create(self, serializer, project):
-        self._enforce_episode_sequence_chain(serializer, project=project, instance=None)
+        data = serializer.validated_data if isinstance(serializer.validated_data, dict) else {}
+        self._enforce_episode_sequence_chain(data, project=project, instance=None)
 
-    def perform_update(self, serializer):
-        instance = self.get_object()
-        self._enforce_episode_sequence_chain(
-            serializer, project=instance.project, instance=instance
-        )
-        super().perform_update(serializer)
+    def prepare_update(self, instance, data):
+        self._enforce_episode_sequence_chain(data, project=instance.project, instance=instance)
 
-    def _enforce_episode_sequence_chain(self, serializer, *, project, instance=None):
+    def _enforce_episode_sequence_chain(self, data, *, project, instance=None):
         """
         Resolve + validate the episode/sequence chain against ``project``.
 
@@ -131,7 +128,6 @@ class ShotViewSet(
         Errors use the standard DRF field-mapping shape, never a new
         contract. ``sequence_ref`` never reaches ``save()``.
         """
-        data = serializer.validated_data if isinstance(serializer.validated_data, dict) else {}
         episode_supplied = "episode" in data
         raw_episode = data.get("episode") if episode_supplied else None
         raw_sequence = data.pop("sequence_ref", None)

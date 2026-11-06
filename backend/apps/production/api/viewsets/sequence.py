@@ -64,14 +64,13 @@ class SequenceViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright:
         return self._bulk_lifecycle_results(ids=self._ids_list(), action="restore")
 
     def prepare_create(self, serializer, project):
-        self._enforce_episode_rule(serializer, project=project, creating=True)
+        data = serializer.validated_data if isinstance(serializer.validated_data, dict) else {}
+        self._enforce_episode_rule(data, project=project, creating=True)
 
-    def perform_update(self, serializer):
-        instance = serializer.instance
-        self._enforce_episode_rule(serializer, project=instance.project, creating=False)
-        super().perform_update(serializer)
+    def prepare_update(self, instance, data):
+        self._enforce_episode_rule(data, project=instance.project, creating=False)
 
-    def _enforce_episode_rule(self, serializer, *, project, creating):
+    def _enforce_episode_rule(self, data, *, project, creating):
         """
         The project's episode rule for a sequence (D-12).
 
@@ -82,7 +81,6 @@ class SequenceViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright:
         The episode is looked up inside the project, so one of another project reads like
         one that does not exist.
         """
-        data = serializer.validated_data if isinstance(serializer.validated_data, dict) else {}
         if project is None:
             return
         supplied = "episode" in data

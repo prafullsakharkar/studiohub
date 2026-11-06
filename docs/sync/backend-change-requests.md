@@ -904,3 +904,27 @@ Frontend after approval: the form lists every login, marks the ones that belong 
 **Compatibility.** None: `move` is optional and defaults to the current behaviour. **Risk.** Low to medium: it deliberately empties another person's e-mail, so the confirmation text and the audit entries matter. **Alternatives.** (a) Do nothing: moving a login stays impossible, and the form stays as it is now. (b) Make `unlink-user` clear the e-mail, so unlink + link works without `move`: smaller, but it changes an existing action for everyone.
 
 **Approved** by the owner ("approve CR-45") and applied as written, with the proposed diff and no alternative: `move` on `link-user` (`LinkUserSerializer`, `PersonViewSet.link_user`, `PersonService.link_user`), contract DOM-MD-PER-11, the committed OpenAPI schema and its TypeScript types (`LinkUser.move`). Tests: `test_person_services.py` (move, refusal without `move`, the e-mail clash after an unlink, a person that already has a login, a login nobody holds, audit), `test_organization_api.py` (move, permission, boolean), `test_directory_concurrency.py` (two moves leave one holder); mutation-checked (keep the e-mail, ignore `move`, `move` on by default, no unlink event: each fails a test). Masterdata app: 1,248 passed.
+
+### CR-46: bulk routes see and write more than the single routes allow (**security**, **IN PROGRESS**, branch `feature/episodic-bulk`)
+
+Found in the Phase 0 discovery of the episodic/bulk work (`docs/episodic-bulk-discovery.md` §2.4, probed on the pytest database).
+
+**Problem.** `BulkOperationService.bulk_update`, `bulk_archive` and `bulk_restore` find rows with `_allowed_project_ids` (any active membership), not with the viewset's `get_queryset()`. A member bound to a show, one naming a department, and an external (vendor/client) member get 404 on a single PATCH of a record outside their reach, and 200 "updated" on `bulk-update` of the same record. `check-existence` returns the full `existing_entity` of an out-of-scope row. Bulk create skips `_resolve_show` / `_with_default_show` (a show-bound member's bulk-created shot has no show and drops out of their view), and bulk update skips `perform_update` (`guard_mutable`, the D-12 episode/sequence chain, `_resolve_show`): any item carrying `episode_id` or `show_id` is a 500.
+
+**Diff.** Bulk update/archive/restore resolve each id through `get_queryset()` (the `tasks/bulk-status` pattern); out-of-scope ids report `not_found`. A `prepare_update(instance, data)` hook holds what `perform_update` checks and is called by both. Bulk create runs the show resolution per item. `check-existence` reports `EXISTS` without `existing_entity` for a row the caller cannot see. Response shapes unchanged.
+
+**Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06).
+
+### CR-47: episodes only on episodic projects (**feature**, **IN PROGRESS**, branch `feature/episodic-bulk`)
+
+**Problem.** Only episode create is refused on a standard project (400); list, detail, update and archive answer 200 for episodes left on standard projects by seeds, the admin or legacy data. The D-12 rules live in the sequence and shot viewsets only.
+
+**Diff.** The episode queryset is limited to `project__workflow_type="episodic"` (404 on detail/update/archive/bulk for a standard project's episode, an empty list for its project); create keeps its 400. The D-12 rules move into `validators/episodic.py`, called by single and bulk writes. `report_production_data` lists episodes on standard projects and standard-project sequences/shots that point at one. No migration; no data is changed.
+
+**Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06).
+
+### CR-48: bulk create/update with dry run, all-or-nothing, code matching and limits (**feature**, **IN PROGRESS**, branch `feature/episodic-bulk`)
+
+**Diff (additive).** `bulk-create` / `bulk-update` accept `dry_run: true` (the real path inside a transaction that is rolled back) and `atomic: true` (any failed row rolls back the batch). Bulk update matches by `id` or by `code` within the batch's `project_id`. Parents resolve by code inside the project. A per-entity whitelist of bulk-updatable fields. At most 500 items per request (400 above). Each result row keeps `error` and the response adds `errors: [{row, field, message}]`. One `AuditLog` row per committed batch. Without the new flags the routes behave as today.
+
+**Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06).
