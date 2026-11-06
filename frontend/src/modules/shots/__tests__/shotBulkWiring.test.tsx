@@ -32,11 +32,13 @@ const server = (c: MockCall): MockReply => {
   return { status: 200, body: { count: 0, next: null, previous: null, results: [] } };
 };
 
-function renderIt(node: React.ReactNode) {
+const artist = auth.me_artist.body as unknown as User;
+
+function renderIt(node: React.ReactNode, user: User = superuser) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   render(
     <QueryClientProvider client={client}>
-      <AuthContext.Provider value={{ user: superuser, refreshUser: vi.fn() } as unknown as AuthContextValue}>
+      <AuthContext.Provider value={{ user, refreshUser: vi.fn() } as unknown as AuthContextValue}>
         <MemoryRouter>{node}</MemoryRouter>
       </AuthContext.Provider>
     </QueryClientProvider>
@@ -78,5 +80,19 @@ describe('bulk shots', () => {
     await screen.findByRole('table', { name: 'Shots' });
     expect(screen.queryByRole('button', { name: 'Bulk add shots' })).toBeNull();
     expect(bulkMenu()).toBeNull();
+  });
+
+  it('is not offered to someone without shot.create (the server would refuse the create)', async () => {
+    mockFetch(server);
+    useProductionStore.setState({ activeProjectId: project.id });
+    renderIt(<ShotsPage />, artist);
+    await screen.findByRole('table', { name: 'Shots' });
+    await new Promise((r) => setTimeout(r, 100));
+    expect(screen.queryByRole('button', { name: 'Bulk add shots' })).toBeNull();
+
+    cleanup();
+    renderIt(<ProjectShotsTab project={project} />, artist);
+    await screen.findByRole('table', { name: 'Shots' });
+    expect(screen.queryByRole('button', { name: 'Bulk add shots' })).toBeNull();
   });
 });

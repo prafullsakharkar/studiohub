@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
 import { useState } from 'react';
 import { episodesApi, projectsApi, sequencesApi } from '@/api/production/structure';
+import { useCan } from '@/core/permissions/useCan';
 import { isEpisodicProject } from '@/modules/production';
 import { withProjectPrefix } from '@/modules/production/codePrefix';
 import { Button } from '@/shared/components/Button';
@@ -17,11 +18,13 @@ import { ShotBulkManager } from './bulk/ShotBulkManager';
 export const ShotBulkAdd: React.FC<{ projectId: string | undefined; onDone?: () => void }> = ({ projectId, onDone }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const project = useQuery({ queryKey: projectsApi.keys.detail(projectId ?? ''), queryFn: ({ signal }) => projectsApi.get(projectId as string, signal), enabled: Boolean(projectId) });
+  // Shown with the create permission in that project, as the other three Bulk add buttons are (the server refuses the rest).
+  const allowed = useCan('shot.create', { projectId });
+  const project = useQuery({ queryKey: projectsApi.keys.detail(projectId ?? ''), queryFn: ({ signal }) => projectsApi.get(projectId as string, signal), enabled: Boolean(projectId) && allowed });
   const isEpisodic = isEpisodicProject(project.data);
-  const episodes = useQuery({ queryKey: [...episodesApi.keys.lists(), 'all', projectId], queryFn: ({ signal }) => fetchAllRows(episodesApi.list, { project: projectId as string }, { signal }), enabled: Boolean(projectId) && isEpisodic });
-  const sequences = useQuery({ queryKey: [...sequencesApi.keys.lists(), 'all', projectId], queryFn: ({ signal }) => fetchAllRows(sequencesApi.list, { project: projectId as string }, { signal }), enabled: Boolean(projectId) });
-  if (!projectId) return null;
+  const episodes = useQuery({ queryKey: [...episodesApi.keys.lists(), 'all', projectId], queryFn: ({ signal }) => fetchAllRows(episodesApi.list, { project: projectId as string }, { signal }), enabled: Boolean(projectId) && allowed && isEpisodic });
+  const sequences = useQuery({ queryKey: [...sequencesApi.keys.lists(), 'all', projectId], queryFn: ({ signal }) => fetchAllRows(sequencesApi.list, { project: projectId as string }, { signal }), enabled: Boolean(projectId) && allowed });
+  if (!projectId || !allowed) return null;
 
   const onCreateEpisode = async (input: { project_id: string; code: string; name: string }) => {
     const created = await episodesApi.create({ project: input.project_id, code: withProjectPrefix(project.data?.code, input.code), name: input.name, season_number: 1, episode_number: (episodes.data?.length ?? 0) + 1 } as never);

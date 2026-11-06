@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import type { Page } from '@playwright/test';
 import { freshTotp } from '../../src/test/live/liveBackend';
-import { expect, live, signIn, test, watch } from './fixtures';
+import { expect, live, open, signIn, test, watch } from './fixtures';
 
 /**
  * The create forms and the staged "Bulk add" (v4.4.0), through the browser against the real backend, as the MFA superuser:
@@ -34,11 +34,12 @@ const pill = (page: Page, label: RegExp) => page.getByRole('dialog').getByRole('
 const hasValue = (page: Page, value: string) =>
   expect.poll(() => page.getByRole('dialog').locator('input').evaluateAll((inputs, wanted) => inputs.some((input) => (input as HTMLInputElement).value === wanted), value)).toBe(true);
 
-async function chooseProject(page: Page) {
+async function chooseProjectByCode(page: Page, code: string) {
   const select = page.getByLabel('Filter by project');
-  await expect(select.locator('option', { hasText: CODE })).toHaveCount(1);
-  await select.selectOption({ label: CODE });
+  await expect(select.locator('option', { hasText: code })).toHaveCount(1);
+  await select.selectOption({ label: code });
 }
+const chooseProject = (page: Page) => chooseProjectByCode(page, CODE);
 
 // A click that cannot land (a covered button, a renamed control) must fail in seconds, not hold the run for minutes.
 test.use({ actionTimeout: 30_000 });
@@ -60,7 +61,7 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   await page.getByRole('button', { name: 'Maybe later' }).click({ timeout: 10_000 }).catch(() => undefined);
 
   // ---- 1. New sequence: the project's code is shown in front and sent.
-  await page.goto(`/sequences/new?project=${pid}`);
+  await open(page, `/sequences/new?project=${pid}`, 'journey');
   await expect(page.getByLabel('Code prefix')).toHaveText(`${CODE}_`);
   await page.getByLabel('Code *', { exact: true }).fill('sq0010');
   await page.getByLabel(/^Name/).fill('Opening');
@@ -71,7 +72,7 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   await expect.poll(async () => (await stored('sequences', `${CODE}_SQ0010`))?.name).toBe('Opening');
 
   // ---- 2. New shot: a sequence is required, then chosen from the picker.
-  await page.goto(`/shots/new?project=${pid}`);
+  await open(page, `/shots/new?project=${pid}`, 'journey');
   await expect(page.getByLabel('Code prefix')).toHaveText(`${CODE}_`);
   await page.getByLabel('Code *', { exact: true }).fill('sh010');
   await page.getByRole('button', { name: 'Create shot' }).click();
@@ -87,7 +88,7 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   await expect.poll(async () => (await stored('shots', `${CODE}_SH010`))?.sequence_code).toBe(`${CODE}_SQ0010`);
 
   // ---- 3. Bulk add sequences: upload a CSV; one exists already, one is new, one is a batch duplicate.
-  await page.goto('/sequences');
+  await open(page, '/sequences', 'journey');
   await chooseProject(page);
   await page.getByRole('button', { name: 'Bulk add sequences' }).click();
   await page.getByLabel('CSV file').setInputFiles(csv('code,name,description\nSQ0010,,Re-cut\nSQ0020,Chase,\nSQ0020,Again,\n'));
@@ -126,7 +127,7 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   await page.keyboard.press('Escape');
 
   // ---- 5. Bulk add assets and tasks.
-  await page.goto('/assets');
+  await open(page, '/assets', 'journey');
   await chooseProject(page);
   await page.getByRole('button', { name: 'Bulk add assets' }).click();
   await page.getByLabel('CSV file').setInputFiles(csv('code,name,category\nHERO,Hero,Character\nROCK,,Prop\n'));
@@ -144,7 +145,7 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   await expect.poll(async () => (await stored('assets', `${CODE}_HERO`))?.name).toBe('Hero');
   expect(await stored('assets', `${CODE}_ROCK`)).toBeUndefined();
 
-  await page.goto('/tasks');
+  await open(page, '/tasks', 'journey');
   await chooseProject(page);
   await page.getByRole('button', { name: 'Bulk add tasks' }).click();
   await page.getByLabel('CSV file').setInputFiles(csv(`code,title,entity_type,entity\nT100,Model hero,Asset,${CODE}_HERO\nT200,Nothing,Shot,NOPE\n`));
@@ -161,7 +162,7 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   await expect.poll(async () => (await stored('tasks', `${CODE}_T100`))?.entity_code).toBe(`${CODE}_HERO`);
 
   // ---- 6. Bulk add shots: the sequence is required and found as typed or with the prefix.
-  await page.goto('/shots');
+  await open(page, '/shots', 'journey');
   await chooseProject(page);
   await page.getByRole('button', { name: 'Bulk add shots' }).click();
   await page.getByRole('button', { name: /Clear/i }).first().click();
@@ -183,6 +184,50 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   expect(await stored('shots', `${CODE}_SH0200`)).toBeUndefined();
 
   // Nothing above should have drawn a server error or an uncaught page error.
+  expect(seen.serverErrors, seen.serverErrors.join('\n')).toEqual([]);
+  expect(seen.pageErrors, seen.pageErrors.join('\n')).toEqual([]);
+});
+
+/**
+ * CR-50: the shots that belong to no sequence (the seeded LIVEDLV shots stand in for the ones the old Bulk add shots screen
+ * left that way) are found with the Shots list's "Without a sequence" filter and filled in with Edit fields, as the manager.
+ */
+test('shots without a sequence: filter, tick, Edit fields > Sequence', async ({ page }) => {
+  test.setTimeout(300_000);
+  const seen = watch(page);
+  const first = await api(null, 'POST', '/api/v1/auth/login/', { email: live.users.manager.email, password: live.users.manager.password });
+  const login = await api(null, 'POST', '/api/v1/auth/mfa/challenge/', { challenge: first.body.challenge, code: await freshTotp(live.manager.secret) });
+  expect(login.status, JSON.stringify(login.body)).toBe(200);
+  const admin: string = login.body.tokens.access;
+  const dlv = live.dlv.project;
+  const count = async (has: 'true' | 'false') => (await api(admin, 'GET', `/api/v1/shots/?project_id=${dlv}&has_sequence=${has}&page_size=100`)).body.count as number;
+
+  const loose = await count('false');
+  expect(loose, 'the seeded shots have no sequence').toBeGreaterThanOrEqual(4);
+  expect(await count('true')).toBe(0);
+  const home = await api(admin, 'POST', '/api/v1/sequences/', { project: dlv, code: 'LIVEDLV_HOME', name: 'Home' });
+  expect(home.status, JSON.stringify(home.body)).toBe(201);
+
+  await signIn(page, 'manager');
+  await page.getByRole('button', { name: 'Maybe later' }).click({ timeout: 10_000 }).catch(() => undefined);
+  await open(page, '/shots', 'cleanup');
+  await chooseProjectByCode(page, 'LIVEDLV');
+  await page.getByLabel('Filter by sequences').selectOption('false');
+  await expect(page.getByText(`${loose} Matching`)).toBeVisible();
+  await snap(page, '14-shots-without-a-sequence');
+
+  await page.getByLabel('Select all on this page').check();
+  await page.getByRole('toolbar', { name: 'Actions for the selected rows' }).getByRole('button', { name: 'Edit fields' }).click();
+  await page.getByLabel('Change Sequence (code)').check();
+  await page.getByLabel('Sequence (code)', { exact: true }).fill('LIVEDLV_HOME');
+  await snap(page, '15-edit-fields-sequence');
+  await page.getByRole('dialog').getByRole('button', { name: 'Edit fields' }).click();
+
+  await expect.poll(() => count('false'), { timeout: 30_000 }).toBe(0);
+  expect(await count('true')).toBe(loose);
+  await expect(page.getByText('No shots found')).toBeVisible();
+  await snap(page, '16-shots-all-in-a-sequence');
+
   expect(seen.serverErrors, seen.serverErrors.join('\n')).toEqual([]);
   expect(seen.pageErrors, seen.pageErrors.join('\n')).toEqual([]);
 });

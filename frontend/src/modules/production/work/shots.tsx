@@ -70,6 +70,8 @@ export function useShotsListConfig(scope?: { projectId: string }): DirectoryList
       { key: 'project_id', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } },
       episodeFilter(episodic),
       { key: 'status', label: 'Status', options: options(SHOT_STATUSES.filter((s) => s !== 'Archived')) },
+      // CR-50: the shots the old Bulk add left without a sequence, to fill in with Edit fields.
+      { key: 'has_sequence', label: 'Sequences', options: [{ value: 'false', label: 'Without a sequence' }, { value: 'true', label: 'In a sequence' }] },
     ],
     columns: [
       { header: 'Shot', cell: (row) => `${row.code}${row.name ? ` · ${row.name}` : ''}`, sortField: 'code' },
