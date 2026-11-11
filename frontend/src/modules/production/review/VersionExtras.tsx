@@ -92,11 +92,12 @@ export const VersionPublishingTab: React.FC<{ version: Version }> = ({ version }
 };
 
 /**
- * This version against another version of the same shot or asset: side by side, wiped, or as a difference, on one
- * transport. The other version is chosen from those of the same record; the newest is offered first.
+ * This version against another version of the same shot or asset, on the compare screen: wipe, side by side,
+ * difference, onion skin or flip, on one transport. A is this version and B the newest other one; either side can be
+ * switched to any version of the same record from the toolbar.
  */
 export const VersionCompareTab: React.FC<{ version: Version }> = ({ version }) => {
-  const [picked, setPicked] = useState('');
+  const [picked, setPicked] = useState<{ a: string; b: string } | null>(null);
   const others = useQuery({
     queryKey: [...versionsApi.keys.all, 'to-compare', version.id],
     queryFn: ({ signal }) => fetchAllRows(versionsApi.list, { project_id: version.project_id, entity_type: version.entity_type }, { signal }),
@@ -105,27 +106,21 @@ export const VersionCompareTab: React.FC<{ version: Version }> = ({ version }) =
   if (others.isLoading) return <p className="text-xs text-slate-500">Loading…</p>;
   const choices = others.data ?? [];
   if (choices.length === 0) return <Empty>{`There is no other version of ${version.entity_code || 'this record'} to compare with.`}</Empty>;
-  const other = choices.find((v) => v.id === picked) ?? choices[0];
+  const all = [version, ...choices];
+  const find = (id: string | undefined, fallback: Version) => all.find((v) => v.id === id) ?? fallback;
+  const a = find(picked?.a, version);
+  const b = find(picked?.b, choices[0]);
+  const source = (v: Version) => ({ id: v.id, label: v.code, src: v.video_url, poster: v.thumbnail_url });
   return (
-    <div className="space-y-3">
-      <label className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-        Compare {version.code} with
-        <select aria-label="Compare with" value={other.id} onChange={(e) => setPicked(e.target.value)} className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1.5 text-xs text-slate-200">
-          {choices.map((v) => (
-            <option key={v.id} value={v.id}>
-              {`${v.code} · ${v.status}`}
-            </option>
-          ))}
-        </select>
-      </label>
-      <MediaCompare
-        key={other.id}
-        label={`${version.code} against ${other.code}`}
-        a={{ label: version.code, src: version.video_url, poster: version.thumbnail_url }}
-        b={{ label: other.code, src: other.video_url, poster: other.thumbnail_url }}
-        fps={toFps(version.fps)}
-        startFrame={version.start_frame ?? 1}
-      />
-    </div>
+    <MediaCompare
+      key={`${a.id}|${b.id}`}
+      label={`${a.code} against ${b.code}`}
+      a={source(a)}
+      b={source(b)}
+      choices={all.map((v) => ({ id: v.id, label: `${v.version_number ? `${v.version_number} · ` : ''}${v.code} · ${v.status}` }))}
+      onPick={(side, id) => setPicked({ a: side === 'a' ? id : a.id, b: side === 'b' ? id : b.id })}
+      fps={toFps(a.fps)}
+      startFrame={a.start_frame ?? 1}
+    />
   );
 };

@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext } from '@/core/auth/AuthContext';
 import type { AuthContextValue } from '@/core/auth/AuthContext';
@@ -9,6 +10,7 @@ import type { MockCall, MockReply } from '@/test/fetchMock';
 import { fakeClock } from '@/test/mediaElement';
 import { loadSample } from '@/test/samples';
 import type { User } from '@/types/identity';
+import { ReviewVersionsPanel } from '../ReviewPanels';
 import { ReviewViewer } from '../ReviewViewer';
 import { VersionMediaTab } from '../VersionMedia';
 
@@ -135,6 +137,96 @@ describe('review viewer', () => {
     expect(await screen.findByText(/Link a preview to the version or media item/)).toBeTruthy();
     expect(screen.getByRole('img', { name: `${review.versions[0].code} in review` })).toBeTruthy(); // its picture stands in
     expect(screen.queryByLabelText('Scrub')).toBeNull();
+  });
+});
+
+describe('review compare', () => {
+  const [first, second] = twoVersions.versions;
+  const group = () => screen.getByRole('group', { name: 'Compare versions' });
+  const readOnly = { ...artist, permissions: artist.permissions.filter((p) => p !== 'review.update') } as User;
+
+  it('offers the compare only when the review has more than one version', async () => {
+    mockFetch(() => reply(withVideo));
+    mount(<ReviewViewer review={review} />);
+    await screen.findByLabelText('Scrub');
+    expect(screen.queryByRole('group', { name: 'Compare versions' })).toBeNull();
+    cleanup();
+    mount(<ReviewViewer review={twoVersions} />);
+    await screen.findByLabelText('Scrub');
+    expect(within(group()).getByRole('button', { name: 'A/B Wipe' }).getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('A/B Wipe puts the shown version against the next one, loading both, with a splitter and no drawing', async () => {
+    const { calls } = mockFetch(() => reply(withVideo));
+    mount(<ReviewViewer review={{ ...twoVersions, comments: review.comments, annotations: review.annotations }} />);
+    await screen.findByLabelText('Scrub');
+    expect(screen.getByRole('button', { name: 'Draw on this frame' })).toBeTruthy();
+    fireEvent.click(within(group()).getByRole('button', { name: 'A/B Wipe' }));
+    expect(await screen.findByRole('group', { name: `${first.code} against ${second.code}` })).toBeTruthy();
+    expect(calls.some((c) => path(c) === `/api/v1/versions/${second.id}/`)).toBe(true);
+    expect(screen.getByRole('slider', { name: 'Wipe position' })).toBeTruthy();
+    expect(screen.getByText(`A: ${first.code}`)).toBeTruthy();
+    expect(screen.getByText(`B: ${second.code}`)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Draw on this frame' })).toBeNull();
+    expect(screen.getByText(/Drawing is off while two versions are compared/)).toBeTruthy();
+    expect((screen.getAllByRole('button', { name: /^Go to frame / })[0] as HTMLButtonElement).disabled).toBe(true);
+
+    // leaving the compare gives the player (and the drawing) back
+    fireEvent.click(within(group()).getByRole('button', { name: 'A/B Wipe' }));
+    expect(await screen.findByRole('button', { name: 'Draw on this frame' })).toBeTruthy();
+    expect(screen.queryByRole('slider', { name: 'Wipe position' })).toBeNull();
+  });
+
+  it('Side-by-Side opens as two pictures, and the other button switches the way without leaving the compare', async () => {
+    mockFetch(() => reply(withVideo));
+    mount(<ReviewViewer review={twoVersions} />);
+    await screen.findByLabelText('Scrub');
+    fireEvent.click(within(group()).getByRole('button', { name: 'Side-by-Side' }));
+    expect((await screen.findAllByRole('figure')).length).toBe(2);
+    expect(within(group()).getByRole('button', { name: 'Side-by-Side' }).getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(within(group()).getByRole('button', { name: 'A/B Wipe' }));
+    expect(await screen.findByRole('slider', { name: 'Wipe position' })).toBeTruthy();
+    expect(screen.queryByRole('figure')).toBeNull();
+  });
+
+  it('opens straight on the version the Versions tab sent, and switching A shows that version against the other', async () => {
+    mockFetch(() => reply(withVideo));
+    mount(<ReviewViewer review={twoVersions} compareWith={second.id} />);
+    expect(await screen.findByRole('group', { name: `${first.code} against ${second.code}` })).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Version A'), { target: { value: second.id } });
+    expect(await screen.findByRole('group', { name: `${second.code} against ${first.code}` })).toBeTruthy();
+    expect((screen.getByLabelText('Version B') as HTMLSelectElement).value).toBe(first.id);
+  });
+
+  it('a comment while comparing names the frame being shown in the compare', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? { status: 201, body: {} } : reply(withVideo)));
+    mount(<ReviewViewer review={twoVersions} compareWith={second.id} />);
+    await screen.findByRole('group', { name: `${first.code} against ${second.code}` });
+    for (const label of [`${first.code} video`, `${second.code} video`]) {
+      const v = screen.getByLabelText(label) as HTMLVideoElement;
+      fakeClock(v, 3);
+      act(() => {
+        fireEvent.loadedMetadata(v);
+      });
+    }
+    fireEvent.change(screen.getByLabelText('Scrub'), { target: { value: '1020' } });
+    await screen.findByText('Comment on frame 1020');
+    fireEvent.change(screen.getByLabelText('Comment on this frame'), { target: { value: 'V002 is softer' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    expect((calls.find((c) => c.method === 'POST') as MockCall).body).toMatchObject({ text: 'V002 is softer', frame_number: 1020 });
+  });
+
+  it('the Versions tab offers the compare on every version but the first, and says which one was picked', () => {
+    mockFetch(() => reply(withVideo));
+    const picked: string[] = [];
+    mount(<MemoryRouter><ReviewVersionsPanel review={twoVersions} onCompare={(id) => picked.push(id)} /></MemoryRouter>, readOnly);
+    expect(screen.queryByRole('button', { name: `Compare ${first.code} in A/B Wipe` })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: `Compare ${second.code} in A/B Wipe` }));
+    expect(picked).toEqual([second.id]);
+    cleanup();
+    mount(<MemoryRouter><ReviewVersionsPanel review={twoVersions} /></MemoryRouter>, readOnly);
+    expect(screen.queryByRole('button', { name: /in A\/B Wipe$/ })).toBeNull(); // nowhere to send it
   });
 });
 

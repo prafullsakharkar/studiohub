@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import type React from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { projectScopedApi, projectsApi } from '@/api/production/structure';
+import { projectScopedApi, projectsApi, sequencesApi } from '@/api/production/structure';
 import { shotsApi, tasksApi, timelogsApi } from '@/api/production/work';
 import { AuthProvider } from '@/core/auth/AuthProvider';
 import { tokenStorage } from '@/core/auth/tokenStorage';
@@ -53,13 +53,14 @@ beforeAll(async () => {
   const project = await projectsApi.create({ code: `W${uid}`, name: 'Work flow', workflow_type: 'standard' });
   const artist = await projectScopedApi.addMember(project.id, { email: live.users.artist.email, role: 'Artist' });
   const lead = await projectScopedApi.addMember(project.id, { email: live.users.lead.email, role: 'Lead' });
-  const shotA = await shotsApi.create({ project: project.id, code: `SA${uid}`, name: 'Walk' });
-  const shotB = await shotsApi.create({ project: project.id, code: `SB${uid}`, name: 'Turn' });
+  const sequence = await sequencesApi.create({ project: project.id, code: `${project.code}_SQ`, name: 'Sequence' });
+  const shotA = await shotsApi.create({ project: project.id, code: `${project.code}_SA`, sequence_id: sequence.id, name: 'Walk' });
+  const shotB = await shotsApi.create({ project: project.id, code: `${project.code}_SB`, sequence_id: sequence.id, name: 'Turn' });
   await shotsApi.update(shotA.id, { status: 'In Progress' });
   await shotsApi.update(shotA.id, { status: 'Pending Review' });
   const task = (code: string, title: string) => tasksApi.create({ project: project.id, code, title, entity_type: 'Shot', entity_id: shotB.id, assignee: artist.user_id });
-  const [t1, t2, t3] = [await task(`T1${uid}`, 'Comp the walk'), await task(`T2${uid}`, 'Roto the turn'), await task(`T3${uid}`, 'Clean plate')];
-  const t4 = await task(`T4${uid}`, 'Board card');
+  const [t1, t2, t3] = [await task(`W${uid}_T1`, 'Comp the walk'), await task(`W${uid}_T2`, 'Roto the turn'), await task(`W${uid}_T3`, 'Clean plate')];
+  const t4 = await task(`W${uid}_T4`, 'Board card');
   Object.assign(fixture, { task4: t4.id, project: project.id, artistUser: artist.user_id, leadUser: lead.user_id, task1: t1.id, task2: t2.id, task3: t3.id, shotReview: shotA.id, shotOther: shotB.id });
   tokenStorage.clearTokens();
 }, 120000);
@@ -68,12 +69,12 @@ describe('artist logs time, lead approves', () => {
   it('the artist moves a task along (no Approved on offer), logs time on it, sees it submitted and cannot approve it', async () => {
     await signIn('artist');
     render(tree(pages, '/tasks'));
-    const menu = (await screen.findByLabelText(`Status of T1${uid}`, {}, { timeout: 20000 })) as HTMLSelectElement;
+    const menu = (await screen.findByLabelText(`Status of W${uid}_T1`, {}, { timeout: 20000 })) as HTMLSelectElement;
     expect([...menu.options].map((o) => o.value)).toEqual(['Not Started', 'In Progress', 'Pending Review', 'Retake']); // the real server accepts exactly these moves
     fireEvent.change(menu, { target: { value: 'In Progress' } });
     await waitFor(async () => expect((await tasksApi.get(fixture.task1)).status).toBe('In Progress'), { timeout: 15000 });
 
-    fireEvent.click(screen.getByRole('button', { name: `Log time on T1${uid}` }));
+    fireEvent.click(screen.getByRole('button', { name: `Log time on W${uid}_T1` }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByLabelText(/^Hours/), { target: { value: '2.5' } });
     fireEvent.change(within(dialog).getByLabelText('Notes'), { target: { value: 'Roto pass' } });
@@ -84,7 +85,7 @@ describe('artist logs time, lead approves', () => {
     cleanup();
 
     render(tree(pages, '/timelogs'));
-    await screen.findByText(`T1${uid} · Comp the walk`, {}, { timeout: 15000 });
+    await screen.findByText(`W${uid}_T1 · Comp the walk`, {}, { timeout: 15000 });
     expect(screen.queryByRole('button', { name: /^Approve / })).toBeNull(); // an artist approves nothing
     expect(await tasksApi.get(fixture.task1)).toMatchObject({ logged_hours: '0.00', pending_hours: '2.50' }); // not counted until approved
   }, 90000);
@@ -92,13 +93,13 @@ describe('artist logs time, lead approves', () => {
   it('the lead sees the artist’s log, approves it, and the task’s logged hours move', async () => {
     await signIn('lead');
     render(tree(pages, '/timelogs'));
-    const approve = await screen.findByRole('button', { name: /^Approve T1/ }, { timeout: 20000 });
+    const approve = await screen.findByRole('button', { name: new RegExp(`^Approve W${uid}_T1`) }, { timeout: 20000 });
     fireEvent.click(approve);
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Approve' }));
     await waitFor(async () => expect((await timelogsApi.list({ task: fixture.task1 })).results[0].status).toBe('Approved'), { timeout: 15000 });
     expect(await tasksApi.get(fixture.task1)).toMatchObject({ logged_hours: '2.50', pending_hours: '0.00' });
-    await waitFor(() => expect(screen.queryByRole('button', { name: /^Approve T1/ })).toBeNull(), { timeout: 15000 }); // approved logs are final: no Approve, no Edit
-    expect(screen.queryByRole('link', { name: /^Edit T1/ })).toBeNull();
+    await waitFor(() => expect(screen.queryByRole('button', { name: new RegExp(`^Approve W${uid}_T1`) })).toBeNull(), { timeout: 15000 }); // approved logs are final: no Approve, no Edit
+    expect(screen.queryByRole('link', { name: new RegExp(`^Edit W${uid}_T1`) })).toBeNull();
   }, 90000);
 
   it('a rejection carries its reason back to the artist, who resubmits it, and the lead approves the resubmission', async () => {
@@ -108,7 +109,7 @@ describe('artist logs time, lead approves', () => {
 
     await signIn('lead');
     render(tree(pages, '/timelogs'));
-    fireEvent.click(await screen.findByRole('button', { name: /^Reject T2/ }, { timeout: 20000 }));
+    fireEvent.click(await screen.findByRole('button', { name: new RegExp(`^Reject W${uid}_T2`) }, { timeout: 20000 }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Reject' }));
     expect(await within(dialog).findByText('Enter reason.')).toBeTruthy(); // a reason is required, asked before the server is
@@ -120,14 +121,14 @@ describe('artist logs time, lead approves', () => {
     await signIn('artist');
     render(tree(pages, '/timelogs'));
     expect(await screen.findByText('Wrong plate, use v002', {}, { timeout: 20000 })).toBeTruthy(); // the reason is on the row
-    fireEvent.click(await screen.findByRole('button', { name: /^Resubmit T2/ }, { timeout: 15000 })); // the row can render before /auth/me has loaded
+    fireEvent.click(await screen.findByRole('button', { name: new RegExp(`^Resubmit W${uid}_T2`) }, { timeout: 15000 })); // the row can render before /auth/me has loaded
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Resubmit' }));
     await waitFor(async () => expect((await timelogsApi.get(logged.id)).status).toBe('Submitted'), { timeout: 15000 });
     cleanup();
 
     await signIn('lead');
     render(tree(pages, '/timelogs'));
-    fireEvent.click(await screen.findByRole('button', { name: /^Approve T2/ }, { timeout: 20000 }));
+    fireEvent.click(await screen.findByRole('button', { name: new RegExp(`^Approve W${uid}_T2`) }, { timeout: 20000 }));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Approve' }));
     await waitFor(async () => expect((await timelogsApi.get(logged.id)).status).toBe('Approved'), { timeout: 15000 });
     const history = await timelogsApi.statusHistory(logged.id);
@@ -150,8 +151,8 @@ describe('artist logs time, lead approves', () => {
     const own = await timelogsApi.create({ task_id: fixture.task3, duration_hours: '1', date: '2030-02-02' });
     await expect(timelogsApi.approve(own.id)).rejects.toMatchObject({ status: 403 });
     render(tree(pages, '/timelogs'));
-    await screen.findByText(`T3${uid} · Clean plate`, {}, { timeout: 20000 });
-    expect(screen.queryByRole('button', { name: /^Approve T3/ })).toBeNull();
+    await screen.findByText(`W${uid}_T3 · Clean plate`, {}, { timeout: 20000 });
+    expect(screen.queryByRole('button', { name: new RegExp(`^Approve W${uid}_T3`) })).toBeNull();
   }, 90000);
 });
 
@@ -160,7 +161,7 @@ describe('task board', () => {
     await signIn('artist');
     render(tree(pages, '/tasks'));
     fireEvent.click(await screen.findByRole('button', { name: 'Board view' }, { timeout: 20000 }));
-    const card = await screen.findByRole('article', { name: `T4${uid}` }, { timeout: 20000 });
+    const card = await screen.findByRole('article', { name: `W${uid}_T4` }, { timeout: 20000 });
     const transfer = { setData: () => undefined, getData: () => '', effectAllowed: '', dropEffect: '' };
     const dropOn = (column: string) => {
       fireEvent.dragStart(card, { dataTransfer: transfer });
@@ -170,7 +171,7 @@ describe('task board', () => {
     expect((await tasksApi.get(fixture.task4)).status).toBe('Not Started');
     dropOn('In Progress');
     await waitFor(async () => expect((await tasksApi.get(fixture.task4)).status).toBe('In Progress'), { timeout: 15000 });
-    await waitFor(() => expect(within(screen.getByRole('region', { name: 'In Progress' })).getByRole('article', { name: `T4${uid}` })).toBeTruthy(), { timeout: 15000 });
+    await waitFor(() => expect(within(screen.getByRole('region', { name: 'In Progress' })).getByRole('article', { name: `W${uid}_T4` })).toBeTruthy(), { timeout: 15000 });
   }, 90000);
 });
 
@@ -178,16 +179,16 @@ describe('shots: the lead approves from review, the artist cannot', () => {
   it('the artist sees a shot’s status but cannot change it; the lead approves it from Pending Review with the approve action', async () => {
     await signIn('artist');
     render(tree(pages, '/shots'));
-    await screen.findByRole('link', { name: new RegExp(`SA${uid}`) }, { timeout: 20000 });
-    expect(screen.queryByLabelText(`Status of SA${uid}`)).toBeNull(); // shot.update is not an artist permission
+    await screen.findByRole('link', { name: new RegExp(`W${uid}_SA`) }, { timeout: 20000 });
+    expect(screen.queryByLabelText(`Status of W${uid}_SA`)).toBeNull(); // shot.update is not an artist permission
     await expect(shotsApi.approve(fixture.shotReview)).rejects.toMatchObject({ status: 403 });
     cleanup();
 
     await signIn('lead');
     render(tree(pages, '/shots'));
-    const menu = (await screen.findByLabelText(`Status of SA${uid}`, {}, { timeout: 20000 })) as HTMLSelectElement;
+    const menu = (await screen.findByLabelText(`Status of W${uid}_SA`, {}, { timeout: 20000 })) as HTMLSelectElement;
     expect([...menu.options].map((o) => o.value)).toContain('Approved');
-    const other = screen.getByLabelText(`Status of SB${uid}`) as HTMLSelectElement;
+    const other = screen.getByLabelText(`Status of W${uid}_SB`) as HTMLSelectElement;
     expect([...other.options].map((o) => o.value)).not.toContain('Approved'); // a shot that is not in review cannot be approved
     fireEvent.change(menu, { target: { value: 'Approved' } });
     await waitFor(async () => expect((await shotsApi.get(fixture.shotReview)).status).toBe('Approved'), { timeout: 15000 });

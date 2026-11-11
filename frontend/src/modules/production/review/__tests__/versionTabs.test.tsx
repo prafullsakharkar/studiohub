@@ -104,18 +104,22 @@ describe('version compare tab', () => {
   const newer = mk('newer', 'SH_V003', '2026-10-09T10:00:00Z', { status: 'Pending Review' });
   const otherShot = mk('other', 'OTHER_V001', '2026-10-08T10:00:00Z', { entity_id: 'a-different-shot' });
 
-  it('offers the other versions of the same shot or asset, the newest first, and puts it against this one', async () => {
+  it('puts this version (A) against the newest other of the same shot or asset (B), and either side can be switched', async () => {
     const { calls } = mockFetch(() => bare([mine, older, newer, otherShot]));
     mount(<VersionCompareTab version={mine} />);
-    const select = (await screen.findByLabelText('Compare with')) as HTMLSelectElement;
-    expect(Array.from(select.options).map((o) => o.textContent)).toEqual(['SH_V003 · Pending Review', 'SH_V001 · Retake']); // not itself, not another shot's
-    expect(select.value).toBe('newer');
+    const a = (await screen.findByLabelText('Version A')) as HTMLSelectElement;
+    const b = screen.getByLabelText('Version B') as HTMLSelectElement;
+    expect(Array.from(b.options).map((o) => o.value)).toEqual([mine.id, 'newer', 'older']); // this one first, the newest next; not another shot's
+    expect(a.value).toBe(mine.id);
+    expect(b.value).toBe('newer');
     expect(screen.getByRole('group', { name: `${mine.code} against SH_V003` })).toBeTruthy();
     expect(screen.getByLabelText(`${mine.code} video`)).toBeTruthy();
     expect(screen.getByLabelText('SH_V003 video')).toBeTruthy();
     expect(param(calls[0], 'project_id')).toBe(version.project_id);
-    fireEvent.change(select, { target: { value: 'older' } });
+    fireEvent.change(b, { target: { value: 'older' } });
     await waitFor(() => expect(screen.getByRole('group', { name: `${mine.code} against SH_V001` })).toBeTruthy());
+    fireEvent.change(screen.getByLabelText('Version A'), { target: { value: 'newer' } });
+    await waitFor(() => expect(screen.getByRole('group', { name: 'SH_V003 against SH_V001' })).toBeTruthy());
   });
 
   it('says so when there is nothing else to compare with', async () => {

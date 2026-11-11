@@ -114,6 +114,8 @@ export const ReviewWorkspace: React.FC = () => {
   const { reviewId = '' } = useParams();
   const canEdit = useCan('review.update');
   const [tab, setTab] = useState<TabId>('overview');
+  // The version the Versions tab sent to the viewer to be compared with the one on show.
+  const [compareWith, setCompareWith] = useState<string | null>(null);
   const query = useQuery({ queryKey: reviewsApi.keys.detail(reviewId), queryFn: ({ signal }) => reviewsApi.get(reviewId, signal), enabled: Boolean(reviewId) });
   const review = query.data;
   return (
@@ -154,8 +156,16 @@ export const ReviewWorkspace: React.FC = () => {
               ))}
             </div>
             {tab === 'overview' && <ReviewOverview review={review} />}
-            {tab === 'viewer' && <ReviewViewer review={review} />}
-            {tab === 'versions' && <ReviewVersionsPanel review={review} />}
+            {tab === 'viewer' && <ReviewViewer review={review} compareWith={compareWith} />}
+            {tab === 'versions' && (
+              <ReviewVersionsPanel
+                review={review}
+                onCompare={(id) => {
+                  setCompareWith(id);
+                  setTab('viewer');
+                }}
+              />
+            )}
             {tab === 'participants' && <ReviewParticipantsPanel review={review} />}
             {tab === 'comments' && <ReviewCommentsPanel review={review} />}
             {tab === 'notes' && <ReviewNotesPanel review={review} />}
