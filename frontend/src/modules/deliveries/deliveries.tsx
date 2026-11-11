@@ -1,4 +1,5 @@
 import { deliveriesApi, DELIVERY_METHODS, DELIVERY_STATUSES, destinationsApi } from '@/api/deliveries/deliveries';
+import { deliveryCard } from './deliveryCard';
 import type { Delivery, DeliveryDestination, DeliveryRow } from '@/api/deliveries/deliveries';
 import { isDeletable, isEditable } from '@/api/deliveries/deliveryFlow';
 import { clientsApi } from '@/api/masterdata/directory';
@@ -61,6 +62,7 @@ export function useDeliveriesListConfig(scope?: { projectId: string }): Director
     defaultOrdering: '-created_at',
     searchPlaceholder: 'Search name, code, client',
     basePath: '/deliveries',
+    renderCard: deliveryCard,
     createQuery: scope ? `project_id=${scope.projectId}` : undefined,
     bulk: { actions: [bulkCancel] },
     filters: [

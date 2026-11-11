@@ -5,13 +5,15 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { auditKeys } from '@/api/audit/audit';
 import { serverMessage } from '@/api/errors/serverMessage';
 import { workflowsApi } from '@/api/production/review';
-import type { Workflow, WorkflowSimulation } from '@/api/production/review';
+import type { WorkflowSimulation } from '@/api/production/review';
 import { EntityHistory } from '@/components/history/EntityHistory';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
+import { WorkflowBoard } from './workflowBoard/WorkflowBoard';
+import { readGraph } from './workflowBoard/workflowGraph';
 
 const text = (value: unknown) => (value === undefined || value === null || value === '' ? '—' : typeof value === 'object' ? JSON.stringify(value) : String(value));
 
@@ -37,9 +39,11 @@ export const WorkflowWorkspace: React.FC = () => {
       setBusy(false);
     }
   };
-  const label = (w: Workflow, id: unknown) => {
-    const node = w.nodes.find((n) => n.id === id);
-    return node?.label ? `${String(node.label)} (${String(id)})` : text(id);
+  // Both stored shapes read the same way here: the captured one (label, from, to) and the board's (title, source_node_id, target_node_id).
+  const graph = workflow ? readGraph(workflow.nodes, workflow.transitions) : null;
+  const label = (id: string) => {
+    const node = graph?.nodes.find((n) => n.id === id);
+    return node ? `${node.title} (${id})` : text(id);
   };
 
   return (
@@ -98,6 +102,18 @@ export const WorkflowWorkspace: React.FC = () => {
               </section>
             )}
 
+            <WorkflowBoard
+              key={workflow.updated_at}
+              nodes={workflow.nodes}
+              transitions={workflow.transitions}
+              saving={busy}
+              onSave={
+                canUpdate
+                  ? (next) => void run(() => workflowsApi.update(workflow.id, { nodes: next.nodes, transitions: next.transitions }), () => notify.success('Board saved.'))
+                  : undefined
+              }
+            />
+
             <section aria-label="Nodes" className="space-y-2">
               <h2 className="text-sm font-semibold text-slate-200">Nodes ({workflow.nodes.length})</h2>
               {workflow.nodes.length === 0 ? (
@@ -115,7 +131,7 @@ export const WorkflowWorkspace: React.FC = () => {
                     {workflow.nodes.map((node, index) => (
                       <tr key={`${text(node.id)}-${index}`} className="border-t border-slate-800 text-slate-300">
                         <td className="py-1 pr-3 font-mono">{text(node.id)}</td>
-                        <td className="py-1 pr-3">{text(node.label)}</td>
+                        <td className="py-1 pr-3">{text(node.label ?? node.title)}</td>
                         <td className="py-1">{text(node.type)}</td>
                       </tr>
                     ))}
@@ -130,9 +146,9 @@ export const WorkflowWorkspace: React.FC = () => {
                 <p className="rounded-lg border border-dashed border-slate-800 p-4 text-xs text-slate-500">No transitions.</p>
               ) : (
                 <ul className="space-y-1 text-xs text-slate-300">
-                  {workflow.transitions.map((t, index) => (
-                    <li key={`${text(t.from)}-${text(t.to)}-${index}`}>
-                      {label(workflow, t.from)} → {label(workflow, t.to)}
+                  {(graph?.edges ?? []).map((edge, index) => (
+                    <li key={`${edge.source}-${edge.target}-${index}`}>
+                      {label(edge.source)} → {label(edge.target)}
                     </li>
                   ))}
                 </ul>

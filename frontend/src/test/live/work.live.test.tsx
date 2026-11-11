@@ -158,7 +158,8 @@ describe('artist logs time, lead approves', () => {
 describe('task board', () => {
   it('dragging a card to the next column changes its status on the server; a column it cannot go to refuses the drop', async () => {
     await signIn('artist');
-    render(tree(pages, '/tasks?view=board'));
+    render(tree(pages, '/tasks'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Board view' }, { timeout: 20000 }));
     const card = await screen.findByRole('article', { name: `T4${uid}` }, { timeout: 20000 });
     const transfer = { setData: () => undefined, getData: () => '', effectAllowed: '', dropEffect: '' };
     const dropOn = (column: string) => {

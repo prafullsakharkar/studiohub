@@ -15,13 +15,19 @@ import { Button } from '@/shared/components/Button';
 import { StatusHistory } from '@/modules/production/work/StatusHistory';
 import { StatusMenu } from '@/modules/production/work/StatusMenu';
 import { PlaylistPicker } from './pickers';
+import { VersionCompareTab, VersionPlaylistsTab, VersionPublishingTab } from './VersionExtras';
+import { VersionMediaTab } from './VersionMedia';
 import { versionActions, versionBadges } from './versions';
 import { formatDateTime } from '@/core/locale/studioLocale';
 
-type TabId = 'overview' | 'reviews' | 'status' | 'changes';
+type TabId = 'overview' | 'media' | 'reviews' | 'playlists' | 'publishing' | 'compare' | 'status' | 'changes';
 const TABS: ReadonlyArray<{ id: TabId; label: string }> = [
   { id: 'overview', label: 'Overview' },
+  { id: 'media', label: 'Media' },
+  { id: 'compare', label: 'Compare' },
   { id: 'reviews', label: 'Reviews' },
+  { id: 'playlists', label: 'Playlists' },
+  { id: 'publishing', label: 'Publishing' },
   { id: 'status', label: 'Status history' },
   { id: 'changes', label: 'Changes' },
 ];
@@ -194,7 +200,11 @@ export const VersionWorkspace: React.FC = () => {
                 {v.changelog && <p className="text-xs text-slate-400 whitespace-pre-wrap">{v.changelog}</p>}
               </>
             )}
+            {tab === 'media' && <VersionMediaTab version={v} />}
+            {tab === 'compare' && <VersionCompareTab version={v} />}
             {tab === 'reviews' && <VersionReviews version={v} />}
+            {tab === 'playlists' && <VersionPlaylistsTab version={v} />}
+            {tab === 'publishing' && <VersionPublishingTab version={v} />}
             {tab === 'status' && <StatusHistory queryKey={[...versionsApi.keys.detail(v.id), 'status-history']} fetch={(signal) => versionsApi.statusHistory(v.id, signal)} />}
             {tab === 'changes' && <EntityHistory targetType="Version" targetId={v.id} />}
 

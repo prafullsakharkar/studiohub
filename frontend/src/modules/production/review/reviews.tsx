@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { reviewCard } from './reviewCard';
 import type React from 'react';
 import { REVIEW_STATUSES, reviewsApi } from '@/api/production/review';
 import type { Review } from '@/api/production/review';
@@ -27,6 +28,7 @@ export function useReviewsListConfig(scope?: { projectId: string }): DirectoryLi
     defaultOrdering: '-created_at',
     searchPlaceholder: 'Search title, code',
     basePath: '/reviews',
+    renderCard: reviewCard,
     scope: scope ? { project_id: scope.projectId } : undefined,
     createQuery: scope ? `project=${scope.projectId}` : undefined,
     filters: [

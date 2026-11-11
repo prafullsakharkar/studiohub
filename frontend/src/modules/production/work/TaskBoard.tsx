@@ -1,45 +1,50 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { AlertCircle, ArrowLeft, ArrowRight, Box, Calendar, Clock, Film, Layers, User } from 'lucide-react';
 import type React from 'react';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { auditKeys } from '@/api/audit/audit';
 import { serverMessage } from '@/api/errors/serverMessage';
 import { isAllowedMove } from '@/api/production/statusFlow';
 import { tasksApi } from '@/api/production/work';
 import type { Task } from '@/api/production/work';
-import { QueryBoundary } from '@/components/system/QueryBoundary';
-import { AuthContext } from '@/core/auth/AuthContext';
+import { SmartImg } from '@/components/ui/SmartImg';
+import { formatDate } from '@/core/locale/studioLocale';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
-import { Badge } from '@/shared/components/Badge';
-import { SearchInput } from '@/shared/components/SearchInput';
-import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
+import { PriorityBadge } from '@/shared/components/StatusBadge';
 import { StatusMenu } from './StatusMenu';
-import { TaskTimeCell } from './tasks';
-import { ProjectPicker } from './pickers';
-import { formatHours } from './format';
+import { TaskTimeCell } from './TaskTimeCell';
+import { formatHours, todayIso } from './format';
 
 /** One column per status a task can rest in; Archived is an action, not a column. */
 export const BOARD_COLUMNS = ['Not Started', 'In Progress', 'Pending Review', 'Retake', 'Approved'] as const;
-/** A board shows one page of the matching tasks (the list is for everything). */
-const BOARD_LIMIT = 500;
+/** The colour of each lane: its border, and the pill that counts its cards. */
+const LANE_STYLE: Record<(typeof BOARD_COLUMNS)[number], { border: string; pill: string }> = {
+  'Not Started': { border: 'border-slate-700', pill: 'bg-slate-500/10 text-slate-300' },
+  'In Progress': { border: 'border-indigo-500/30', pill: 'bg-indigo-500/10 text-indigo-300' },
+  'Pending Review': { border: 'border-amber-500/30', pill: 'bg-amber-500/10 text-amber-300' },
+  Retake: { border: 'border-rose-500/30', pill: 'bg-rose-500/10 text-rose-300' },
+  Approved: { border: 'border-emerald-500/30', pill: 'bg-emerald-500/10 text-emerald-300' },
+};
+
+/** The arrows on a card: one step forward along the usual path, one back. Only a move the backend allows is offered. */
+const FORWARD: Record<string, string> = { 'Not Started': 'In Progress', 'In Progress': 'Pending Review', 'Pending Review': 'Approved', Retake: 'In Progress' };
+const BACK: Record<string, string> = { 'In Progress': 'Not Started', 'Pending Review': 'In Progress' };
+
+const EntityIcon: React.FC<{ type: string }> = ({ type }) =>
+  type === 'Shot' ? <Film className="w-3 h-3 text-cyan-400 shrink-0" aria-hidden /> : type === 'Asset' ? <Box className="w-3 h-3 text-amber-400 shrink-0" aria-hidden /> : <Layers className="w-3 h-3 text-slate-400 shrink-0" aria-hidden />;
+
 
 /**
- * Tasks as columns by status. A card moves by drag and drop or by its status menu, and only to columns the backend
- * allows from where it is (`statusFlow.ts`); the server still decides, and its refusal is shown.
+ * Tasks as lanes by status: the Board view of the task list, which supplies the rows (its own search and filters).
+ * A card moves by drag and drop, by its arrows or by its status menu, and only to lanes the backend allows from
+ * where it is (`statusFlow.ts`); the server still decides, and its refusal is shown.
  */
-export const TaskBoard: React.FC<{ projectId?: string; toolbarExtra?: React.ReactNode }> = ({ projectId: scopedProject, toolbarExtra }) => {
+export const TaskBoardLanes: React.FC<{ tasks: Task[] }> = ({ tasks: rows }) => {
   const queryClient = useQueryClient();
-  const me = useContext(AuthContext)?.user?.id ?? '';
   const canUpdate = useCan('task.update');
-  const [project, setProject] = useState<string | null>(scopedProject ?? null);
-  const [mine, setMine] = useState(false);
-  const [search, setSearch] = useState('');
-  const debounced = useDebouncedValue(search.trim(), 300);
   const [dragging, setDragging] = useState<Task | null>(null);
-  const params = { ...(project ? { project_id: project } : {}), ...(mine && me ? { assignee_id: me } : {}), ...(debounced ? { search: debounced } : {}), ordering: 'code', page_size: BOARD_LIMIT };
-  const tasks = useQuery({ queryKey: [...tasksApi.keys.lists(), 'board', params], queryFn: ({ signal }) => tasksApi.list(params, signal) });
-  const rows = tasks.data?.results ?? [];
 
   const move = async (task: Task, next: string) => {
     try {
@@ -51,78 +56,97 @@ export const TaskBoard: React.FC<{ projectId?: string; toolbarExtra?: React.Reac
   };
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 flex-1 min-h-0 w-full">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-800">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight">Task board</h1>
-          <p className="text-xs text-slate-400 mt-1">Drag a card to the next status, or use its menu.</p>
-        </div>
-        <div className="flex flex-wrap items-end gap-2">
-          {!scopedProject && (
-            <div className="w-56">
-              <ProjectPicker label="Project" value={project} onChange={setProject} />
-            </div>
-          )}
-          <SearchInput placeholder="Search tasks" value={search} onChange={(e) => setSearch(e.target.value)} onClear={() => setSearch('')} aria-label="Search tasks" className="w-48" />
-          <label className="flex items-center gap-1.5 text-xs text-slate-300 pb-2">
-            <input type="checkbox" checked={mine} onChange={(e) => setMine(e.target.checked)} /> Mine
-          </label>
-          {toolbarExtra}
-        </div>
-      </div>
-
-      <QueryBoundary isLoading={tasks.isLoading} error={rows.length === 0 ? tasks.error : null} onRetry={() => void tasks.refetch()} entityName="tasks" isEmpty={rows.length === 0} empty={{ title: 'No tasks found', description: 'Nothing matches the search, project or assignee.' }}>
-        {tasks.data && tasks.data.count > rows.length && <p className="text-[11px] text-amber-300">Showing the first {rows.length} of {tasks.data.count} tasks. Narrow by project or use the list.</p>}
-        <div className="grid gap-3 overflow-x-auto" style={{ gridTemplateColumns: `repeat(${BOARD_COLUMNS.length}, minmax(15rem, 1fr))` }}>
-          {BOARD_COLUMNS.map((column) => {
-            const cards = rows.filter((t) => t.status === column);
-            const canDrop = Boolean(dragging) && dragging?.status !== column && isAllowedMove('task', dragging?.status ?? '', column);
-            return (
-              <section
-                key={column}
-                aria-label={column}
-                onDragOver={(e) => canDrop && e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (dragging && canDrop) void move(dragging, column);
-                  setDragging(null);
-                }}
-                className={`rounded-xl border bg-slate-900/50 p-2 space-y-2 min-h-32 ${canDrop ? 'border-cyan-500/60' : 'border-slate-800'}`}
-              >
-                <header className="flex items-center justify-between px-1">
-                  <h2 className="text-xs font-semibold text-slate-200">{column}</h2>
-                  <Badge variant="outline">{cards.length}</Badge>
-                </header>
-                {cards.map((task) => (
-                  <article key={task.id} aria-label={task.code} draggable={canUpdate} onDragStart={() => setDragging(task)} onDragEnd={() => setDragging(null)} className="rounded-lg border border-slate-800 bg-slate-950/80 p-2.5 space-y-1.5 text-xs">
-                    <Link to={`/tasks/${task.id}`} className="font-semibold text-cyan-300 hover:underline">
-                      {task.code} · {task.title}
-                    </Link>
-                    <p className="text-[11px] text-slate-500">
-                      {task.entity_type === 'General' ? 'General' : `${task.entity_type} ${task.entity_code}`} · {task.project_code}
-                    </p>
-                    <div className="flex items-center justify-between text-[11px] text-slate-400">
-                      <span>{task.assignee_name || 'Unassigned'}</span>
-                      <span>
-                        {task.priority}
-                        {task.due_date ? ` · due ${task.due_date}` : ''}
-                      </span>
+    <div className="flex gap-4 items-start overflow-x-auto pb-4 min-w-0">
+      {BOARD_COLUMNS.map((column) => {
+        const cards = rows.filter((t) => t.status === column);
+        const canDrop = Boolean(dragging) && dragging?.status !== column && isAllowedMove('task', dragging?.status ?? '', column);
+        const lane = LANE_STYLE[column];
+        return (
+          <section
+            key={column}
+            aria-label={column}
+            onDragOver={(e) => canDrop && e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              if (dragging && canDrop) void move(dragging, column);
+              setDragging(null);
+            }}
+            className={`flex w-[280px] min-w-[280px] shrink-0 max-h-[calc(100vh-280px)] flex-col rounded-xl border bg-slate-900/60 shadow-lg ${canDrop ? 'border-cyan-500/60' : lane.border}`}
+          >
+            <header className="flex shrink-0 items-center justify-between rounded-t-xl border-b border-slate-800/80 bg-slate-900/90 p-3.5">
+              <h2 className="text-xs font-semibold text-slate-200">{column}</h2>
+              <span className={`rounded-full border border-slate-700 px-2 py-0.5 font-mono text-[11px] font-bold ${lane.pill}`}>{cards.length}</span>
+            </header>
+            <div className="flex-1 space-y-3 overflow-y-auto p-2.5">
+              {cards.length === 0 && <p className="py-8 text-center text-xs italic text-slate-500">No tasks</p>}
+              {cards.map((task) => {
+                const overdue = Boolean(task.due_date) && (task.due_date as string) < todayIso() && task.status !== 'Approved';
+                const forward = FORWARD[task.status];
+                const back = BACK[task.status];
+                const arrow = (to: string | undefined, icon: React.ReactNode, hover: string) =>
+                  to && canUpdate && isAllowedMove('task', task.status, to) ? (
+                    <button type="button" aria-label={`Move ${task.code} to ${to}`} title={`Move to ${to}`} onClick={() => void move(task, to)} className={`rounded border border-slate-700 bg-slate-900 p-1 text-slate-400 ${hover}`}>
+                      {icon}
+                    </button>
+                  ) : null;
+                return (
+                  <article key={task.id} aria-label={task.code} draggable={canUpdate} onDragStart={() => setDragging(task)} onDragEnd={() => setDragging(null)} className="group flex min-w-0 flex-col gap-2.5 rounded-lg border border-slate-700/80 bg-slate-800/80 p-3.5 text-xs shadow-sm transition-all hover:border-slate-600 hover:bg-slate-800">
+                    <div className="flex min-w-0 items-center justify-between gap-1.5">
+                      <Link to={`/tasks/${task.id}`} className="truncate font-mono text-xs font-bold text-indigo-400 hover:text-indigo-300 hover:underline">
+                        {task.code}
+                      </Link>
+                      <PriorityBadge priority={task.priority} />
                     </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-slate-500">
+                    <Link to={`/tasks/${task.id}`} title={task.title} className="line-clamp-2 text-xs font-medium text-slate-100 hover:text-indigo-300">
+                      {task.title}
+                    </Link>
+                    <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[11px]">
+                      <span className="inline-flex min-w-0 max-w-full items-center gap-1 rounded border border-slate-700/80 bg-slate-900 px-1.5 py-0.5 text-slate-300">
+                        <EntityIcon type={task.entity_type} />
+                        <span className="truncate">{task.entity_type === 'General' ? 'General' : task.entity_code}</span>
+                      </span>
+                      {(task.task_type_name || task.department) && <span className="shrink-0 rounded border border-slate-800 bg-slate-900/60 px-1.5 py-0.5 text-[10px] text-slate-400">{task.task_type_name || task.department}</span>}
+                      <span className="font-mono text-[10px] text-slate-500">{task.project_code}</span>
+                    </div>
+                    <div className="flex min-w-0 items-center justify-between gap-2 border-t border-slate-700/60 pt-2 text-slate-400">
+                      <div className="flex min-w-0 items-center gap-1.5" title={task.assignee_name || 'Unassigned'}>
+                        {task.assignee_avatar ? (
+                          <SmartImg src={task.assignee_avatar} alt="" className="h-5 w-5 shrink-0 rounded-full border border-slate-600 object-cover" />
+                        ) : (
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-700 text-slate-400">
+                            <User className="h-3 w-3" aria-hidden />
+                          </span>
+                        )}
+                        <span className="max-w-[90px] truncate text-[11px] text-slate-300">{task.assignee_name ? task.assignee_name.split(' ')[0] : 'Unassigned'}</span>
+                      </div>
+                      <span className="inline-flex shrink-0 items-center gap-1.5 font-mono text-[11px]" title="Logged / estimated">
+                        <Clock className="h-3 w-3" aria-hidden />
                         {formatHours(task.logged_hours)} / {formatHours(task.estimated_hours)}
                       </span>
+                    </div>
+                    <div className="flex min-w-0 items-center justify-between gap-2">
+                      <span className={`inline-flex min-w-0 items-center gap-1 truncate font-mono text-[10px] ${overdue ? 'font-semibold text-rose-400' : 'text-slate-400'}`}>
+                        <Calendar className="h-3 w-3 shrink-0" aria-hidden />
+                        <span className="truncate">{task.due_date ? formatDate(task.due_date) : 'No date'}</span>
+                        {overdue && <AlertCircle className="h-3 w-3 shrink-0" aria-label="Overdue" />}
+                      </span>
+                      <span className="flex shrink-0 items-center gap-1">
+                        {arrow(back, <ArrowLeft className="h-3 w-3" aria-hidden />, 'hover:text-slate-200')}
+                        {arrow(forward, <ArrowRight className="h-3 w-3" aria-hidden />, 'hover:text-indigo-300')}
+                      </span>
+                    </div>
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 border-t border-slate-700/60 pt-2">
+                      <TaskTimeCell task={task} />
                       <StatusMenu entity="task" status={task.status} name={task.code} canChange={canUpdate} change={(next) => tasksApi.update(task.id, { status: next })} invalidate={[tasksApi.keys.all]} />
                     </div>
-                    <TaskTimeCell task={task} />
                   </article>
-                ))}
-              </section>
-            );
-          })}
-        </div>
-      </QueryBoundary>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })}
     </div>
+
   );
 };
-

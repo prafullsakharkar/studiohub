@@ -964,3 +964,29 @@ Asked by the owner (2026-11-06): "while creating any production entity the code 
 
 **Approved** by the owner ("approve CR-50", 2026-11-06) and applied as proposed: `has_sequence` (`true` / `false`) on the shots list (`ShotFilterSet.has_sequence`), the committed OpenAPI schema and its types carry the parameter (three list routes), and the Shots list has a "Sequences" filter (Without a sequence / In a sequence), also on a project's Shots tab. Alternative (b), `sequence_id=none`, was not taken. A value that is not `true`/`false` is no filter. Tests: `test_shot_sequence.py::TestHasSequenceFilter` (false, true, not a boolean, combined with search and status, archived and other projects stay out, and filling the sequence through `bulk-update` empties the list); frontend `shotsWithoutSequence.test.tsx`; browser: `e2e/live/bulk-add.smoke.spec.ts` "shots without a sequence" (filter, tick, Edit fields > Sequence on the seeded shots).
 
+
+
+### CR-51: say which export job a republish was made from (**feature**, **PROPOSED**)
+
+**Problem.** `PublishItem.republished_from` (a self reference, `PROTECT`, nullable) is written by `POST /publishing/{id}/republish/` (API-PUB-06) but no serializer returns it and no filter takes it. A republished job gets a fresh project-numbered code (`allocate_code`), so nothing in a response ties it to the job it came from. The old frontend's "Publish revision history" (`PublishHistoryModal`) showed that chain; this frontend can only show "every export job for the same shot or asset" (the job's **History** tab), which is the same list but cannot tell a republish of job A from an unrelated new export of the same shot.
+
+**Minimal diff.** (1) Return `republished_from` (the id, or `null`) on the publishing job row and detail serializers. (2) An optional list filter `republished_from=<id>`. Additive, read-only: no migration, no change to any write, no change to permissions or narrowing (the id of a job the caller cannot see is not returned: it is null for them).
+
+**Frontend after approval.** The job's History tab marks "republished from PUB-…-0003" and links to it, and the job page lists "Republished as" the jobs that point at it (the filter), so the chain reads in both directions.
+
+**Why no frontend workaround.** The link is not in any response; matching codes or names would guess. The "same shot or asset" list shipped in the History tab stays correct either way.
+
+**Compatibility.** None: one new field and one optional parameter. **Risk.** Very low. **Alternatives.** (a) Do nothing: the History tab as shipped. (b) Return the whole chain as a `revisions` list on the detail: more server work for the same information.
+
+
+### CR-52: let an attachment belong to a version, review or shot (**feature**, **PROPOSED**)
+
+**Problem.** `Attachment` (`core_attachment`, `/api/v1/core/attachments/` and the compat `/api/v1/attachments/`) has no link to anything: no entity type or id, no project. Its docstring says "attachments can be linked to any entity", but the model has `file`, `name`, `description`, `file_type`, `mime_type`, `file_size`, `storage_key`, `is_public`, `expires_at` and the audit columns only, and the viewset shows a caller their own uploads (`AttachmentSelector`) and filters on `file_type` and `is_public` only. So a file cannot be attached to a version, a review, a shot or a task: the old frontend's Attachments tab on a version has no server to talk to, and this frontend has no attachments screen at all (CR-less: the inventory lists `core/attachments` as "untouched").
+
+**Minimal diff.** (1) Two optional fields on `Attachment`: `entity_type` (the model name: `Version`, `Review`, `Shot`, `Asset`, `Task`) and `entity_id` (uuid), both blank by default, with an index on the pair; one migration. (2) Accept and return them on create and update, and refuse an entity the caller may not see (the same "not found" as everywhere else). (3) Two optional list filters, `entity_type` and `entity_id`. (4) Visibility: an attachment of a record is listed to everyone who may see the record (through the project narrowing), not only to its uploader; one without an entity stays "mine". Delete stays the uploader's (and `file.delete` holders').
+
+**Frontend after approval.** An "Attachments" tab on a version, a review, a shot and an asset: the files of that record (name, type, size, who, when), upload (multipart, with the 413 and 429 answers shown), the signed download link, and delete. The upload primitive (`ApiClient.upload`) already exists.
+
+**Why no frontend workaround.** Without a link in the data, any list of "this version's files" would be a guess from file names, and visibility would still be per uploader.
+
+**Compatibility.** Additive for the API (two nullable-by-default fields, two optional filters); existing attachments stay "mine". **Risk.** Medium: a migration, and the visibility rule in (4) widens who can see an attachment once it has an entity, which is a security decision for the owner. **Alternatives.** (a) Do nothing: no attachments on records. (b) A separate `RecordAttachment` table that links an existing attachment to a record, so `Attachment` is untouched (more tables, same result).

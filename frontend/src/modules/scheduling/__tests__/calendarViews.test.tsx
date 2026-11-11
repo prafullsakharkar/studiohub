@@ -161,17 +161,16 @@ describe('week and day', () => {
     expect(timed[0].textContent).not.toContain('Offsite');
   });
 
-  it('a day is one column, and the event links to its form only for someone who may change events', async () => {
+  it('a day is one column, and every event opens its page, for a reader as well as for someone who may change events', async () => {
     mockFetch(serve);
     open(`/cal?view=day&date=${DAILIES_DAY}`, manager);
     const grid = await screen.findByRole('region', { name: /./ });
     expect(within(grid).getAllByRole('list', { name: /^Timed events on / })).toHaveLength(1);
-    expect(within(grid).getByRole('link', { name: /^Dailies/ }).getAttribute('href')).toBe(`/scheduling/events/${dailies.id}/edit`);
+    expect(within(grid).getByRole('link', { name: /^Dailies/ }).getAttribute('href')).toBe(`/scheduling/events/${dailies.id}`);
     cleanup();
     mockFetch(serve);
     open(`/cal?view=day&date=${DAILIES_DAY}`, reader);
-    await screen.findByRole('article', { name: /^Dailies/ });
-    expect(screen.queryByRole('link', { name: /^Dailies/ })).toBeNull();
+    expect((await screen.findByRole('link', { name: /^Dailies/ })).getAttribute('href')).toBe(`/scheduling/events/${dailies.id}`);
   });
 
   it('a day with nothing timed shows an empty grid and still its all-day items', async () => {

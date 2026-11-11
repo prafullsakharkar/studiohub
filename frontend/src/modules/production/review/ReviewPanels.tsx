@@ -320,7 +320,7 @@ export const ReviewAnnotationsPanel: React.FC<{ review: Review }> = ({ review })
         </div>
       )}
       {review.annotations.length === 0 ? (
-        <Empty>No annotations yet. Drawing on the frame needs the media player, which is not part of this screen.</Empty>
+        <Empty>No annotations yet. Draw on a frame in the Media viewer, or note a frame number here.</Empty>
       ) : (
         <ul aria-label="Annotations" className="space-y-2">
           {review.annotations.map((a) => (

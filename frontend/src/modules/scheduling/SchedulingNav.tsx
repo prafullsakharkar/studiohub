@@ -11,6 +11,8 @@ const SECTIONS: ReadonlyArray<{ to: string; label: string; end?: boolean; permis
   { to: '/scheduling/events', label: 'Events' },
   { to: '/scheduling/milestones', label: 'Milestones' },
   { to: '/scheduling/capacity', label: 'Capacity' },
+  { to: '/scheduling/utilization', label: 'Utilization' },
+  { to: '/scheduling/assignments', label: 'Assignments' },
   { to: '/scheduling/holidays', label: 'Holidays' },
   { to: '/scheduling/calendars', label: 'Work calendars' },
 ];
