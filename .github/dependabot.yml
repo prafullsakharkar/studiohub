@@ -17,6 +17,11 @@ updates:
 
   # The frontend (React, Vite, vitest, Biome ...): one grouped pull request a week for minor and patch updates, so the
   # CI `frontend` job (typecheck, Biome, tests, build) judges each batch; a major update is its own pull request.
+  # Known limit (found 2026-11-11): Dependabot writes pnpm-lock.yaml without the `overrides:` block that mirrors
+  # `pnpm.overrides` in package.json (the minimatch pin), so its frontend pull requests fail the CI install with
+  # ERR_PNPM_LOCKFILE_CONFIG_MISMATCH, and merging one would drop the pin. Read such a pull request as a list of what is
+  # new: apply the same versions with `pnpm update <package>@<version>` (it keeps the override), run the frontend gates,
+  # and Dependabot closes its pull request once `develop` has the version.
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:

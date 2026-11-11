@@ -11,7 +11,7 @@
 # The lock file (uv.lock) is authoritative. No dependency resolution happens
 # during production deployment.
 
-FROM python:3.14-slim@sha256:cd89c30eda26ee911a4611b18680086e0ea42e6f5f8cbe653d07fa7958c9cec8 AS builder
+FROM python:3.14-slim@sha256:9aaa474097d094040649f2162a627c0049b408f52138d980916788d80f04802f AS builder
 
 ENV \
     UV_COMPILE_BYTECODE=1 \
@@ -43,7 +43,7 @@ RUN uv sync --frozen --no-install-project --no-dev
 
 # ---------------------------------------------------------------------------
 
-FROM python:3.14-slim@sha256:cd89c30eda26ee911a4611b18680086e0ea42e6f5f8cbe653d07fa7958c9cec8 AS runtime
+FROM python:3.14-slim@sha256:9aaa474097d094040649f2162a627c0049b408f52138d980916788d80f04802f AS runtime
 
 ENV \
     PYTHONUNBUFFERED=1 \
@@ -55,9 +55,13 @@ WORKDIR /app
 
 # Runtime shared libraries only. psycopg[binary]/argon2/pillow ship wheels, so
 # no compiler or -dev packages are required here.
+# zlib1g is named so that apt brings it to the newest security release at build time: the base image can
+# lag Debian's fix (the Containers scan reported zlib1g CVE-2026-76844 / CVE-2026-85091 on 2026-11-09 while
+# the fixed 1.3.1-1+deb13u1 was already published). Installing an installed package upgrades it.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         libssl3 \
+        zlib1g \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --system --gid 10001 app \
     && useradd --system --uid 10001 --gid app --home-dir /app --shell /usr/sbin/nologin app
