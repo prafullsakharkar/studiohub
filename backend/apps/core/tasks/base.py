@@ -86,8 +86,8 @@ class BaseTask(CeleryTask):
             extra={
                 "task_id": task_id,
                 "exception": str(exc),
-                "args": args,
-                "kwargs": kwargs,
+                "task_args": args,
+                "task_kwargs": kwargs,
             },
             exc_info=exc,
         )
@@ -116,8 +116,8 @@ class BaseTask(CeleryTask):
             extra={
                 "task_id": task_id,
                 "exception": str(exc),
-                "args": args,
-                "kwargs": kwargs,
+                "task_args": args,
+                "task_kwargs": kwargs,
             },
         )
 
