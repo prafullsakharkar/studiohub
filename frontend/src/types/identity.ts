@@ -181,6 +181,9 @@ export interface ProjectMembership {
   status?: string;
   vendor_id?: string;
   client_id?: string;
+  /** A membership naming a department (or bound to a show) covers only that part of the project (TM-002). */
+  department?: string;
+  department_id?: string;
   permissions?: string[];
   [key: string]: any;
 }
