@@ -17,7 +17,7 @@ const artist = auth.me_artist.body as unknown as User;
 const noCreate = { ...artist, permissions: artist.permissions.filter((p) => !p.endsWith('.create')) } as User;
 
 const versions = flow.versions_list.body.results as Array<{ id: string; code: string; entity_type: string; entity_id: string; project_id: string }>;
-const shotVersion = versions[2]; // SH0010_V002; the list also holds another shot's and an asset's versions
+const shotVersion = versions[2]; // REV_SH0010_V002; the list also holds another shot's and an asset's versions
 const shot = { type: 'Shot', id: shotVersion.entity_id, projectId: shotVersion.project_id } as const;
 
 beforeEach(() => tokenStorage.setTokens({ access: 'a', refresh: 'r' }));

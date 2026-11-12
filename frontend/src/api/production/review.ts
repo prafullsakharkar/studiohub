@@ -9,8 +9,10 @@ import type { StatusHistoryRow } from './work';
  * to docs/sync/samples/production/_review_flow.json (see backend-change-requests.md, "Phase 7 notes").
  *
  * Rules the capture established:
- *  - the JSON lists on a version (`reviews`, `playlists`, `notes_list`, `media_items`, `activity`, `attachments`) are
- *    caches (DECISIONS D-18): nothing here reads them; the review, playlist and media records are the truth;
+ *  - a version carries no lists of what holds it (RP-1, C-RP-01): the reviews and playlists of a version are read
+ *    with `version_id` on their own lists (C-RP-03, C-RP-04);
+ *  - a comment, reply or annotation names the version of the review it is on, or null for the whole review
+ *    (C-RP-05, C-RP-06); a reply is on its thread's version;
  *  - versions are filtered by `entity_type` + `entity_id` (`shot_id`, `task_id`, `asset_id`, `artist`, `is_hero` are ignored);
  *  - approving what you produced is 403 `separation_of_duties` on every path (D-04);
  *  - `simulate` on a workflow is a stub and nothing executes automation rules (§ Phase 7 notes).
@@ -59,13 +61,6 @@ export interface Version {
   source_file_url: string;
   video_url: string;
   thumbnail_url: string;
-  /** Caches (D-18): do not read. */
-  activity: unknown[];
-  attachments: unknown[];
-  media_items: unknown[];
-  notes_list: unknown[];
-  playlists: unknown[];
-  reviews: unknown[];
   project_id: string;
   project_code: string;
   created_at: string;
@@ -147,6 +142,8 @@ export interface ReviewReply {
   resolved_at: string | null;
   resolved_by_id: string | null;
   parent_id: string | null;
+  /** The version of the review it is on; null for the whole review. A reply has its thread's. */
+  version_id: string | null;
   created_at: string;
 }
 export interface ReviewComment extends ReviewReply {
@@ -170,6 +167,8 @@ export interface ReviewAnnotation {
   frame_number: number | null;
   timecode: string | null;
   drawing_coordinates: Record<string, unknown> | null;
+  /** The version of the review it is on; null for the whole review. */
+  version_id: string | null;
   created_at: string;
 }
 export interface ReviewActivity {
@@ -246,11 +245,13 @@ export const reviewsApi = {
   removeParticipant: (id: string, participantId: string) => apiClient.delete<Review>(`${reviewBase}${id}/participants/${participantId}/`),
   /** Accepted only from the participant's own account; an approving verdict is subject to separation of duties. */
   participantVerdict: (id: string, input: { participant_id: string; verdict: string; notes?: string }) => reviewPost(id, 'participant-verdict', input),
-  addComment: (id: string, input: { text: string; frame_number?: number | null; timecode?: string | null; tags?: string[]; is_client_visible?: boolean; parent_id?: string | null }) => apiClient.post<ReviewComment>(`${reviewBase}${id}/comments/`, input),
+  /** `version_id` must be a version on this review (400 otherwise); a reply takes its thread's, and naming another is a 400. */
+  addComment: (id: string, input: { text: string; frame_number?: number | null; timecode?: string | null; tags?: string[]; is_client_visible?: boolean; parent_id?: string | null; version_id?: string | null }) => apiClient.post<ReviewComment>(`${reviewBase}${id}/comments/`, input),
   resolveComment: (id: string, commentId: string) => apiClient.post<Review>(`${reviewBase}${id}/comments/${commentId}/resolve/`, {}),
   reopenComment: (id: string, commentId: string) => apiClient.post<Review>(`${reviewBase}${id}/comments/${commentId}/reopen/`, {}),
   addNote: (id: string, input: { content: string; category?: string; is_pinned?: boolean }) => apiClient.post<ReviewNote>(`${reviewBase}${id}/notes/`, input),
-  addAnnotation: (id: string, input: { comment?: string; frame_number?: number | null; timecode?: string | null; drawing_coordinates?: Record<string, unknown> | null }) => apiClient.post<ReviewAnnotation>(`${reviewBase}${id}/annotations/`, input),
+  /** `version_id` must be a version on this review (400 otherwise). */
+  addAnnotation: (id: string, input: { comment?: string; frame_number?: number | null; timecode?: string | null; drawing_coordinates?: Record<string, unknown> | null; version_id?: string | null }) => apiClient.post<ReviewAnnotation>(`${reviewBase}${id}/annotations/`, input),
 };
 
 // ----------------------------------------------------------------------------------------------- playlists

@@ -13574,6 +13574,8 @@ export interface components {
             /** @default  */
             comment: string;
             drawing_coordinates?: unknown;
+            /** Format: uuid */
+            version_id?: string | null;
         };
         /** @description Body of ``POST /task-templates/{id}/apply/``. */
         ApplyTemplate: {
@@ -25234,6 +25236,8 @@ export interface components {
             tags?: string[];
             /** Format: uuid */
             parent_id?: string | null;
+            /** Format: uuid */
+            version_id?: string | null;
         };
         /** @description Base serializer for write operations. */
         ReviewCreate: {
@@ -28357,12 +28361,6 @@ export interface components {
             changelog?: string;
             tags?: unknown;
             publishing_info?: unknown;
-            media_items?: unknown;
-            attachments?: unknown;
-            reviews?: unknown;
-            playlists?: unknown;
-            notes_list?: unknown;
-            activity?: unknown;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -28440,12 +28438,6 @@ export interface components {
             changelog?: string;
             tags?: unknown;
             publishing_info?: unknown;
-            media_items?: unknown;
-            attachments?: unknown;
-            reviews?: unknown;
-            playlists?: unknown;
-            notes_list?: unknown;
-            activity?: unknown;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -43444,6 +43436,7 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 status?: string;
+                version_id?: string;
             };
             header?: never;
             path?: never;
@@ -45373,6 +45366,7 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 status?: string;
+                version_id?: string;
             };
             header?: never;
             path?: never;
@@ -45927,6 +45921,7 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 status?: string;
+                version_id?: string;
             };
             header?: never;
             path: {

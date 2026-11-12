@@ -34,6 +34,30 @@ export function useReviewWrite() {
 const field = 'bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200';
 const Empty: React.FC<{ children: string }> = ({ children }) => <p className="rounded-lg border border-dashed border-slate-800 p-4 text-xs text-slate-500">{children}</p>;
 
+/** The code of the review's version a comment or annotation is on (C-RP-06); null when it is on the whole review. */
+export function versionLabel(review: Review, versionId: string | null): string | null {
+  if (!versionId) return null;
+  return review.versions.find((v) => v.id === versionId)?.code ?? 'a version no longer in the review';
+}
+
+/** Which of the review's versions a new comment or annotation is on; '' is the whole review. */
+const OnVersion: React.FC<{ review: Review; value: string; onChange: (value: string) => void; label: string }> = ({ review, value, onChange, label }) =>
+  review.versions.length === 0 ? null : (
+    <label className="text-xs text-slate-400">
+      On
+      <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className={`${field} mt-1 block`}>
+        <option value="">Whole review</option>
+        {[...review.versions]
+          .sort((a, b) => a.order - b.order)
+          .map((v) => (
+            <option key={v.id} value={v.id}>
+              {v.code}
+            </option>
+          ))}
+      </select>
+    </label>
+  );
+
 /** `onCompare` puts a version against the one the viewer shows first (the version of lowest order) and opens the viewer. */
 export const ReviewVersionsPanel: React.FC<{ review: Review; onCompare?: (versionId: string) => void }> = ({ review, onCompare }) => {
   const first = [...review.versions].sort((a, b) => a.order - b.order)[0]?.id;
@@ -187,6 +211,7 @@ const CommentThread: React.FC<{ review: Review; comment: ReviewComment | ReviewR
     <li className={`rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-xs ${reply ? 'ml-6' : ''}`}>
       <div className="flex flex-wrap items-center gap-2 text-slate-400">
         <span className="font-semibold text-slate-200">{comment.author}</span>
+        {!reply && versionLabel(review, comment.version_id) && <Badge variant="info">{versionLabel(review, comment.version_id)}</Badge>}
         {comment.frame_number !== null && <Badge variant="outline">frame {comment.frame_number}</Badge>}
         {comment.is_resolved && <StatusBadge status="Resolved" />}
         <time className="ml-auto text-[10px] font-mono" dateTime={comment.created_at}>
@@ -230,6 +255,7 @@ export const ReviewCommentsPanel: React.FC<{ review: Review }> = ({ review }) =>
   const write = useReviewWrite();
   const [text, setText] = useState('');
   const [frame, setFrame] = useState('');
+  const [onVersion, setOnVersion] = useState('');
   // The server refuses an empty comment (CR-16) but still accepts comments on a closed review; the screen takes neither.
   const closed = review.status === 'Closed';
   return (
@@ -244,7 +270,8 @@ export const ReviewCommentsPanel: React.FC<{ review: Review }> = ({ review }) =>
             Frame
             <input aria-label="Frame" type="number" value={frame} onChange={(e) => setFrame(e.target.value)} className={`${field} mt-1 block w-24`} />
           </label>
-          <Button size="sm" variant="primary" disabled={!text.trim()} onClick={async () => (await write(() => reviewsApi.addComment(review.id, { text: text.trim(), frame_number: frame === '' ? null : Number(frame) }))) && (setText(''), setFrame(''))}>
+          <OnVersion review={review} value={onVersion} onChange={setOnVersion} label="Comment on version" />
+          <Button size="sm" variant="primary" disabled={!text.trim()} onClick={async () => (await write(() => reviewsApi.addComment(review.id, { text: text.trim(), frame_number: frame === '' ? null : Number(frame), ...(onVersion ? { version_id: onVersion } : {}) }))) && (setText(''), setFrame(''))}>
             Add comment
           </Button>
         </div>
@@ -309,6 +336,7 @@ export const ReviewAnnotationsPanel: React.FC<{ review: Review }> = ({ review })
   const write = useReviewWrite();
   const [comment, setComment] = useState('');
   const [frame, setFrame] = useState('');
+  const [onVersion, setOnVersion] = useState('');
   return (
     <div className="space-y-3">
       {canEdit && (
@@ -321,7 +349,8 @@ export const ReviewAnnotationsPanel: React.FC<{ review: Review }> = ({ review })
             Frame
             <input aria-label="Annotation frame" type="number" value={frame} onChange={(e) => setFrame(e.target.value)} className={`${field} mt-1 block w-24`} />
           </label>
-          <Button size="sm" variant="primary" disabled={!comment.trim()} onClick={async () => (await write(() => reviewsApi.addAnnotation(review.id, { comment: comment.trim(), frame_number: frame === '' ? null : Number(frame) }))) && (setComment(''), setFrame(''))}>
+          <OnVersion review={review} value={onVersion} onChange={setOnVersion} label="Annotation on version" />
+          <Button size="sm" variant="primary" disabled={!comment.trim()} onClick={async () => (await write(() => reviewsApi.addAnnotation(review.id, { comment: comment.trim(), frame_number: frame === '' ? null : Number(frame), ...(onVersion ? { version_id: onVersion } : {}) }))) && (setComment(''), setFrame(''))}>
             Add annotation
           </Button>
         </div>
@@ -333,6 +362,7 @@ export const ReviewAnnotationsPanel: React.FC<{ review: Review }> = ({ review })
           {review.annotations.map((a) => (
             <li key={a.id} className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-xs">
               <span className="font-semibold text-slate-200">{a.author_name}</span>
+              {versionLabel(review, a.version_id) && <Badge variant="info">{versionLabel(review, a.version_id)}</Badge>}
               {a.frame_number !== null && <Badge variant="outline">frame {a.frame_number}</Badge>}
               <p className="mt-1 text-slate-200">{a.comment}</p>
             </li>

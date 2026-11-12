@@ -13,7 +13,7 @@ The rules of the earlier programmes apply to every phase:
 
 ## RP-1 Data model cleanup
 
-**Status:** backend WP 1.1 to 1.4 built on `feature/rp-1-data-cleanup`, not committed ([rp-1-verification.md](rp-1-verification.md)). WP 1.5 (frontend) and WP 1.6 (column drop) not started.
+**Status:** WP 1.1 to 1.5 built on `feature/rp-1-data-cleanup` ([rp-1-verification.md](rp-1-verification.md)). WP 1.6 (column drop) not started.
 
 **Goal.** Records are the only truth for what a version is in and what is said about it, so later phases (notes, roll-up, notifications) are built on them and not on copies.
 

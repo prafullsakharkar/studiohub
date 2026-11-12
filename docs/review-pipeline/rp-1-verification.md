@@ -1,6 +1,6 @@
-# RP-1 Data model cleanup: verification (backend)
+# RP-1 Data model cleanup: verification
 
-Branch `feature/rp-1-data-cleanup`, off `develop` at `4d346bf7`. **Not committed, not pushed.** This covers PLAN WP 1.1 to 1.4 (backend). WP 1.5 (frontend) and WP 1.6 (column drop) are not started.
+Branch `feature/rp-1-data-cleanup`, off `develop` at `4d346bf7`. **Not pushed, not merged.** The backend (PLAN WP 1.1 to 1.4) is commit `85485b9c`; the frontend follow-up (WP 1.5) is §4 and §5. WP 1.6 (column drop) is not started.
 
 ## 1. What changed
 
@@ -27,16 +27,46 @@ Docs: `docs/production/DECISIONS.md` D-18 and the "Not done" line of D-31 now po
 
 ## 3. Notes
 
-- **An older frontend keeps working.** It reads none of the six keys (`frontend/src/api/production/review.ts:12`) and sends no `version_id`. Only the frontend's pinned row keys (`VERSION_KEYS`) and captured samples need the follow-up (WP 1.5).
+- **An older frontend keeps working.** It reads none of the six keys and sends no `version_id`. Only its pinned row keys and captured samples needed the follow-up (§4).
 - **Choice made while building:** a version on a comment is checked against the review's *live* items only when the comment is new. A reply on a thread whose version was later taken off the review is still accepted, on the thread's version (by the code; no test pins it yet). Refusing it would make a thread unanswerable.
 - **`SET_NULL` on the FK:** versions are soft-deleted, and `ReviewItem` already protects a version shown in a review from a hard delete, so the null case is only reached by a hard delete of a version that left every review.
 
-## 4. Next
+## 4. The frontend (WP 1.5)
 
-- WP 1.5, frontend:
-  - drop the six keys from `Version` and `VERSION_KEYS`;
-  - use `version_id` in `VersionWorkspace` and `VersionExtras`;
-  - send the version on screen from `ReviewViewer` and show it in the panels;
-  - refresh the captures from the test database;
-  - role smoke of the review viewer.
+| Where | Change |
+|---|---|
+| `src/api/production/review.ts`, `reviewRowKeys.ts` | `Version` loses the six lists. `ReviewReply`, `ReviewComment` and `ReviewAnnotation` gain `version_id`. `addComment` and `addAnnotation` take an optional `version_id`. The header comment states the RP-1 rules. |
+| Version page, Reviews tab (`VersionWorkspace.tsx`) | Reads every page of `reviews/?version_id=`. Before, it read the entity's first 100 reviews and filtered them on the client, so it could miss some. Starting a review is unchanged. |
+| Version page, Playlists tab (`VersionExtras.tsx`) | Reads `playlists/?version_id=`, no longer the whole project filtered on the client. Where the version sits in each playlist is unchanged. |
+| Review viewer (`ReviewViewer.tsx`) | <ul><li>A comment or a drawing is sent on the version on show (side A while comparing).</li><li>The timeline markers, the feedback list and the saved drawings on the frame show that version's feedback and the whole review's, never another version's.</li><li>A whole-review item says "· whole review" when the review has more than one version.</li><li>The comment box names the version.</li><li>Switching versions drops an unsaved drawing, because a drawing belongs to one version.</li></ul> |
+| Comments and Annotations tabs (`ReviewPanels.tsx`) | <ul><li>An **On** choice: "Whole review" (the default) or one of the review's versions.</li><li>A thread and an annotation show the code of their version. A reply does not repeat its thread's tag.</li><li>A version taken off the review since reads "a version no longer in the review".</li></ul> |
+| OpenAPI snapshot and types (`src/core/api/generated/`) | Regenerated from this backend: the snapshot equals what `develop` generated, plus only the RP-1 changes. |
+
+**Captures.** `docs/sync/tools/test_capture_production_review.py` was re-run on the test database, which rewrote `production/_review_flow.json`.
+- **The tool needed CR-49 codes** (`REV_SQ010`, `REV_SH0010`, …) before it would run at all. It predates CR-49, which refuses codes without the project's prefix.
+- **New calls:** 18 of them, prefixed `rp1_`: the two-version review RV004, comments and annotations on a version, the refusals, and the lists by version.
+- **Diff against the old capture, call by call:**
+  - the six keys left every version answer;
+  - `version_id` was added to every comment and annotation;
+  - the new `rp1_` calls appeared;
+  - ids changed;
+  - member rows gained `show_id` and `show_code` (CR-36, applied after this flow was last captured).
+- Two test pins changed with the codes: a derived version code is now `REV_SH0010_COMPOSITING_V001`, plus one comment.
+- `production/versions.json`, an early broad capture, still shows the old lists. No test reads it, so it was left alone.
+
+## 5. Frontend evidence
+
+| Check | Result |
+|---|---|
+| Unit tests | **151 files, 1,605 tests pass** (1,599 before; +6). <ul><li>New: the RP-1 contract tests on the captures; the viewer shows only the shown version's and the whole review's feedback; the panels' version choice and tags; a drawing belongs to one version.</li><li>Rewritten: the version Reviews and Playlists tabs now serve the captured `?version_id=` answers, and assert that the client no longer filters.</li><li>Updated: three request-body assertions now expect `version_id`.</li></ul> |
+| Mutations | **16 of 16 caught.** Each check broke one rule, and a test failed: <ul><li>either tab asks the old way;</li><li>the viewer's comment or drawing sent without a version;</li><li>the viewer showing every version's feedback, or hiding the whole review's;</li><li>no "whole review" label;</li><li>either panel ignoring the version chosen;</li><li>no version tag on a thread or an annotation;</li><li>a reply repeating the tag;</li><li>a whole-review item tagged with a version;</li><li>the choice defaulting to the first version;</li><li>switching versions keeping the draft;</li><li>saved drawings of every version shown.</li></ul> |
+| Live (real backend, fresh factory seed on the test database) | `review.live` **4 of 4**, including a new RP-1 test, through the real panels: <ul><li>a comment on the second version of a two-version review and an annotation on the first are stored on those versions;</li><li>a version not on the review is refused with 400;</li><li>the second version's page lists that review and the playlist that holds it;</li><li>the version answer has no `playlists`.</li></ul> **Live mutation:** with the comment panel ignoring the version chosen, the live test failed, because the comment was stored with `null`. |
+| `tsc` / build | 0 errors / OK |
+| Biome | **0 errors.** 862 warnings, down from 863 before RP-1: the new code adds none, and my first draft's `any` casts in the tests were typed. |
+| Unreachable-file check | Only tests, `*RowKeys.ts` and helpers, as before |
+
+The Playwright role smoke was not run. It visits static routes as each role and does not open the review viewer, so the live vitest above is the browser-level check for RP-1.
+
+## 6. Next
+
 - WP 1.6: `STAGING_AUDIT.sql` for the six columns, to run on staging and production, then the drop migration as its own commit.

@@ -240,8 +240,28 @@ describe('drawing in the review viewer', () => {
       frame_number: 1001,
       timecode: '00:00:00:00',
       drawing_coordinates: { version: 1, shapes: [{ type: 'rect', color: '#22c55e', x: 0.1, y: 0.1, w: 0.4, h: 0.4 }] },
+      version_id: review.versions[0].id, // on the version on show (C-RP-05)
     });
     await waitFor(() => expect(toolbar().getByRole('button', { name: 'Draw on this frame' })).toBeTruthy()); // back to viewing
+  });
+
+  it('a drawing is one version’s: switching to another version drops what was not saved, and drawings of another version are not shown (C-RP-05)', async () => {
+    const rp1 = flow.rp1_review_detail.body; // RV004: an annotation on its first version
+    const [first, second] = [...rp1.versions].sort((a: { order: number }, b: { order: number }) => a.order - b.order);
+    const drawnOnFirst = { ...rp1.annotations[0], frame_number: 1001, drawing_coordinates: { version: 1, shapes: [{ type: 'rect', color: '#22c55e', x: 0.1, y: 0.1, w: 0.4, h: 0.4 }] } };
+    expect(drawnOnFirst.version_id).toBe(first.id);
+    const { calls } = mount({ ...rp1, annotations: [drawnOnFirst] });
+    const { layer } = await ready();
+    expect(layer.querySelectorAll('[data-shape]')).toHaveLength(1); // the first version's saved drawing, on its frame
+    fireEvent.click(toolbar().getByRole('button', { name: 'Draw on this frame' }));
+    press(layer, 100, 56.25);
+    lift(layer, 500, 281.25);
+    expect(layer.querySelectorAll('[data-shape]')).toHaveLength(2); // and the unsaved stroke
+    fireEvent.click(within(screen.getByRole('group', { name: 'Version on show' })).getByRole('button', { name: second.code }));
+    const { layer: other } = await ready();
+    expect(other.querySelectorAll('[data-shape]')).toHaveLength(0); // neither the draft nor the first version's drawing
+    expect(toolbar().getByRole('button', { name: 'Draw on this frame' })).toBeTruthy(); // drawing stopped
+    expect(calls.some((c) => c.method === 'POST')).toBe(false);
   });
 
   it('stays on the frame it was started on: stepping away shows where it is and stops drawing elsewhere, and Save still goes to its frame', async () => {

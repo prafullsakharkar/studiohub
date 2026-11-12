@@ -17163,6 +17163,10 @@ paths:
         name: status
         schema:
           type: string
+      - in: query
+        name: version_id
+        schema:
+          type: string
       tags:
       - v1
       security:
@@ -19924,6 +19928,10 @@ paths:
         name: status
         schema:
           type: string
+      - in: query
+        name: version_id
+        schema:
+          type: string
       tags:
       - v1
       security:
@@ -21094,6 +21102,10 @@ paths:
         schema:
           type: string
         required: true
+      - in: query
+        name: version_id
+        schema:
+          type: string
       tags:
       - v1
       security:
@@ -33651,6 +33663,10 @@ components:
           type: string
           default: ''
         drawing_coordinates:
+          nullable: true
+        version_id:
+          type: string
+          format: uuid
           nullable: true
     ApplyTemplate:
       type: object
@@ -54990,6 +55006,10 @@ components:
           type: string
           format: uuid
           nullable: true
+        version_id:
+          type: string
+          format: uuid
+          nullable: true
     ReviewCreate:
       type: object
       description: Base serializer for write operations.
@@ -61015,12 +61035,6 @@ components:
           type: string
         tags: {}
         publishing_info: {}
-        media_items: {}
-        attachments: {}
-        reviews: {}
-        playlists: {}
-        notes_list: {}
-        activity: {}
         created_at:
           type: string
           format: date-time
@@ -61202,12 +61216,6 @@ components:
           type: string
         tags: {}
         publishing_info: {}
-        media_items: {}
-        attachments: {}
-        reviews: {}
-        playlists: {}
-        notes_list: {}
-        activity: {}
         created_at:
           type: string
           format: date-time
