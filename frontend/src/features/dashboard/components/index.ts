@@ -12,4 +12,5 @@ export * from './ClientDeliveryHealth';
 export * from './DashboardSkeleton';
 export * from './DashboardEmptyState';
 export * from './DashboardErrorState';
+export * from './DashboardPartialAccess';
 export * from './DashboardWidget';
