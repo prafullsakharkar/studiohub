@@ -3916,6 +3916,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorBody'
           description: Authentication credentials were not provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Missing permission.
     post:
       operationId: v1_client_contracts_create
       description: Open reads, ``masterdata.directory.manage`` for writes.
@@ -4000,6 +4006,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorBody'
           description: Authentication credentials were not provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Missing permission.
         '404':
           content:
             application/json:
@@ -4482,6 +4494,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorBody'
           description: Authentication credentials were not provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Missing permission.
       deprecated: true
       x-deprecated-replacement: /api/organizations/{organization_id}/<resource>/
     post:
@@ -4570,6 +4588,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorBody'
           description: Authentication credentials were not provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Missing permission.
         '404':
           content:
             application/json:
@@ -30795,6 +30819,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorBody'
           description: Authentication credentials were not provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Missing permission.
     post:
       operationId: v1_vendor_contracts_create
       description: Open reads, ``masterdata.directory.manage`` for writes.
@@ -30879,6 +30909,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorBody'
           description: Authentication credentials were not provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Missing permission.
         '404':
           content:
             application/json:
@@ -31361,6 +31397,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorBody'
           description: Authentication credentials were not provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Missing permission.
       deprecated: true
       x-deprecated-replacement: /api/organizations/{organization_id}/<resource>/
     post:
@@ -31449,6 +31491,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorBody'
           description: Authentication credentials were not provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Missing permission.
         '404':
           content:
             application/json:

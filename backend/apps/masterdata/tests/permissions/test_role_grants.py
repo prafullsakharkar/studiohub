@@ -41,6 +41,7 @@ def test_org_admin_holds_exactly_this_set_of_masterdata_permissions():
         "masterdata.catalog.manage",
         "masterdata.person.view_sensitive",
         "masterdata.client.view_financial",
+        "masterdata.partner.view",
     }
 
 
@@ -51,6 +52,7 @@ def test_org_admin_holds_exactly_this_set_overall():
         "masterdata.catalog.manage",
         "masterdata.person.view_sensitive",
         "masterdata.client.view_financial",
+        "masterdata.partner.view",
         "identity.user.view",
         "settings.manage",
         "settings.update",
@@ -112,12 +114,24 @@ def test_platform_admin_holds_every_masterdata_permission():
         "masterdata.directory.manage",
         "masterdata.person.view_sensitive",
         "masterdata.client.view_financial",
+        "masterdata.partner.view",
     } <= granted("platform-admin")
 
 
 def test_production_admin_sees_financial_values_but_not_personal_data():
     held = masterdata_part("production-admin")
-    assert held == {"masterdata.client.view_financial"}
+    assert held == {"masterdata.client.view_financial", "masterdata.partner.view"}
+
+
+def test_vfx_supervisor_reads_partners_without_their_money():
+    """CR-53: a supervisor reads clients, vendors and contracts; the values stay with producers."""
+    assert masterdata_part("vfx-supervisor") == {"masterdata.partner.view"}
+
+
+@pytest.mark.parametrize("role", ["lead-artist", "artist", "org-member"])
+def test_only_producers_supervisors_and_admins_read_partners(role):
+    """CR-53: leads, artists and org members do not read clients, vendors or contracts."""
+    assert "masterdata.partner.view" not in granted(role)
 
 
 @pytest.mark.parametrize("role", ["vfx-supervisor", "lead-artist", "artist", "org-member"])

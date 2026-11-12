@@ -21,7 +21,7 @@ Every change to a URL, field, status code or permission that a client can observ
 
 | Route | Code | Route | Code |
 |---|---|---|---|
-| members, summary, dashboard, pipeline, notes | `project.view` | sequences | `sequence.view` |
+| members, summary, dashboard (its delivery figures also need `delivery.view`, C-67), pipeline, notes | `project.view` | sequences | `sequence.view` |
 | shots | `shot.view` | tasks, resources | `task.view` |
 | assets | `asset.view` | versions | `version.view` |
 | reviews | `review.view` | editorial | `track.view` |
@@ -428,4 +428,4 @@ Clients that created records with bare codes or sequence-less shots (scripts, im
 | ID | Endpoint | Before | After |
 |---|---|---|---|
 | C-66 | `GET /api/v1/shots/`, `archived/` (CR-50) | No way to list the shots that belong to no sequence. | Optional query parameter `has_sequence`: `false` lists shots with no sequence, `true` the ones that have one; absent, empty or not a boolean is no filter. It combines with every other filter and keeps the list's own narrowing; nothing is written. |
-
+| C-67 | `GET /api/v1/projects/{id}/dashboard/` and `GET /api/organizations/projects/{project}/dashboard` (CR-53) | Every delivery figure for anyone who may read the project (`project.view`), including the delivery cards with the client's name (`recipient`). | The delivery figures follow `delivery.view`, the code of the nested deliveries route. Without it: `deliveries` = `{total: 0, upcoming: 0, delivered: 0, late: 0, items: []}`, `summary.{total,upcoming,delivered,late}_deliveries` = 0, `schedule.next_deadline` is never a delivery, `schedule.is_delayed` does not count late deliveries, and `activity` has no `DeliveryPackage` rows. The shape is unchanged; `project.client_name` stays (it is the project's own field). Seeded roles: the artist has no `delivery.view` (D-07). |

@@ -161,7 +161,7 @@ Read from `../studiohub-react` (not run):
 
 | Code | platform-admin | org-admin | production-admin | vfx-supervisor | lead-artist | artist | org-member |
 |---|---|---|---|---|---|---|---|
-| `delivery.view` | Y | Y | Y | Y | Y | Y | — |
+| `delivery.view` | Y | Y | Y | Y | Y | — (CR-53) | — |
 | `delivery.create` | Y | Y | Y | Y | — | — | — |
 | `delivery.update` | Y | Y | Y | Y | — | — | — |
 | `delivery.delete` | Y | Y | Y | — | — | — | — |
@@ -171,4 +171,4 @@ Read from `../studiohub-react` (not run):
 | **`delivery.status.override`** | — | — | — | — | — | — | — |
 | **`delivery.sod.override`** | — | — | — | — | — | — | — |
 
-Changes from today: vfx-supervisor loses `delivery.delete` and does not get `send` / `view_secret` (supervisors sign off; producers send); artists keep `delivery.view` but now only for their projects. Separation of duties needs two people holding `delivery.approve` or `delivery.update` per project: a studio with one producer cannot sign off its own deliveries without the override.
+Changes from today: vfx-supervisor loses `delivery.delete` and does not get `send` / `view_secret` (supervisors sign off; producers send); artists keep `delivery.view` but now only for their projects (withdrawn from artists by docs/sync CR-53, 2026-11-12: a delivery names the client and records its answer; `init_platform` removes the grant from existing databases). Separation of duties needs two people holding `delivery.approve` or `delivery.update` per project: a studio with one producer cannot sign off its own deliveries without the override.

@@ -14,8 +14,10 @@ from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import ProjectPermissions
 from apps.production.models import Episode
+from apps.production.permissions.checks import has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.dashboard import ProjectDashboardSelector
+from apps.production.selectors.delivery_figures import delivery_figures
 from apps.production.selectors.project import ProjectSelector
 from apps.production.services.project import ProjectService
 from apps.production.services.project_scoped import ProjectMembershipService
@@ -116,4 +118,9 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         """
         instance = self.get_object()
         self._require_full_access(instance)
-        return Response(ProjectDashboardSelector.build(instance))
+        return Response(
+            ProjectDashboardSelector.build(
+                instance,
+                include_deliveries=has_permission_code(request, delivery_figures().view_permission),
+            )
+        )

@@ -116,7 +116,7 @@ ARTIST = {
     "tasktemplate": "view",
     "track": "view",
     "show": "view",
-    "delivery": "view",
+    # No deliveries: they carry the client's name and answer (docs/sync CR-53).
     "publishing": "view",
     "note": "create",
 }
