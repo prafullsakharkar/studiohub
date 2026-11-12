@@ -26,13 +26,24 @@ The owner took every recommendation of [PLAN.md, RP-2 questions](PLAN.md#questio
 | Q-RP-13 | **A** | A narrowed member still sees only the threads they wrote, now with every reply on them. The trust model does not change; no ADR. |
 | Q-RP-14 | **A** | Links to Sequence, Shot, Asset, Version, Playlist, Review, and Episode on episodic projects. The task is its own field, not a link. |
 
+## RP-3 answers
+
+The owner took every recommendation of [PLAN.md, RP-3 questions](PLAN.md#questions-before-rp-3-starts) on 2026-11-12 ("do it as per suggestion").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-15 | **A** | When a version is approved, its task moves to `Approved` from any working state. `Approved` and `Archived` tasks are left alone. |
+| Q-RP-16 | **A** | A version that leaves `Approved` later does not touch the task. Its `Approved` is corrected by hand, with `production.status.override` and a reason. |
+| Q-RP-17 | **A** | The switch is off for every project, old and new. Whoever may create or edit the project sets it on the project form. |
+| Q-RP-18 | **A** | The approval of any live version of the task counts. |
+
 ## Phases after the answers
 
 | Phase | Status |
 |---|---|
 | RP-1 Data model cleanup | built and merged into `develop` ([rp-1-verification.md](rp-1-verification.md)) |
-| RP-2 Notes (replies, links) | planned in [PLAN.md](PLAN.md#rp-2-notes-replies-links-a-task); answered (Q-RP-11 to Q-RP-14 = A), being built on `feature/rp-2-notes` |
-| RP-3 Approval roll-up (fixed rule) | after RP-1 |
+| RP-2 Notes (replies, links) | built and merged into `develop` ([rp-2-verification.md](rp-2-verification.md)) |
+| RP-3 Approval roll-up (fixed rule) | planned in [PLAN.md](PLAN.md#rp-3-approval-roll-up-fixed-rule-per-project); answered (Q-RP-15 to Q-RP-18 = A), being built on `feature/rp-3-approval-rollup` |
 | RP-4 Publishing depth | independent |
 | RP-5 Media pipeline (ffmpeg worker) | independent |
 | RP-6 Notifications (in-app) | after RP-2 |

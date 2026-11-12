@@ -154,6 +154,67 @@ The same as RP-1, plus a browser role smoke: an artist replies to a supervisor's
 - *Upgrading:* two migrations (new columns and a table; then a data-only back-fill). Run `STAGING_AUDIT_RP2.sql` first to see which notes keep no link. Rerun `init_platform` to grant `note.update` and `note.delete`.
 - *API:* notes have replies, several links and an optional task, and can be read one by one, edited, addressed, closed, reopened and deleted. The list shows threads only. The server, not the client, writes a link's code and name.
 
-## RP-3 to RP-6
+## RP-3 Approval roll-up (fixed rule, per project)
+
+**Status:** approved 2026-11-12, every recommendation taken (Q-RP-15 to Q-RP-18 = A, [DECISIONS.md](DECISIONS.md#rp-3-answers)). Being built on `feature/rp-3-approval-rollup`, off `develop` at `94cb2359`. Q-RP-5 = A ([DECISIONS.md](DECISIONS.md)): a fixed rule, switched on per project, and no `AutomationRule` engine.
+
+### Why (what is there today)
+
+- `StatusService.transition_status` (`apps/production/services/status.py`) is the only code that changes a status. It writes `StatusHistory` and publishes `StatusChanged`, which the core bus dispatches after commit. **Nothing subscribes to it** (ANALYSIS.md §4).
+- A version reaches `Approved` three ways: a status change (`PATCH versions/{id}/`), the bulk status change (`base.py` `_apply_update`), and `POST versions/{id}/promote/` (`services/version.py`). Each one needs `version.publish` and separation of duties (the version's producer may not approve it). Approving a **review** does not approve its versions, and RP-3 does not change that.
+- A task's workflow (`constants/workflow.py`) lets `Approved` be entered from `Pending Review` only, and left only to `Archived`. Entering it needs no extra code.
+- The project has no per-project switches today; studio settings (`apps/settings`) are global. The switch is therefore a new project field.
+- The bus dispatches synchronously when the transaction commits, and there is no `ATOMIC_REQUESTS`. A handler that raised would turn an approval that is already saved into a 500. The roll-up must never raise.
+
+### Work packages
+
+| WP | Change | Files (`backend/apps/production/` unless named) |
+|---|---|---|
+| 3.1 | **The switch.** `Project.approve_task_on_version_approval` (boolean, default `false`), migration `0007`. It is in every project response and writable on create and update (C-RP-14). The clone copies it if it copies the project's other settings (checked while building). `apps/core/tests/test_bootstrap.py` allows `production` seven migrations. | `models/project.py`, `migrations/0007_…`, `api/serializers/project/*.py` |
+| 3.2 | **The roll-up** (C-RP-15). A `StatusChanged` handler, registered in `events/__init__.py`, acts only on a `Version` moving to `Approved`. It calls `ApprovalRollupService.roll_up(version_id, actor_id)` in a transaction of its own. That re-reads the version, which must still be `Approved` and live with a live task, and the project, which must have the switch on. If so, it moves the task to `Approved` through `StatusService.transition_status(enforce=False)`, from any state Q-RP-15 allows. The history row names the approver and the reason `Version <code> approved`. It carries no override kind, because no fence was crossed by a person. Any error is logged (`approval_rollup_failed`, with the ids) and swallowed. | new `services/approval_rollup.py`, new `events/handlers.py`, `events/__init__.py` |
+| 3.3 | **Frontend.** The switch on the project form and the project overview ("Approve the task when one of its versions is approved"). After a version is approved or promoted, the task queries are refetched, so the task's status and history show the roll-up. A capture tool, and the samples it writes. | `frontend/src/api/production/structure.ts`, the project form config, `review/VersionWorkspace.tsx` and the version status actions |
+| 3.4 | **Docs.** CONTRACTS (C-RP-14, C-RP-15), release notes, `docs/apps/production` (the rule), verification report. No data step: the switch starts off. | `docs/review-pipeline/`, `docs/apps/` |
+
+### Questions before RP-3 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-15 | The version is approved while its task is not in `Pending Review` (`Not Started`, `In Progress`, `Retake`). | A: the task moves to `Approved` from any working state; `Approved` and `Archived` tasks are left alone. B: only from `Pending Review`; otherwise nothing happens (logged). | **A**: the version's approval is the review. With B, the rule works only when someone has already moved the task to `Pending Review` by hand. |
+| Q-RP-16 | After the roll-up, the version leaves `Approved` (it is unapproved, sent to `Retake`, or a later version is sent back). | A: the task is not touched. Its `Approved` is corrected by hand, with `production.status.override` and a reason, as today. B: the task goes back to the state it had before the roll-up. | **A**: a rule that only ever approves is easy to reason about. Undoing would need to know whether a person approved the task as well. |
+| Q-RP-17 | The default, and who sets the switch. | A: off for every project, old and new; set on the project form by whoever may edit the project (`project.update`, or `project.create` when creating it). B: on for new projects. | **A**: nothing changes on deploy, and each production opts in. |
+| Q-RP-18 | Which version's approval counts. | A: any live version of the task. B: only the task's newest live version (highest `version_index`). | **A**: approving a version is already a deliberate act by a holder of `version.publish`. A supervisor who picks v001 over v002 means it. |
+
+Who causes the change: the approver needs `version.publish` but not `task.update`, so the roll-up can approve a task the approver could not have approved by hand. This is the rule the owner chose (Q-RP-5). The approver can only reach versions inside their own narrowing, and a version's task is on the same shot or asset, so the roll-up stays within it. The history row says who approved the version, and the trust model is unchanged, so no ADR is needed.
+
+### Not in RP-3
+
+- Approving a review does not approve its versions, and the review's verdicts are not rolled up.
+- No roll-up from tasks to the shot or asset ("every task approved, so the shot is approved").
+- No `Retake` roll-up (version `Retake` → task `Retake`). It can be added later as a second switch.
+- No `AutomationRule` engine (Q-RP-5 = A). The stored rules stay data only.
+- No notification about the roll-up: that is RP-6, which can subscribe to the task's `StatusChanged`.
+
+### Tests (targeted, test database)
+
+- Switch off (the default): approving a version leaves its task alone, by every route (PATCH, bulk status, promote).
+- Switch on: by each route, the task moves to `Approved` from each state Q-RP-15 allows; an `Approved` or `Archived` task, a deleted task, and a version without a task are left alone; other version moves (`Retake`, `Pending Review`, …) do nothing; a `Shot` or `Task` moving to `Approved` does nothing.
+- The history row on the task: the approver's id, the reason `Version <code> approved`, no override kind. One `StatusChanged` for the task. Running the roll-up twice changes nothing more.
+- The approver holds `version.publish` and not `task.update`: the task is still approved (the rule decides, see above). A project with the switch on does not affect another project with it off.
+- A failure inside the roll-up (forced in the test) leaves the version approved, still answers 200, and logs `approval_rollup_failed`.
+- C-RP-14: the field is in every project response, defaults to `false`, is writable with `project.update` and refused without it, and is not a member-only or budget-like secret (it is visible to every reader of the project).
+- Migration-chain test, role matrix unchanged, `init_platform` unchanged.
+
+Mutation checks: ignore the switch; roll up from `Archived`; roll up on `Retake`; let a handler error escape; act on a `Shot` approval; drop `enforce=False` (the `In Progress` test must fail); write the history without the reason. Each must make a test fail.
+
+### Gates
+
+The same as RP-2. The browser role smoke adds one step: a supervisor approves a version on a project with the switch on, and its task shows `Approved` with the roll-up in its history.
+
+### Release notes (draft)
+
+- *Upgrading:* one migration, which adds a column with a default, and no data step. The rule starts off for every project.
+- *New:* a project can approve a task automatically when one of its versions is approved. The task's history records who approved the version.
+
+## RP-4 to RP-6
 
 Not planned in detail yet. Each phase is written here before it starts, from [ANALYSIS.md §8](ANALYSIS.md#8-draft-phases-to-be-fixed-after-9-is-answered) and [DECISIONS.md](DECISIONS.md).
