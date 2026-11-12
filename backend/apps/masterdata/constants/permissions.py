@@ -3,8 +3,9 @@ Masterdata permissions — canonical dot-notation codes (ADR-0033 D4,
 docs/masterdata/DECISIONS.md D9).
 
 Checked via global HasPermission (no org context). Reads need authentication
-only; every write needs the matching ``manage`` code, and hard delete also
-needs ``HARD_DELETE``.
+only, except clients, vendors and their contracts (``PARTNER_VIEW``, CR-53) and
+contacts (``PERSON_VIEW_SENSITIVE``); every write needs the matching ``manage``
+code, and hard delete also needs ``HARD_DELETE``.
 """
 
 
@@ -18,3 +19,6 @@ class MasterdataPermissions:
     # separate from PERSON_VIEW_SENSITIVE: finance and people data are different
     # audiences.
     CLIENT_VIEW_FINANCIAL = "masterdata.client.view_financial"
+    # Reading clients, vendors and their contracts at all (docs/sync CR-53): the studio's
+    # commercial relationships, for producers, supervisors and admins, not every signed-in user.
+    PARTNER_VIEW = "masterdata.partner.view"

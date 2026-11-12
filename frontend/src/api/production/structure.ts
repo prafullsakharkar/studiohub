@@ -30,7 +30,8 @@ export interface Project {
   color_space: string;
   start_date: string | null;
   delivery_date: string | null;
-  budget_usd: string;
+  /** Only for holders of project.view_budget; left out otherwise (CR-55). */
+  budget_usd?: string;
   thumbnail_url: string;
   client_id: string;
   client_name: string;

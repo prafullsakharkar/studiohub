@@ -1,4 +1,5 @@
 import { safeWebUrl } from '@/shared/utils/safeUrl';
+import { mediaCard, mediaName } from './mediaCard';
 import { mediaApi } from '@/api/production/review';
 import type { Media } from '@/api/production/review';
 import { projectsApi } from '@/api/production/structure';
@@ -8,7 +9,7 @@ import { ReviewTargetField } from './reviews';
 
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
 
-export const mediaName = (row: Pick<Media, 'id' | 'title' | 'file_name' | 'code' | 'media_type'>) => row.title || row.file_name || row.code || `${row.media_type} ${row.id.slice(0, 8)}`;
+export { mediaName };
 
 export function useMediaListConfig(scope?: { projectId: string }): DirectoryListConfig<Media> {
   return {
@@ -27,6 +28,8 @@ export function useMediaListConfig(scope?: { projectId: string }): DirectoryList
     defaultOrdering: '-created_at',
     searchPlaceholder: 'Search title, code, file name, format, category',
     basePath: '/media',
+    renderCard: mediaCard,
+    cardGrid: 'sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4',
     rowLink: () => null, // no detail page: Edit is in the last column
     scope: scope ? { project_id: scope.projectId } : undefined,
     createQuery: scope ? `project=${scope.projectId}` : undefined,

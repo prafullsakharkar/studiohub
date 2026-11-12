@@ -8,8 +8,9 @@ the other directory viewsets:
   ``masterdata.person.view_sensitive``, checked before any object lookup, so a
   missing id and a forbidden id both answer 403. Writes also need
   ``masterdata.directory.manage``.
-* Clients, vendors and contracts are **mixed**: ordinary fields for everyone,
-  personal data and financial values omitted without their permission.
+* Clients, vendors and contracts need ``masterdata.partner.view`` to read at all
+  (docs/sync CR-53), checked before any object lookup like contacts; within them,
+  personal data and financial values are omitted without their own permission.
 * ``DELETE`` is a soft delete (204); ``?hard=true`` needs
   ``masterdata.hard_delete`` and an already soft-deleted row; ``POST …/restore``
   undoes a soft delete.
@@ -56,6 +57,7 @@ class ClientViewSet(ServiceRecordViewSet):
     serializer_class = ClientSerializer
     selector_class = ClientSelector
     service_class = ClientService
+    read_permissions = (P.PARTNER_VIEW,)
     filterset_fields = ["status", "studio_type"]
     search_fields = ["name", "code", "contact_name"]
     ordering_fields = ["name", "code", "created_at"]
@@ -69,6 +71,7 @@ class VendorViewSet(ServiceRecordViewSet):
     serializer_class = VendorSerializer
     selector_class = VendorSelector
     service_class = VendorService
+    read_permissions = (P.PARTNER_VIEW,)
     filterset_fields = ["status", "specialization"]
     search_fields = ["name", "code", "contact_name"]
     ordering_fields = ["name", "code", "created_at"]
@@ -101,6 +104,7 @@ class VendorContactViewSet(_ContactViewSet):
 
 
 class _ContractViewSet(ServiceRecordViewSet):
+    read_permissions = (P.PARTNER_VIEW,)
     refuse_status_on_update = True
     extra_write_actions = ("activate", "terminate", "adjust_end_date")
     search_fields = ["contract_number", "title"]

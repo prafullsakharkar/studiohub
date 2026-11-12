@@ -6,7 +6,7 @@ from django.db.models import QuerySet
 
 from apps.production.models import Project
 from apps.production.selectors.base import ProductionBaseSelector
-from apps.production.selectors.delivery_figures import delivery_figures
+from apps.production.selectors.delivery_figures import NO_DELIVERIES, delivery_figures
 
 
 class ProjectSelector(ProductionBaseSelector):
@@ -80,8 +80,14 @@ class ProjectSelector(ProductionBaseSelector):
         return None
 
     @classmethod
-    def summary_counts(cls, project) -> dict:
-        """Aggregate entity counts for a project (summary/statistics contract)."""
+    def summary_counts(cls, project, *, include_deliveries: bool) -> dict[str, int]:
+        """
+        Aggregate entity counts for a project (summary/statistics contract).
+
+        ``include_deliveries`` is whether the caller may read the project's deliveries
+        (``delivery_figures().view_permission``); without it ``deliveries`` is 0, as on the
+        dashboard (docs/sync CR-54).
+        """
         from apps.production.models import (
             Asset,
             EditorialCut,
@@ -101,7 +107,7 @@ class ProjectSelector(ProductionBaseSelector):
         assets = Asset.objects.filter(project=project).count()
         versions = Version.objects.filter(project=project).count()
         reviews = Review.objects.filter(project=project).count()
-        deliveries = delivery_figures().count(project)
+        deliveries = (delivery_figures() if include_deliveries else NO_DELIVERIES).count(project)
         notes = ProjectNote.objects.filter(project=project).count()
         return {
             "sequences": sequences,

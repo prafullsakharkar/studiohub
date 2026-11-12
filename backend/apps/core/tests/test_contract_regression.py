@@ -140,9 +140,13 @@ class TestContractResponseShapes:
         """Masterdata directory: platform-global clients (viewset dispatch)."""
         from rest_framework.test import APIRequestFactory, force_authenticate
 
+        from apps.identity.tests.rbac_helpers import grant_permissions
         from apps.masterdata.api.viewsets.partners import ClientViewSet
+        from apps.masterdata.constants.permissions import MasterdataPermissions
         from apps.masterdata.models import Client
 
+        # Reading clients needs their own code since docs/sync CR-53.
+        grant_permissions(staff_user, MasterdataPermissions.PARTNER_VIEW)
         client = Client.objects.create(
             code="CTCLI", name="Contract Client", status="Active"
         )

@@ -14,13 +14,15 @@ import { formatWhen } from '@/modules/deliveries/format';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { ActionBar } from './ActionBar';
 import { useFilesListConfig } from './files';
+import { JobHistory } from './JobHistory';
 import { JobStatusBadge } from './jobs';
 
-type TabId = 'details' | 'validation' | 'files' | 'changes';
+type TabId = 'details' | 'validation' | 'files' | 'history' | 'changes';
 const TABS: ReadonlyArray<{ id: TabId; label: string }> = [
   { id: 'details', label: 'Details' },
   { id: 'validation', label: 'Validation' },
   { id: 'files', label: 'Files' },
+  { id: 'history', label: 'History' },
   { id: 'changes', label: 'Changes' },
 ];
 
@@ -161,6 +163,7 @@ export const PublishWorkspace: React.FC = () => {
             {tab === 'details' && <DetailsPanel job={job} />}
             {tab === 'validation' && <ValidationPanel job={job} />}
             {tab === 'files' && <JobFilesPanel versionId={job.version_id} />}
+            {tab === 'history' && <JobHistory job={job} />}
             {tab === 'changes' && <EntityHistory targetType="PublishItem" targetId={job.id} />}
           </>
         )}

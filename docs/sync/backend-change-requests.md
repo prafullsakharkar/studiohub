@@ -964,3 +964,204 @@ Asked by the owner (2026-11-06): "while creating any production entity the code 
 
 **Approved** by the owner ("approve CR-50", 2026-11-06) and applied as proposed: `has_sequence` (`true` / `false`) on the shots list (`ShotFilterSet.has_sequence`), the committed OpenAPI schema and its types carry the parameter (three list routes), and the Shots list has a "Sequences" filter (Without a sequence / In a sequence), also on a project's Shots tab. Alternative (b), `sequence_id=none`, was not taken. A value that is not `true`/`false` is no filter. Tests: `test_shot_sequence.py::TestHasSequenceFilter` (false, true, not a boolean, combined with search and status, archived and other projects stay out, and filling the sequence through `bulk-update` empties the list); frontend `shotsWithoutSequence.test.tsx`; browser: `e2e/live/bulk-add.smoke.spec.ts` "shots without a sequence" (filter, tick, Edit fields > Sequence on the seeded shots).
 
+
+
+### CR-51: say which export job a republish was made from (**feature**, **PROPOSED**)
+
+**Problem.** `PublishItem.republished_from` (a self reference, `PROTECT`, nullable) is written by `POST /publishing/{id}/republish/` (API-PUB-06) but no serializer returns it and no filter takes it. A republished job gets a fresh project-numbered code (`allocate_code`), so nothing in a response ties it to the job it came from. The old frontend's "Publish revision history" (`PublishHistoryModal`) showed that chain; this frontend can only show "every export job for the same shot or asset" (the job's **History** tab), which is the same list but cannot tell a republish of job A from an unrelated new export of the same shot.
+
+**Minimal diff.** (1) Return `republished_from` (the id, or `null`) on the publishing job row and detail serializers. (2) An optional list filter `republished_from=<id>`. Additive, read-only: no migration, no change to any write, no change to permissions or narrowing (the id of a job the caller cannot see is not returned: it is null for them).
+
+**Frontend after approval.** The job's History tab marks "republished from PUB-…-0003" and links to it, and the job page lists "Republished as" the jobs that point at it (the filter), so the chain reads in both directions.
+
+**Why no frontend workaround.** The link is not in any response; matching codes or names would guess. The "same shot or asset" list shipped in the History tab stays correct either way.
+
+**Compatibility.** None: one new field and one optional parameter. **Risk.** Very low. **Alternatives.** (a) Do nothing: the History tab as shipped. (b) Return the whole chain as a `revisions` list on the detail: more server work for the same information.
+
+
+### CR-52: let an attachment belong to a version, review or shot (**feature**, **PROPOSED**)
+
+**Problem.** `Attachment` (`core_attachment`, `/api/v1/core/attachments/` and the compat `/api/v1/attachments/`) has no link to anything: no entity type or id, no project. Its docstring says "attachments can be linked to any entity", but the model has `file`, `name`, `description`, `file_type`, `mime_type`, `file_size`, `storage_key`, `is_public`, `expires_at` and the audit columns only, and the viewset shows a caller their own uploads (`AttachmentSelector`) and filters on `file_type` and `is_public` only. So a file cannot be attached to a version, a review, a shot or a task: the old frontend's Attachments tab on a version has no server to talk to, and this frontend has no attachments screen at all (CR-less: the inventory lists `core/attachments` as "untouched").
+
+**Minimal diff.** (1) Two optional fields on `Attachment`: `entity_type` (the model name: `Version`, `Review`, `Shot`, `Asset`, `Task`) and `entity_id` (uuid), both blank by default, with an index on the pair; one migration. (2) Accept and return them on create and update, and refuse an entity the caller may not see (the same "not found" as everywhere else). (3) Two optional list filters, `entity_type` and `entity_id`. (4) Visibility: an attachment of a record is listed to everyone who may see the record (through the project narrowing), not only to its uploader; one without an entity stays "mine". Delete stays the uploader's (and `file.delete` holders').
+
+**Frontend after approval.** An "Attachments" tab on a version, a review, a shot and an asset: the files of that record (name, type, size, who, when), upload (multipart, with the 413 and 429 answers shown), the signed download link, and delete. The upload primitive (`ApiClient.upload`) already exists.
+
+**Why no frontend workaround.** Without a link in the data, any list of "this version's files" would be a guess from file names, and visibility would still be per uploader.
+
+**Compatibility.** Additive for the API (two nullable-by-default fields, two optional filters); existing attachments stay "mine". **Risk.** Medium: a migration, and the visibility rule in (4) widens who can see an attachment once it has an entity, which is a security decision for the owner. **Alternatives.** (a) Do nothing: no attachments on records. (b) A separate `RecordAttachment` table that links an existing attachment to a record, so `Attachment` is untouched (more tables, same result).
+
+
+### CR-53: every signed-in user reads every client, vendor and contract, and an artist's dashboard shows the client's deliveries (**security**, **APPLIED**, branch `sync/cr-53-partner-reads`; verification `backend-cr-53-verification.md`)
+
+Asked by the owner (2026-11-12): "artist has access to client vendors dashboard". The role matrix was settled with the owner before this request: artists see no client, vendor or delivery records; leads keep delivery view but not clients and vendors; supervisors see clients, vendors and contracts without their money; producers (production-admin) and org-admins see everything, money included. Contract values already follow that last rule (below), so this CR does not touch them.
+
+**Problem.**
+1. **Partner reads are open.** `ServiceRecordViewSet.read_permissions = ()` (`apps/masterdata/api/viewsets/records.py:74`), and `ClientViewSet`, `VendorViewSet`, `ClientContractViewSet` and `VendorContractViewSet` (`api/viewsets/partners.py`) keep that default. Any signed-in user lists and opens every client, vendor and contract of the studio, whatever their role or projects: client tier, headquarters and portal access; vendor rating, security tier and bandwidth; contract number, title, type, dates, NDA flag and **`document_url`** (the link to the contract document). What is gated today: contacts (`masterdata.person.view_sensitive`, 403), the contact fields on clients and vendors, `total_billed_usd` and the contract values `value_usd` / `total_value_usd` (`masterdata.client.view_financial`, omitted; `api/serializers/directory.py:368,396`).
+2. **The frontend mirrors it.** `page.clients`, `page.vendors`, `client.view` and `vendor.view` are `open` in `frontend/src/core/permissions/permissionMap.ts` (`DIRECTORY_READ`), as its rule requires (no stricter gate than the backend), so Clients and Vendors are in every user's sidebar.
+3. **Artists hold `delivery.view`** (`PRODUCTION_ARTIST_PERMISSIONS`, `apps/core/management/commands/init_platform.py:344`), so the deliveries list gives them every delivery of their projects with `client_name`.
+4. **The project dashboard ignores `delivery.view`.** `ProjectDashboardSelector.build(project)` (`apps/production/selectors/dashboard.py`) adds the delivery figures and the six newest delivery cards, each with `recipient` = the client's name (`apps/deliveries/providers.py`, `_card`). Both routes that return it (`ProjectViewSet.dashboard`, `ProjectDashboardView`, permission `project.view`) give it to anyone who may read the project. The nested `/projects/{id}/deliveries` route checks `delivery.view` (`apps/production/selectors/delivery_figures.py`, `view_permission`); the dashboard does not. So removing `delivery.view` from artists alone would still show them the client's deliveries.
+5. A role grant removed in the Access screen comes back: `init_platform` re-creates every grant of its matrix that a system role lacks (`_assign_role_permissions`, `init_platform.py:569`), and removes only what `WITHDRAWN_GRANTS` lists.
+
+**Evidence** (real responses, pytest test database, rolled back; `init_platform` roles; an `artist` and a `lead-artist`, each an active member of project `CRT`; client `ACME` with `total_billed_usd` 1,250,000 and a contract worth 480,000; vendors `NLR`, `FXH` with a 90,000 contract; one delivery of `CRT` to `ACME`). Captured with `tools/test_capture_partner_reads_cr53.py` (`samples/masterdata/_partner_reads_cr53.json`):
+
+| Request | Artist | Lead | What comes back |
+|---|---|---|---|
+| `GET clients/`, `GET clients/{ACME}/` | 200 | 200 | name, code, tier, HQ, portal access; no contact fields, no `total_billed_usd` |
+| `GET vendors/` | 200 (2 rows) | 200 | name, code, rating, security tier, bandwidth, NDA |
+| `GET client-contracts/`, `GET client-contracts/{id}/` | 200 | 200 | number, title, type, dates, `document_url`; no `value_usd` |
+| `GET vendor-contracts/` | 200 | 200 | the same; no `total_value_usd` |
+| `GET client-contacts/` | 403 | 403 | (already gated) |
+| `GET deliveries/?project=CRT` | 200 | 200 | `client_name: "Acme Pictures"` |
+| `GET projects/{CRT}/dashboard/` | 200 | 200 | `deliveries.items[0].recipient: "Acme Pictures"`, totals |
+
+(`clients_list_*`, `client_detail_*`, `vendors_list_*`, `client_contracts_list_*`, `client_contract_detail_*`, `vendor_contracts_list_*`, `client_contacts_list_*`, `deliveries_list_*`, `dashboard_*`.) A member of no project and an external (client or vendor side) member pass the same empty permission check; read from the code, not captured.
+
+**Minimal proposed diff** (backend only, no migration, no new route, no change to any response shape):
+1. **A new code `masterdata.partner.view`** (`masterdata_partner`, `view`): in `PERMISSION_SPECS` and as `MasterdataPermissions.PARTNER_VIEW`.
+2. **Gate the four partner viewsets' reads:** `read_permissions = (P.PARTNER_VIEW,)` on `ClientViewSet`, `VendorViewSet`, `ClientContractViewSet`, `VendorContractViewSet`. Like contacts, the check runs before any object lookup, so a missing id and a forbidden id both answer 403. Writes keep `masterdata.directory.manage`; contacts keep `view_sensitive`; the field gates for money and contact data are unchanged.
+3. **Who holds it:** org-admin (`DIRECTORY_CRUD_PERMISSIONS`), production-admin (`PRODUCTION_ADMIN_PERMISSIONS`) and vfx-supervisor (added to its list); platform-admin has the full catalog. Not lead-artist, artist or org-member. These three are also the roles that pick a client or vendor (project create/update, delivery create), so every form that reads the partner lists keeps working for whoever can submit it.
+4. **Artists lose `delivery.view`:** drop `delivery="view"` from `PRODUCTION_ARTIST_PERMISSIONS`, and add `"artist": ("delivery.view",)` to `WITHDRAWN_GRANTS` so the next `init_platform` run removes it from existing databases too (real delete, so the RBAC signals clear the cached permissions, as for vfx-supervisor in Q34).
+5. **The dashboard follows `delivery.view`:** `ProjectDashboardSelector.build(project, *, include_deliveries: bool)`. Both dashboard routes pass whether the caller holds `delivery_figures().view_permission` for that project (the same check as the nested deliveries route). Without it the delivery figures are empty and keep their shape: `deliveries` = `{total: 0, upcoming: 0, delivered: 0, late: 0, items: []}`, the summary's `total_/upcoming_/delivered_/late_deliveries` = 0, and no delivery as the next due date. The frontend schema already defaults all of these.
+6. **Unchanged on purpose:** `client_name` on projects and deliveries, and `vendor_names` on projects, are read from those records, not from the client endpoint, so an artist's project still says whose show it is. The external-member field hiding (`EXTERNAL_HIDDEN_FIELDS`) is untouched.
+7. **Tests:**
+   - artist, lead and a user with no role get 403 on list and detail of all four routes; supervisor, production-admin and org-admin get 200;
+   - a supervisor still gets no `value_usd` / `total_value_usd` / `total_billed_usd`, and contacts are unchanged;
+   - a production-admin still creates a project with a `client_id` and a delivery with a client;
+   - an artist's project and delivery-free dashboard still name the client of the project;
+   - the artist's dashboard has no delivery items and zero delivery counts, while the lead's has them;
+   - rerunning `init_platform` removes the artist's `delivery.view`, and a second run changes nothing;
+   - `apps/production/tests/test_permission_matrix.py` is updated to the new matrix.
+
+   Mutation-check by emptying `read_permissions`, by always passing `include_deliveries=True`, and by dropping the `WITHDRAWN_GRANTS` entry: each must fail a test.
+8. **Docs:**
+   - `docs/masterdata/CONTRACTS.md` §4 (who reads partners) and a `DECISIONS.md` entry;
+   - `docs/production/DECISIONS.md` D-07 (the artist row);
+   - `docs/deliveries/PLAN.md` §6 (roles);
+   - the dashboard contract (deliveries follow `delivery.view`).
+
+**Then, frontend** (after this is applied):
+- `permissionMap.ts`: `page.clients`, `page.vendors`, `client.view` and `vendor.view` become `codes(..., 'masterdata.partner.view')`, so the sidebar entries and the routes follow the backend.
+- The deliveries list's **Client** filter (`modules/deliveries/deliveries.tsx`, it reads the client list) shows only to holders of the new code; a lead keeps the list without that filter.
+- The dashboard's delivery widgets (`ClientDeliveryHealth` and the delivery counts) show only with `delivery.view`.
+- Tests from re-captured samples, mutation-checked.
+
+Hiding the people, departments, teams, offices and positions *pages* from artists (their reads stay open, the pickers need them) is a frontend-only question and is not part of this CR.
+
+**Why no frontend workaround.** Hiding the pages leaves the API answering: anyone signed in, including a client's or vendor's own staff on a shared project, can list every client, vendor and contract (with its document link) by calling the route. The dashboard's delivery cards are in the response itself. Only the server can refuse them.
+
+**Compatibility.** Breaking for anyone without the new code who calls the four partner routes: lead-artist, artist, org-member and custom roles now get 403 where they got 200. A custom role that needs them must be given `masterdata.partner.view`. The current frontend build then shows an error state on the Clients and Vendors pages for those users until the frontend step above ships; no form they can submit reads the partner lists. Artists lose the deliveries list and the dashboard's delivery cards.
+
+**Risk.** Low to medium: four one-line permission changes, a role-matrix change with a withdrawal, and one keyword argument on the dashboard selector. The risk is in who loses access, which is the point. Run the role smoke (`tools/run_role_smoke.sh`) for artist and lead after applying.
+
+**Alternatives.**
+- (a) Frontend only: hide the pages. Cosmetic; the routes keep answering.
+- (b) Narrow partners by project: a member sees only the clients and vendors of their own projects. Closer to need, but `Project.client_id` is a text column (and `vendor_ids` a list), so it needs a join through text ids or a migration first.
+- (c) Keep `delivery.view` for artists and only fix the dashboard: they keep the deliveries list with client names.
+
+**Approved** by the owner ("approve CR-53", 2026-11-12) and applied as proposed, with no alternative taken. Settled while building it:
+- `include_deliveries` is a **required** keyword of `ProjectDashboardSelector.build`, so a new caller cannot get the deliveries by default. Without it the selector reads the deliveries through the same empty provider used when the deliveries app is absent (`delivery_figures.NO_DELIVERIES`), so `schedule.is_delayed` no longer counts late deliveries for that caller either.
+- The OpenAPI schema now documents `403` on GET of the four partner routes (eight operations). This is the only schema change: the committed schema and its TypeScript types were regenerated, and the masterdata schema snapshot was updated.
+- Tests that pinned open reads now give their reader `masterdata.partner.view`, and each such file gained a test that a plain user gets 403 on list, detail and a missing id.
+
+Contracts: masterdata SEC-MD-01 and D-CR53, production C-67 and D-07, deliveries PLAN §6. Pre-deploy checklist: run `init_platform` after deploying.
+
+**Frontend step, applied** on the same branch, as proposed:
+- `page.clients`, `page.vendors`, `client.view` and `vendor.view` map to `masterdata.partner.view` (`permissionMap.ts`, rule `PARTNER_READ`), so the sidebar entries, the command palette, the routes and the record pages follow the backend.
+- The deliveries list offers its **Client** filter only with that code and does not load the client list without it.
+- The dashboard's *Client Deliveries* panel, its KPI card and the watchlist's *Upcoming Client Turnovers* show only with `delivery.view`.
+- `backendCodes.ts` and the catalog sample (`samples/_misc/permissions.json`) carry the new code and the new role grants.
+- The role smoke spec expects Clients and Vendors for producer and supervisor, refused for lead, artist and no-role, and Deliveries refused for the artist.
+
+
+### CR-54: the project's delivery count still reaches people who may not read deliveries (**security**, **APPLIED**, branch `sync/cr-53-partner-reads`; verification `backend-cr-54-55-verification.md`)
+
+Found while building CR-53 (its verification, "Not changed, noted while building it"); the owner asked for it as a CR and approved it ("approve CR-54 and CR-55", 2026-11-12).
+
+**Problem.** CR-53 made the dashboard's delivery figures follow `delivery.view`. Two other routes still count the project's deliveries for anyone who may read the project (`project.view`):
+- `GET /api/v1/projects/{id}/statistics/` (`ProjectViewSet.statistics`);
+- `GET /api/organizations/projects/{project}/summary/` (`ProjectSummaryView`, its `counts`).
+
+Both use `ProjectSelector.summary_counts` (`apps/production/selectors/project.py`), whose `deliveries` is `delivery_figures().count(project)` with no permission check. The project overview panel (`frontend/src/modules/production/structure/panels.tsx`) lists every count it receives, so an artist sees "deliveries 2" there while the dashboard tells them 0. It is a number only: no names, no client.
+
+**Evidence** (real responses, pytest test database, rolled back; `init_platform` roles, each an active member of project `BDG`, which has two deliveries). Captured with `tools/test_capture_budget_counts_cr54_55.py` (`samples/production/_budget_counts_cr54_55.json`):
+
+| Request | artist | lead-artist | vfx-supervisor | production-admin |
+|---|---|---|---|---|
+| `GET projects/{BDG}/statistics/` → `deliveries` | 2 | 2 | 2 | 2 |
+| `GET …/projects/{BDG}/summary/` → `counts.deliveries` | 2 | 2 | 2 | 2 |
+| `GET projects/{BDG}/dashboard/` → `deliveries.total` (CR-53) | **0** | 2 | 2 | 2 |
+
+**Minimal proposed diff** (backend only, no migration, no new route, no change of shape):
+1. `ProjectSelector.summary_counts(project, *, include_deliveries: bool)`, required like the dashboard's. Without it, `deliveries` is 0 (read from `delivery_figures.NO_DELIVERIES`, as the dashboard does).
+2. Both routes pass `has_permission_code(request, delivery_figures().view_permission)`.
+3. Tests: with real seeded roles, the artist's `statistics` and `summary` count no deliveries and the lead's count them; the other counts are the same for both. Mutation-check: always passing `include_deliveries=True` must fail a test on each route.
+4. Docs: production contract C-68 (beside C-67).
+
+**Frontend after approval:** nothing is required. The overview panel shows `deliveries 0` for an artist. Optional: leave the `deliveries` entry out of the panel without `delivery.view`, so it does not show a 0 that is not a count.
+
+**Why no frontend workaround.** The number is in the response. Hiding it on one panel leaves it on the route.
+
+**Compatibility.** None for callers with `delivery.view`. For others, `deliveries` becomes 0. **Risk.** Very low: one keyword argument, two call sites.
+
+**Alternatives.**
+- (a) Do nothing: a count is not a name, and the risk is small.
+- (b) Omit the `deliveries` key instead of answering 0. Clearer, but it changes the shape for some callers, and `ProjectCounts` in the frontend types expects the key.
+
+
+### CR-55: every internal member reads the project's budget (**security**, **APPLIED**, backend and frontend, branch `sync/cr-53-partner-reads`; verification `backend-cr-54-55-verification.md`)
+
+Found while building CR-53; the owner asked for it as a CR and approved it as written, supervisors without the budget ("approve CR-54 and CR-55", 2026-11-12). Built beyond the text: the answers to a project create and update leave the field out too (the write serializers render it), found while building it.
+
+**Problem.** `Project.budget_usd` (`DecimalField(12, 2)`) is a field of `ProjectSerializer` (`apps/production/api/serializers/project/base.py`), so every route that returns a project returns it to every internal member who may read the project:
+- the project list and detail;
+- the project-scoped `summary`, which embeds the detail;
+- the dashboard (`_project_metadata`, `apps/production/selectors/dashboard.py`).
+
+Only external (client or vendor side) members have it removed (`EXTERNAL_HIDDEN_FIELDS`). This contradicts the role matrix's own rule: "Production admins track contract and budget figures; supervisors, leads and artists share PRODUCTION_FULL_PERMISSIONS or less and do not see them" (`init_platform.py`, above `PRODUCTION_ADMIN_PERMISSIONS`). CR-53 applied that rule to contract values (`masterdata.client.view_financial`), but the project budget has no gate at all.
+
+Writes follow the same pattern: anyone with `project.create` / `project.update` writes `budget_usd`. That includes the vfx-supervisor, who also reads it. The frontend shows a "Budget (USD)" input in the project form to every editor (`modules/production/structure/configs.tsx`; `field.project.budget.view` is `open`, "no backend gate").
+
+**Evidence** (same capture, project `BDG` with `budget_usd` 4,800,000):
+
+| Request | artist | lead-artist | vfx-supervisor | production-admin |
+|---|---|---|---|---|
+| `GET projects/` (row `BDG`) → `budget_usd` | 4800000.00 | 4800000.00 | 4800000.00 | 4800000.00 |
+| `GET projects/{BDG}/` → `budget_usd` | 4800000.00 | 4800000.00 | 4800000.00 | 4800000.00 |
+| `GET …/projects/{BDG}/summary/` → `project.budget_usd` | 4800000.00 | 4800000.00 | 4800000.00 | 4800000.00 |
+| `GET projects/{BDG}/dashboard/` → `project.budget_usd` | 4800000.0 | 4800000.0 | 4800000.0 | 4800000.0 |
+
+The budget cannot be filtered, searched or ordered on (`ProjectViewSet` and `ProjectFilterSet`), so the field itself is the whole exposure.
+
+**Minimal proposed diff** (backend only, no migration, no new route):
+1. **A new code `project.view_budget`** (`projects`, `view_budget`), named like `schedule.view_rates`. It is in `PERMISSION_SPECS` and held by production-admin and org-admin; platform-admin has the full catalog. Not vfx-supervisor, lead-artist, artist or org-member, following the matrix comment above and the CR-53 decision that supervisors see contracts without their money.
+2. **Read:** `ProjectSerializer.to_representation` drops `budget_usd` for a caller without the code, next to the external-member rule (omitted, never blanked, as for the masterdata financial fields). `_project_metadata` leaves `budget_usd` out on the same condition. `ProjectDashboardSelector.build` takes the answer as a keyword, as CR-53 did for deliveries.
+3. **Write:** a create or update that names `budget_usd` without the code is refused with **403** and changes nothing (the DOM-MD-BIZ-07 pattern for `total_billed_usd`), so a supervisor can still edit a project but not its budget. A write that leaves the field out is unchanged.
+4. **Tests,** with real seeded roles:
+   - every read route omits the field for artist, lead and supervisor and returns it for the producer;
+   - the supervisor's PATCH with `budget_usd` is 403 and leaves the value, and without it is 200;
+   - a producer still creates a project with a budget;
+   - external members still never see it.
+
+   Mutation-check: drop each gate and expect a failure.
+5. **Docs:** production contract C-69 and a D-07 note; the OpenAPI schema and its types, if the 403 is documented on the project write operations.
+
+**Frontend after approval:**
+- `field.project.budget.view` and `field.project.budget.edit` map to `project.view_budget` (they are `open` and `project.update` today).
+- The project form shows the "Budget (USD)" input only with it (`FieldDef.permission`). A hidden field is never sent; today a create leaves blank inputs out and an edit sends only the changed ones (`DirectoryFormPage`).
+- The hand-written `Project` type (`src/api/production/structure.ts`) declares `budget_usd: string` as always present; it becomes optional. The generated OpenAPI types already have it optional.
+- Tests from re-captured samples; the role smoke for supervisor and producer.
+
+**Why no frontend workaround.** The value is in every project response. Hiding the input leaves it on the list, the detail, the summary and the dashboard, and another client could still write it.
+
+**Compatibility.**
+- **Breaking for writes:** a vfx-supervisor (or a custom role with `project.update` or `project.create` and without the new code) that sends `budget_usd` gets 403 where it got 200. The current frontend sends it only when the input is filled in on create or changed on edit, so a supervisor who leaves the budget alone is unaffected. Until the frontend step ships, a supervisor who types a budget gets the 403 as an error message on the form.
+- **Reads:** the field disappears for those callers. In the current frontend only the project form reads it; an absent value shows as an empty input. The hand-written type is corrected in the frontend step.
+- **Deploy:** run `init_platform` after deploying, or only superusers read budgets.
+
+**Risk.** Low to medium: one serializer rule, one write check, one selector keyword, one role-matrix entry; the effect is who loses access.
+
+**Alternatives.**
+- (a) Reuse `masterdata.client.view_financial` instead of a new code: the same holders today, one code fewer. But it is masterdata's code and is named for clients, so the production app would read another app's permission for its own field.
+- (b) Let the vfx-supervisor read the budget but not write it (grant only the read code). That is a different answer to the matrix comment; say if supervisors should see budgets.
+- (c) Do nothing.

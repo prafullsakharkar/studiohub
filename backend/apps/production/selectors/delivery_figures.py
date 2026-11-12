@@ -42,6 +42,10 @@ class _NoDeliveries:
         return []
 
 
+#: Answers empty: no deliveries app, or a caller who may not read deliveries (the dashboard, CR-53).
+NO_DELIVERIES = _NoDeliveries()
+
+
 def delivery_figures() -> Any:
     """The registered delivery provider, or one that answers empty."""
-    return providers.get(PROJECT_FIGURES) or _NoDeliveries()
+    return providers.get(PROJECT_FIGURES) or NO_DELIVERIES

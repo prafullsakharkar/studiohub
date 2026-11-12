@@ -127,14 +127,14 @@ describe('members, structure and notes, end to end', () => {
 
     await pickEntity(/^Episode/, new RegExp(episode.code), { timeout: 15000 }); // Episode is an EntityPicker: open it, choose the option
     fireEvent.click(within(dialog).getByRole('button', { name: 'Create sequence' }));
-    await waitFor(async () => expect((await sequencesApi.list({ project: project.id })).results.map((s) => s.code)).toEqual(['SQ010']), { timeout: 15000 });
+    await waitFor(async () => expect((await sequencesApi.list({ project: project.id })).results.map((s) => s.code)).toEqual([`${project.code}_SQ010`]), { timeout: 15000 });
 
-    fireEvent.click(await screen.findByRole('button', { name: /^Archive SQ010/ }, { timeout: 15000 }));
+    fireEvent.click(await screen.findByRole('button', { name: new RegExp(`^Archive ${project.code}_SQ010`) }, { timeout: 15000 }));
     dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Archive' }));
     await waitFor(async () => expect((await sequencesApi.list({ project: project.id })).results).toHaveLength(0), { timeout: 15000 });
     fireEvent.change(screen.getByLabelText('Show'), { target: { value: 'archived' } });
-    fireEvent.click(await screen.findByRole('button', { name: /^Restore SQ010/ }, { timeout: 15000 }));
+    fireEvent.click(await screen.findByRole('button', { name: new RegExp(`^Restore ${project.code}_SQ010`) }, { timeout: 15000 }));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Restore' }));
     await waitFor(async () => expect((await sequencesApi.list({ project: project.id })).results).toHaveLength(1), { timeout: 15000 });
   }, 90000);

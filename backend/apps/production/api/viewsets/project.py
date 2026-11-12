@@ -1,6 +1,6 @@
 from django.db import transaction
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
@@ -14,8 +14,10 @@ from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import ProjectPermissions
 from apps.production.models import Episode
+from apps.production.permissions.checks import has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.dashboard import ProjectDashboardSelector
+from apps.production.selectors.delivery_figures import delivery_figures
 from apps.production.selectors.project import ProjectSelector
 from apps.production.services.project import ProjectService
 from apps.production.services.project_scoped import ProjectMembershipService
@@ -55,8 +57,26 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
     search_fields = ("name", "code", "description", "client_name")
     ordering_fields = ("name", "code", "created_at", "status")
 
+    def _guard_budget(self, data):
+        """
+        Writing ``budget_usd`` needs ``project.view_budget`` (docs/sync CR-55): 403, nothing saved.
+
+        Any write that names the field is refused, whatever its value, so the answer says nothing
+        about the stored budget. A write that leaves it out is unaffected.
+        """
+        if "budget_usd" in data and not has_permission_code(
+            self.request, ProjectPermissions.VIEW_BUDGET
+        ):
+            raise PermissionDenied(f"Setting budget_usd requires {ProjectPermissions.VIEW_BUDGET}.")
+
+    def check_update(self, instance, data):
+        self._guard_budget(data)
+        super().check_update(instance, data)
+
     def perform_create(self, serializer):
         """Create the project, the creator's membership and the first episode, or nothing."""
+        validated = serializer.validated_data
+        self._guard_budget(validated if isinstance(validated, dict) else {})
         with transaction.atomic():
             super().perform_create(serializer)
             self._add_creator_membership(serializer.instance)
@@ -104,7 +124,12 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         """Frontend contract: GET /api/v1/projects/{id}/statistics/."""
         instance = self.get_object()
         self._require_full_access(instance)
-        return Response(ProjectSelector.summary_counts(instance))
+        return Response(
+            ProjectSelector.summary_counts(
+                instance,
+                include_deliveries=has_permission_code(request, delivery_figures().view_permission),
+            )
+        )
 
     @action(detail=True, methods=["get"], url_path="dashboard")
     def dashboard(self, request, *args, **kwargs):
@@ -116,4 +141,10 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         """
         instance = self.get_object()
         self._require_full_access(instance)
-        return Response(ProjectDashboardSelector.build(instance))
+        return Response(
+            ProjectDashboardSelector.build(
+                instance,
+                include_deliveries=has_permission_code(request, delivery_figures().view_permission),
+                include_budget=has_permission_code(request, ProjectPermissions.VIEW_BUDGET),
+            )
+        )

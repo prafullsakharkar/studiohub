@@ -16,10 +16,14 @@ import { Button } from '@/shared/components/Button';
 import { StatusHistory } from '@/modules/production/work/StatusHistory';
 import { useReviewWrite, ReviewActivityPanel, ReviewAnnotationsPanel, ReviewCommentsPanel, ReviewNotesPanel, ReviewParticipantsPanel, ReviewVersionsPanel } from './ReviewPanels';
 import { StatusBadge } from '@/shared/components/StatusBadge';
+import { ReviewOverview } from './ReviewOverview';
+import { ReviewViewer } from './ReviewViewer';
 
-type TabId = 'versions' | 'participants' | 'comments' | 'notes' | 'annotations' | 'activity' | 'status' | 'changes';
+type TabId = 'overview' | 'viewer' | 'versions' | 'participants' | 'comments' | 'notes' | 'annotations' | 'activity' | 'status' | 'changes';
 
 const TABS: ReadonlyArray<{ id: TabId; label: string }> = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'viewer', label: 'Media viewer' },
   { id: 'versions', label: 'Versions' },
   { id: 'participants', label: 'Participants' },
   { id: 'comments', label: 'Comments' },
@@ -109,7 +113,9 @@ const ReviewActions: React.FC<{ review: Review }> = ({ review }) => {
 export const ReviewWorkspace: React.FC = () => {
   const { reviewId = '' } = useParams();
   const canEdit = useCan('review.update');
-  const [tab, setTab] = useState<TabId>('versions');
+  const [tab, setTab] = useState<TabId>('overview');
+  // The version the Versions tab sent to the viewer to be compared with the one on show.
+  const [compareWith, setCompareWith] = useState<string | null>(null);
   const query = useQuery({ queryKey: reviewsApi.keys.detail(reviewId), queryFn: ({ signal }) => reviewsApi.get(reviewId, signal), enabled: Boolean(reviewId) });
   const review = query.data;
   return (
@@ -149,7 +155,17 @@ export const ReviewWorkspace: React.FC = () => {
                 </button>
               ))}
             </div>
-            {tab === 'versions' && <ReviewVersionsPanel review={review} />}
+            {tab === 'overview' && <ReviewOverview review={review} />}
+            {tab === 'viewer' && <ReviewViewer review={review} compareWith={compareWith} />}
+            {tab === 'versions' && (
+              <ReviewVersionsPanel
+                review={review}
+                onCompare={(id) => {
+                  setCompareWith(id);
+                  setTab('viewer');
+                }}
+              />
+            )}
             {tab === 'participants' && <ReviewParticipantsPanel review={review} />}
             {tab === 'comments' && <ReviewCommentsPanel review={review} />}
             {tab === 'notes' && <ReviewNotesPanel review={review} />}

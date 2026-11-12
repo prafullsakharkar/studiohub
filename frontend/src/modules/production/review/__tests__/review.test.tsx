@@ -143,6 +143,17 @@ describe('review workspace', () => {
     expect(actions()).toEqual([]);
   });
 
+  it('Compare in A/B Wipe on the Versions tab opens the viewer with that version against the first', async () => {
+    const two = flow.reviews_add_version_second.body;
+    const withVideo = { ...flow.versions_detail.body, video_url: 'https://cdn.example.com/p/sh.mp4' };
+    await open(lead, two, (c) => (path(c).startsWith('/api/v1/versions/') ? { status: 200, body: withVideo } : undefined));
+    fireEvent.click(await screen.findByRole('tab', { name: 'Versions' }));
+    fireEvent.click(await screen.findByRole('button', { name: `Compare ${two.versions[1].code} in A/B Wipe` }));
+    expect(await screen.findByRole('group', { name: `${two.versions[0].code} against ${two.versions[1].code}` })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Media viewer' }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('slider', { name: 'Wipe position' })).toBeTruthy();
+  });
+
   it('approve posts the notes; Retake goes through verdict; a plain move posts nothing extra', async () => {
     const { calls } = await open(supervisor, flow.reviews_three_start.body, (c) => (c.method === 'POST' ? reply(flow.reviews_approve) : undefined));
     fireEvent.click(screen.getByRole('button', { name: 'Approve' }));

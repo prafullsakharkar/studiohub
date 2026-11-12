@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import uuid
 from datetime import timedelta
 
 import pytest
@@ -39,18 +40,26 @@ def client_for(*codes):
 
 
 @pytest.fixture
-def reader():
+def plain():
+    """A signed-in user with no permission at all (CR-53: no longer reads contracts)."""
     return client_for()
 
 
 @pytest.fixture
+def reader():
+    """Reads contracts (CR-53) without their values."""
+    return client_for(P.PARTNER_VIEW)
+
+
+@pytest.fixture
 def manager():
-    return client_for(P.DIRECTORY_MANAGE)
+    """Writes contracts and reads them back (as org-admin does), without their values."""
+    return client_for(P.DIRECTORY_MANAGE, P.PARTNER_VIEW)
 
 
 @pytest.fixture
 def privileged():
-    return client_for(P.DIRECTORY_MANAGE, P.CLIENT_VIEW_FINANCIAL)
+    return client_for(P.DIRECTORY_MANAGE, P.CLIENT_VIEW_FINANCIAL, P.PARTNER_VIEW)
 
 
 def code_of(response):
@@ -72,7 +81,15 @@ class TestAccess:
     def test_anonymous_is_refused(self):
         assert APIClient().get(f"{API}/client-contracts/").status_code == 401
 
-    def test_reading_is_open_but_writing_needs_manage(self, reader):
+    @pytest.mark.parametrize("slug", ["client-contracts", "vendor-contracts"])
+    def test_a_plain_user_reads_nothing(self, plain, slug):
+        """CR-53: reading a contract needs masterdata.partner.view, checked before the lookup."""
+        row = (ClientContractFactory if slug == "client-contracts" else VendorContractFactory)()
+        assert plain.get(f"{API}/{slug}/").status_code == 403
+        assert plain.get(f"{API}/{slug}/{row.pk}/").status_code == 403
+        assert plain.get(f"{API}/{slug}/{uuid.uuid4()}/").status_code == 403
+
+    def test_a_partner_reader_reads_but_writing_needs_manage(self, reader):
         row = ClientContractFactory()
         assert reader.get(f"{API}/client-contracts/{row.pk}/").status_code == 200
         owner = ClientFactory()

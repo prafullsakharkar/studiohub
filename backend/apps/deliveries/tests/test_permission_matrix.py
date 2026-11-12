@@ -31,7 +31,8 @@ EXPECTED = {
     "production-admin": SEND,
     "vfx-supervisor": SIGN,
     "lead-artist": READ,
-    "artist": READ,
+    # No deliveries for artists: they carry the client's name and answer (docs/sync CR-53).
+    "artist": set(),
     "org-member": set(),
 }
 
@@ -69,8 +70,10 @@ def test_the_override_codes_are_in_the_catalog_opt_in_and_held_by_no_role(matrix
 
 
 def test_the_roles_nest_from_least_to_most_privilege():
-    assert EXPECTED["artist"] <= EXPECTED["vfx-supervisor"] <= EXPECTED["production-admin"]
-    assert EXPECTED["lead-artist"] == EXPECTED["artist"]
+    assert EXPECTED["artist"] <= EXPECTED["lead-artist"] <= EXPECTED["vfx-supervisor"]
+    assert EXPECTED["vfx-supervisor"] <= EXPECTED["production-admin"]
+    # CR-53: a lead reads deliveries, an artist does not.
+    assert EXPECTED["artist"] == set() and EXPECTED["lead-artist"] == READ
 
 
 def test_only_admins_send_and_read_the_passcode_and_supervisors_sign_off(matrix):

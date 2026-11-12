@@ -447,7 +447,7 @@ export function useEventsListConfig(scope?: { projectId: string }): DirectoryLis
     defaultOrdering: 'start_time',
     searchPlaceholder: 'Search title, description, location',
     basePath: '/scheduling/events',
-    rowLink: () => null,
+    rowLink: (row) => `/scheduling/events/${row.id}`,
     scope: scope ? { project_id: scope.projectId } : undefined,
     createQuery: scope ? `project_id=${scope.projectId}` : undefined,
     filters: [

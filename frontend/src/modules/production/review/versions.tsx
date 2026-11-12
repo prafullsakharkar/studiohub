@@ -1,4 +1,5 @@
 import { projectsApi } from '@/api/production/structure';
+import { versionCard } from './versionCard';
 import { versionsApi } from '@/api/production/review';
 import type { Version } from '@/api/production/review';
 import { TASK_STATUSES } from '@/api/production/work';
@@ -55,6 +56,8 @@ export function useVersionsListConfig(scope?: { projectId: string }): DirectoryL
     defaultOrdering: '-created_at',
     searchPlaceholder: 'Search code',
     basePath: '/versions',
+    renderCard: versionCard,
+    cardGrid: 'sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4',
     scope: scope ? { project_id: scope.projectId } : undefined,
     createQuery: scope ? `project=${scope.projectId}` : undefined,
     // A published version cannot be edited (400) or archived until it is unpublished.

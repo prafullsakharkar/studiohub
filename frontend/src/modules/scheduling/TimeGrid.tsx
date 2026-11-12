@@ -22,7 +22,6 @@ interface Props {
   today: string;
   onSelect: (day: string) => void;
   /** Whether an event links to its edit form. */
-  canEditEvents: boolean;
 }
 
 /**
@@ -30,7 +29,7 @@ interface Props {
  * Events that overlap sit side by side (see `placeTimed`). Everything is the studio calendar's own data; times are in the
  * browser's zone.
  */
-export const TimeGrid: React.FC<Props> = ({ days, data, selected, today, onSelect, canEditEvents }) => {
+export const TimeGrid: React.FC<Props> = ({ days, data, selected, today, onSelect }) => {
   const scroller = useRef<HTMLDivElement>(null);
   const agendas = useMemo(() => days.map((day) => ({ day, ...dayAgenda(data, day) })), [days, data]);
   const events = useMemo(() => new Map(data.events.map((e) => [e.id, e])), [data.events]);
@@ -100,15 +99,9 @@ export const TimeGrid: React.FC<Props> = ({ days, data, selected, today, onSelec
                   const title = `${event.title}, ${range}${event.location ? `, ${event.location}` : ''}`;
                   return (
                     <li key={`${day}-${event.id}`} style={style} className="absolute p-px">
-                      {canEditEvents ? (
-                        <Link to={`/scheduling/events/${event.id}/edit`} title={title} aria-label={title} className={cn(classes, 'inset-px block hover:brightness-125 focus:outline-none focus:ring-1 focus:ring-cyan-400')}>
-                          {body}
-                        </Link>
-                      ) : (
-                        <article title={title} aria-label={title} className={cn(classes, 'inset-px')}>
-                          {body}
-                        </article>
-                      )}
+                      <Link to={`/scheduling/events/${event.id}`} title={title} aria-label={title} className={cn(classes, 'inset-px block hover:brightness-125 focus:outline-none focus:ring-1 focus:ring-cyan-400')}>
+                        {body}
+                      </Link>
                     </li>
                   );
                 })}

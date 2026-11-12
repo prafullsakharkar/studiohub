@@ -12,6 +12,9 @@ class ProjectPermissions:
     CREATE = "project.create"
     UPDATE = "project.update"
     DELETE = "project.delete"
+    # The project's budget (``budget_usd``): read and write it (docs/sync CR-55). Checked inline,
+    # in the project serializers, the dashboard and the project writes.
+    VIEW_BUDGET = "project.view_budget"
 
 
 class SequencePermissions:
