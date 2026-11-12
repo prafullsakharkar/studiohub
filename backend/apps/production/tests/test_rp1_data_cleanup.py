@@ -85,11 +85,14 @@ def _review_with(project, *shown, code="RPONE_R1"):
 class TestVersionResponses:
     """C-RP-01, C-RP-02."""
 
-    def test_list_and_detail_leave_the_stored_copies_out(self, project, versions):
+    def test_the_model_has_no_copies_left(self):
+        """WP 1.6: the six columns are dropped (migration 0004)."""
+        names = {field.name for field in Version._meta.get_fields()}
+        assert not set(CACHE_KEYS) & names
+        assert "publishing_info" in names
+
+    def test_list_and_detail_leave_the_lists_out(self, project, versions):
         version = versions[0]
-        Version.objects.filter(pk=version.pk).update(
-            reviews=[{"id": "stale"}], playlists=[{"playlist_id": "stale"}], notes_list=[{"x": 1}]
-        )
         api = _api(_user(project))
 
         listed = api.get("/api/v1/versions/", {"project_id": str(project.id)})
@@ -110,7 +113,7 @@ class TestVersionResponses:
         assert "publishing_info" in resp.json()
 
     @pytest.mark.parametrize("by", ["id", "name"])
-    def test_add_to_playlist_writes_only_the_entry_row(self, project, versions, by):
+    def test_add_to_playlist_answers_without_the_lists(self, project, versions, by):
         version = versions[0]
         playlist = PlaylistFactory.create(project=project, code="RPONE_PL")
         body = {"playlist_id": str(playlist.id)} if by == "id" else {"playlist_name": "Dailies"}
@@ -121,8 +124,6 @@ class TestVersionResponses:
 
         assert resp.status_code == 200, resp.content
         assert not set(CACHE_KEYS) & set(resp.json())
-        version.refresh_from_db()
-        assert version.playlists == []
         assert playlist.entry_rows.filter(version=version).count() == (1 if by == "id" else 0)
 
 

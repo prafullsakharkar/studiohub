@@ -97,12 +97,9 @@ class Version(EntityModel):
     tags = models.JSONField(default=list, blank=True)
 
     publishing_info = models.JSONField(default=dict, blank=True)
-    media_items = models.JSONField(default=list, blank=True)
-    attachments = models.JSONField(default=list, blank=True)
-    reviews = models.JSONField(default=list, blank=True)
-    playlists = models.JSONField(default=list, blank=True)
-    notes_list = models.JSONField(default=list, blank=True)
-    activity = models.JSONField(default=list, blank=True)
+    # The six JSON copies (media_items, attachments, reviews, playlists, notes_list, activity; D-18) were
+    # dropped by RP-1 (migration 0004): the review items, playlist entries, notes, media and the audit trail
+    # are the records (docs/review-pipeline/CONTRACTS.md C-RP-01).
 
     class Meta:
         db_table = "production_version"

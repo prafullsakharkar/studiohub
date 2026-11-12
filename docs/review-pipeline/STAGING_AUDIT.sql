@@ -1,5 +1,8 @@
 -- READ-ONLY check before RP-1 drops six JSON columns of production_version (PLAN WP 1.6):
 -- media_items, attachments, reviews, playlists, notes_list, activity.
+-- RUN IT BEFORE APPLYING MIGRATION production 0004_drop_version_json_copies: afterwards the columns are
+-- gone and every statement here fails. (It was checked against the schema before 0004 by
+-- apps/production/tests/test_rp1_staging_audit_sql.py, which went with the drop; see commit 83167cec.)
 -- Since RP-1 nothing serves or writes them (C-RP-01, C-RP-02). They were stored copies (production
 -- DECISIONS D-18); the records are the truth. This shows what is in them, so that anything that looks
 -- hand-entered is seen before it goes. SELECT statements only; nothing here changes data. Run each block

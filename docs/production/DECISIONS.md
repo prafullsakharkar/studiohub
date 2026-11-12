@@ -155,7 +155,7 @@ Least privilege. `timelog.view` shows the caller's own timelogs; `timelog.view_a
 
 * `reviews`, `playlists`, `notes_list`, `activity`, `media_items` and `attachments` on a version, and the like on a review, stay as the frontend-contract shape. They appear in the read serializer only: version create and update accept none of them (verified in the field lists), so a client cannot write them through those endpoints.
 * They are not a source of truth: the review, playlist, note and media records are. Do not build features on the blobs; replacing them with relations would change the response shape for no gain in security. Not checked in this phase: what fills them, or whether review serializers behave the same way.
-* **Superseded for the version by review-pipeline RP-1** (`docs/review-pipeline/CONTRACTS.md` C-RP-01, C-RP-02): the six version lists are no longer served and `add-to-playlist` no longer writes `playlists`; the columns are dropped in RP-1's contract step.
+* **Superseded for the version by review-pipeline RP-1** (`docs/review-pipeline/CONTRACTS.md` C-RP-01, C-RP-02): the six version lists are no longer served and `add-to-playlist` no longer writes `playlists`; the columns are dropped by migration 0004.
 
 ## D-19 Automation rules (Q12)
 

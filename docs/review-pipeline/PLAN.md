@@ -13,7 +13,7 @@ The rules of the earlier programmes apply to every phase:
 
 ## RP-1 Data model cleanup
 
-**Status:** WP 1.1 to 1.5 built on `feature/rp-1-data-cleanup` ([rp-1-verification.md](rp-1-verification.md)). WP 1.6 (column drop) not started.
+**Status:** WP 1.1 to 1.6 built on `feature/rp-1-data-cleanup` ([rp-1-verification.md](rp-1-verification.md)). The owner chose (2026-11-12) to write the drop before the audit output came in. Running `STAGING_AUDIT.sql` became a deploy step, run before migration 0004 (`docs/07-deployment/pre-deploy-checklist.md`).
 
 **Goal.** Records are the only truth for what a version is in and what is said about it, so later phases (notes, roll-up, notifications) are built on them and not on copies.
 

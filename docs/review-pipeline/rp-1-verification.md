@@ -78,4 +78,19 @@ It was not run on any non-test database.
 
 `backend/apps/production/tests/test_rp1_staging_audit_sql.py` (3 tests) runs every statement on the test database and checks that each is SELECT-only. It plants values and checks what is reported. **Mutations: 5 of 5 caught** (removed entries still counted, archived rows not told apart, a non-list not reported, adds by name hidden, a sample left out). The archived-rows mutation was missed the first time, because the only version with `activity` in the test was the archived one; the test was strengthened, and it is caught now.
 
-**Step 2, after you have run it:** the migration that drops the six columns, as its own commit.
+## 7. WP 1.6, step 2: the drop
+
+The owner chose (2026-11-12) to have the drop written before the audit output came in. **Running the check moved to the deploy checklist**: it runs on each database before migration 0004 (`docs/07-deployment/pre-deploy-checklist.md`). The migration's header says so too.
+
+- **The change:** migration `production` `0004_drop_version_json_copies` removes the six fields from `Version`. It can be reversed, but a reverse brings the columns back empty.
+- **What referenced them:** nothing outside tests. The serializers stopped in WP 1.1, `add-to-playlist` in WP 1.2, and the seed commands never wrote them (checked: `seed_studiohub`, `seed_production_mocks`). No admin or raw SQL other than `STAGING_AUDIT.sql` names them.
+- **Tests:**
+  - `test_rp1_data_cleanup.py` now checks that the model has none of the six fields, in place of planting stale JSON.
+  - `security/test_cross_project_references.py` checks that no playlist entry was written, in place of an empty `playlists` copy.
+  - **Removed:** `test_rp1_staging_audit_sql.py`. It ran the SQL against the schema before 0004, so it cannot pass after it. It passed, with 5 of 5 mutations caught, at `83167cec`, and the SQL has not changed since except for its header comment.
+- **Evidence (test database):**
+  - `apps/production`: 1,604 pass. That is 1,603 before, plus the 3 audit tests, minus those 3 removed, plus the new model check.
+  - `apps/publishing`, `apps/deliveries` and `apps/scheduling`, which also use `Version`: 1,792 pass.
+  - `ruff check .`, `manage.py check` and `makemigrations --check`: clean.
+  - basedpyright: 0 errors on the changed files.
+  - No API change beyond C-RP-01, so nothing changed in the frontend.
