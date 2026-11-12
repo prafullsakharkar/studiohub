@@ -19,6 +19,7 @@ import { openPicker } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('production/_structure_flow.json');
+const notesFlow = loadSample<Record<string, Captured>>('production/_notes_flow.json');
 const auth = loadSample('identity/_auth_flow.json');
 const superuser = auth.me_admin.body as unknown as User;
 const artist = auth.me_artist.body as unknown as User;
@@ -337,18 +338,24 @@ describe('project children and panels', () => {
     expect(screen.queryByLabelText('Add a member by email')).toBeNull();
   });
 
-  it('notes: requires a subject and posts it', async () => {
-    const { calls } = mockFetch((c) => (c.method === 'POST' ? { status: 201, body: flow.scoped_notes_post.body } : reply(flow.scoped_notes_after)));
+  it('notes: lists the threads, requires a subject and posts it about no record', async () => {
+    const empty = { count: 0, next: null, previous: null, results: [] };
+    const { calls } = mockFetch((c) => {
+      if (c.method === 'POST') return { status: 201, body: notesFlow.create_on_project.body };
+      return new URL(c.url).pathname.endsWith('/notes/') ? reply(notesFlow.list) : { body: empty };
+    });
     renderAt('/x', superuser, <Route path="/x" element={<NotesPanel projectId={PID} />} />);
-    await screen.findByLabelText('Subject');
+    for (const row of notesFlow.list.body.results as Array<{ subject: string }>) expect(await screen.findByText(row.subject)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Add note' }));
-    expect(await screen.findByText('Enter a subject')).toBeTruthy();
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add note' }));
+    expect(await within(dialog).findByText('Enter a subject')).toBeTruthy();
     expect(calls.some((c) => c.method === 'POST')).toBe(false);
 
-    fireEvent.change(screen.getByLabelText('Subject'), { target: { value: 'Check the plates' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Add note' }));
+    fireEvent.change(within(dialog).getByLabelText(/^Subject/), { target: { value: 'Check the plates' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add note' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
-    expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ subject: 'Check the plates' });
+    expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ subject: 'Check the plates', body: '', category: 'General', links: [] });
   });
 
   it('overview: shows the real counts from the summary route', async () => {

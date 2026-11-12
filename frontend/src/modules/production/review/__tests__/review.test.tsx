@@ -306,4 +306,27 @@ describe('version workspace', () => {
     expect(params.version_id).toBe(v.id);
     expect(params).not.toHaveProperty('entity_id'); // no longer read by entity and filtered on the client
   });
+
+  it('has a Notes tab: the threads that link the version, and new ones about it (RP-2)', async () => {
+    const v = flow.versions_detail.body;
+    const notesFlow = loadSample<Record<string, Captured>>('production/_notes_flow.json');
+    const notes = `/api/organizations/projects/${v.project_id}/notes/`;
+    const { calls } = mockFetch((c) => {
+      if (path(c) === notes) return c.method === 'POST' ? { status: 201, body: notesFlow.create_thread.body } : { status: 200, body: notesFlow.list_by_version.body };
+      if (path(c) === `/api/v1/versions/${v.id}/`) return { status: 200, body: v };
+      return page([]);
+    });
+    const noter = { ...supervisor, is_superuser: false, permissions: [...supervisor.permissions, 'note.create'], project_memberships: [{ project_id: v.project_id, status: 'active', role: 'Artist' }] } as unknown as User;
+    renderAt(`/versions/${v.id}`, noter, route);
+    fireEvent.click(await screen.findByRole('tab', { name: 'Notes' }));
+    expect(await screen.findByText(notesFlow.list_by_version.body.results[0].subject)).toBeTruthy();
+    const asked = Object.fromEntries(new URL((calls.find((c) => path(c) === notes) as MockCall).url).searchParams);
+    expect(asked).toMatchObject({ entity_type: 'Version', entity_id: v.id });
+    fireEvent.click(screen.getByRole('button', { name: 'Add note' }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByLabelText(/^Subject/), { target: { value: 'Grain is heavy' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add note' }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST' && path(c) === notes)).toBe(true));
+    expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({ subject: 'Grain is heavy', links: [{ entity_type: 'Version', entity_id: v.id }] });
+  });
 });

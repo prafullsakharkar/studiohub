@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { loadSample } from '@/test/samples';
-import { PROJECT_KEYS, SHOW_KEYS, EPISODE_KEYS, SEQUENCE_KEYS, EDITORIALTRACK_KEYS, PROJECTMEMBER_KEYS, PROJECTNOTE_KEYS, COUNT_KEYS } from '../structureRowKeys';
-import type { EditorialTrack, Episode, Project, ProjectMember, ProjectNote, Sequence, Show } from '../structure';
+import { PROJECT_KEYS, SHOW_KEYS, EPISODE_KEYS, SEQUENCE_KEYS, EDITORIALTRACK_KEYS, PROJECTMEMBER_KEYS, COUNT_KEYS } from '../structureRowKeys';
+import type { EditorialTrack, Episode, Project, ProjectMember, Sequence, Show } from '../structure';
 
 /**
  * The hand-written production row types list EXACTLY the fields the real backend returned
@@ -21,7 +21,6 @@ describe('production row types match the captured responses', () => {
     ['Sequence', 'sequences_list_after_bulk', SEQUENCE_KEYS],
     ['EditorialTrack', 'tracks_list', EDITORIALTRACK_KEYS],
     ['ProjectMember', 'members_get', PROJECTMEMBER_KEYS],
-    ['ProjectNote', 'scoped_notes_after', PROJECTNOTE_KEYS],
   ])('%s', (_label, sample, expected) => {
     expect(Object.keys(firstRow(sample)).sort()).toEqual(Object.keys(expected).sort());
   });

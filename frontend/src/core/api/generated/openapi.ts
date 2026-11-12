@@ -414,6 +414,112 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/organizations/projects/{project_id}/notes/{note_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description ``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE`` a note (C-RP-10, C-RP-12, C-RP-13). */
+        get: operations["organizations_projects_notes_retrieve_3"];
+        put?: never;
+        post?: never;
+        /** @description ``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE`` a note (C-RP-10, C-RP-12, C-RP-13). */
+        delete: operations["organizations_projects_notes_destroy"];
+        options?: never;
+        head?: never;
+        /** @description ``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE`` a note (C-RP-10, C-RP-12, C-RP-13). */
+        patch: operations["organizations_projects_notes_partial_update"];
+        trace?: never;
+    };
+    "/api/organizations/projects/{project_id}/notes/{note_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description ``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE`` a note (C-RP-10, C-RP-12, C-RP-13). */
+        get: operations["organizations_projects_notes_retrieve_4"];
+        put?: never;
+        post?: never;
+        /** @description ``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE`` a note (C-RP-10, C-RP-12, C-RP-13). */
+        delete: operations["organizations_projects_notes_destroy_2"];
+        options?: never;
+        head?: never;
+        /** @description ``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE`` a note (C-RP-10, C-RP-12, C-RP-13). */
+        patch: operations["organizations_projects_notes_partial_update_2"];
+        trace?: never;
+    };
+    "/api/organizations/projects/{project_id}/notes/{note_id}/replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description ``POST`` a reply on the thread (C-RP-11). */
+        post: operations["organizations_projects_notes_replies_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/organizations/projects/{project_id}/notes/{note_id}/replies/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description ``POST`` a reply on the thread (C-RP-11). */
+        post: operations["organizations_projects_notes_replies_create_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/organizations/projects/{project_id}/notes/{note_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description ``POST`` a thread's new status (C-RP-13). */
+        post: operations["organizations_projects_notes_status_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/organizations/projects/{project_id}/notes/{note_id}/status/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description ``POST`` a thread's new status (C-RP-13). */
+        post: operations["organizations_projects_notes_status_create_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/organizations/projects/{project_id}/pipeline": {
         parameters: {
             query?: never;
@@ -29145,6 +29251,216 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_retrieve_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_retrieve_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_destroy_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_partial_update_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_replies_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_replies_create_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_status_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_status_create_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
                 project_id: string;
             };
             cookie?: never;

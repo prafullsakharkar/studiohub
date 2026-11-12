@@ -23,7 +23,8 @@ const members = structure.members_get.body.results as Array<{ user_id: string; n
 const path = (c: MockCall) => new URL(c.url).pathname;
 const params = (c: MockCall) => Object.fromEntries(new URL(c.url).searchParams);
 const page = (results: unknown[]) => ({ count: results.length, next: null, previous: null, results });
-const noteRows = flow.notes_search_shot.body.results as Array<{ id: string; subject: string; entity_id: string; entity_type: string }>;
+// RP-2: the Notes tab reads the threads that link the shot (C-RP-09), captured in production/_notes_flow.json.
+const notesFlow = loadSample<Record<string, Captured>>('production/_notes_flow.json');
 
 const Where: React.FC = () => {
   const location = useLocation();
@@ -68,8 +69,8 @@ describe('shot workspace', () => {
     if (p === `/api/v1/shots/${shot.id}/archive/`) return { body: flow.shot_archive.body };
     if (p === `/api/organizations/projects/${ids.project}/members/`) return { body: structure.members_get.body };
     if (p === `/api/organizations/projects/${ids.project}/notes/`) {
-      if (c.method === 'POST') return { status: 201, body: flow.note_on_shot.body };
-      return { body: flow.notes_search_shot.body };
+      if (c.method === 'POST') return { status: 201, body: notesFlow.create_thread.body };
+      return { body: notesFlow.list_by_shot.body };
     }
     return { body: page([]) };
   };
@@ -165,15 +166,15 @@ describe('shot workspace', () => {
     expect(await screen.findByText(`at /versions/new?project=${shot.project_id}&shot=${shot.id}`)).toBeTruthy();
   });
 
-  it('lists only the notes that name this shot, found by searching its code', async () => {
+  it('lists the threads that link this shot, asked for by the shot on the server', async () => {
     const { calls } = mockFetch(server);
     mount();
     fireEvent.click(await screen.findByRole('tab', { name: 'Notes' }));
-    const own = noteRows.find((n) => n.entity_id === shot.id) as { subject: string };
-    const stray = noteRows.find((n) => n.entity_id !== shot.id) as { subject: string };
-    expect(await screen.findByText(own.subject)).toBeTruthy();
-    expect(screen.queryByText(stray.subject)).toBeNull();
-    expect(params(calls.find((c) => path(c).endsWith('/notes/')) as MockCall).search).toBe(shot.code);
+    const row = notesFlow.list_by_shot.body.results[0] as { subject: string };
+    expect(await screen.findByText(row.subject)).toBeTruthy();
+    const asked = params(calls.find((c) => path(c).endsWith('/notes/')) as MockCall);
+    expect(asked).toMatchObject({ entity_type: 'Shot', entity_id: shot.id });
+    expect(asked.search).toBeUndefined();
   });
 
   it('adds a note that names the shot', async () => {
@@ -184,6 +185,9 @@ describe('shot workspace', () => {
     fireEvent.change(await screen.findByLabelText(/^Subject/), { target: { value: 'Match the plate' } });
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Add note' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST' && path(c).endsWith('/notes/'))).toBe(true));
-    expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({ subject: 'Match the plate', entity_type: 'Shot', entity_id: shot.id, entity_code: shot.code, category: 'General' });
+    const sent = calls.find((c) => c.method === 'POST')?.body as Record<string, unknown>;
+    expect(sent).toMatchObject({ subject: 'Match the plate', category: 'General', links: [{ entity_type: 'Shot', entity_id: shot.id }] });
+    // The server writes the record's code and name, and the status (C-RP-07).
+    for (const key of ['entity_code', 'entity_name', 'status', 'task_id']) expect(sent).not.toHaveProperty(key);
   });
 });

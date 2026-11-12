@@ -1,6 +1,6 @@
-# RP-2 Notes: verification (backend)
+# RP-2 Notes: verification
 
-Branch `feature/rp-2-notes`, off `develop` at `7c90d536`. The plan and contracts are commit `10949551`. **Backend (PLAN WP 2.1 to 2.6) built and committed** on this branch, in the commit after `10949551`. WP 2.7 (frontend) comes next. Not pushed, not merged.
+Branch `feature/rp-2-notes`, off `develop` at `7c90d536`. The plan and contracts are commit `10949551`. **Backend (PLAN WP 2.1 to 2.6) built and committed** in `b3280ef9`. **Frontend (WP 2.7) built and committed** in the commit after `b3280ef9` (§5). Not pushed, not merged.
 
 ## 1. What changed
 
@@ -40,3 +40,36 @@ Removed as dead code: the old `ProjectNoteService(BusinessService)` in `services
 ## 4. Separate: `develop` CI is red since RP-1
 
 CI run 43202075767 on `develop` `7c90d536` (the RP-1 merge): docs, secret scan and frontend passed. Backend had **1 failure out of 7,047**: `apps/core/tests/test_bootstrap.py::TestFreshInitialMigrations::test_there_is_one_initial_migration_chain_per_app`. It allows `production` two migrations, and RP-1 added `0003` and `0004`. My RP-1 runs were `apps/production` only, so they missed this core test. The fix (allow `production` four, with the reason) is ready and **uncommitted** in the worktree `../studiohub-fix-develop` (on `develop`); its 26 bootstrap tests pass. This branch carries the same change with six.
+
+## 5. Frontend (WP 2.7)
+
+### 5.1 What changed (`frontend/src/` unless named)
+
+| Area | Change | Files |
+|---|---|---|
+| Sample | New capture tool for C-RP-07 to C-RP-13 on the pytest test database (rolled back). It covers a thread on a shot and a version with a task, the old single-record body, a note on the project, each refusal, replies (also to a reply), the list and its filters, the detail, edits, the status by the assignee, by the supervisor and by someone with neither right, the deletes, and a member bound to a show. | `docs/sync/tools/test_capture_production_notes.py`, `docs/sync/samples/production/_notes_flow.json` |
+| Typed API | `NOTE_LINK_TYPES`, `NOTE_STATUSES`, `NoteLinkRef`, `NoteLink`, `ProjectNoteThread`, `ProjectNoteFilters`, `ProjectNotePatch`. `ProjectNote` gains `parent_id`, `links`, `task_id`, `task_code`, `reply_count`. `ProjectNoteInput` sends `links` and `task_id`; it no longer sends `entity_code`/`entity_name`, which the server writes. New calls: `note`, `replyToNote`, `updateNote`, `setNoteStatus`, `deleteNote`. Row keys pinned to the sample. | `api/production/structure.ts`, `api/production/structureRowKeys.ts` |
+| Notes board | One component for every place that shows notes. Each thread shows its records as chips (the record whose tab it is stays hidden), its task, its status and its reply count. Opening a thread shows the replies oldest first, a reply box, the status steps (Mark addressed, Close, Reopen), Edit and Delete. Each action follows the server's rule (Q-RP-11, Q-RP-12). Status: the author, the task's assignee (read from the task when the caller has no other right) or `note.update`. Edit: the author or `note.update`. Delete: `note.delete`, or the author while no one else has replied. Deleting a reply: its author or `note.delete`. Every delete asks first. | new `modules/production/notes/NoteBoard.tsx` |
+| Note dialog | Subject, body, category, records (shots, assets, versions; other linked types are kept as they were) and "Task to act on it". A new note on a record's tab is about that record first. An edit sends `links` and `task_id` only when they were changed. | new `modules/production/notes/NoteFormDialog.tsx` |
+| Where | The shot and asset Notes tabs and the project Notes panel use the board (the shot and asset tabs read with `entity_type` + `entity_id`, C-RP-09, instead of filtering on the client). The version workspace gains a **Notes** tab. `Addressed` gets a badge colour. | `modules/production/work/EntityNotes.tsx` (now a thin wrapper), `modules/production/structure/panels.tsx`, `modules/production/review/VersionWorkspace.tsx`, `shared/components/StatusBadge.tsx` |
+| Permissions | `note.update` and `note.delete` in `BACKEND_PERMISSION_CODES` and in the snapshot `docs/sync/samples/_misc/permissions.json` (catalog and role lists as `init_platform` grants them). The snapshot's `roles` counts were recomputed from the lists. This also fixes an earlier drift: org-admin and production-admin were one short since CR-55 (`project.view_budget`). | `core/permissions/backendCodes.ts`, `docs/sync/samples/_misc/permissions.json` |
+| Generated types | Schema and `openapi.ts` regenerated. They differ only in the new note paths. As with every project-scoped plain view, spectacular cannot guess the serializers of the four notes views, so their bodies are untyped there. The typed API takes its shapes from the captured sample. **Possible follow-up (a backend change, not made):** `extend_schema` on those views. | `core/api/generated/schema/django-openapi.yml`, `core/api/generated/openapi.ts` |
+
+Removed: the `ProjectNote` row from `structureContracts.test.ts`. The note shape is now pinned in `notesContracts.test.ts` to `_notes_flow.json`, because `_structure_flow.json` predates RP-2. The old client-side filter in `EntityNotes.tsx` is gone with the rewrite.
+
+### 5.2 Evidence
+
+| Check | Result |
+|---|---|
+| `pnpm typecheck` | clean |
+| `pnpm exec biome check src` | 0 errors |
+| `pnpm test` | **1,628 pass** (153 files) |
+| `pnpm build` | passes |
+| `unreachable.mjs` | only tests, `*RowKeys.ts` and the existing helpers (`openapiBridge.ts`, `openapiTypeChecks.ts`, `permissionCatalog.ts`); no new source file |
+| New and updated tests | <ul><li>`notesContracts.test.ts` (12): the pinned keys and each contract C-RP-07 to C-RP-13, against the sample.</li><li>`noteBoard.test.tsx` (11): chips, a record's tab, replies, and what the assignee, the author (before and after others replied), a reader with neither right, a supervisor and a member without `note.create` may do; edit, delete.</li><li>The shot, asset and version tabs and the project panel: the request filter and the body sent (`links`, no `entity_code`/`entity_name`/`status`).</li></ul> |
+| Mutations | **14 of 14 caught**: <ul><li>the record's own chip shown;</li><li>the assignee refused the status;</li><li>other people's replies ignored;</li><li>the author never deletes;</li><li>their own reply not deletable;</li><li>the status steps shown to everyone;</li><li>Edit without `note.update`;</li><li>the reply box without `note.create`;</li><li>Add note without `note.create`;</li><li>a record's tab not filtered;</li><li>an edit always sending links;</li><li>an edit always sending the task;</li><li>a new note not about its record;</li><li>the version tab asking as a shot.</li></ul> At first the author's delete rule had no test, so `detail_on_project` (a thread no one else has replied to) was added to the capture. |
+| Live run | Not run: the role smoke needs a seeded backend and stays manual (`docs/sync/tools/run_role_smoke.sh`). |
+
+### 5.3 Notes on the samples
+
+- `_notes_flow.json` is new. No other sample was recaptured. `test_capture_production_structure.py` and `test_capture_workspaces.py` now fail on the CR-49 code prefix (their seeded codes have no project prefix), so `_structure_flow.json` stays as it was. Fixing those two tools is separate work.

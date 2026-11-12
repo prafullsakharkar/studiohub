@@ -86,7 +86,7 @@ Mutation checks: break each rule above (filter through deleted rows; skip the re
 
 ## RP-2 Notes: replies, links, a task
 
-**Status:** approved 2026-11-12, every recommendation taken (Q-RP-11 to Q-RP-14 = A, [DECISIONS.md](DECISIONS.md#rp-2-answers)). Backend (WP 2.1 to 2.6) built on `feature/rp-2-notes` ([rp-2-verification.md](rp-2-verification.md)); WP 2.7 (frontend) next. Two points of this plan turned out differently; see the corrections below.
+**Status:** approved 2026-11-12, every recommendation taken (Q-RP-11 to Q-RP-14 = A, [DECISIONS.md](DECISIONS.md#rp-2-answers)). Backend (WP 2.1 to 2.6) and frontend (WP 2.7) built on `feature/rp-2-notes` ([rp-2-verification.md](rp-2-verification.md)). Two points of this plan turned out differently; see the corrections below.
 
 **Goal.** A project note works like a ShotGrid note: people reply to it in a thread, it names every record it is about (not just one), it can name the task that should act on it, and it can be addressed, closed and reopened. Review comments stay their own records (Q-RP-4 = B).
 

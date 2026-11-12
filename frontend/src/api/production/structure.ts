@@ -244,6 +244,21 @@ export interface ProjectMemberPatch {
 }
 
 export const NOTE_CATEGORIES = ['Director Feedback', 'Supervisor Note', 'Client Note', 'Pipeline Notice', 'Turnover Requirement', 'General'] as const;
+/** What a note can be about (review-pipeline Q-RP-14). The task is the note's own `task_id`, not a link. */
+export const NOTE_LINK_TYPES = ['Episode', 'Sequence', 'Shot', 'Asset', 'Version', 'Playlist', 'Review'] as const;
+export type NoteLinkType = (typeof NOTE_LINK_TYPES)[number];
+export const NOTE_STATUSES = ['Open', 'Addressed', 'Closed'] as const;
+export type NoteStatus = (typeof NOTE_STATUSES)[number];
+/** A record to link, as written (C-RP-07). */
+export interface NoteLinkRef {
+  entity_type: NoteLinkType;
+  entity_id: string;
+}
+/**
+ * A new thread (C-RP-07). Each link and the task must be a live record of the project, or the answer is 400
+ * `{links: [...]}` / `{task_id: [...]}`. At most 20 links. The server writes each record's code and name, the
+ * author and the status `Open`; the old `entity_type` + `entity_id` pair still works and becomes the first link.
+ */
 export interface ProjectNoteInput {
   subject: string;
   body?: string;
@@ -251,8 +266,24 @@ export interface ProjectNoteInput {
   priority?: string;
   entity_type?: string;
   entity_id?: string;
-  entity_code?: string;
-  entity_name?: string;
+  links?: NoteLinkRef[];
+  task_id?: string | null;
+}
+/** C-RP-12: a thread's fields (`links` replaces the list, `task_id: null` clears); a reply takes only `body`. */
+export interface ProjectNotePatch {
+  subject?: string;
+  body?: string;
+  category?: (typeof NOTE_CATEGORIES)[number];
+  priority?: string;
+  links?: NoteLinkRef[];
+  task_id?: string | null;
+}
+/** One record a note is about, with its code and name as they are now (C-RP-08). */
+export interface NoteLink {
+  entity_type: NoteLinkType;
+  entity_id: string;
+  code: string;
+  name: string;
 }
 export interface ProjectNote {
   id: string;
@@ -278,6 +309,28 @@ export interface ProjectNote {
   project_code: string;
   created_at: string;
   updated_at: string;
+  /** RP-2 (C-RP-08). `entity_*` above mirror the first link (or read `Project` with empty values); a note written
+   * before RP-2 whose record could not be found keeps what was stored there and has no links. */
+  parent_id: string | null;
+  links: NoteLink[];
+  task_id: string | null;
+  task_code: string | null;
+  /** Live replies; 0 on a reply. */
+  reply_count: number;
+}
+/** One thread with its live replies, oldest first (C-RP-10). */
+export interface ProjectNoteThread extends ProjectNote {
+  replies: ProjectNote[];
+}
+/** The thread list's filters (C-RP-09); an unknown value gives an empty list, never a 400. */
+export interface ProjectNoteFilters {
+  entity_type?: NoteLinkType;
+  entity_id?: string;
+  task_id?: string;
+  status?: NoteStatus;
+  author_id?: string;
+  search?: string;
+  ordering?: string;
 }
 
 export interface ProjectCounts {
@@ -358,11 +411,21 @@ export const projectScopedApi = {
   updateMember: (projectId: string, memberId: string, patch: ProjectMemberPatch) => apiClient.patch<ProjectMember>(`${scoped(projectId)}/members/${memberId}/`, patch),
   /** CR-37: take a member off the project (a soft delete; adding them again restores them). */
   removeMember: (projectId: string, memberId: string) => apiClient.delete<void>(`${scoped(projectId)}/members/${memberId}/`),
+  /** Threads only (replies are not listed; see `reply_count`). Filter with `ProjectNoteFilters` through `notesPage`. */
   notes: (projectId: string, signal?: AbortSignal) => apiClient.get<Page<ProjectNote>>(`${scoped(projectId)}/notes/`, { signal }),
-  /** The list route only searches (subject, body, entity code and name): narrow with `search`, then match `entity_id`. */
   notesPage: (projectId: string) => listFetcher<ProjectNote>(`${scoped(projectId)}/notes/`),
-  /** A note may name the record it is about: `entity_type` + `entity_id` (+ code and name for display). */
   addNote: (projectId: string, input: ProjectNoteInput) => apiClient.post<ProjectNote>(`${scoped(projectId)}/notes/`, input),
+  /** A thread with its replies; a reply's id answers with its thread. 404 for a deleted note. */
+  note: (projectId: string, noteId: string, signal?: AbortSignal) => apiClient.get<ProjectNoteThread>(`${scoped(projectId)}/notes/${noteId}/`, { signal }),
+  /** Stored on the thread's root (a reply to a reply goes there too); `body` must not be blank. Needs `note.create`. */
+  replyToNote: (projectId: string, noteId: string, body: string) => apiClient.post<ProjectNote>(`${scoped(projectId)}/notes/${noteId}/replies/`, { body }),
+  /** The author, or a holder of `note.update` (403 otherwise). */
+  updateNote: (projectId: string, noteId: string, patch: ProjectNotePatch) => apiClient.patch<ProjectNote>(`${scoped(projectId)}/notes/${noteId}/`, patch),
+  /** The author, the assignee of the note's task, or a holder of `note.update`; a reply has no status (400).
+   * `Addressed` stamps `addressed_by`/`addressed_at`, `Open` clears them, `Closed` keeps them. */
+  setNoteStatus: (projectId: string, noteId: string, status: NoteStatus) => apiClient.post<ProjectNote>(`${scoped(projectId)}/notes/${noteId}/status/`, { status }),
+  /** A thread goes with its replies. The author while nobody else has replied, or a holder of `note.delete`. */
+  deleteNote: (projectId: string, noteId: string) => apiClient.delete<void>(`${scoped(projectId)}/notes/${noteId}/`),
   activity: (projectId: string, signal?: AbortSignal) => apiClient.get<Page<Record<string, unknown>>>(`${scoped(projectId)}/activity/`, { signal }),
   pipeline: (projectId: string, signal?: AbortSignal) => apiClient.get<ProjectPipeline>(`${scoped(projectId)}/pipeline/`, { signal }),
   resources: (projectId: string, signal?: AbortSignal) => apiClient.get<ProjectResources>(`${scoped(projectId)}/resources/`, { signal }),
