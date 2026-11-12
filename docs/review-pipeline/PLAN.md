@@ -156,7 +156,7 @@ The same as RP-1, plus a browser role smoke: an artist replies to a supervisor's
 
 ## RP-3 Approval roll-up (fixed rule, per project)
 
-**Status:** approved 2026-11-12, every recommendation taken (Q-RP-15 to Q-RP-18 = A, [DECISIONS.md](DECISIONS.md#rp-3-answers)). Being built on `feature/rp-3-approval-rollup`, off `develop` at `94cb2359`. Q-RP-5 = A ([DECISIONS.md](DECISIONS.md)): a fixed rule, switched on per project, and no `AutomationRule` engine.
+**Status:** approved 2026-11-12, every recommendation taken (Q-RP-15 to Q-RP-18 = A, [DECISIONS.md](DECISIONS.md#rp-3-answers)). Built on `feature/rp-3-approval-rollup`, off `develop` at `94cb2359` ([rp-3-verification.md](rp-3-verification.md)). There is no `docs/apps/production.md` page, so WP 3.4 documents the rule in C-RP-15 and the release notes only. Q-RP-5 = A ([DECISIONS.md](DECISIONS.md)): a fixed rule, switched on per project, and no `AutomationRule` engine.
 
 ### Why (what is there today)
 

@@ -28,6 +28,8 @@ export interface Project {
   resolution: string;
   aspect_ratio: string;
   color_space: string;
+  /** RP-3 (C-RP-14): approving a version also approves its task. Off by default. */
+  approve_task_on_version_approval: boolean;
   start_date: string | null;
   delivery_date: string | null;
   /** Only for holders of project.view_budget; left out otherwise (CR-55). */
@@ -64,6 +66,7 @@ export interface ProjectInput {
   resolution?: string;
   aspect_ratio?: string;
   color_space?: string;
+  approve_task_on_version_approval?: boolean;
   start_date?: string | null;
   delivery_date?: string | null;
   budget_usd?: number;

@@ -23,6 +23,7 @@ class ProjectUpdateSerializer(BudgetGatedMixin, BaseWriteSerializer[Any]):
             "resolution",
             "aspect_ratio",
             "color_space",
+            "approve_task_on_version_approval",
             "start_date",
             "delivery_date",
             "thumbnail_url",

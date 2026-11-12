@@ -19987,6 +19987,8 @@ export interface components {
             resolution?: string;
             aspect_ratio?: string;
             color_space?: string;
+            /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
+            approve_task_on_version_approval?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -24367,6 +24369,8 @@ export interface components {
             resolution?: string;
             aspect_ratio?: string;
             color_space?: string;
+            /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
+            approve_task_on_version_approval?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -24438,6 +24442,8 @@ export interface components {
             resolution?: string;
             aspect_ratio?: string;
             color_space?: string;
+            /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
+            approve_task_on_version_approval?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -24519,6 +24525,8 @@ export interface components {
             resolution?: string;
             aspect_ratio?: string;
             color_space?: string;
+            /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
+            approve_task_on_version_approval?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -24581,6 +24589,8 @@ export interface components {
             resolution?: string;
             aspect_ratio?: string;
             color_space?: string;
+            /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
+            approve_task_on_version_approval?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */

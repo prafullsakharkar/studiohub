@@ -14,6 +14,7 @@ import { ProjectWorkspacePage } from '../pages/ProjectWorkspacePage';
 
 type Captured = { status: number; body: any; request?: { method: string; path: string; body: any } };
 const flow = loadSample<Record<string, Captured>>('production/_workspaces_flow.json');
+const rollup = loadSample<Record<string, Captured>>('production/_rollup_flow.json');
 const structure = loadSample<Record<string, Captured>>('production/_structure_flow.json');
 const auth = loadSample('identity/_auth_flow.json');
 const superuser = auth.me_admin.body as unknown as User;
@@ -28,11 +29,11 @@ const Where: React.FC = () => {
   return <p>{`at ${location.pathname}${location.search}`}</p>;
 };
 
-function mount() {
+function mount(id = project.id) {
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } })}>
       <AuthContext.Provider value={{ user: superuser, refreshUser: vi.fn() } as unknown as AuthContextValue}>
-        <MemoryRouter initialEntries={[`/projects/${project.id}`]}>
+        <MemoryRouter initialEntries={[`/projects/${id}`]}>
           <Routes>
             <Route path="/projects/:id" element={<ProjectWorkspacePage />} />
             <Route path="/projects" element={<Where />} />
@@ -137,5 +138,32 @@ describe('project workspace', () => {
     expect(sent.name).toBe(cloned.name);
     expect(sent.code).toBe(cloned.code);
     await waitFor(() => expect(calls.some((c) => path(c) === `/api/v1/projects/${cloned.id}/`)).toBe(true));
+  });
+
+  it('a duplicate keeps the approval roll-up switch, and the header says it is on (RP-3, C-RP-14)', async () => {
+    const on = rollup.project_detail.body as { id: string; code: string; name: string; approve_task_on_version_approval: boolean };
+    expect(on.approve_task_on_version_approval).toBe(true);
+    const { calls: sent } = mockFetch((c) => {
+      const p = path(c);
+      if (p === `/api/v1/projects/${on.id}/`) return { body: on };
+      if (p === '/api/v1/projects/' && c.method === 'POST') return { status: 201, body: rollup.create_project_on.body };
+      return { body: page([]) };
+    });
+    mount(on.id);
+    await screen.findByRole('heading', { name: on.name });
+    expect(screen.getByText('Tasks approved with their versions')).toBeTruthy();
+    fireEvent.click(await screen.findByRole('button', { name: /Duplicate/ }));
+    fireEvent.change(await screen.findByDisplayValue(`${on.name} (Copy)`), { target: { value: 'Roll-up 2' } });
+    fireEvent.change(screen.getByDisplayValue(`${on.code}_CLONE`), { target: { value: 'RPS' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Duplicate project' }));
+    await waitFor(() => expect(sent.some((c) => c.method === 'POST')).toBe(true));
+    expect(sent.find((c) => c.method === 'POST')?.body).toMatchObject({ approve_task_on_version_approval: true });
+  });
+
+  it('the header says nothing about the roll-up when the switch is off', async () => {
+    mockFetch(server);
+    mount();
+    await screen.findByRole('heading', { name: project.name });
+    expect(screen.queryByText('Tasks approved with their versions')).toBeNull();
   });
 });

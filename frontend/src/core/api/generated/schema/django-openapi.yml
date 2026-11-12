@@ -45219,6 +45219,10 @@ components:
         color_space:
           type: string
           maxLength: 50
+        approve_task_on_version_approval:
+          type: boolean
+          description: When on, approving a version also approves its task (review
+            pipeline RP-3, C-RP-15). Off by default.
         start_date:
           type: string
           format: date
@@ -53370,6 +53374,10 @@ components:
         color_space:
           type: string
           maxLength: 50
+        approve_task_on_version_approval:
+          type: boolean
+          description: When on, approving a version also approves its task (review
+            pipeline RP-3, C-RP-15). Off by default.
         start_date:
           type: string
           format: date
@@ -53505,6 +53513,10 @@ components:
         color_space:
           type: string
           maxLength: 50
+        approve_task_on_version_approval:
+          type: boolean
+          description: When on, approving a version also approves its task (review
+            pipeline RP-3, C-RP-15). Off by default.
         start_date:
           type: string
           format: date
@@ -53676,6 +53688,10 @@ components:
         color_space:
           type: string
           maxLength: 50
+        approve_task_on_version_approval:
+          type: boolean
+          description: When on, approving a version also approves its task (review
+            pipeline RP-3, C-RP-15). Off by default.
         start_date:
           type: string
           format: date
@@ -53823,6 +53839,10 @@ components:
         color_space:
           type: string
           maxLength: 50
+        approve_task_on_version_approval:
+          type: boolean
+          description: When on, approving a version also approves its task (review
+            pipeline RP-3, C-RP-15). Off by default.
         start_date:
           type: string
           format: date
