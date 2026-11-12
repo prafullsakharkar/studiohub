@@ -11,7 +11,7 @@ from __future__ import annotations
 from django.conf import settings
 from django.db import models
 
-from apps.core.models.bases import EntityModel
+from apps.core.models.bases import EntityModel, UUIDModel
 from apps.production.constants import TaskPriority
 
 
@@ -85,6 +85,23 @@ class ProjectNote(EntityModel):
     timecode_ref = models.CharField(max_length=20, blank=True, default="")
     frame_number = models.PositiveIntegerField(null=True, blank=True)
 
+    # RP-2 (docs/review-pipeline C-RP-07 to C-RP-13): a reply names its thread (one level deep, a
+    # reply to a reply is stored on the root), and a thread may name the task that should act on it.
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="replies",
+    )
+    task = models.ForeignKey(
+        "production.Task",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="project_notes",
+    )
+
     class Meta:
         db_table = "production_project_note"
         ordering = ("-created_at",)
@@ -95,3 +112,43 @@ class ProjectNote(EntityModel):
 
     def __str__(self):
         return f"{self.subject} ({self.project})"
+
+
+class ProjectNoteLinkType(models.TextChoices):
+    """The records a note can be about (Q-RP-14 = A). The task is the note's own field, not a link."""
+
+    EPISODE = "Episode", "Episode"
+    SEQUENCE = "Sequence", "Sequence"
+    SHOT = "Shot", "Shot"
+    ASSET = "Asset", "Asset"
+    VERSION = "Version", "Version"
+    PLAYLIST = "Playlist", "Playlist"
+    REVIEW = "Review", "Review"
+
+
+class ProjectNoteLink(UUIDModel):
+    """
+    One record a thread is about (C-RP-07). Written only by the server, after the record was found
+    live in the note's project and visible to the writer; ``position`` keeps the order written, and
+    the first link is mirrored in the note's ``entity_*`` columns. Replacing a note's links deletes
+    the old rows (each delete is in the change log).
+    """
+
+    note = models.ForeignKey(ProjectNote, on_delete=models.CASCADE, related_name="links")
+    entity_type = models.CharField(max_length=20, choices=ProjectNoteLinkType.choices)
+    entity_id = models.UUIDField()
+    position = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "production_project_note_link"
+        ordering = ("note", "position")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["note", "entity_type", "entity_id"], name="uniq_project_note_link"
+            )
+        ]
+        indexes = [models.Index(fields=["entity_type", "entity_id"])]
+
+    def __str__(self):
+        return f"{self.entity_type} {self.entity_id}"

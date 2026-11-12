@@ -255,8 +255,12 @@ class TestFreshInitialMigrations:
             # deliveries' 0003 changes a QC item foreign key to SET_NULL on tables that deployed
             # databases already hold, so it cannot be folded into 0001 (CR-21); identity's 0003 adds
             # directory sign-in (ADR-0039, CR-40) to a users table deployed databases already hold,
-            # and its 0004 the TLS options of that configuration row (CR-41).
-            limit = {"audit": 3, "deliveries": 3, "identity": 4}.get(app, 2)
+            # and its 0004 the TLS options of that configuration row (CR-41); production's 0003 adds the
+            # version of a review comment and annotation, and its 0004 drops six JSON copies from the
+            # versions table (review-pipeline RP-1, C-RP-05 and WP 1.6), both on tables deployed
+            # databases already hold; its 0005 adds note replies, links and a task to the notes table,
+            # and its 0006 back-fills those links from the notes already there (RP-2, WP 2.1, WP 2.6).
+            limit = {"audit": 3, "deliveries": 3, "identity": 4, "production": 6}.get(app, 2)
             assert len(names) <= limit, (app, names)
 
     @pytest.mark.skipif(connection.vendor != "postgresql", reason="the extension is PostgreSQL's")
