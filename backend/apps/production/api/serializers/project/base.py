@@ -3,7 +3,9 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer
+from apps.production.constants.permissions import ProjectPermissions
 from apps.production.models import Project
+from apps.production.permissions.checks import has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
 
 from .vendors import ProjectPageSerializer, VendorNamesField
@@ -30,7 +32,36 @@ EXTERNAL_HIDDEN_FIELDS = (
 )
 
 
-class ProjectSerializer(BaseReadSerializer[Any]):
+BUDGET_FIELD = "budget_usd"
+
+
+def can_view_budget(serializer: Any) -> bool:
+    """
+    Whether the serializer's caller may read the project's budget (``project.view_budget``,
+    docs/sync CR-55). Asked once per response: the answer is kept in the shared context, so a
+    page of projects checks it once. Without a request (internal use) the field stays.
+    """
+    context = serializer.context
+    if "_can_view_budget" not in context:
+        request = context.get("request")
+        context["_can_view_budget"] = request is None or has_permission_code(
+            request, ProjectPermissions.VIEW_BUDGET
+        )
+    return bool(context["_can_view_budget"])
+
+
+# Leaves ``budget_usd`` out of the response for a caller without ``project.view_budget``. A comment,
+# not a docstring: the OpenAPI schema takes a serializer's description from the first docstring in
+# its MRO, and this mixin comes first.
+class BudgetGatedMixin:
+    def to_representation(self, instance):
+        data = super().to_representation(instance)  # pyright: ignore[reportAttributeAccessIssue]
+        if not can_view_budget(self):
+            data.pop(BUDGET_FIELD, None)
+        return data
+
+
+class ProjectSerializer(BudgetGatedMixin, BaseReadSerializer[Any]):
     supervisor_id = serializers.UUIDField(read_only=True, allow_null=True)
     supervisor_name = serializers.SerializerMethodField()
     coordinator_id = serializers.UUIDField(read_only=True, allow_null=True)

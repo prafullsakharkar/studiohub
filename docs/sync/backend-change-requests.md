@@ -1072,3 +1072,96 @@ Contracts: masterdata SEC-MD-01 and D-CR53, production C-67 and D-07, deliveries
 - The dashboard's *Client Deliveries* panel, its KPI card and the watchlist's *Upcoming Client Turnovers* show only with `delivery.view`.
 - `backendCodes.ts` and the catalog sample (`samples/_misc/permissions.json`) carry the new code and the new role grants.
 - The role smoke spec expects Clients and Vendors for producer and supervisor, refused for lead, artist and no-role, and Deliveries refused for the artist.
+
+
+### CR-54: the project's delivery count still reaches people who may not read deliveries (**security**, **APPLIED**, branch `sync/cr-53-partner-reads`; verification `backend-cr-54-55-verification.md`)
+
+Found while building CR-53 (its verification, "Not changed, noted while building it"); the owner asked for it as a CR and approved it ("approve CR-54 and CR-55", 2026-11-12).
+
+**Problem.** CR-53 made the dashboard's delivery figures follow `delivery.view`. Two other routes still count the project's deliveries for anyone who may read the project (`project.view`):
+- `GET /api/v1/projects/{id}/statistics/` (`ProjectViewSet.statistics`);
+- `GET /api/organizations/projects/{project}/summary/` (`ProjectSummaryView`, its `counts`).
+
+Both use `ProjectSelector.summary_counts` (`apps/production/selectors/project.py`), whose `deliveries` is `delivery_figures().count(project)` with no permission check. The project overview panel (`frontend/src/modules/production/structure/panels.tsx`) lists every count it receives, so an artist sees "deliveries 2" there while the dashboard tells them 0. It is a number only: no names, no client.
+
+**Evidence** (real responses, pytest test database, rolled back; `init_platform` roles, each an active member of project `BDG`, which has two deliveries). Captured with `tools/test_capture_budget_counts_cr54_55.py` (`samples/production/_budget_counts_cr54_55.json`):
+
+| Request | artist | lead-artist | vfx-supervisor | production-admin |
+|---|---|---|---|---|
+| `GET projects/{BDG}/statistics/` → `deliveries` | 2 | 2 | 2 | 2 |
+| `GET …/projects/{BDG}/summary/` → `counts.deliveries` | 2 | 2 | 2 | 2 |
+| `GET projects/{BDG}/dashboard/` → `deliveries.total` (CR-53) | **0** | 2 | 2 | 2 |
+
+**Minimal proposed diff** (backend only, no migration, no new route, no change of shape):
+1. `ProjectSelector.summary_counts(project, *, include_deliveries: bool)`, required like the dashboard's. Without it, `deliveries` is 0 (read from `delivery_figures.NO_DELIVERIES`, as the dashboard does).
+2. Both routes pass `has_permission_code(request, delivery_figures().view_permission)`.
+3. Tests: with real seeded roles, the artist's `statistics` and `summary` count no deliveries and the lead's count them; the other counts are the same for both. Mutation-check: always passing `include_deliveries=True` must fail a test on each route.
+4. Docs: production contract C-68 (beside C-67).
+
+**Frontend after approval:** nothing is required. The overview panel shows `deliveries 0` for an artist. Optional: leave the `deliveries` entry out of the panel without `delivery.view`, so it does not show a 0 that is not a count.
+
+**Why no frontend workaround.** The number is in the response. Hiding it on one panel leaves it on the route.
+
+**Compatibility.** None for callers with `delivery.view`. For others, `deliveries` becomes 0. **Risk.** Very low: one keyword argument, two call sites.
+
+**Alternatives.**
+- (a) Do nothing: a count is not a name, and the risk is small.
+- (b) Omit the `deliveries` key instead of answering 0. Clearer, but it changes the shape for some callers, and `ProjectCounts` in the frontend types expects the key.
+
+
+### CR-55: every internal member reads the project's budget (**security**, **APPLIED** (backend), branch `sync/cr-53-partner-reads`; verification `backend-cr-54-55-verification.md`)
+
+Found while building CR-53; the owner asked for it as a CR and approved it as written, supervisors without the budget ("approve CR-54 and CR-55", 2026-11-12). Built beyond the text: the answers to a project create and update leave the field out too (the write serializers render it), found while building it.
+
+**Problem.** `Project.budget_usd` (`DecimalField(12, 2)`) is a field of `ProjectSerializer` (`apps/production/api/serializers/project/base.py`), so every route that returns a project returns it to every internal member who may read the project:
+- the project list and detail;
+- the project-scoped `summary`, which embeds the detail;
+- the dashboard (`_project_metadata`, `apps/production/selectors/dashboard.py`).
+
+Only external (client or vendor side) members have it removed (`EXTERNAL_HIDDEN_FIELDS`). This contradicts the role matrix's own rule: "Production admins track contract and budget figures; supervisors, leads and artists share PRODUCTION_FULL_PERMISSIONS or less and do not see them" (`init_platform.py`, above `PRODUCTION_ADMIN_PERMISSIONS`). CR-53 applied that rule to contract values (`masterdata.client.view_financial`), but the project budget has no gate at all.
+
+Writes follow the same pattern: anyone with `project.create` / `project.update` writes `budget_usd`. That includes the vfx-supervisor, who also reads it. The frontend shows a "Budget (USD)" input in the project form to every editor (`modules/production/structure/configs.tsx`; `field.project.budget.view` is `open`, "no backend gate").
+
+**Evidence** (same capture, project `BDG` with `budget_usd` 4,800,000):
+
+| Request | artist | lead-artist | vfx-supervisor | production-admin |
+|---|---|---|---|---|
+| `GET projects/` (row `BDG`) → `budget_usd` | 4800000.00 | 4800000.00 | 4800000.00 | 4800000.00 |
+| `GET projects/{BDG}/` → `budget_usd` | 4800000.00 | 4800000.00 | 4800000.00 | 4800000.00 |
+| `GET …/projects/{BDG}/summary/` → `project.budget_usd` | 4800000.00 | 4800000.00 | 4800000.00 | 4800000.00 |
+| `GET projects/{BDG}/dashboard/` → `project.budget_usd` | 4800000.0 | 4800000.0 | 4800000.0 | 4800000.0 |
+
+The budget cannot be filtered, searched or ordered on (`ProjectViewSet` and `ProjectFilterSet`), so the field itself is the whole exposure.
+
+**Minimal proposed diff** (backend only, no migration, no new route):
+1. **A new code `project.view_budget`** (`projects`, `view_budget`), named like `schedule.view_rates`. It is in `PERMISSION_SPECS` and held by production-admin and org-admin; platform-admin has the full catalog. Not vfx-supervisor, lead-artist, artist or org-member, following the matrix comment above and the CR-53 decision that supervisors see contracts without their money.
+2. **Read:** `ProjectSerializer.to_representation` drops `budget_usd` for a caller without the code, next to the external-member rule (omitted, never blanked, as for the masterdata financial fields). `_project_metadata` leaves `budget_usd` out on the same condition. `ProjectDashboardSelector.build` takes the answer as a keyword, as CR-53 did for deliveries.
+3. **Write:** a create or update that names `budget_usd` without the code is refused with **403** and changes nothing (the DOM-MD-BIZ-07 pattern for `total_billed_usd`), so a supervisor can still edit a project but not its budget. A write that leaves the field out is unchanged.
+4. **Tests,** with real seeded roles:
+   - every read route omits the field for artist, lead and supervisor and returns it for the producer;
+   - the supervisor's PATCH with `budget_usd` is 403 and leaves the value, and without it is 200;
+   - a producer still creates a project with a budget;
+   - external members still never see it.
+
+   Mutation-check: drop each gate and expect a failure.
+5. **Docs:** production contract C-69 and a D-07 note; the OpenAPI schema and its types, if the 403 is documented on the project write operations.
+
+**Frontend after approval:**
+- `field.project.budget.view` and `field.project.budget.edit` map to `project.view_budget` (they are `open` and `project.update` today).
+- The project form shows the "Budget (USD)" input only with it (`FieldDef.permission`). A hidden field is never sent; today a create leaves blank inputs out and an edit sends only the changed ones (`DirectoryFormPage`).
+- The hand-written `Project` type (`src/api/production/structure.ts`) declares `budget_usd: string` as always present; it becomes optional. The generated OpenAPI types already have it optional.
+- Tests from re-captured samples; the role smoke for supervisor and producer.
+
+**Why no frontend workaround.** The value is in every project response. Hiding the input leaves it on the list, the detail, the summary and the dashboard, and another client could still write it.
+
+**Compatibility.**
+- **Breaking for writes:** a vfx-supervisor (or a custom role with `project.update` or `project.create` and without the new code) that sends `budget_usd` gets 403 where it got 200. The current frontend sends it only when the input is filled in on create or changed on edit, so a supervisor who leaves the budget alone is unaffected. Until the frontend step ships, a supervisor who types a budget gets the 403 as an error message on the form.
+- **Reads:** the field disappears for those callers. In the current frontend only the project form reads it; an absent value shows as an empty input. The hand-written type is corrected in the frontend step.
+- **Deploy:** run `init_platform` after deploying, or only superusers read budgets.
+
+**Risk.** Low to medium: one serializer rule, one write check, one selector keyword, one role-matrix entry; the effect is who loses access.
+
+**Alternatives.**
+- (a) Reuse `masterdata.client.view_financial` instead of a new code: the same holders today, one code fewer. But it is masterdata's code and is named for clients, so the production app would read another app's permission for its own field.
+- (b) Let the vfx-supervisor read the budget but not write it (grant only the read code). That is a different answer to the matrix comment; say if supervisors should see budgets.
+- (c) Do nothing.

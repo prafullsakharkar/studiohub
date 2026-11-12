@@ -37,6 +37,7 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("project.view", "projects", "read"),
     ("project.update", "projects", "update"),
     ("project.delete", "projects", "delete"),
+    ("project.view_budget", "projects", "view_budget"),
     ("shot.create", "shots", "create"),
     ("shot.view", "shots", "read"),
     ("shot.update", "shots", "update"),
@@ -199,6 +200,11 @@ DIRECTORY_CRUD_PERMISSIONS = [
 # project or a delivery. Leads, artists and org members do not.
 PARTNER_VIEW = "masterdata.partner.view"
 
+# The project's budget (``budget_usd``) is read and written only with this code (docs/sync CR-55):
+# production-admin and org-admin hold it, like the contract values. Not in PRODUCTION_FULL_PERMISSIONS,
+# so the vfx-supervisor, who shares that set, does not.
+PROJECT_VIEW_BUDGET = "project.view_budget"
+
 # ---------------------------------------------------------------------------
 # Production role matrix (docs/production/DECISIONS.md D-07). Least privilege: a role
 # gets an action only when its work needs it. Every code the production API enforces
@@ -307,6 +313,7 @@ WITHDRAWN_GRANTS: dict[str, tuple[str, ...]] = {
 PRODUCTION_ADMIN_PERMISSIONS = PRODUCTION_FULL_PERMISSIONS + [
     "masterdata.client.view_financial",
     PARTNER_VIEW,
+    PROJECT_VIEW_BUDGET,
     "production.code.rename",
     "settings.view",
 ]
@@ -377,6 +384,7 @@ ROLE_SPECS: list[dict[str, Any]] = [
         "permissions": (
             DIRECTORY_CRUD_PERMISSIONS
             + PRODUCTION_FULL_PERMISSIONS
+            + [PROJECT_VIEW_BUDGET]
             + ["settings.manage", "settings.update", "user.manage", "publishing.storage.manage"]
             + IDENTITY_ADMIN_PERMISSIONS
         ),

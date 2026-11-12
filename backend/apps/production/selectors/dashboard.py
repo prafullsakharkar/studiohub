@@ -69,7 +69,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         return counts
 
     @classmethod
-    def build(cls, project, *, include_deliveries: bool) -> dict[str, Any]:
+    def build(cls, project, *, include_deliveries: bool, include_budget: bool) -> dict[str, Any]:
         """Aggregate the full dashboard payload for ``project``.
 
         Counts are aggregated database-side (``GROUP BY status`` /
@@ -81,6 +81,9 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         the nested deliveries route, ``delivery_figures().view_permission``; docs/sync CR-53).
         Without it every delivery figure is empty and keeps its shape: zero counts, no cards (they
         name the client), no delivery as the next deadline, no delivery rows in the activity.
+
+        ``include_budget`` is whether the caller holds ``project.view_budget``; without it the
+        project's ``budget_usd`` is left out (docs/sync CR-55).
         """
 
         from apps.production.models import Asset, Review, Shot, Task
@@ -169,7 +172,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         )
 
         return {
-            "project": cls._project_metadata(project),
+            "project": cls._project_metadata(project, include_budget=include_budget),
             "summary": {
                 "total_shots": shot_stats["total"],
                 "approved_shots": shot_stats["approved"],
@@ -242,7 +245,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
     # -- project ----------------------------------------------------------
 
     @classmethod
-    def _project_metadata(cls, project) -> dict[str, Any]:
+    def _project_metadata(cls, project, *, include_budget: bool) -> dict[str, Any]:
         payload: dict[str, Any] = {
             "id": str(project.id),
             "name": project.name,
@@ -269,7 +272,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             payload["coordinator_name"] = coordinator
         if project.client_name:
             payload["client_name"] = project.client_name
-        if project.budget_usd:
+        if include_budget and project.budget_usd:
             payload["budget_usd"] = float(project.budget_usd)
         return payload
 

@@ -406,7 +406,12 @@ class ProjectSummaryView(ProjectScopedAPIView):
         return Response(
             {
                 "project": project_data,
-                "counts": ProjectSelector.summary_counts(self.project),
+                "counts": ProjectSelector.summary_counts(
+                    self.project,
+                    include_deliveries=has_permission_code(
+                        request, delivery_figures().view_permission
+                    ),
+                ),
                 "project_id": str(self.project.id),
             }
         )
@@ -427,6 +432,7 @@ class ProjectDashboardView(ProjectScopedAPIView):
             ProjectDashboardSelector.build(
                 self.project,
                 include_deliveries=has_permission_code(request, delivery_figures().view_permission),
+                include_budget=has_permission_code(request, ProjectPermissions.VIEW_BUDGET),
             )
         )
 
