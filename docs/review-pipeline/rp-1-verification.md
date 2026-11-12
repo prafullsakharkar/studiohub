@@ -67,6 +67,15 @@ Docs: `docs/production/DECISIONS.md` D-18 and the "Not done" line of D-31 now po
 
 The Playwright role smoke was not run. It visits static routes as each role and does not open the review viewer, so the live vitest above is the browser-level check for RP-1.
 
-## 6. Next
+## 6. WP 1.6, step 1: the read-only check
 
-- WP 1.6: `STAGING_AUDIT.sql` for the six columns, to run on staging and production, then the drop migration as its own commit.
+`docs/review-pipeline/STAGING_AUDIT.sql` has eight SELECT statements, PostgreSQL only:
+1. Per column: how many versions hold something, how many of those are archived, and how many hold something that is not a list.
+2. Per column (2a to 2f): up to 20 of the most recently changed versions that hold something, with their first 300 characters, to judge by eye whether any of it was typed by a person.
+3. The entries of the `playlists` copy with no live playlist entry behind them: adds by name, which never made an entry, and versions since taken off the playlist.
+
+It was not run on any non-test database.
+
+`backend/apps/production/tests/test_rp1_staging_audit_sql.py` (3 tests) runs every statement on the test database and checks that each is SELECT-only. It plants values and checks what is reported. **Mutations: 5 of 5 caught** (removed entries still counted, archived rows not told apart, a non-list not reported, adds by name hidden, a sample left out). The archived-rows mutation was missed the first time, because the only version with `activity` in the test was the archived one; the test was strengthened, and it is caught now.
+
+**Step 2, after you have run it:** the migration that drops the six columns, as its own commit.
