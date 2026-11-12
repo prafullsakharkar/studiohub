@@ -156,7 +156,7 @@ The same as RP-1, plus a browser role smoke: an artist replies to a supervisor's
 
 ## RP-3 Approval roll-up (fixed rule, per project)
 
-**Status:** approved 2026-11-12, every recommendation taken (Q-RP-15 to Q-RP-18 = A, [DECISIONS.md](DECISIONS.md#rp-3-answers)). Built on `feature/rp-3-approval-rollup`, off `develop` at `94cb2359` ([rp-3-verification.md](rp-3-verification.md)). There is no `docs/apps/production.md` page, so WP 3.4 documents the rule in C-RP-15 and the release notes only. Q-RP-5 = A ([DECISIONS.md](DECISIONS.md)): a fixed rule, switched on per project, and no `AutomationRule` engine.
+**Status:** approved 2026-11-12, every recommendation taken (Q-RP-15 to Q-RP-18 = A, [DECISIONS.md](DECISIONS.md#rp-3-answers)). Built on `feature/rp-3-approval-rollup` (`4fee267e`), off `develop` at `94cb2359`, and merged into `develop` as `745e6cb3`, not pushed ([rp-3-verification.md](rp-3-verification.md)). There is no `docs/apps/production.md` page, so WP 3.4 documents the rule in C-RP-15 and the release notes only. Q-RP-5 = A ([DECISIONS.md](DECISIONS.md)): a fixed rule, switched on per project, and no `AutomationRule` engine.
 
 ### Why (what is there today)
 
@@ -215,6 +215,73 @@ The same as RP-2. The browser role smoke adds one step: a supervisor approves a 
 - *Upgrading:* one migration, which adds a column with a default, and no data step. The rule starts off for every project.
 - *New:* a project can approve a task automatically when one of its versions is approved. The task's history records who approved the version.
 
-## RP-4 to RP-6
+## RP-4 Publishing depth (dependencies, loader, path templates)
+
+**Status:** approved 2026-11-12, every recommendation taken (Q-RP-19 = A, Q-RP-20 = A, Q-RP-21 = B, Q-RP-22 = B, Q-RP-23 = A, [DECISIONS.md](DECISIONS.md#rp-4-answers)). Branch `feature/rp-4-publishing-depth`, off `develop` at `745e6cb3` (RP-3 merged, not pushed). It is independent of RP-1 to RP-3 ([DECISIONS.md](DECISIONS.md#phases-after-the-answers)). It reverses publishing Q5 for dependencies (Q-RP-2 = A); `docs/publishing/PLAN.md` §3 already names the model.
+
+**Goal.** Three ShotGrid / ftrack features: a published file says which files it was built from, and which files were built from it; a pipeline tool asks "the latest (or approved, or hero) file of type T for this shot, asset or task" in one call; and a project can say where a file of a given type should live.
+
+### Why (what is there today)
+
+- `PublishedFile` (`apps/publishing/models/file.py`) is immutable once registered. Only the lifecycle and checksum fields change, and a `save()` guard plus a queryset guard refuse anything else (DOM-PUB-02 invariant 2). A dependency stored on the file itself would break that, so dependencies are their own table.
+- "Latest" exists only **per version and role** (`PublishedFileSelector.only_latest`, `?latest=1`). No route goes from a shot, asset or task to its files across versions. A tool has to list the versions, pick one, then list that version's files.
+- `version_index` is unique per task, and per shot or asset for versions with no task (`production_version_{task,shot,asset}_index_uniq`). That is the "stream" the loader picks the newest version in. Indexes of two tasks on one shot are not comparable.
+- `relative_path` is free text, checked only by the path rules (DOM-PUB-03). Nothing says what it should be. `MasterFileType` has `extension`, which a template can use.
+- Published files are read only by **full** members (`visible_project_ids`). A show-bound, department-bound or client/vendor member sees no file (SEC-PUB-01). The loader and the dependency reads follow the same rule.
+- Registration needs `publishing.create` (platform-admin, org-admin, production-admin, vfx-supervisor, lead-artist). Reads need `publishing.view` (every internal role but org-member).
+
+### Work packages
+
+| WP | Change | Files (`backend/apps/publishing/` unless named) |
+|---|---|---|
+| 4.1 | **Dependencies** (C-RP-16). `PublishedFileDependency(downstream, upstream, created_at, created_by)`, both `PROTECT` to `PublishedFile`. The pair is unique; a file never depends on itself (DB check). Append-only, like `PublishedFileEvent`. The registration body (single and bulk) gains `upstream_ids`, at most 50. Each upstream must be a live, visible file of the same project (Q-RP-20), not `Revoked`. An unknown, foreign or revoked one is a 400 naming it, and nothing is registered. An identical retry must send the same upstreams, or it is a 409, as any other difference is. `GET files/{id}/dependencies/` answers `{upstream: [...], downstream: [...]}`, direct links only, each with its id, path, role, file type, status, version id and code. The file detail gains `upstream_count` and `downstream_count`. Migration `0003`. | `models/dependency.py`, `migrations/0003_…`, `services/files.py`, `api/serializers/file.py`, `api/viewsets/file.py`, `admin/files.py` (read-only) |
+| 4.2 | **Loader** (C-RP-17). `GET files/loader/?shot=` or `asset=` or `task=` (exactly one), optional `file_type` (code), `role` (default `main`), `which` = `latest` (default), `approved` or `hero` (Q-RP-21). For each stream (the task, or the shot or asset for versions with no task) and each file type and role, it answers one file. It takes the newest live, published version of the stream (highest `version_index`) that has a `Registered` file of that type and role (`approved`: whose status is `Approved`; `hero`: the hero version). It picks that version's latest file (`only_latest`). Rows carry the file, the version (id, code, index, status, `is_hero`) and the task (id, code). Narrowed like every file read; an entity outside the caller's reach is a 404 identical to an unknown id. A selector method, no new table. | `selectors/files.py`, `api/viewsets/file.py`, `api/serializers/file.py` |
+| 4.3 | **Path templates** (C-RP-18). `PublishPathTemplate(project nullable, file_type, role, storage_root, pattern, enforce, is_active)`. A row without a project is the studio default, and a project's own row for the same type and role overrides it (Q-RP-23). Pattern tokens: `{project}`, `{episode}`, `{sequence}`, `{shot}`, `{asset}`, `{asset_type}`, `{task}`, `{department}`, `{version}` (`{version:03}` pads), `{ext}` (the file type's extension), `{frame}` (`%04d`, `{frame:4}` sets the width), and `{name}` (free text, one segment of letters, digits, `_`, `-`, `.`). An unknown token, a pattern whose sample render breaks DOM-PUB-03, or a second active row for one key is a 400. `GET files/resolve-path/?version_id=&file_type=&role=` answers the storage root and the path with `{name}` left in, or 404 when no template applies. With `enforce` on (Q-RP-22), a registration whose root or path does not match is a 400 `path_template_mismatch` that shows the expected pattern. Managed at `/publishing/path-templates/` with `publishing.template.manage` (new). Migration `0004`. | `models/template.py`, `domain/templates.py` (pure), `services/templates.py`, `services/files.py`, `api/viewsets/template.py`, `api/serializers/template.py`, `api/routers.py`, `constants/permissions.py`, `backend/apps/core/management/commands/init_platform.py` |
+| 4.4 | **Frontend.** The file page shows its upstream and downstream files as links, with a status pill (a revoked upstream stands out). The project's Publishing tab gets a "Path templates" list and form (studio defaults on the publishing settings page), gated on `publishing.template.manage`. The loader has no screen: it is for pipeline tools. A capture tool and its samples. | `frontend/src/api/publishing/`, `modules/publishing/FilePages.tsx`, `modules/production/components/project-tabs/ProjectPublishingTab.tsx`, `docs/sync/tools/` |
+| 4.5 | **Docs.** `docs/publishing/CONTRACTS.md` (DOM-PUB-07 dependencies, DOM-PUB-08 templates, API-PUB-18 to API-PUB-21), review-pipeline CONTRACTS (C-RP-16 to C-RP-18), the role table, the stale "no Celery app" docstring in `tasks/verify.py` (ANALYSIS §7), release notes, verification report. | `docs/publishing/`, `docs/review-pipeline/` |
+
+### Questions before RP-4 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-19 | When are dependencies written? | A: only when the downstream file is registered, and never changed afterwards. B: also added and removed later, through their own route. | **A**: it matches the rule that a registered file never changes. And because every upstream exists before its downstream, no cycle can form, so there is no cycle check and no lock. B needs both, plus a history of edits. A wrong dependency is corrected as a wrong path is: revoke and register again. |
+| Q-RP-20 | Can a file depend on a file of another project (a shared library asset)? | A: same project only. B: any project the registrant is a full member of. | **A**: every reader of the downstream can then see its upstreams. With B, a reader would see a dependency on a file they may not read, and the answer would need a placeholder. B can be added later. |
+| Q-RP-21 | What can the loader pick? | A: `latest` and `approved`. B: also `hero`. | **B**: the hero is already "the current version" of a shot or asset (`is_hero`). It costs one filter. |
+| Q-RP-22 | Does a template refuse a registration that does not match it? | A: never: templates only advise, through `resolve-path`. B: a switch on each template, `enforce`, off by default. C: always, when a template applies. | **B**: nothing changes for tools already registering files until a studio turns a template's switch on. C would break tools on the day a template is saved. |
+| Q-RP-23 | Who manages templates, and at which level? | A: studio defaults plus per-project overrides, managed with a new code `publishing.template.manage` (platform-admin, org-admin, production-admin). B: per project only, managed with `project.update`. | **A**: most studios keep one layout and change it for a few shows. A publishing code keeps the rule inside the app that owns paths. |
+
+Also decided in the plan, without a question:
+- An upstream may be `Deprecated` but not `Revoked`. Revoking an upstream later changes nothing on the downstream; its dependency read shows the upstream's status.
+- The loader answers one file per stream and per file type and role. It does not read across streams: comp and lighting on one shot are two rows.
+- Templates are checked when a file is registered, never against files already registered. Changing a template does not move or flag old files.
+
+Who causes the change: dependencies are written by whoever registers the file (`publishing.create`), templates by `publishing.template.manage`, and the loader reads with `publishing.view`. Nothing widens what a member can see (the same full-member rule as every file read), so the trust model is unchanged and no ADR is needed.
+
+### Not in RP-4
+
+- No dependency between versions (only between files), no graph walk deeper than one step in one call, no automatic revoke of downstream files.
+- No renaming or moving of registered files to match a template.
+- No DCC loader or publisher tool (RP-9, a separate repository, Q-RP-10 = B). RP-4 gives them the routes.
+- No `PublishItem` (export job) change.
+
+### Tests (targeted, test database)
+
+- Dependencies: registered with upstreams (single and bulk), read both ways; self, duplicate, unknown, other project's, revoked and not-visible upstreams refused with nothing registered; a deprecated upstream accepted; an identical retry with the same upstreams is a 200 and with other upstreams a 409; the table refuses update and delete; the read is narrowed (a show-bound member gets a 404 as for the file).
+- Loader: each selector (`latest`, `approved`, `hero`) on shot, asset and task; newest version by `version_index` within a stream; a version without the file type is skipped for the next one down; deprecated and revoked files, unpublished and deleted versions are skipped; two streams on one shot give two rows; exactly one of `shot`, `asset`, `task` (400 otherwise); an entity in another project or out of reach is a 404; query count bounded.
+- Templates: each token renders; padding and frame width; `{name}` matching; unknown token and a pattern that breaks DOM-PUB-03 refused; one active row per key; the project's row overrides the studio's; `resolve-path` (found, 404); `enforce` off accepts any path, on refuses a mismatch with `path_template_mismatch` and accepts a match (single and bulk); `publishing.template.manage` held by the three roles only (permission matrix), and refused without it.
+- Role matrix, `init_platform` grants the new code. (`publishing` is not in the migration-count test of `apps/core/tests/test_bootstrap.py`, so its two new migrations need no change there.)
+
+Mutation checks: allow a revoked upstream; allow another project's upstream; let a retry ignore its upstreams; pick the version by date instead of `version_index`; let the loader return a deprecated file; drop the `approved` status filter; let a studio template win over the project's; skip `enforce`; let `{name}` match a `/`. Each must make a test fail.
+
+### Gates
+
+The same as RP-3, plus `apps/publishing` and `apps/deliveries` in full (Deliveries reads files through the publishing selectors).
+
+### Release notes (draft)
+
+- *Upgrading:* two additive migrations, no data step. Rerun `init_platform` to grant `publishing.template.manage`.
+- *New:* a published file records the files it was built from; pipeline tools can ask for the latest, approved or hero file of a type for a shot, asset or task; projects can define where files of each type live, and optionally refuse files registered elsewhere.
+
+## RP-5 and RP-6
 
 Not planned in detail yet. Each phase is written here before it starts, from [ANALYSIS.md §8](ANALYSIS.md#8-draft-phases-to-be-fixed-after-9-is-answered) and [DECISIONS.md](DECISIONS.md).
