@@ -15,12 +15,23 @@ The owner answered the questions of [ANALYSIS.md §9](ANALYSIS.md#9-decisions-fo
 | Q-RP-9 | **B**, live review later | RP-8 is not planned now. It would need a Redis channel layer and an ASGI server in production. |
 | Q-RP-10 | **B**, a separate repository | DCC and desktop tools (RP-9) are a different runtime with a different release cycle. They are built outside this repository, against the API. |
 
+## RP-2 answers
+
+The owner took every recommendation of [PLAN.md, RP-2 questions](PLAN.md#questions-before-rp-2-starts) on 2026-11-12 ("next").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-11 | **A** | The author edits their own note. The author, the assignee of the note's task, or a holder of `note.update` changes its status. `note.update` is granted to platform-admin, org-admin, production-admin, vfx-supervisor and lead; editing another person's note needs it. |
+| Q-RP-12 | **A** | Soft delete, by the author while no one else has replied, or by a holder of `note.delete` (platform-admin, org-admin, production-admin, vfx-supervisor). A thread's replies go with it. |
+| Q-RP-13 | **A** | A narrowed member still sees only the threads they wrote, now with every reply on them. The trust model does not change; no ADR. |
+| Q-RP-14 | **A** | Links to Sequence, Shot, Asset, Version, Playlist, Review, and Episode on episodic projects. The task is its own field, not a link. |
+
 ## Phases after the answers
 
 | Phase | Status |
 |---|---|
-| RP-1 Data model cleanup | planned in [PLAN.md](PLAN.md) |
-| RP-2 Notes (replies, links) | after RP-1 |
+| RP-1 Data model cleanup | built and merged into `develop` ([rp-1-verification.md](rp-1-verification.md)) |
+| RP-2 Notes (replies, links) | planned in [PLAN.md](PLAN.md#rp-2-notes-replies-links-a-task); answered (Q-RP-11 to Q-RP-14 = A), being built on `feature/rp-2-notes` |
 | RP-3 Approval roll-up (fixed rule) | after RP-1 |
 | RP-4 Publishing depth | independent |
 | RP-5 Media pipeline (ffmpeg worker) | independent |

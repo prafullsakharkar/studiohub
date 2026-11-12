@@ -89,6 +89,10 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("automation.update", "automation", "update"),
     ("automation.delete", "automation", "delete"),
     ("note.create", "notes", "create"),
+    # RP-2 (docs/review-pipeline Q-RP-11, Q-RP-12): edit or change the status of another person's note;
+    # delete any note. Authors manage their own without them.
+    ("note.update", "notes", "update"),
+    ("note.delete", "notes", "delete"),
     ("timelog.manage", "timelogs", "manage"),
     ("audit.view", "audit", "read"),
     ("audit.update", "audit", "update"),
@@ -283,7 +287,7 @@ def _extend_permission_specs() -> None:
         if spec[0] not in known:
             PERMISSION_SPECS.append(spec)
             known.add(spec[0])
-    for extra in ("note.create", "audit.view"):
+    for extra in ("note.create", "note.update", "note.delete", "audit.view"):
         assert extra in known, extra
 
 
@@ -292,7 +296,7 @@ _extend_permission_specs()
 PRODUCTION_FULL_PERMISSIONS = [
     code for resource, (_, actions) in _PRODUCTION_RESOURCES.items() for code in
     (f"{resource}.{action}" for action in actions)
-] + ["note.create", "audit.view"]
+] + ["note.create", "note.update", "note.delete", "audit.view"]
 
 # What a vfx-supervisor does not hold of the full production set (docs/delivery-pipeline Q34).
 VFX_SUPERVISOR_WITHHELD = frozenset(
@@ -339,7 +343,7 @@ PRODUCTION_LEAD_PERMISSIONS = _production_codes(
     show="view",
     delivery="view",
     publishing="view create",
-) + ["audit.view", "note.create"]
+) + ["audit.view", "note.create", "note.update"]
 
 # An artist reads what the work needs, logs their own time and publishes their own versions. No
 # deliveries: they are the studio's dealings with the client (docs/sync CR-53).

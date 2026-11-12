@@ -50,10 +50,6 @@ from apps.production.api.serializers.membership import (
     ProjectMembershipUpdateSerializer,
 )
 from apps.production.api.serializers.project.detail import ProjectDetailSerializer
-from apps.production.api.serializers.project_note import (
-    ProjectNoteCreateSerializer,
-    ProjectNoteSerializer,
-)
 from apps.production.api.serializers.review.list import ReviewListSerializer
 from apps.production.api.serializers.sequence.list import SequenceListSerializer
 from apps.production.api.serializers.shot.list import ShotListSerializer
@@ -70,7 +66,6 @@ from apps.production.constants.permissions import (
     AssetPermissions,
     EditorialTrackPermissions,
     MediaPermissions,
-    NotePermissions,
     ProjectPermissions,
     ReviewPermissions,
     SchedulingPermissions,
@@ -94,7 +89,6 @@ from apps.production.selectors.project import ProjectSelector
 from apps.production.selectors.project_scoped import (
     EditorialCutSelector,
     ProjectMembershipSelector,
-    ProjectNoteSelector,
 )
 from apps.production.selectors.review import ReviewSelector
 from apps.production.selectors.rollups import TaskHoursSelector
@@ -106,7 +100,6 @@ from apps.production.selectors.version import VersionSelector
 from apps.production.services.project_scoped import (
     UNSET,
     ProjectMembershipService,
-    ProjectNoteService,
 )
 
 # Contractual display constants mirrored from the frontend mock
@@ -233,7 +226,9 @@ class ProjectScopedAPIView(ProjectScopeMixin, APIView):
         search_fields=(),
         ordering_fields=(),
         ordering=None,
+        page_context=None,
     ):
+        """``page_context(rows)``, when given, adds to the serializer context of the rows served."""
         from django.db.models import QuerySet as DjangoQuerySet
 
         qs: DjangoQuerySet[Any] = selector_cls.get_queryset(
@@ -257,11 +252,12 @@ class ProjectScopedAPIView(ProjectScopeMixin, APIView):
         qs = OrderingFilter().filter_queryset(self.request, qs, shim)
         paginator = StandardPagination()
         page = paginator.paginate_queryset(qs, self.request, view=self)
-        serializer = serializer_cls(
-            page if page is not None else qs,
-            many=True,
-            context={"request": self.request},
-        )
+        rows = page if page is not None else qs
+        context: dict[str, Any] = {"request": self.request}
+        if page_context is not None:
+            rows = list(rows)
+            context.update(page_context(rows))
+        serializer = serializer_cls(rows, many=True, context=context)
         if page is not None:
             return paginator.get_paginated_response(serializer.data)
         return Response(serializer.data)
@@ -544,42 +540,6 @@ class ProjectEditorialView(ProjectScopedAPIView):
             search_fields=("name", "code", "sequence_code"),
             ordering_fields=("code", "created_at"),
         )
-
-
-class ProjectNotesView(ProjectScopedAPIView):
-    permission_map = {"get": (ProjectPermissions.VIEW,), "post": (NotePermissions.CREATE,)}
-
-    def get(self, request, *args, **kwargs):
-        return self._entity_list(
-            selector_cls=ProjectNoteSelector,
-            serializer_cls=ProjectNoteSerializer,
-            search_fields=("subject", "body", "entity_code", "entity_name"),
-            ordering_fields=("created_at", "priority", "status"),
-            ordering=("-created_at",),
-        )
-
-    def post(self, request, *args, **kwargs):
-        from rest_framework import status as http_status
-
-        serializer = ProjectNoteCreateSerializer(data=request.data or {})
-        serializer.is_valid(raise_exception=True)
-        validated = cast(dict[str, Any], serializer.validated_data)
-        user = request.user if request.user.is_authenticated else None
-        author_name = validated.get("author_name") or ""
-        if not author_name and user is not None:
-            profile = getattr(user, "profile", None)
-            author_name = (
-                getattr(profile, "display_name", "") if profile else ""
-            ) or getattr(user, "email", "")
-        validated["author_name"] = author_name
-        note = ProjectNoteService.create_note(
-            user=user,
-            project=self.project,
-            author=user,
-            **validated,
-        )
-        data = ProjectNoteSerializer(note, context={"request": request}).data
-        return Response(data, status=http_status.HTTP_201_CREATED)
 
 
 class ProjectDeliveriesView(ProjectScopedAPIView):

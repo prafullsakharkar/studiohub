@@ -556,6 +556,248 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/organizations/projects/{project_id}/notes/{note_id}:
+    get:
+      operationId: organizations_projects_notes_retrieve_3
+      description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
+        a note (C-RP-10, C-RP-12, C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: organizations_projects_notes_partial_update
+      description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
+        a note (C-RP-10, C-RP-12, C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: organizations_projects_notes_destroy
+      description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
+        a note (C-RP-10, C-RP-12, C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '204':
+          description: No response body
+  /api/organizations/projects/{project_id}/notes/{note_id}/:
+    get:
+      operationId: organizations_projects_notes_retrieve_4
+      description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
+        a note (C-RP-10, C-RP-12, C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: organizations_projects_notes_partial_update_2
+      description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
+        a note (C-RP-10, C-RP-12, C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: organizations_projects_notes_destroy_2
+      description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
+        a note (C-RP-10, C-RP-12, C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '204':
+          description: No response body
+  /api/organizations/projects/{project_id}/notes/{note_id}/replies:
+    post:
+      operationId: organizations_projects_notes_replies_create
+      description: '``POST`` a reply on the thread (C-RP-11).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+  /api/organizations/projects/{project_id}/notes/{note_id}/replies/:
+    post:
+      operationId: organizations_projects_notes_replies_create_2
+      description: '``POST`` a reply on the thread (C-RP-11).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+  /api/organizations/projects/{project_id}/notes/{note_id}/status:
+    post:
+      operationId: organizations_projects_notes_status_create
+      description: '``POST`` a thread''s new status (C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+  /api/organizations/projects/{project_id}/notes/{note_id}/status/:
+    post:
+      operationId: organizations_projects_notes_status_create_2
+      description: '``POST`` a thread''s new status (C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
   /api/organizations/projects/{project_id}/pipeline:
     get:
       operationId: organizations_projects_pipeline_retrieve

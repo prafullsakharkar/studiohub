@@ -84,6 +84,76 @@ Mutation checks: break each rule above (filter through deleted rows; skip the re
 - *Upgrading:* one migration (two nullable columns). WP 1.6 adds a second migration that drops six JSON columns from `production_version`; run `STAGING_AUDIT.sql` first. Deploy the frontend with the backend: an older frontend still works, because it reads none of the removed keys and sends no `version_id`.
 - *API:* the version responses lose six keys nobody read. Reviews and playlists can be filtered by `version_id`. Comments and annotations name their version.
 
-## RP-2 to RP-6
+## RP-2 Notes: replies, links, a task
+
+**Status:** approved 2026-11-12, every recommendation taken (Q-RP-11 to Q-RP-14 = A, [DECISIONS.md](DECISIONS.md#rp-2-answers)). Backend (WP 2.1 to 2.6) and frontend (WP 2.7) built on `feature/rp-2-notes` ([rp-2-verification.md](rp-2-verification.md)). Two points of this plan turned out differently; see the corrections below.
+
+**Goal.** A project note works like a ShotGrid note: people reply to it in a thread, it names every record it is about (not just one), it can name the task that should act on it, and it can be addressed, closed and reopened. Review comments stay their own records (Q-RP-4 = B).
+
+### Why (what is there today)
+
+1. **No replies.** `ProjectNote` has no parent (`backend/apps/production/models/project_note.py:33`). `ReviewComment` has one, so threads exist only inside a review.
+2. **One record per note, and the client writes it.** `entity_type`, `entity_id`, `entity_code` and `entity_name` are free strings (`project_note.py:45-48`). `ProjectNoteCreateSerializer` accepts all four as sent (`api/serializers/project_note.py`), and nothing checks that the record exists, is in this project, or is visible to the writer. The code and name shown to others are whatever the client typed.
+3. **No way to ask for the notes of a record.** The route lists the whole project and only searches (`api/views/project_scoped.py:549`). The shot and asset Notes tabs search by code and filter on the client (`frontend/src/modules/production/work/EntityNotes.tsx:88`), so a note whose text names another shot's code is fetched and dropped, and a code change hides older notes.
+4. **List and create only.** No detail, edit, status change or delete route. `status`, `addressed_by` and `addressed_at` exist, but only `status` can be set, and only on create (a client can create a note already "Closed"). The only permission is `note.create` (`constants/permissions.py:146`).
+5. **No task.** Nothing says who should act on a note, which RP-6 (notifications) needs.
+
+### Work packages
+
+| WP | What | Where |
+|---|---|---|
+| 2.1 | **Model.** On `ProjectNote`: `parent` (self FK, `PROTECT`, null; replies only one level deep, like `ReviewComment`) and `task` (FK to `Task`, `SET_NULL`, null). A new `ProjectNoteLink` (note FK `CASCADE`, `entity_type` from a fixed list, `entity_id` UUID, unique per note and record, soft delete like the note). One migration with no data step, and a second, data-only one (WP 2.6). | `models/project_note.py`, migrations 0005 and 0006 |
+| 2.2 | **Validated links and task on create** (C-RP-07). `links` (up to 20) and `task_id` are accepted; the old `entity_type` + `entity_id` pair still works and becomes the first link. Each record must be live, in this project and visible to the writer under the same narrowing as its own list route; otherwise **400**, one message for "not there" and "not yours", so no existence oracle. `entity_code` and `entity_name` are written by the server from the record; what the client sends is ignored. A new note always starts `Open`. | `api/serializers/project_note.py`, new `validators/project_note.py`, `services/project_scoped.py` (`ProjectNoteService`) |
+| 2.3 | **Shape** (C-RP-08). Every note gains `parent_id`, `links[]` (type, id, code, name), `task_id`, `task_code` and `reply_count`. The first link stays mirrored in the four `entity_*` keys. | `api/serializers/project_note.py` |
+| 2.4 | **Routes** (C-RP-09 to C-RP-13): the list shows threads only (no replies) and gains filters; detail with replies; reply; edit; status; delete. The rules on who may do what are Q-RP-11 to Q-RP-13. | `api/views/project_scoped.py`, `api/urls_project_scoped.py`, `selectors/project_scoped.py`, `ProjectNoteService` |
+| 2.5 | **Permissions and events.** `note.update` and `note.delete` in `NotePermissions` and the `init_platform` catalog, granted as Q-RP-11 and Q-RP-12 say. `NoteCreated`, `NoteReplied` and `NoteStatusChanged` domain events in `apps/production/events/`, published after commit (RP-6 subscribes; nothing does in RP-2). ~~Every write is in the audit trail, as `create_note` already is.~~ Corrected: notes were never in the change log (see below). | `constants/permissions.py`, `core/management/commands/init_platform.py`, `events/` |
+| 2.6 | **Back-fill links** for existing notes. A data migration adds a `ProjectNoteLink` only where the stored `entity_type` is in the list and `entity_id` is the UUID of a record in the note's own project (archived records included, so history is kept). Nothing else is changed, and the `entity_*` columns stay. A read-only `STAGING_AUDIT_RP2.sql` counts the notes that will not get a link, to be run before the migration, as in RP-1. | migration 0006, `docs/review-pipeline/STAGING_AUDIT_RP2.sql` |
+| 2.7 | **Frontend follow-up.** Threads with replies in the project Notes tab and the shot and asset Notes tabs; link chips; a record picker (several records) and a task picker in the add dialog; Address, Close and Reopen; edit and delete where allowed (`useCan` plus authorship). The shot and asset tabs read with `entity_type` + `entity_id` and drop the search-and-filter. A Notes tab on the version workspace. Captures refreshed from the test database. | `frontend/src/api/production/structure.ts`, `EntityNotes.tsx`, `structure/panels.tsx`, the version workspace |
+
+### Corrections found while building
+
+1. **Notes are not in the change log, and RP-2 does not add them.** `apps/audit/signals/change_tracking.py` tracks a fixed list of models, and `ProjectNote` was never on it; the plan was wrong to say `create_note` was audited. Adding it would copy each note's subject and body into change-log rows. Any `audit.view` holder on the project can read those rows, including members bound to a show or a department, who get 404 on every notes route. That would widen who reads notes, so it needs its own decision: a proposed follow-up, not part of RP-2.
+2. **Narrowed members never reach the notes routes.** The routes need whole-project access (`user_has_full_project_access`), so members bound to a show or a department get 404, as for the list before RP-2. Q-RP-13 = A ("unchanged") holds trivially, and the tests check the 404 rather than a narrowed list. The link check still applies the caller's narrowing, and that is tested on the validator.
+
+### Questions before RP-2 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-11 | Who may edit a note, and who may address, close or reopen it? | A: the author edits their own note's text; status changes by the author, the assignee of the note's task, or a holder of the new `note.update` (production-admin, org-admin, platform-admin, vfx-supervisor, lead). Others' text needs `note.update`. B: only `note.update` holders. | **A**: the artist on the task can mark a note addressed, which is what the status is for. |
+| Q-RP-12 | Delete? | A: soft delete, by the author while the thread has no replies from others, or by a holder of `note.delete` (production-admin, org-admin, platform-admin, vfx-supervisor); a thread's replies go with it. B: no delete in RP-2. | **A**: soft delete keeps the audit trail. |
+| Q-RP-13 | What can a narrowed member (show- or department-bound) see? Today: only the notes they wrote. | A: unchanged, plus every reply on their own threads. B: also the notes linked to records they can see. | **A**: no change to the trust model, so no ADR. B can come later with its own contract. |
+| Q-RP-14 | Which records can a note link to? | A: Sequence, Shot, Asset, Version, Playlist, Review (and Episode on episodic projects). The task is its own field, not a link. B: also Task as a link. | **A**: one way to name the task. |
+
+### Not in RP-2
+
+- Review comments stay their own records (Q-RP-4 = B). No merge, no copy between the two.
+- Notifications on a note or a reply are RP-6; RP-2 only publishes the events.
+- Attachments on notes (CR-52 covers versions only).
+- Mentions (`@name`) are RP-6.
+- Partial (client, vendor) members still get 404 on the notes routes (`external_allowed=False`), as today.
+
+### Tests (targeted, test database)
+
+- Links and task on create: one, several and none; the old `entity_type` + `entity_id` pair; the 20 cap; a duplicate is stored once; code and name come from the record, never from the request; a record of another project, an archived one, a malformed id and one outside the writer's narrowing each get the same 400; a task of another project is 400; `status: "Closed"` on create still gives `Open`.
+- List: replies are not listed; `reply_count` counts only live replies; `entity_type` + `entity_id` matches the first link and any other link; `task_id` and `status` filters; an unknown or malformed value gives an empty list, not a 400; show-bound, department-bound, vendor and non-members get 404 on every notes route (correction 2).
+- Detail and reply: replies in order; a reply to a reply is stored on the root; a reply inherits the thread's project and takes no links or task; a reply to a deleted note, or to a note the caller cannot see, is 404.
+- Edit, status and delete follow the answers to Q-RP-11 and Q-RP-12, including the 403 for someone with neither the right nor authorship; `addressed_by` and `addressed_at` are set by the server and cleared on reopen.
+- Events are published after commit, once per write, and not on a failed write.
+- The back-fill migration: a resolvable note gets one link; an unresolvable one (unknown id, another project's record, a malformed id, `Project` type) gets none; it can be run twice.
+- Role matrix: the new grants are what Q-RP-11 and Q-RP-12 say, and `init_platform` stays idempotent.
+- The OpenAPI schema changes only in the places listed in C-RP-07 to C-RP-13.
+
+Mutation checks: skip the project check on a link; skip the narrowing check; take `entity_code` from the request; list replies as threads; let the author of a note change another person's note; forget to clear `addressed_at` on reopen; publish an event before commit. Each must make a test fail.
+
+### Gates
+
+The same as RP-1, plus a browser role smoke: an artist replies to a supervisor's note on a shot and marks it addressed; a show-bound member does not see the thread.
+
+### Release notes (draft)
+
+- *Upgrading:* two migrations (new columns and a table; then a data-only back-fill). Run `STAGING_AUDIT_RP2.sql` first to see which notes keep no link. Rerun `init_platform` to grant `note.update` and `note.delete`.
+- *API:* notes have replies, several links and an optional task, and can be read one by one, edited, addressed, closed, reopened and deleted. The list shows threads only. The server, not the client, writes a link's code and name.
+
+## RP-3 to RP-6
 
 Not planned in detail yet. Each phase is written here before it starts, from [ANALYSIS.md §8](ANALYSIS.md#8-draft-phases-to-be-fixed-after-9-is-answered) and [DECISIONS.md](DECISIONS.md).

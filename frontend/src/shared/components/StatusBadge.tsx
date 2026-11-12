@@ -67,6 +67,8 @@ const STATUS_TONE: Record<string, Tone> = {
   'in review': 'running', running: 'running', wip: 'running', booked: 'running', scheduled: 'running',
   // prepared, waiting for the next step
   ready: 'ready', validated: 'ready',
+  // a note answered and waiting for its author to close it (review-pipeline RP-2)
+  addressed: 'ready',
   // waiting on someone
   pending: 'waiting', 'pending review': 'waiting', 'internal review': 'waiting', submitted: 'waiting', queued: 'waiting',
   open: 'waiting', 'on leave': 'waiting', postponed: 'waiting', deprecated: 'waiting',

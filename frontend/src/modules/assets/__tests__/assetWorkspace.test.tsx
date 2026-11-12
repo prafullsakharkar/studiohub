@@ -25,7 +25,8 @@ const members = structure.members_get.body.results as Array<{ user_id: string }>
 const path = (c: MockCall) => new URL(c.url).pathname;
 const params = (c: MockCall) => Object.fromEntries(new URL(c.url).searchParams);
 const page = (results: unknown[]) => ({ count: results.length, next: null, previous: null, results });
-const noteRows = ws.notes_search_asset.body.results as Array<{ subject: string; entity_id: string }>;
+// RP-2: the Notes tab reads the threads that link the asset (C-RP-09), captured in production/_notes_flow.json.
+const notesFlow = loadSample<Record<string, { status: number; body: any }>>('production/_notes_flow.json');
 const assetId = ws.ids.asset as string;
 
 const Where: React.FC = () => {
@@ -68,7 +69,7 @@ describe('asset workspace', () => {
     if (p === `/api/v1/assets/${parent.id}/archive/`) return { body: ws.asset_archive.body };
     if (p === '/api/v1/assets/') return { body: work.assets_list.body };
     if (p === `/api/organizations/projects/${parent.project_id}/members/`) return { body: structure.members_get.body };
-    if (p === `/api/organizations/projects/${parent.project_id}/notes/`) return c.method === 'POST' ? { status: 201, body: ws.note_on_asset.body } : { body: ws.notes_search_asset.body };
+    if (p === `/api/organizations/projects/${parent.project_id}/notes/`) return c.method === 'POST' ? { status: 201, body: notesFlow.create_old_body.body } : { body: notesFlow.list_by_asset.body };
     return { body: page([]) };
   };
 
@@ -142,18 +143,18 @@ describe('asset workspace', () => {
     expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ assigned_artist: members[0].user_id });
   });
 
-  it('lists the notes that name this asset and adds one that names it', async () => {
+  it('lists the threads that link this asset and adds one about it', async () => {
     const noted = { ...work.assets_detail.body, id: assetId };
     const { calls } = mockFetch((c) => (path(c) === `/api/v1/assets/${assetId}/` ? { body: noted } : server(c)));
     mount(`/assets/${assetId}`);
     fireEvent.click(await screen.findByRole('tab', { name: 'Notes' }));
-    const own = noteRows.find((n) => n.entity_id === assetId) as { subject: string };
+    const own = notesFlow.list_by_asset.body.results[0] as { subject: string };
     expect(await screen.findByText(own.subject)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Add note' }));
     fireEvent.change(await screen.findByLabelText(/^Subject/), { target: { value: 'Fix the rig' } });
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Add note' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
-    expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({ subject: 'Fix the rig', entity_type: 'Asset', entity_id: assetId });
-    expect(params(calls.find((c) => path(c).endsWith('/notes/')) as MockCall).search).toBe(noted.code);
+    expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({ subject: 'Fix the rig', links: [{ entity_type: 'Asset', entity_id: assetId }] });
+    expect(params(calls.find((c) => path(c).endsWith('/notes/')) as MockCall)).toMatchObject({ entity_type: 'Asset', entity_id: assetId });
   });
 });

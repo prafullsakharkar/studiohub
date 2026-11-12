@@ -74,6 +74,8 @@ export const BACKEND_PERMISSION_CODES = [
   'media.update',
   'media.view',
   'note.create',
+  'note.delete',
+  'note.update',
   'playlist.create',
   'playlist.delete',
   'playlist.update',
