@@ -80,13 +80,21 @@ class ReviewParticipant(EntityModel):
 
 
 class ReviewComment(EntityModel):
-    """A comment on a review, optionally on a frame, optionally a reply to another comment."""
+    """A comment on a review, optionally on one of its versions and a frame, optionally a reply to another comment."""
 
     review = models.ForeignKey(
         "production.Review", on_delete=models.CASCADE, related_name="comment_rows"
     )
     parent = models.ForeignKey(
         "self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies"
+    )
+    #: the version of the review the comment is on; null means the whole review (C-RP-05). A reply has its thread's.
+    version = models.ForeignKey(
+        "production.Version",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="review_comments",
     )
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -152,6 +160,14 @@ class ReviewAnnotation(EntityModel):
 
     review = models.ForeignKey(
         "production.Review", on_delete=models.CASCADE, related_name="annotation_rows"
+    )
+    #: the version of the review the drawing is on; null means the whole review (C-RP-05)
+    version = models.ForeignKey(
+        "production.Version",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="review_annotations",
     )
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,

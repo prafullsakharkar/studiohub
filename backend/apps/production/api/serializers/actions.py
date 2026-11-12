@@ -188,6 +188,8 @@ class AnnotationSerializer(StrictSerializer):
     author_name = serializers.CharField(required=False, allow_blank=True)
     comment = serializers.CharField(required=False, allow_blank=True, default="")
     drawing_coordinates = serializers.JSONField(required=False, allow_null=True)
+    #: a version shown in the review; absent or null: the whole review (C-RP-05)
+    version_id = serializers.UUIDField(required=False, allow_null=True)
 
 
 class ReviewCommentSerializer(StrictSerializer):
@@ -199,6 +201,8 @@ class ReviewCommentSerializer(StrictSerializer):
     is_client_visible = serializers.BooleanField(required=False, default=True)
     tags = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     parent_id = serializers.UUIDField(required=False, allow_null=True)
+    #: a version shown in the review; absent or null: the whole review. A reply takes its thread's (C-RP-05)
+    version_id = serializers.UUIDField(required=False, allow_null=True)
 
     def validate(self, attrs):
         # ``text`` and ``comment`` are the same thing (the old clients said ``comment``): one of them must say something.
