@@ -26,7 +26,8 @@ const anyOf = (why: string, ...any: string[]): PermissionRule => ({ kind: 'codes
 const open = (why: string): PermissionRule => ({ kind: 'open', why });
 const unbacked = (why: string): PermissionRule => ({ kind: 'unbacked', why });
 
-const DIRECTORY_READ = 'Directory list/retrieve are authenticated-only (DepartmentViewSet etc. permission_map).';
+const DIRECTORY_READ = 'Directory list/retrieve are authenticated-only (DepartmentViewSet etc. permission_map); clients and vendors are not (PARTNER_READ).';
+const PARTNER_READ = 'Clients, vendors and their contracts: list/retrieve need masterdata.partner.view (docs/sync CR-53).';
 const DIRECTORY_WRITE = 'Every directory write needs masterdata.directory.manage (create/update/destroy).';
 /** An administration *screen* is offered to those who can change what it edits, even though the read endpoints behind it are open (every user's dropdowns need them). */
 const catalogAdminScreen = (): PermissionRule =>
@@ -47,8 +48,8 @@ export const PERMISSION_MAP: Readonly<Record<string, PermissionRule>> = {
   'team.view': open(DIRECTORY_READ),
   'office.view': open(DIRECTORY_READ),
   'people.view': open(DIRECTORY_READ),
-  'client.view': open(DIRECTORY_READ),
-  'vendor.view': open(DIRECTORY_READ),
+  'client.view': codes(PARTNER_READ, 'masterdata.partner.view'),
+  'vendor.view': codes(PARTNER_READ, 'masterdata.partner.view'),
   'platform.position.view': open(DIRECTORY_READ),
   'position.view': open(DIRECTORY_READ),
   ...Object.fromEntries(
@@ -183,8 +184,8 @@ export const PERMISSION_MAP: Readonly<Record<string, PermissionRule>> = {
   'page.workspace': open('Shell page.'),
   'page.projects': codes('ProjectViewSet.list', 'project.view'),
   'page.people': open(DIRECTORY_READ),
-  'page.clients': open(DIRECTORY_READ),
-  'page.vendors': open(DIRECTORY_READ),
+  'page.clients': codes(PARTNER_READ, 'masterdata.partner.view'),
+  'page.vendors': codes(PARTNER_READ, 'masterdata.partner.view'),
   'page.departments': open(DIRECTORY_READ),
   'page.offices': open(DIRECTORY_READ),
   'page.positions': open(DIRECTORY_READ),

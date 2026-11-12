@@ -67,6 +67,7 @@ export const BACKEND_PERMISSION_CODES = [
   'masterdata.client.view_financial',
   'masterdata.directory.manage',
   'masterdata.hard_delete',
+  'masterdata.partner.view',
   'masterdata.person.view_sensitive',
   'media.create',
   'media.delete',

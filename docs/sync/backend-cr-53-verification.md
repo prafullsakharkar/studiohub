@@ -79,17 +79,31 @@ The committed sample `samples/masterdata/_partner_reads_cr53.json` keeps the res
   - `ruff format --check`: no new violations. The four files that would be reformatted were already unformatted at HEAD; `test_partner_api.py` was formatted.
   - `basedpyright` on the changed source files: 8 errors, all pre-existing bare `dict` / `list` / `set` annotations in `dashboard.py`, none on a changed line.
 
-## Not done here
+## Frontend step (second commit on this branch)
 
-- **The browser role smoke** (`tools/run_role_smoke.sh`) was not run. Its spec expects `/deliveries` to be shown to the artist, and the frontend still offers Clients and Vendors to every role (`permissionMap.ts` maps them to `open`). Both change in the frontend follow-up, and the smoke is that phase's gate.
-- **The frontend follow-up itself (CR-53, "Then, frontend"):**
-  - `page.clients`, `page.vendors`, `client.view` and `vendor.view` map to `masterdata.partner.view`;
-  - the deliveries list's Client filter shows only to holders of that code;
-  - the dashboard's delivery widgets show only with `delivery.view`;
-  - the role smoke spec is updated.
+| Where | What |
+|---|---|
+| `core/permissions/permissionMap.ts` | `page.clients`, `page.vendors`, `client.view`, `vendor.view`: `codes(PARTNER_READ, 'masterdata.partner.view')` (were `open`). The rest of the directory stays open. |
+| `core/permissions/backendCodes.ts`, `samples/_misc/permissions.json` | The new code; the sample's role grants follow `init_platform` for this change only (other drift in that sample is left as it was). |
+| `modules/deliveries/deliveries.tsx` | The **Client** filter is offered only with `masterdata.partner.view`, so a lead's list never asks for `clients/`. |
+| `features/dashboard/components/{ClientDeliveryHealth,ProjectKpiHud,UpcomingOverdueWidget}.tsx` | The delivery panel, the delivery KPI card and *Upcoming Client Turnovers* show only with `delivery.view`. |
+| `e2e/live/roles.smoke.spec.ts` | Clients and Vendors shown for producer and supervisor, refused for lead, artist and no-role; Deliveries refused for the artist. |
 
-  Until then, leads and artists see an error state on the Clients and Vendors pages.
-- **Not changed, noted while building it:**
-  - `GET /projects/{id}/statistics/` still returns a delivery count (a number, no names) to anyone with `project.view`.
-  - The dashboard's `project.budget_usd` is returned to every internal member who can read the project.
-  - Neither is part of CR-53; say if either should be a CR of its own.
+Tests:
+- `permissionMap.test.ts`: the four codes resolve to `masterdata.partner.view`, the other directory codes stay open.
+- `deliveries.test.tsx`: a reader without the code gets no Client filter and no `clients/` request. The supervisor and producer test users hold the code, as seeded.
+- `dashboard.test.tsx`: without `delivery.view` none of the three show and the rest does; with it they do.
+- Mutation checks, **6 of 6 killed**: each map entry reverted to `open` (two), each widget gate removed (three), the filter gate removed.
+
+Gates from `frontend/`:
+- `pnpm typecheck`; `pnpm test` **1585 passed** (150 files); `pnpm build`.
+- `biome check src --diagnostic-level=error` clean.
+- `unreachable.mjs`: only tests, `*RowKeys.ts` and the existing helpers.
+
+**Browser role smoke** against the throwaway factory-seeded backend (`tools/run_role_smoke.sh --grep "production admin|vfx supervisor|lead artist|seeded artist"`): **4 passed (32.2 min)**. Each role opened every static route with no server error and no dropped session, and the new expectations hold: producer and supervisor reach Clients and Vendors, while lead and artist are refused them, and the artist is refused Deliveries. The platform administrator and the no-role user were not rerun: the first passes every check, and the second only gained two more refusals.
+
+## Not changed, noted while building it
+
+- `GET /projects/{id}/statistics/` still returns a delivery count (a number, no names) to anyone with `project.view`.
+- The dashboard's `project.budget_usd` is returned to every internal member who can read the project.
+- Neither is part of CR-53; say if either should be a CR of its own.

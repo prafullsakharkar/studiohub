@@ -1,5 +1,6 @@
 import React from 'react';
 import { Clock, AlertTriangle, CheckCircle2, Calendar } from 'lucide-react';
+import { useCan } from '@/core/permissions/useCan';
 import { DashboardTasksData, DashboardDeliveriesData } from '../types';
 import { upcomingDeliveryItems } from '../utils/dashboardMetrics';
 
@@ -14,6 +15,8 @@ export const UpcomingOverdueWidget: React.FC<UpcomingOverdueWidgetProps> = ({ ta
   const overdueTasks = tasks.recent_tasks.filter((t) => t.is_overdue || t.status === 'Blocked');
   const criticalTotal = tasks.critical ?? overdueTasks.length;
   const upcomingDeliveries = upcomingDeliveryItems(deliveries);
+  // Deliveries name the client: shown only with delivery.view, which the server also requires for these figures (CR-53).
+  const canSeeDeliveries = useCan('delivery.view');
 
   return (
     <div id="dashboard-upcoming-overdue" className="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
@@ -71,6 +74,7 @@ export const UpcomingOverdueWidget: React.FC<UpcomingOverdueWidgetProps> = ({ ta
       )}
 
       {/* Upcoming Turnover Deliveries Section */}
+      {canSeeDeliveries && (
       <div className="space-y-2 pt-2 border-t border-slate-800">
         <div className="flex items-center gap-1.5 text-xs font-mono text-indigo-400 uppercase font-semibold">
           <Calendar className="w-3.5 h-3.5" />
@@ -96,6 +100,7 @@ export const UpcomingOverdueWidget: React.FC<UpcomingOverdueWidgetProps> = ({ ta
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };

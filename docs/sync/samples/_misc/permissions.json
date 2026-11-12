@@ -1,5 +1,5 @@
 {
- "_source": "docs/sync/tools/perm_catalog.py (Phase 0, backend @ sync/phase-0-discovery); + identity.directory.manage, identity.user.require_mfa (CR-40, from init_platform.PERMISSION_SPECS)",
+ "_source": "docs/sync/tools/perm_catalog.py (Phase 0, backend @ sync/phase-0-discovery); + identity.directory.manage, identity.user.require_mfa (CR-40, from init_platform.PERMISSION_SPECS); + masterdata.partner.view, held by org-admin, production-admin, vfx-supervisor, and delivery.view withdrawn from artist (CR-53, from init_platform)",
  "catalog": [
   "asset.create",
   "asset.delete",
@@ -47,6 +47,7 @@
   "masterdata.client.view_financial",
   "masterdata.directory.manage",
   "masterdata.hard_delete",
+  "masterdata.partner.view",
   "masterdata.person.view_sensitive",
   "media.create",
   "media.delete",
@@ -263,12 +264,12 @@
  ],
  "roles": {
   "platform-admin": 1,
-  "org-admin": 103,
+  "org-admin": 104,
   "org-member": 1,
-  "production-admin": 95,
-  "vfx-supervisor": 89,
+  "production-admin": 96,
+  "vfx-supervisor": 90,
   "lead-artist": 41,
-  "artist": 25
+  "artist": 24
  },
  "role_permissions": {
   "platform-admin": [
@@ -300,6 +301,7 @@
    "masterdata.catalog.manage",
    "masterdata.client.view_financial",
    "masterdata.directory.manage",
+   "masterdata.partner.view",
    "masterdata.person.view_sensitive",
    "media.create",
    "media.delete",
@@ -404,6 +406,7 @@
    "episode.update",
    "episode.view",
    "masterdata.client.view_financial",
+   "masterdata.partner.view",
    "media.create",
    "media.delete",
    "media.update",
@@ -497,6 +500,7 @@
    "episode.delete",
    "episode.update",
    "episode.view",
+   "masterdata.partner.view",
    "media.create",
    "media.delete",
    "media.update",
@@ -615,7 +619,6 @@
   ],
   "artist": [
    "asset.view",
-   "delivery.view",
    "episode.view",
    "media.create",
    "media.view",

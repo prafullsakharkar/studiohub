@@ -1065,3 +1065,10 @@ Hiding the people, departments, teams, offices and positions *pages* from artist
 - Tests that pinned open reads now give their reader `masterdata.partner.view`, and each such file gained a test that a plain user gets 403 on list, detail and a missing id.
 
 Contracts: masterdata SEC-MD-01 and D-CR53, production C-67 and D-07, deliveries PLAN §6. Pre-deploy checklist: run `init_platform` after deploying.
+
+**Frontend step, applied** on the same branch, as proposed:
+- `page.clients`, `page.vendors`, `client.view` and `vendor.view` map to `masterdata.partner.view` (`permissionMap.ts`, rule `PARTNER_READ`), so the sidebar entries, the command palette, the routes and the record pages follow the backend.
+- The deliveries list offers its **Client** filter only with that code and does not load the client list without it.
+- The dashboard's *Client Deliveries* panel, its KPI card and the watchlist's *Upcoming Client Turnovers* show only with `delivery.view`.
+- `backendCodes.ts` and the catalog sample (`samples/_misc/permissions.json`) carry the new code and the new role grants.
+- The role smoke spec expects Clients and Vendors for producer and supervisor, refused for lead, artist and no-role, and Deliveries refused for the artist.

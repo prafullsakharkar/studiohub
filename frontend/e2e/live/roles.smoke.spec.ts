@@ -24,14 +24,15 @@ const SETTINGS_SYSTEM = ['/settings/system/values', '/settings/system/flags', '/
 /**
  * What each seeded role must and must not reach (the permission codes the seed gives them, checked against the
  * live backend). A route outside both lists is only required to render or be refused without a server error.
+ * Clients and vendors: production admin, supervisor and the platform administrator only; deliveries: not the artist (CR-53).
  */
 const ROLES: Array<{ role: RoleKey; label: string; shown: string[]; refused: string[] }> = [
   { role: 'manager', label: 'platform administrator (superuser, MFA)', shown: ['/dashboard', '/projects', '/shots', '/deliveries', '/scheduling', '/access/roles', '/platform/health', '/system-logs', ...SETTINGS_SYSTEM], refused: [] },
-  { role: 'producer', label: 'production admin', shown: ['/dashboard', '/projects', '/shots', '/deliveries', '/scheduling', '/publishing/storage-roots', '/audit', ...SETTINGS_SYSTEM], refused: ['/access/roles', '/platform/health', '/system-logs'] },
-  { role: 'supervisor', label: 'vfx supervisor', shown: ['/dashboard', '/projects', '/shots', '/deliveries', '/scheduling', '/automations', '/audit'], refused: ['/access/roles', '/platform/health', ...SETTINGS_SYSTEM] },
-  { role: 'lead', label: 'lead artist', shown: ['/dashboard', '/projects', '/shots', '/deliveries', '/scheduling', '/audit'], refused: ['/access/roles', '/platform/health', '/automations', ...SETTINGS_SYSTEM] },
-  { role: 'artist', label: 'seeded artist', shown: ['/dashboard', '/projects', '/shots', '/deliveries', '/scheduling'], refused: ['/access/roles', '/platform/health', '/automations', '/audit', '/jobs', '/publishing/files/bulk', ...SETTINGS_SYSTEM] },
-  { role: 'selfmfa', label: 'user with no role', shown: ['/dashboard', '/settings/account/profile'], refused: ['/shots', '/assets', '/tasks', '/publishing', '/deliveries', '/scheduling', '/scheduling/capacity', '/audit', '/access/roles', ...SETTINGS_SYSTEM] },
+  { role: 'producer', label: 'production admin', shown: ['/dashboard', '/projects', '/shots', '/deliveries', '/clients', '/vendors', '/scheduling', '/publishing/storage-roots', '/audit', ...SETTINGS_SYSTEM], refused: ['/access/roles', '/platform/health', '/system-logs'] },
+  { role: 'supervisor', label: 'vfx supervisor', shown: ['/dashboard', '/projects', '/shots', '/deliveries', '/clients', '/vendors', '/scheduling', '/automations', '/audit'], refused: ['/access/roles', '/platform/health', ...SETTINGS_SYSTEM] },
+  { role: 'lead', label: 'lead artist', shown: ['/dashboard', '/projects', '/shots', '/deliveries', '/scheduling', '/audit'], refused: ['/access/roles', '/platform/health', '/automations', '/clients', '/vendors', ...SETTINGS_SYSTEM] },
+  { role: 'artist', label: 'seeded artist', shown: ['/dashboard', '/projects', '/shots', '/scheduling'], refused: ['/access/roles', '/platform/health', '/automations', '/audit', '/jobs', '/publishing/files/bulk', '/deliveries', '/clients', '/vendors', ...SETTINGS_SYSTEM] },
+  { role: 'selfmfa', label: 'user with no role', shown: ['/dashboard', '/settings/account/profile'], refused: ['/shots', '/assets', '/tasks', '/publishing', '/deliveries', '/clients', '/vendors', '/scheduling', '/scheduling/capacity', '/audit', '/access/roles', ...SETTINGS_SYSTEM] },
 ];
 
 for (const { role, label, shown, refused: mustRefuse } of ROLES) {

@@ -10,6 +10,7 @@ import {
   Clock,
   CheckCircle2,
 } from 'lucide-react';
+import { useCan } from '@/core/permissions/useCan';
 import { DashboardSummaryKpis } from '../types';
 import { Link } from 'react-router-dom';
 
@@ -20,6 +21,8 @@ export interface ProjectKpiHudProps {
 
 export const ProjectKpiHud: React.FC<ProjectKpiHudProps> = ({ summary, projectId }) => {
   const delivery = { delivered: summary.delivered_deliveries, upcoming: summary.upcoming_deliveries, late: summary.late_deliveries };
+  // Deliveries name the client: shown only with delivery.view, which the server also requires for these figures (CR-53).
+  const canSeeDeliveries = useCan('delivery.view');
   return (
     <div id="project-kpi-hud" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
       {/* 1. Sequence Shots Card */}
@@ -125,6 +128,7 @@ export const ProjectKpiHud: React.FC<ProjectKpiHudProps> = ({ summary, projectId
       </Link>
 
       {/* 5. Client Deliveries Card */}
+      {canSeeDeliveries && (
       <Link
         to={`/deliveries?project=${projectId}`}
         className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/40 transition-all space-y-2 group block col-span-2 md:col-span-1"
@@ -150,6 +154,7 @@ export const ProjectKpiHud: React.FC<ProjectKpiHudProps> = ({ summary, projectId
           <span className="text-indigo-300">Queued: {delivery.upcoming}</span>
         </div>
       </Link>
+      )}
     </div>
   );
 };
