@@ -7,6 +7,7 @@ from apps.production.models import (
     EditorialTrack,
     ProjectMembership,
     ProjectNote,
+    ProjectNoteLink,
     Show,
 )
 
@@ -87,3 +88,22 @@ class ProjectNoteAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
         "category",
         "priority",
     )
+
+
+@admin.register(ProjectNoteLink)
+class ProjectNoteLinkAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
+    """Read-only: links are written by ``ProjectNoteService`` only, which checks them (RP-2, C-RP-07)."""
+
+    list_display = ("note", "entity_type", "entity_id", "position", "created_at")
+    list_filter = ("entity_type",)
+    search_fields = ("entity_id",)
+    readonly_fields = tuple(field.name for field in ProjectNoteLink._meta.fields)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
