@@ -11,6 +11,7 @@ import { mockFetch } from '@/test/fetchMock';
 import type { MockCall, MockReply } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
 import type { Review, ReviewComment } from '@/api/production/review';
+import { tasksApi } from '@/api/production/work';
 import type { User } from '@/types/identity';
 import { ReviewWorkspace } from '../ReviewWorkspace';
 import { VersionWorkspace } from '../VersionWorkspace';
@@ -305,6 +306,21 @@ describe('version workspace', () => {
     const params = Object.fromEntries(new URL((calls.find((c) => path(c) === '/api/v1/reviews/') as MockCall).url).searchParams);
     expect(params.version_id).toBe(v.id);
     expect(params).not.toHaveProperty('entity_id'); // no longer read by entity and filtered on the client
+  });
+
+  it('approving the version from its status menu refetches the tasks too, which the server may have approved (RP-3)', async () => {
+    const pending = flow.versions_status_review.body;
+    expect([pending.status, pending.is_published]).toEqual(['Pending Review', false]);
+    const spy = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
+    const { calls } = mockFetch((c) => {
+      if (path(c) === `/api/v1/versions/${pending.id}/`) return c.method === 'PATCH' ? reply(flow.versions_lead_approves) : { status: 200, body: pending };
+      return page([]);
+    });
+    renderAt(`/versions/${pending.id}`, supervisor, route);
+    fireEvent.change(await screen.findByLabelText(`Status of ${pending.code}`), { target: { value: 'Approved' } });
+    await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
+    await waitFor(() => expect(spy.mock.calls.some(([filters]) => JSON.stringify(filters?.queryKey) === JSON.stringify(tasksApi.keys.all))).toBe(true));
+    spy.mockRestore();
   });
 
   it('has a Notes tab: the threads that link the version, and new ones about it (RP-2)', async () => {

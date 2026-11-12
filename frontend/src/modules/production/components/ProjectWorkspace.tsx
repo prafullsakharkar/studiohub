@@ -621,6 +621,12 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
                 <span>
                   Color: <strong className="text-slate-200">{project.color_space || 'ACEScg'}</strong>
                 </span>
+                {project.approve_task_on_version_approval && (
+                  <>
+                    <span>•</span>
+                    <span>Tasks approved with their versions</span>
+                  </>
+                )}
               </div>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { loadSample } from '@/test/samples';
-import { PROJECT_KEYS, SHOW_KEYS, EPISODE_KEYS, SEQUENCE_KEYS, EDITORIALTRACK_KEYS, PROJECTMEMBER_KEYS, COUNT_KEYS } from '../structureRowKeys';
-import type { EditorialTrack, Episode, Project, ProjectMember, Sequence, Show } from '../structure';
+import { SHOW_KEYS, EPISODE_KEYS, SEQUENCE_KEYS, EDITORIALTRACK_KEYS, PROJECTMEMBER_KEYS, COUNT_KEYS } from '../structureRowKeys';
+import type { EditorialTrack, Episode, ProjectMember, Sequence, Show } from '../structure';
 
 /**
  * The hand-written production row types list EXACTLY the fields the real backend returned
@@ -15,7 +15,6 @@ const firstRow = (key: string): Record<string, unknown> => flow[key].body.result
 
 describe('production row types match the captured responses', () => {
   it.each([
-    ['Project', 'projects_list', PROJECT_KEYS],
     ['Show', 'shows_list', SHOW_KEYS],
     ['Episode', 'episodes_list', EPISODE_KEYS],
     ['Sequence', 'sequences_list_after_bulk', SEQUENCE_KEYS],

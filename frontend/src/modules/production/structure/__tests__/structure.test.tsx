@@ -165,6 +165,43 @@ describe('project form', () => {
   });
 });
 
+describe('project form: approval roll-up (RP-3, C-RP-14)', () => {
+  const rollup = loadSample<Record<string, Captured>>('production/_rollup_flow.json');
+  const on = rollup.project_detail.body;
+  const label = 'Approve the task when one of its versions is approved';
+
+  it('shows the switch as the server has it and sends only that change when it is turned off', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'PATCH' ? reply(rollup.patch_switch_off) : { body: on }));
+    renderAt(
+      `/projects/${on.id}/edit`,
+      superuser,
+      <>
+        <Route path="/projects/:id/edit" element={<DirectoryFormPage config={projectsFormConfig} />} />
+        <Route path="/projects/:id" element={<Opened />} />
+      </>
+    );
+    const box = (await screen.findByLabelText(label)) as HTMLInputElement;
+    await waitFor(() => expect(box.checked).toBe(true));
+    fireEvent.click(box);
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    expect(await screen.findByText(`opened ${on.id}`)).toBeTruthy();
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ approve_task_on_version_approval: false });
+  });
+
+  it('a new project sends the switch as chosen; it starts off', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(rollup.create_project_on) : { body: { count: 0, next: null, previous: null, results: [] } }));
+    renderAt('/projects/new', superuser, <Route path="/projects/new" element={<DirectoryFormPage config={projectsFormConfig} />} />);
+    const box = (await screen.findByLabelText(label)) as HTMLInputElement;
+    expect(box.checked).toBe(false);
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Roll-up' } });
+    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'RPR' } });
+    fireEvent.click(box);
+    fireEvent.click(screen.getByRole('button', { name: /create project/i }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({ code: 'RPR', approve_task_on_version_approval: true });
+  });
+});
+
 describe('project form: budget (CR-55)', () => {
   // Captured after CR-55: the supervisor's project has no budget_usd, the producer's has it.
   const cr55 = loadSample<Record<string, Captured>>('production/_budget_counts_cr54_55_after.json');

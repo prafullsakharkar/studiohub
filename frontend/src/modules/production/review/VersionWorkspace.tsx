@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { auditKeys } from '@/api/audit/audit';
 import { reviewsApi, versionsApi } from '@/api/production/review';
+import { tasksApi } from '@/api/production/work';
 import type { Version } from '@/api/production/review';
 import { EntityHistory } from '@/components/history/EntityHistory';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
@@ -143,7 +144,8 @@ export const VersionWorkspace: React.FC = () => {
   const [action, setAction] = useState<ReturnType<typeof versionActions>[number] | null>(null);
   const query = useQuery({ queryKey: versionsApi.keys.detail(versionId), queryFn: ({ signal }) => versionsApi.get(versionId, signal), enabled: Boolean(versionId) });
   const v = query.data;
-  const refresh = () => Promise.all([versionsApi.keys.all, auditKeys.all].map((queryKey) => queryClient.invalidateQueries({ queryKey })));
+  // Approving a version may approve its task on the server (RP-3, C-RP-15), so the task queries are refetched too.
+  const refresh = () => Promise.all([versionsApi.keys.all, tasksApi.keys.all, auditKeys.all].map((queryKey) => queryClient.invalidateQueries({ queryKey })));
   return (
     <div className="p-4 sm:p-6 space-y-5 w-full">
       <QueryBoundary isLoading={query.isLoading} error={query.error} onRetry={() => void query.refetch()} entityName="version">
@@ -163,7 +165,7 @@ export const VersionWorkspace: React.FC = () => {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {versionBadges(v)}
-                <StatusMenu entity="version" status={v.status} name={v.code} canChange={canUpdate && !v.is_published} change={(next) => versionsApi.update(v.id, { status: next })} invalidate={[versionsApi.keys.all]} />
+                <StatusMenu entity="version" status={v.status} name={v.code} canChange={canUpdate && !v.is_published} change={(next) => versionsApi.update(v.id, { status: next })} invalidate={[versionsApi.keys.all, tasksApi.keys.all]} />
                 {versionActions(v, canPublish).map((a) => (
                   <Button key={a.label} size="sm" variant="outline" onClick={() => setAction(a)}>
                     {a.label}

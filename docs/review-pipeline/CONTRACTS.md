@@ -38,3 +38,22 @@ Details settled while building RP-2 (no change to the rows above; the owner is t
 - A `PATCH` of a reply naming anything but `body` (C-RP-12) is **400** `{"detail": ["A reply takes only its body."]}`.
 - A reply has no replies of its own, so its author may always delete it (C-RP-13).
 - No notes route lets in a partial member: client, vendor, or bound to a show or a department. All of them get 404 (`user_has_full_project_access`), as the list already did before RP-2. Q-RP-13 therefore changes nothing on these routes.
+
+## RP-3 Approval roll-up
+
+Approved 2026-11-12 with Q-RP-15 to Q-RP-18 = A ([DECISIONS.md](DECISIONS.md#rp-3-answers)).
+
+| ID | Where | Before | After |
+|---|---|---|---|
+| C-RP-14 | Every project response (`GET projects/`, `{id}/`, the answers to `POST`, `PATCH`, `PUT` and the clone) and the project writes | No per-project switch for approvals. | New key `approve_task_on_version_approval` (boolean, default `false`) in every response, readable by everyone who can read the project. Writable on create (`project.create`) and update (`project.update`), refused as today without them. Anything but a boolean is a field-keyed 400. Every other key is unchanged. |
+| C-RP-15 | The effect of a version moving to `Approved` (`PATCH versions/{id}/`, the bulk status change, `POST versions/{id}/promote/`) | Only the version changes. | No request or answer changes. When the version's project has the switch on and the version has a live task that is neither `Approved` nor `Archived`, the task moves to `Approved` once the approval has committed. Its status history names the version's approver, with the reason `Version <code> approved`. A failure of this step is logged and never changes the approval's answer. Leaving `Approved` later does not touch the task (Q-RP-16). |
+
+Details settled while building RP-3 (no change to the rows above; the owner is told in [rp-3-verification.md](rp-3-verification.md)):
+- There is no server-side project clone. The frontend's Duplicate creates a project from the old one's settings, and now copies the switch.
+- Versions have no bulk status change (no `bulk_update_fields` on versions). C-RP-15's routes are `PATCH versions/{id}/` and `POST versions/{id}/promote/`.
+- Promoting a version that is already `Approved` moves no status, so it rolls nothing up. The roll-up happened when the version was approved.
+- A non-boolean is the usual field error, `{"approve_task_on_version_approval": ["Must be a valid boolean."]}`. The API reads `"true"`, `1` and the like as booleans, as for every boolean field.
+- The switch is not in `EXTERNAL_HIDDEN_FIELDS`: a client or vendor member who can read the project sees it. It is a workflow setting, not money or people.
+- Turning the switch on is not retroactive: versions approved before do not approve their tasks.
+- The task's history row has no override kind, so the roll-up is not logged as `status_override_used`.
+
