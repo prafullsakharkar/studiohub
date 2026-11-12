@@ -56,13 +56,18 @@ Least privilege. `timelog.view` shows the caller's own timelogs; `timelog.view_a
 | playlist | view create update delete | view create update | view |
 | media | view create update delete | view create update | view create |
 | workflow | view create update delete | view | view |
-| schedule, track, show, delivery, publishing | view create update delete | view | view |
+| schedule, track, show, publishing | view create update delete | view | view |
+| delivery | view create update delete (and the workflow codes, docs/deliveries/PLAN.md §6) | view | none (docs/sync CR-53) |
 | automation | view create update delete | none | none |
 | note | create | create | create |
 | audit | view | view | none |
 | `production.status.override`, `production.sod.override` | none | none | none |
 
-`org-member` holds no production code. `platform-admin` holds the whole catalog except the two opt-in codes. Not decided here: a narrower role than "full" for `vfx-supervisor`; deletes for leads; review decisions for leads.
+`org-member` holds no production code. `platform-admin` holds the whole catalog except the two opt-in codes.
+
+**CR-53 (2026-11-12, approved by the owner):** artists hold no delivery code; a delivery names the client and records its answer. `init_platform` withdraws `delivery.view` from an existing artist role (`WITHDRAWN_GRANTS`). The project dashboard follows the same code: without `delivery.view` its delivery figures are empty (zero counts, no cards, no delivery as the next deadline, no delivery rows in the activity) and keep their shape. Clients, vendors and contracts need `masterdata.partner.view`, held by production-admin, vfx-supervisor and org-admin, not by leads or artists. Not decided here: a narrower role than "full" for `vfx-supervisor`; deletes for leads; review decisions for leads.
+
+**CR-54 and CR-55 (2026-11-12, approved by the owner):** the project's delivery count (`statistics`, `summary`) follows `delivery.view` as the dashboard does. The project budget (`budget_usd`) has its own code, `project.view_budget`, held by production-admin and org-admin and deliberately not part of the full production set, so the vfx-supervisor reads and writes a project without its budget, as they read contracts without their values (CR-53). It is checked inline (serializers, dashboard, project writes), not through a `permission_map`.
 
 ## D-08 `POST /tasks/bulk-status/`
 

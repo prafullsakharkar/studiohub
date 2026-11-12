@@ -68,6 +68,33 @@ describe('deliveries', () => {
     expect(screen.getByText('1 Late')).toBeTruthy();
     now.useRealTimers();
   });
+  it('someone without delivery.view sees no delivery panel, KPI card or upcoming turnovers; the rest stays (CR-53)', () => {
+    // The captured artist predates CR-53 and still holds delivery.view; a seeded artist no longer does.
+    expect(artist.permissions).toContain('delivery.view');
+    const noDeliveries = { ...artist, permissions: artist.permissions.filter((p) => p !== 'delivery.view') } as User;
+    const now = vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-30T12:00:00Z'));
+
+    renderWith(<ClientDeliveryHealth deliveries={deliveries} projectId="p" />, noDeliveries);
+    expect(document.getElementById('dashboard-client-deliveries')).toBeNull();
+    cleanup();
+    renderWith(<ProjectKpiHud summary={dash.summary} projectId="p" />, noDeliveries);
+    expect(screen.queryByText('Client Deliveries')).toBeNull();
+    expect(screen.getByText('Sequence Shots')).toBeTruthy();
+    cleanup();
+    renderWith(<UpcomingOverdueWidget tasks={dash.tasks} deliveries={deliveries} />, noDeliveries);
+    expect(screen.queryByText('Upcoming Client Turnovers')).toBeNull();
+    expect(document.getElementById('dashboard-upcoming-overdue')).toBeTruthy();
+    cleanup();
+
+    renderWith(<UpcomingOverdueWidget tasks={dash.tasks} deliveries={deliveries} />);
+    expect(screen.getByText('Upcoming Client Turnovers')).toBeTruthy();
+    expect(screen.getByText('DLV-DSH-0001')).toBeTruthy(); // the upcoming turnover, by its package code
+    cleanup();
+    renderWith(<ProjectKpiHud summary={dash.summary} projectId="p" />);
+    expect(screen.getByText('Client Deliveries')).toBeTruthy();
+    now.useRealTimers();
+  });
 });
 
 describe('the watchlist', () => {

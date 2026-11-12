@@ -116,7 +116,7 @@ ARTIST = {
     "tasktemplate": "view",
     "track": "view",
     "show": "view",
-    "delivery": "view",
+    # No deliveries: they carry the client's name and answer (docs/sync CR-53).
     "publishing": "view",
     "note": "create",
 }
@@ -130,13 +130,14 @@ def _codes(table: dict[str, str]) -> set[str]:
 
 EXPECTED = {
     # The code freeze on shots and assets is lifted by production-admin only.
-    "production-admin": _codes(FULL) | {"production.code.rename"},
+    # The project budget is the producer's and the studio admin's (docs/sync CR-55).
+    "production-admin": _codes(FULL) | {"production.code.rename", "project.view_budget"},
     # Deleting export job records and deliveries is an admin task; producers send and read the
     # passcode, supervisors sign off (Q34).
     "vfx-supervisor": _codes(FULL)
     - {"publishing.delete", "delivery.delete", "delivery.send", "delivery.view_secret"},
     # Storage roots are studio-wide; org-admin administers them.
-    "org-admin": _codes(FULL) | {"publishing.storage.manage"},
+    "org-admin": _codes(FULL) | {"publishing.storage.manage", "project.view_budget"},
     "lead-artist": _codes(LEAD),
     "artist": _codes(ARTIST),
     "org-member": set(),
@@ -234,9 +235,12 @@ def test_every_code_the_production_constants_define_is_enforced_or_deliberately_
         if name.isupper() and isinstance(value, str)
     }
     # Checked in code rather than through a permission_map.
-    checked_inline = {"timelog.manage", "timelog.view_all", "tasktemplate.manage_studio"} | set(
-        OPT_IN_PERMISSION_CODES
-    )
+    checked_inline = {
+        "timelog.manage",
+        "timelog.view_all",
+        "tasktemplate.manage_studio",
+        "project.view_budget",
+    } | set(OPT_IN_PERMISSION_CODES)
     # Declared, but the analytics views are scoped by membership only (CONTRACTS C-04).
     # schedule.create/update/delete are checked by the scheduling app's own viewsets, not by
     # production (schedule.update moved with the capacity routes, scheduling Phase 9).

@@ -34,7 +34,9 @@ export function useReviewWrite() {
 const field = 'bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200';
 const Empty: React.FC<{ children: string }> = ({ children }) => <p className="rounded-lg border border-dashed border-slate-800 p-4 text-xs text-slate-500">{children}</p>;
 
-export const ReviewVersionsPanel: React.FC<{ review: Review }> = ({ review }) => {
+/** `onCompare` puts a version against the one the viewer shows first (the version of lowest order) and opens the viewer. */
+export const ReviewVersionsPanel: React.FC<{ review: Review; onCompare?: (versionId: string) => void }> = ({ review, onCompare }) => {
+  const first = [...review.versions].sort((a, b) => a.order - b.order)[0]?.id;
   const canEdit = useCan('review.update');
   const write = useReviewWrite();
   const [versionId, setVersionId] = useState<string | null>(null);
@@ -74,7 +76,12 @@ export const ReviewVersionsPanel: React.FC<{ review: Review }> = ({ review }) =>
                 <td className="py-1.5 pr-3">
                   <StatusBadge status={v.status} />
                 </td>
-                <td className="py-1.5 text-right">
+                <td className="space-x-3 py-1.5 text-right">
+                  {onCompare && v.id !== first && (
+                    <button type="button" className="text-indigo-300 hover:text-indigo-200" aria-label={`Compare ${v.code} in A/B Wipe`} onClick={() => onCompare(v.id)}>
+                      Compare in A/B Wipe
+                    </button>
+                  )}
                   {canEdit && (
                     <button type="button" className="text-rose-400 hover:text-rose-300" aria-label={`Remove ${v.code}`} onClick={() => void write(() => reviewsApi.removeVersion(review.id, v.id))}>
                       Remove
@@ -320,7 +327,7 @@ export const ReviewAnnotationsPanel: React.FC<{ review: Review }> = ({ review })
         </div>
       )}
       {review.annotations.length === 0 ? (
-        <Empty>No annotations yet. Drawing on the frame needs the media player, which is not part of this screen.</Empty>
+        <Empty>No annotations yet. Draw on a frame in the Media viewer, or note a frame number here.</Empty>
       ) : (
         <ul aria-label="Annotations" className="space-y-2">
           {review.annotations.map((a) => (

@@ -1,11 +1,14 @@
 import type React from 'react';
 import { DirectoryFormPage } from '@/modules/directory/DirectoryFormPage';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
+import { AssignmentsPage } from '../AssignmentsPage';
 import { CalendarPage } from '../CalendarPage';
 import { CapacityPage } from '../CapacityPage';
 import { bookingFormConfig, calendarFormConfig, eventFormConfig, holidayFormConfig, leaveFormConfig, milestoneFormConfig, resourceFormConfig, useBookingsListConfig, useCalendarsListConfig, useEventsListConfig, useHolidaysListConfig, useLeavesListConfig, useMilestonesListConfig, useResourcesListConfig } from '../records';
+import { EventWorkspace } from '../EventWorkspace';
 import { ResourceWorkspace } from '../ResourceWorkspace';
 import { SchedulingNav } from '../SchedulingNav';
+import { UtilizationPage } from '../UtilizationPage';
 
 /** Every scheduling screen sits under the section navigation. */
 const Shell: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -23,6 +26,22 @@ export const SchedulingCalendarPage: React.FC = () => (
 export const SchedulingCapacityPage: React.FC = () => (
   <Shell>
     <CapacityPage />
+  </Shell>
+);
+
+export const SchedulingUtilizationPage: React.FC = () => (
+  <Shell>
+    <UtilizationPage />
+  </Shell>
+);
+export const SchedulingAssignmentsPage: React.FC = () => (
+  <Shell>
+    <AssignmentsPage />
+  </Shell>
+);
+export const EventWorkspacePage: React.FC = () => (
+  <Shell>
+    <EventWorkspace />
   </Shell>
 );
 

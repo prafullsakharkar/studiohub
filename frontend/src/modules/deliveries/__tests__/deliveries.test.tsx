@@ -24,8 +24,9 @@ const auth = loadSample('identity/_auth_flow.json');
 const artist = auth.me_artist.body as unknown as User;
 const withCodes = (...codes: string[]) => ({ ...artist, permissions: [...artist.permissions, ...codes] }) as User;
 /** The seeded vfx-supervisor: prepares and signs off, cannot send. The production-admin also sends, reads the passcode and deletes. */
-const supervisor = withCodes('delivery.create', 'delivery.update', 'delivery.approve');
-const producer = withCodes('delivery.create', 'delivery.update', 'delivery.approve', 'delivery.send', 'delivery.view_secret', 'delivery.delete');
+// As seeded (CR-53): supervisors and producers also read clients, vendors and contracts.
+const supervisor = withCodes('delivery.create', 'delivery.update', 'delivery.approve', 'masterdata.partner.view');
+const producer = withCodes('delivery.create', 'delivery.update', 'delivery.approve', 'delivery.send', 'delivery.view_secret', 'delivery.delete', 'masterdata.partner.view');
 const project = structure.projects_list.body.results[0] as { id: string; code: string };
 
 const reply = (c: Captured): MockReply => ({ status: c.status, body: c.body });
@@ -361,6 +362,18 @@ describe('deliveries list', () => {
     expect(screen.queryByLabelText('Filter by project')).toBeNull();
     fireEvent.change(await screen.findByLabelText('Filter by status'), { target: { value: 'Cancelled' } });
     await waitFor(() => expect(scoped.calls.some((c) => path(c) === '/api/organizations/projects/p-9/deliveries/' && new URL(c.url).searchParams.get('status') === 'Cancelled')).toBe(true));
+  });
+
+  it('a reader of deliveries who may not read clients gets no Client filter and never asks for the client list (CR-53)', async () => {
+    const lead = withCodes(); // delivery.view without masterdata.partner.view, like a seeded lead
+    expect(lead.permissions).toContain('delivery.view');
+    expect(lead.permissions).not.toContain('masterdata.partner.view');
+    const { calls } = mockFetch(() => ({ status: 200, body: { count: 0, next: null, previous: null, results: [] } }));
+    renderAt('/deliveries', lead, listRoute);
+    expect(await screen.findByLabelText('Filter by status')).toBeTruthy();
+    expect(screen.queryByLabelText('Filter by client')).toBeNull();
+    await waitFor(() => expect(calls.some((c) => path(c) === '/api/v1/deliveries/')).toBe(true));
+    expect(calls.some((c) => path(c).startsWith('/api/v1/clients/'))).toBe(false);
   });
 
   it('a project’s deliveries are read from the project route', async () => {

@@ -1,4 +1,6 @@
 import { projectsApi } from '@/api/production/structure';
+import { publishCard } from './publishCard';
+import { PublishStats } from './PublishStats';
 import { DCC_TOOLS, JOB_STATUSES, publishApi } from '@/api/publishing/publishing';
 import type { Publish, PublishRow } from '@/api/publishing/publishing';
 import { isJobDeletable, isJobEditable } from '@/api/publishing/publishingFlow';
@@ -38,6 +40,8 @@ export function usePublishListConfig(scope?: { projectId: string }): DirectoryLi
     defaultOrdering: '-created_at',
     searchPlaceholder: 'Search name, code, shot or asset',
     basePath: '/publishing',
+    renderCard: publishCard,
+    summary: (filters) => <PublishStats filters={filters} />,
     columns: [
       { header: 'Job', cell: (row) => `${row.code} · ${row.name}`, sortField: 'created_at' },
       ...(scope ? [] : [{ header: 'Project', cell: (row: PublishRow) => row.client_name || '—' }]),

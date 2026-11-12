@@ -501,3 +501,10 @@ Values of `search`, `email`, `phone`, `contact_name`, `date_of_birth`, `national
 - **`Person.team` stays** as the primary team, so no existing client breaks (`GET /people/?team=`, `team_name`). Setting it creates the membership; nothing removes a membership except `DELETE team-memberships/{id}/` or deleting the person.
 - **Frontend-facing changes:** a new resource `team-memberships/`; no existing field or route changed. `GET /people/?team=` still means the primary team.
 
+
+## CR-53 decisions (2026-11-12, owner: "approve CR-53")
+
+- **D-CR53: clients, vendors and their contracts are no longer open reads.** List and detail of `clients/`, `vendors/`, `client-contracts/` and `vendor-contracts/` need the new code **`masterdata.partner.view`** (`MasterdataPermissions.PARTNER_VIEW`). It is checked before any object lookup, so a missing id and a forbidden id both answer 403. This ends "reads stay open to every authenticated user" (D9) for these four resources only; departments, teams, offices, positions, people and the catalogs stay open (every user's pickers read them).
+- **Who holds it:** platform-admin (full catalog), org-admin, production-admin and vfx-supervisor, the roles that pick a client or a vendor on a project or a delivery. Not lead-artist, artist or org-member.
+- **Unchanged:** writes still need `masterdata.directory.manage`; contacts still need `masterdata.person.view_sensitive` for everything; money (`total_billed_usd`, `value_usd`, `total_value_usd`) still needs `masterdata.client.view_financial` (production-admin, org-admin), so a supervisor reads contracts without their values. The client's name on a project or a delivery is read from that record, not from these routes.
+- **Frontend-facing:** GET on the four routes documents 403 (schema snapshot regenerated); the response shapes are unchanged. Evidence and diff: `docs/sync/backend-change-requests.md` CR-53, `docs/sync/backend-cr-53-verification.md`.

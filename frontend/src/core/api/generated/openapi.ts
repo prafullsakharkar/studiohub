@@ -31673,6 +31673,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
+            /** @description Missing permission. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
         };
     };
     v1_client_contracts_create: {
@@ -31757,6 +31766,15 @@ export interface operations {
             };
             /** @description Authentication credentials were not provided. */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Missing permission. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -32285,6 +32303,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
+            /** @description Missing permission. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
         };
     };
     v1_clients_create: {
@@ -32369,6 +32396,15 @@ export interface operations {
             };
             /** @description Authentication credentials were not provided. */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Missing permission. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -52646,6 +52682,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
+            /** @description Missing permission. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
         };
     };
     v1_vendor_contracts_create: {
@@ -52730,6 +52775,15 @@ export interface operations {
             };
             /** @description Authentication credentials were not provided. */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Missing permission. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -53258,6 +53312,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
+            /** @description Missing permission. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
         };
     };
     v1_vendors_create: {
@@ -53342,6 +53405,15 @@ export interface operations {
             };
             /** @description Authentication credentials were not provided. */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Missing permission. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

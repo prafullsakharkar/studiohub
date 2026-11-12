@@ -3,3 +3,5 @@
 export { BulkRegisterPage, PublishedFilePage } from './FilePages';
 export { PublishDestinationFormPage, PublishDestinationsPage, PublishedFileFormPage, PublishedFilesPage, PublishFormPage, PublishingPage, StorageRootFormPage, StorageRootsPage } from './pages/PublishingPages';
 export { PublishWorkspacePage } from './pages/PublishWorkspacePage';
+export { useFilesListConfig } from './files';
+export { JobStatusBadge } from './jobs';

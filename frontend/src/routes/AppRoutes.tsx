@@ -87,6 +87,9 @@ const ValuesPage = lazyNamed(() => import('@/modules/settings'), 'ValuesPage');c
 const BookingsPage = lazyNamed(() => import('@/modules/scheduling'), 'BookingsPage');
 const EventFormPage = lazyNamed(() => import('@/modules/scheduling'), 'EventFormPage');
 const EventsPage = lazyNamed(() => import('@/modules/scheduling'), 'EventsPage');
+const EventWorkspacePage = lazyNamed(() => import('@/modules/scheduling'), 'EventWorkspacePage');
+const SchedulingAssignmentsPage = lazyNamed(() => import('@/modules/scheduling'), 'SchedulingAssignmentsPage');
+const SchedulingUtilizationPage = lazyNamed(() => import('@/modules/scheduling'), 'SchedulingUtilizationPage');
 const HolidayFormPage = lazyNamed(() => import('@/modules/scheduling'), 'HolidayFormPage');
 const HolidaysPage = lazyNamed(() => import('@/modules/scheduling'), 'HolidaysPage');
 const LeaveFormPage = lazyNamed(() => import('@/modules/scheduling'), 'LeaveFormPage');
@@ -490,6 +493,8 @@ export const AppRoutes: React.FC = () => {
 
           <Route path="/scheduling" element={<SchedulingCalendarPage />} />
           <Route path="/scheduling/capacity" element={<SchedulingCapacityPage />} />
+          <Route path="/scheduling/utilization" element={<SchedulingUtilizationPage />} />
+          <Route path="/scheduling/assignments" element={<SchedulingAssignmentsPage />} />
           <Route path="/scheduling/resources" element={<ResourcesPage />} />
           <Route path="/scheduling/resources/new" element={<ResourceFormPage />} />
           <Route path="/scheduling/resources/:id/edit" element={<ResourceFormPage />} />
@@ -503,6 +508,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="/scheduling/events" element={<EventsPage />} />
           <Route path="/scheduling/events/new" element={<EventFormPage />} />
           <Route path="/scheduling/events/:id/edit" element={<EventFormPage />} />
+          <Route path="/scheduling/events/:eventId" element={<EventWorkspacePage />} />
           <Route path="/scheduling/milestones" element={<MilestonesPage />} />
           <Route path="/scheduling/milestones/new" element={<MilestoneFormPage />} />
           <Route path="/scheduling/milestones/:id/edit" element={<MilestoneFormPage />} />

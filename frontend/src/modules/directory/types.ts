@@ -80,6 +80,16 @@ export interface ListFilter {
   visible?: (filters: Record<string, unknown>) => boolean;
 }
 
+/** What a card gets besides the row: the same link, selection box and row controls the table row has. */
+export interface CardContext {
+  /** Where the title links to; null when the list has no detail page. */
+  href: string | null;
+  /** The bulk-select checkbox, or null when the list has no bulk actions. */
+  select: React.ReactNode;
+  /** Restore, the row's actions, Edit and Delete, or null for a viewer. */
+  controls: React.ReactNode;
+}
+
 export interface DirectoryListConfig<T extends { id: string }> {
   /** Plural noun for titles and messages: "Teams". */
   title: string;
@@ -124,6 +134,17 @@ export interface DirectoryListConfig<T extends { id: string }> {
   bulk?: { actions: ReadonlyArray<BulkAction> };
   /** Lifecycle actions on a row (deactivate, restore, …), each behind a confirmation; shown with the manage permission. */
   rowActions?: (row: T) => ReadonlyArray<RowAction>;
+  /** The list's own card for Card view. Without it a card is made from the columns. */
+  renderCard?: (row: T, ctx: CardContext) => React.ReactNode;
+  /** Tailwind grid columns for Card view (default `sm:grid-cols-2 xl:grid-cols-3`). */
+  cardGrid?: string;
+  /**
+   * A Board view beside Table and Card (tasks by status). It uses the page's own search and filters, loads up to
+   * `limit` matching rows at once (a board has no pages) in `ordering`, and is not offered in the archived view.
+   */
+  board?: { render: (rows: T[]) => React.ReactNode; limit?: number; ordering?: string };
+  /** A strip above the list that reads the active filters (publishing: how many jobs are exported, failed, running). */
+  summary?: (filters: Record<string, unknown>) => React.ReactNode;
 }
 
 /** An action on the ticked rows (bulk status, assign, archive). */

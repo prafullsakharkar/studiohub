@@ -5,10 +5,11 @@ from rest_framework import serializers
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Project
 
+from .base import BudgetGatedMixin
 from .vendors import VendorIdsField, VendorNamesField
 
 
-class ProjectCreateSerializer(BaseWriteSerializer[Any]):
+class ProjectCreateSerializer(BudgetGatedMixin, BaseWriteSerializer[Any]):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
     vendor_ids = VendorIdsField()

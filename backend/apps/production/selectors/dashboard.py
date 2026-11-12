@@ -23,6 +23,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.production.selectors.base import ProductionBaseSelector
+from apps.production.selectors.delivery_figures import NO_DELIVERIES as _NO_DELIVERIES
 from apps.production.selectors.delivery_figures import delivery_figures
 from apps.production.selectors.rollups import ShotCurrentVersionSelector
 from apps.production.selectors.schedule_milestones import project_milestones
@@ -68,19 +69,27 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         return counts
 
     @classmethod
-    def build(cls, project) -> dict[str, Any]:
+    def build(cls, project, *, include_deliveries: bool, include_budget: bool) -> dict[str, Any]:
         """Aggregate the full dashboard payload for ``project``.
 
         Counts are aggregated database-side (``GROUP BY status`` /
         filtered ``COUNT``) so totals stay exact at any project size —
         the payload never counts a paginated or truncated page. Only the
         small `recent_*` example lists are sliced.
+
+        ``include_deliveries`` is whether the caller may read the project's deliveries (the code of
+        the nested deliveries route, ``delivery_figures().view_permission``; docs/sync CR-53).
+        Without it every delivery figure is empty and keeps its shape: zero counts, no cards (they
+        name the client), no delivery as the next deadline, no delivery rows in the activity.
+
+        ``include_budget`` is whether the caller holds ``project.view_budget``; without it the
+        project's ``budget_usd`` is left out (docs/sync CR-55).
         """
 
         from apps.production.models import Asset, Review, Shot, Task
 
         today = timezone.localdate()
-        figures = delivery_figures()
+        figures = delivery_figures() if include_deliveries else _NO_DELIVERIES
         scope = {"project": project}
 
         shot_statuses = (
@@ -159,10 +168,11 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             task_stats["overdue"],
             delivery_stats["late"],
             today,
+            figures,
         )
 
         return {
-            "project": cls._project_metadata(project),
+            "project": cls._project_metadata(project, include_budget=include_budget),
             "summary": {
                 "total_shots": shot_stats["total"],
                 "approved_shots": shot_stats["approved"],
@@ -229,13 +239,13 @@ class ProjectDashboardSelector(ProductionBaseSelector):
                 "late": delivery_stats["late"],
                 "items": recent_deliveries,
             },
-            "activity": cls._activity(project, recent_shots, recent_tasks),
+            "activity": cls._activity(project, recent_shots, recent_tasks, figures),
         }
 
     # -- project ----------------------------------------------------------
 
     @classmethod
-    def _project_metadata(cls, project) -> dict[str, Any]:
+    def _project_metadata(cls, project, *, include_budget: bool) -> dict[str, Any]:
         payload: dict[str, Any] = {
             "id": str(project.id),
             "name": project.name,
@@ -262,7 +272,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             payload["coordinator_name"] = coordinator
         if project.client_name:
             payload["client_name"] = project.client_name
-        if project.budget_usd:
+        if include_budget and project.budget_usd:
             payload["budget_usd"] = float(project.budget_usd)
         return payload
 
@@ -502,7 +512,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
     @classmethod
     def _schedule(
         cls, project, overdue_tasks: int, late_deliveries: int,
-        today: date,
+        today: date, figures: Any,
     ) -> dict[str, Any]:
         # Same defaulting rule as the project-scoped schedule view: a project
         # without dates still yields a well-formed schedule section.
@@ -524,13 +534,13 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             "is_delayed": late_deliveries > 0 or overdue_tasks > 2,
             "milestones": milestones,
         }
-        deadline = cls._next_deadline(project, today)
+        deadline = cls._next_deadline(project, today, figures)
         if deadline is not None:
             payload["next_deadline"] = deadline
         return payload
 
     @classmethod
-    def _next_deadline(cls, project, today: date) -> dict | None:
+    def _next_deadline(cls, project, today: date, figures: Any) -> dict | None:
         from apps.production.models import Task
 
         upcoming_task = (
@@ -547,7 +557,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
                 "days_away": max(0, (upcoming_task.due_date - today).days),
                 "type": "Task",
             }
-        upcoming_delivery = delivery_figures().next_due(project, today)
+        upcoming_delivery = figures.next_due(project, today)
         if upcoming_delivery is not None:
             due = upcoming_delivery["due"]
             return {
@@ -640,9 +650,9 @@ class ProjectDashboardSelector(ProductionBaseSelector):
 
     @classmethod
     def _activity(
-        cls, project, recent_shots: list, recent_tasks: list
+        cls, project, recent_shots: list, recent_tasks: list, figures: Any
     ) -> list[dict]:
-        items = cls._activity_from_changelog(project)
+        items = cls._activity_from_changelog(project, figures)
         if items:
             return items
         # No recorded changes yet: surface the most recently touched
@@ -684,11 +694,11 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         return items
 
     @classmethod
-    def _activity_from_changelog(cls, project) -> list[dict]:
+    def _activity_from_changelog(cls, project, figures: Any) -> list[dict]:
         from apps.audit.models import ChangeLog
 
         labels = {"create": "Created", "update": "Updated", "delete": "Deleted"}
-        project_ids = cls._project_entity_ids(project)
+        project_ids = cls._project_entity_ids(project, figures)
         try:
             rows = list(
                 ChangeLog.objects.select_related("user")
@@ -721,7 +731,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         return items
 
     @classmethod
-    def _project_entity_ids(cls, project) -> dict[str, set[str]]:
+    def _project_entity_ids(cls, project, figures: Any) -> dict[str, set[str]]:
         from apps.production.models import (
             Asset,
             Review,
@@ -739,7 +749,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             ("Task", Task.objects.filter(project=project).values_list("id", flat=True)),
             ("Version", Version.objects.filter(project=project).values_list("id", flat=True)),
             ("Review", Review.objects.filter(project=project).values_list("id", flat=True)),
-            ("DeliveryPackage", delivery_figures().entity_ids(project)),
+            ("DeliveryPackage", figures.entity_ids(project)),
         )
         return {name: {str(value) for value in ids} for name, ids in pairs}
 

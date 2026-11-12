@@ -70,7 +70,6 @@ const rangeLabel = (days: string[]) => `${short(days[0])} – ${short(days[days.
  */
 export const CalendarPage: React.FC<{ embedded?: boolean; projectId?: string }> = ({ projectId, embedded }) => {
   const canCreateEvent = useCan('schedule.create');
-  const canUpdateEvent = useCan('schedule.update');
   const canManage = useCan('schedule.manage');
   const today = dayKey(new Date());
   const allowed = VIEWS.filter((v) => !(projectId && v.id === 'timeline')).map((v) => v.id);
@@ -164,7 +163,7 @@ export const CalendarPage: React.FC<{ embedded?: boolean; projectId?: string }> 
         {view === 'timeline' ? (
           <TimelineView days={days} resources={resources.data ?? []} bookings={bookings.data ?? []} leaves={leaves.data ?? []} holidays={holidays.data ?? []} selected={selected} today={today} onSelect={(day) => set({ date: day })} canBook={canManage} />
         ) : view === 'week' || view === 'day' ? (
-          <TimeGrid days={days} data={data} selected={selected} today={today} onSelect={(day) => set({ date: day })} canEditEvents={canUpdateEvent} />
+          <TimeGrid days={days} data={data} selected={selected} today={today} onSelect={(day) => set({ date: day })} />
         ) : (
           <>
         <table aria-label={label} className="w-full table-fixed border-collapse rounded-lg border border-slate-800 overflow-hidden">

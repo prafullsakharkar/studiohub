@@ -48,6 +48,8 @@ RESOURCES = [
     (f"{API}/clients/", ClientFactory, {"code": "C", "name": "C"}),
     (f"{API}/vendors/", VendorFactory, {"code": "V", "name": "V"}),
 ]
+#: Collections whose reads need ``masterdata.partner.view`` (docs/sync CR-53).
+PARTNER_READS = {f"{API}/clients/", f"{API}/vendors/"}
 IDS = [
     r[0].rsplit("/", 2)[-2] if r[0].endswith("/") else r[0].rsplit("/", 1)[-1] for r in RESOURCES
 ]
@@ -80,9 +82,11 @@ class TestHolderOfOnlyAnOldCodeIsRefused:
         detail = f"{url.rstrip('/')}/{row.pk}" + ("/" if url.endswith("/") else "")
         assert legacy_client().delete(f"{detail}?hard=true").status_code == 403
 
-    def test_reads_stay_open(self, url, factory, payload):
+    def test_the_old_codes_add_nothing_to_reads(self, url, factory, payload):
+        """Reads answer as for any signed-in user: open, except clients and vendors (CR-53)."""
         factory()
-        assert legacy_client().get(url).status_code == 200
+        expected = 403 if url in PARTNER_READS else 200
+        assert legacy_client().get(url).status_code == expected
 
 
 @pytest.mark.usefixtures("seeded_platform_class")

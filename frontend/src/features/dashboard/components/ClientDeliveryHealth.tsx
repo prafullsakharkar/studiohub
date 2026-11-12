@@ -1,6 +1,7 @@
 import React from 'react';
 import { Truck, CheckCircle2, Clock, AlertTriangle, ArrowUpRight, PackageCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useCan } from '@/core/permissions/useCan';
 import { DashboardDeliveriesData } from '../types';
 
 export interface ClientDeliveryHealthProps {
@@ -9,7 +10,10 @@ export interface ClientDeliveryHealthProps {
 }
 
 export const ClientDeliveryHealth: React.FC<ClientDeliveryHealthProps> = ({ deliveries, projectId }) => {
+  // Deliveries name the client: shown only with delivery.view, which the server also requires for these figures (CR-53).
+  const canSeeDeliveries = useCan('delivery.view');
   const figures = deliveries; // the server's own delivered, upcoming and late (a cancelled delivery is in none of them)
+  if (!canSeeDeliveries) return null;
   return (
     <div id="dashboard-client-deliveries" className="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
       {/* Header */}

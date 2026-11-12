@@ -4,7 +4,7 @@ import type React from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { playlistsApi, versionsApi } from '@/api/production/review';
-import { projectScopedApi, projectsApi } from '@/api/production/structure';
+import { projectScopedApi, projectsApi, sequencesApi } from '@/api/production/structure';
 import { shotsApi, tasksApi } from '@/api/production/work';
 import { AuthProvider } from '@/core/auth/AuthProvider';
 import { tokenStorage } from '@/core/auth/tokenStorage';
@@ -52,8 +52,9 @@ beforeAll(async () => {
   const project = await projectsApi.create({ code: `L${uid}`, name: 'Playlist flow', workflow_type: 'standard' });
   const artist = await projectScopedApi.addMember(project.id, { email: live.users.artist.email, role: 'Artist' });
   await projectScopedApi.addMember(project.id, { email: live.users.lead.email, role: 'Lead' });
-  const shot = await shotsApi.create({ project: project.id, code: `PS${uid}`, name: 'Playlist shot' });
-  const task = await tasksApi.create({ project: project.id, code: `PT${uid}`, title: 'Comp', entity_type: 'Shot', entity_id: shot.id, assignee: artist.user_id });
+  const sequence = await sequencesApi.create({ project: project.id, code: `${project.code}_SQ`, name: 'Sequence' });
+  const shot = await shotsApi.create({ project: project.id, code: `${project.code}_PS`, sequence_id: sequence.id, name: 'Playlist shot' });
+  const task = await tasksApi.create({ project: project.id, code: `${project.code}_PT`, title: 'Comp', entity_type: 'Shot', entity_id: shot.id, assignee: artist.user_id });
   tokenStorage.clearTokens();
 
   await signIn('artist');

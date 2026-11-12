@@ -143,3 +143,39 @@ def test_every_withdrawn_code_is_in_the_catalog_and_names_a_seeded_role():
 
     for role_code, codes in WITHDRAWN_GRANTS.items():
         assert role_code in seeded and set(codes) <= catalog
+
+
+# --- CR-53: artists no longer read deliveries ------------------------------------------------------
+
+
+@pytest.fixture
+def artist_seeded_before_cr53(seeded_platform_module):
+    """A database seeded before CR-53: the artist role still holds delivery.view."""
+    _give("artist", "delivery.view")
+    assert "delivery.view" in _codes("artist")
+
+
+def test_a_rerun_takes_delivery_view_from_the_artist(artist_seeded_before_cr53):
+    from apps.identity.models import Role, UserRole
+    from apps.identity.services.permission_cache import PermissionCacheService
+    from apps.identity.tests.factories import UserFactory
+
+    user = UserFactory.create()
+    UserRole.objects.create(user=user, role=Role.objects.get(code="artist"))
+    PermissionCacheService.invalidate(user=user)
+    assert PermissionCacheService.has_permission(user=user, permission="delivery.view")
+    before = _codes("artist") - {"delivery.view"}
+
+    output = _run()
+
+    assert _codes("artist") == before
+    assert "1 withdrawn role grants removed" in output
+    assert not PermissionCacheService.has_permission(user=user, permission="delivery.view")
+    assert PermissionCacheService.has_permission(user=user, permission="shot.view")
+    assert "delivery.view" in _codes("lead-artist")
+
+
+def test_the_artist_withdrawal_runs_once(artist_seeded_before_cr53):
+    _run()
+
+    assert "withdrawn" not in _run()

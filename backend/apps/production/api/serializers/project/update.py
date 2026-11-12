@@ -3,10 +3,11 @@ from typing import Any
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Project
 
+from .base import BudgetGatedMixin
 from .vendors import VendorIdsField, VendorNamesField
 
 
-class ProjectUpdateSerializer(BaseWriteSerializer[Any]):
+class ProjectUpdateSerializer(BudgetGatedMixin, BaseWriteSerializer[Any]):
     vendor_ids = VendorIdsField()
     vendor_names = VendorNamesField()
 

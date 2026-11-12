@@ -37,6 +37,7 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("project.view", "projects", "read"),
     ("project.update", "projects", "update"),
     ("project.delete", "projects", "delete"),
+    ("project.view_budget", "projects", "view_budget"),
     ("shot.create", "shots", "create"),
     ("shot.view", "shots", "read"),
     ("shot.update", "shots", "update"),
@@ -102,6 +103,8 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("masterdata.directory.manage", "masterdata_directory", "manage"),
     ("masterdata.person.view_sensitive", "masterdata_person", "view_sensitive"),
     ("masterdata.client.view_financial", "masterdata_client", "view_financial"),
+    # Reading clients, vendors and their contracts at all (docs/sync CR-53).
+    ("masterdata.partner.view", "masterdata_partner", "view"),
     # Identity domain (enforced by the identity RBAC viewsets).
     ("identity.user.view", "user", "view"),
     ("identity.user.create", "user", "create"),
@@ -188,8 +191,19 @@ DIRECTORY_CRUD_PERMISSIONS = [
     "masterdata.catalog.manage",
     "masterdata.person.view_sensitive",
     "masterdata.client.view_financial",
+    "masterdata.partner.view",
     "identity.user.view",
 ]
+
+# Clients, vendors and their contracts are readable only with this code (docs/sync CR-53): org-admin
+# (above), production-admin and vfx-supervisor hold it, the roles that pick a client or a vendor on a
+# project or a delivery. Leads, artists and org members do not.
+PARTNER_VIEW = "masterdata.partner.view"
+
+# The project's budget (``budget_usd``) is read and written only with this code (docs/sync CR-55):
+# production-admin and org-admin hold it, like the contract values. Not in PRODUCTION_FULL_PERMISSIONS,
+# so the vfx-supervisor, who shares that set, does not.
+PROJECT_VIEW_BUDGET = "project.view_budget"
 
 # ---------------------------------------------------------------------------
 # Production role matrix (docs/production/DECISIONS.md D-07). Least privilege: a role
@@ -290,12 +304,16 @@ VFX_SUPERVISOR_WITHHELD = frozenset(
 # Only system roles are touched; the codes are never in that role's own matrix.
 WITHDRAWN_GRANTS: dict[str, tuple[str, ...]] = {
     "vfx-supervisor": tuple(sorted(VFX_SUPERVISOR_WITHHELD)),
+    # Artists no longer read deliveries: they carry the client's name and answer (docs/sync CR-53).
+    "artist": ("delivery.view",),
 }
 
 # Production admins track contract and budget figures; supervisors, leads and
 # artists share PRODUCTION_FULL_PERMISSIONS or less and do not see them.
 PRODUCTION_ADMIN_PERMISSIONS = PRODUCTION_FULL_PERMISSIONS + [
     "masterdata.client.view_financial",
+    PARTNER_VIEW,
+    PROJECT_VIEW_BUDGET,
     "production.code.rename",
     "settings.view",
 ]
@@ -323,7 +341,8 @@ PRODUCTION_LEAD_PERMISSIONS = _production_codes(
     publishing="view create",
 ) + ["audit.view", "note.create"]
 
-# An artist reads what the work needs, logs their own time and publishes their own versions.
+# An artist reads what the work needs, logs their own time and publishes their own versions. No
+# deliveries: they are the studio's dealings with the client (docs/sync CR-53).
 PRODUCTION_ARTIST_PERMISSIONS = _production_codes(
     project="view",
     sequence="view",
@@ -341,7 +360,6 @@ PRODUCTION_ARTIST_PERMISSIONS = _production_codes(
     tasktemplate="view",
     track="view",
     show="view",
-    delivery="view",
     publishing="view",
 ) + ["note.create"]
 
@@ -366,6 +384,7 @@ ROLE_SPECS: list[dict[str, Any]] = [
         "permissions": (
             DIRECTORY_CRUD_PERMISSIONS
             + PRODUCTION_FULL_PERMISSIONS
+            + [PROJECT_VIEW_BUDGET]
             + ["settings.manage", "settings.update", "user.manage", "publishing.storage.manage"]
             + IDENTITY_ADMIN_PERMISSIONS
         ),
@@ -393,7 +412,8 @@ ROLE_SPECS: list[dict[str, Any]] = [
         # the passcode: supervisors sign off (docs/delivery-pipeline Q34).
         "permissions": [
             c for c in PRODUCTION_FULL_PERMISSIONS if c not in VFX_SUPERVISOR_WITHHELD
-        ],
+        ]
+        + [PARTNER_VIEW],
     },
     {
         "code": "lead-artist",

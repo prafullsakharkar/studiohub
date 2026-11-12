@@ -1,0 +1,812 @@
+{
+  "clients_list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/clients/"
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "0a6c5813-b054-4c14-9307-69db99e5faa3",
+          "name": "Acme Pictures",
+          "code": "ACME",
+          "studio_type": "Major Studio",
+          "contract_tier": "Standard Producer",
+          "portal_access": true,
+          "status": "Active",
+          "logo_url": "",
+          "headquarters": "",
+          "contact_count": 0,
+          "created_at": "2026-11-12T04:30:42.965442Z",
+          "updated_at": "2026-11-12T04:30:42.965450Z"
+        }
+      ]
+    }
+  },
+  "client_detail_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/clients/0a6c5813-b054-4c14-9307-69db99e5faa3/"
+    },
+    "status": 200,
+    "body": {
+      "id": "0a6c5813-b054-4c14-9307-69db99e5faa3",
+      "name": "Acme Pictures",
+      "code": "ACME",
+      "studio_type": "Major Studio",
+      "contract_tier": "Standard Producer",
+      "portal_access": true,
+      "status": "Active",
+      "logo_url": "",
+      "headquarters": "",
+      "contact_count": 0,
+      "created_at": "2026-11-12T04:30:42.965442Z",
+      "updated_at": "2026-11-12T04:30:42.965450Z"
+    }
+  },
+  "vendors_list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendors/"
+    },
+    "status": 200,
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "e17d4a08-6734-44c8-a9cd-bedec6203da8",
+          "name": "FX House",
+          "code": "FXH",
+          "specialization": "Roto & Paint",
+          "security_tier": "Standard Studio NDA",
+          "nda_signed": false,
+          "rating": "4.50",
+          "location": "",
+          "status": "Approved Partner",
+          "logo_url": "",
+          "bandwidth_gbps": "10.00",
+          "bandwidth_link": "",
+          "contact_count": 0,
+          "created_at": "2026-11-12T04:30:42.977488Z",
+          "updated_at": "2026-11-12T04:30:42.977495Z"
+        },
+        {
+          "id": "d48fd020-0121-45ac-bb42-3b0578bcb149",
+          "name": "Northern Light Render",
+          "code": "NLR",
+          "specialization": "Roto & Paint",
+          "security_tier": "Standard Studio NDA",
+          "nda_signed": false,
+          "rating": "4.50",
+          "location": "",
+          "status": "Approved Partner",
+          "logo_url": "",
+          "bandwidth_gbps": "10.00",
+          "bandwidth_link": "",
+          "contact_count": 0,
+          "created_at": "2026-11-12T04:30:42.970866Z",
+          "updated_at": "2026-11-12T04:30:42.970873Z"
+        }
+      ]
+    }
+  },
+  "client_contracts_list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/client-contracts/"
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "6a8e2765-fa34-4d4a-aad0-1562aa505a68",
+          "client": "0a6c5813-b054-4c14-9307-69db99e5faa3",
+          "contract_number": "CC-0",
+          "title": "Client contract 0",
+          "type": "SOW",
+          "effective_date": null,
+          "expiry_date": null,
+          "currency": "USD",
+          "status": "Draft",
+          "nda_signed": false,
+          "document_url": "",
+          "activated_at": null,
+          "created_at": "2026-11-12T04:30:42.973429Z",
+          "updated_at": "2026-11-12T04:30:42.973436Z"
+        }
+      ]
+    }
+  },
+  "client_contract_detail_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/client-contracts/6a8e2765-fa34-4d4a-aad0-1562aa505a68/"
+    },
+    "status": 200,
+    "body": {
+      "id": "6a8e2765-fa34-4d4a-aad0-1562aa505a68",
+      "client": "0a6c5813-b054-4c14-9307-69db99e5faa3",
+      "contract_number": "CC-0",
+      "title": "Client contract 0",
+      "type": "SOW",
+      "effective_date": null,
+      "expiry_date": null,
+      "currency": "USD",
+      "status": "Draft",
+      "nda_signed": false,
+      "document_url": "",
+      "activated_at": null,
+      "created_at": "2026-11-12T04:30:42.973429Z",
+      "updated_at": "2026-11-12T04:30:42.973436Z"
+    }
+  },
+  "vendor_contracts_list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contracts/"
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "0a0cd1aa-9b21-49fe-a381-ec889149adf4",
+          "vendor": "e17d4a08-6734-44c8-a9cd-bedec6203da8",
+          "contract_number": "VC-0",
+          "title": "Vendor contract 0",
+          "type": "SOW",
+          "effective_date": null,
+          "expiry_date": null,
+          "currency": "USD",
+          "nda_signed": false,
+          "security_tier": "",
+          "status": "Draft",
+          "activated_at": null,
+          "created_at": "2026-11-12T04:30:42.979728Z",
+          "updated_at": "2026-11-12T04:30:42.979735Z"
+        }
+      ]
+    }
+  },
+  "client_contacts_list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/client-contacts/"
+    },
+    "status": 403,
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "b83cbed9-6fe6-4458-afef-4f85743f41ec"
+      }
+    }
+  },
+  "deliveries_list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/deliveries/?project=1303a0ca-1ef4-4b2d-b193-4194aa31fa74"
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "3e94fa1b-65b9-43c0-8270-b9a8a5f0e867",
+          "name": "Episode 1 turnover",
+          "code": "DLV-CRT-0001",
+          "status": "Draft",
+          "client_status": "Pending",
+          "delivery_method": "S3",
+          "version_count": 0,
+          "total_size_bytes": 0,
+          "total_frames": 0,
+          "client_name": "Acme Pictures",
+          "project_name": "Project 0",
+          "expires_at": null,
+          "is_expired": false,
+          "is_archived": false,
+          "created_at": "2026-11-12T04:30:43.035134Z",
+          "updated_at": "2026-11-12T04:30:43.035156Z"
+        }
+      ]
+    }
+  },
+  "dashboard_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/1303a0ca-1ef4-4b2d-b193-4194aa31fa74/dashboard/"
+    },
+    "status": 200,
+    "body": {
+      "project": {
+        "id": "1303a0ca-1ef4-4b2d-b193-4194aa31fa74",
+        "name": "Project 0",
+        "code": "CRT",
+        "type": "Feature Film",
+        "description": "",
+        "status": "In Progress",
+        "fps": 24.0,
+        "resolution": "4096x2160",
+        "aspect_ratio": "2.39:1",
+        "color_space": "ACEScg",
+        "start_date": "",
+        "delivery_date": "",
+        "thumbnail_url": "https://www.lee-black.com/",
+        "supervisor_name": "user0@example.com",
+        "coordinator_name": "user1@example.com",
+        "client_name": "Acme Pictures",
+        "budget_usd": 1000000.0
+      },
+      "summary": {
+        "total_shots": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "shots_at_risk": 0,
+        "shots_completion_pct": 0,
+        "total_tasks": 0,
+        "open_tasks": 0,
+        "in_progress_tasks": 0,
+        "completed_tasks": 0,
+        "overdue_tasks": 0,
+        "tasks_completion_pct": 0,
+        "total_assets": 0,
+        "in_progress_assets": 0,
+        "approved_assets": 0,
+        "needs_revision_assets": 0,
+        "total_reviews": 0,
+        "pending_reviews": 0,
+        "approved_reviews": 0,
+        "changes_requested_reviews": 0,
+        "rejected_reviews": 0,
+        "total_deliveries": 1,
+        "upcoming_deliveries": 1,
+        "delivered_deliveries": 0,
+        "late_deliveries": 0
+      },
+      "production": {
+        "overall_progress_pct": 0,
+        "completed_shots": 0,
+        "in_progress_shots": 0,
+        "not_started_shots": 0,
+        "status_breakdown": [
+          {
+            "status": "Not Started",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "In Progress",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Internal Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Client Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Approved",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Final",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "On Hold",
+            "count": 0,
+            "percentage": 0
+          }
+        ],
+        "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks"
+      },
+      "shots": {
+        "total": 0,
+        "by_status": {
+          "Not Started": 0,
+          "In Progress": 0,
+          "Internal Review": 0,
+          "Client Review": 0,
+          "Approved": 0,
+          "Final": 0,
+          "On Hold": 0
+        },
+        "recent_shots": []
+      },
+      "tasks": {
+        "total": 0,
+        "open": 0,
+        "in_progress": 0,
+        "blocked": 0,
+        "review": 0,
+        "completed": 0,
+        "overdue": 0,
+        "critical": 0,
+        "recent_tasks": []
+      },
+      "reviews": {
+        "pending": 0,
+        "approved": 0,
+        "changes_requested": 0,
+        "rejected": 0,
+        "recent_reviews": []
+      },
+      "schedule": {
+        "start_date": "2026-11-12",
+        "delivery_date": "2027-05-11",
+        "days_total": 180,
+        "days_elapsed": 0,
+        "days_remaining": 180,
+        "is_delayed": false,
+        "milestones": []
+      },
+      "workload": {
+        "team_members": []
+      },
+      "deliveries": {
+        "total": 1,
+        "upcoming": 1,
+        "delivered": 0,
+        "late": 0,
+        "items": [
+          {
+            "id": "3e94fa1b-65b9-43c0-8270-b9a8a5f0e867",
+            "title": "Episode 1 turnover",
+            "package_name": "DLV-CRT-0001",
+            "status": "Draft",
+            "recipient": "Acme Pictures",
+            "due_date": ""
+          }
+        ]
+      },
+      "activity": [
+        {
+          "id": "16bcdbd6-1f76-4f88-a47c-0d439d05be3e",
+          "entity_type": "DeliveryPackage",
+          "entity_id": "3e94fa1b-65b9-43c0-8270-b9a8a5f0e867",
+          "action": "Created DeliveryPackage",
+          "user_name": "System",
+          "timestamp": "2026-11-12T04:30:43.038367+00:00",
+          "description": "created DeliveryPackage Episode 1 turnover",
+          "entity_code": "Episode 1 turnover"
+        },
+        {
+          "id": "3390cac0-7e20-4fb4-bacf-75c39e66b3fa",
+          "entity_type": "Project",
+          "entity_id": "1303a0ca-1ef4-4b2d-b193-4194aa31fa74",
+          "action": "Created Project",
+          "user_name": "System",
+          "timestamp": "2026-11-12T04:30:43.000371+00:00",
+          "description": "created Project Project 0",
+          "entity_code": "Project 0"
+        }
+      ]
+    }
+  },
+  "clients_list_lead": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/clients/"
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "0a6c5813-b054-4c14-9307-69db99e5faa3",
+          "name": "Acme Pictures",
+          "code": "ACME",
+          "studio_type": "Major Studio",
+          "contract_tier": "Standard Producer",
+          "portal_access": true,
+          "status": "Active",
+          "logo_url": "",
+          "headquarters": "",
+          "contact_count": 0,
+          "created_at": "2026-11-12T04:30:42.965442Z",
+          "updated_at": "2026-11-12T04:30:42.965450Z"
+        }
+      ]
+    }
+  },
+  "client_detail_lead": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/clients/0a6c5813-b054-4c14-9307-69db99e5faa3/"
+    },
+    "status": 200,
+    "body": {
+      "id": "0a6c5813-b054-4c14-9307-69db99e5faa3",
+      "name": "Acme Pictures",
+      "code": "ACME",
+      "studio_type": "Major Studio",
+      "contract_tier": "Standard Producer",
+      "portal_access": true,
+      "status": "Active",
+      "logo_url": "",
+      "headquarters": "",
+      "contact_count": 0,
+      "created_at": "2026-11-12T04:30:42.965442Z",
+      "updated_at": "2026-11-12T04:30:42.965450Z"
+    }
+  },
+  "vendors_list_lead": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendors/"
+    },
+    "status": 200,
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "e17d4a08-6734-44c8-a9cd-bedec6203da8",
+          "name": "FX House",
+          "code": "FXH",
+          "specialization": "Roto & Paint",
+          "security_tier": "Standard Studio NDA",
+          "nda_signed": false,
+          "rating": "4.50",
+          "location": "",
+          "status": "Approved Partner",
+          "logo_url": "",
+          "bandwidth_gbps": "10.00",
+          "bandwidth_link": "",
+          "contact_count": 0,
+          "created_at": "2026-11-12T04:30:42.977488Z",
+          "updated_at": "2026-11-12T04:30:42.977495Z"
+        },
+        {
+          "id": "d48fd020-0121-45ac-bb42-3b0578bcb149",
+          "name": "Northern Light Render",
+          "code": "NLR",
+          "specialization": "Roto & Paint",
+          "security_tier": "Standard Studio NDA",
+          "nda_signed": false,
+          "rating": "4.50",
+          "location": "",
+          "status": "Approved Partner",
+          "logo_url": "",
+          "bandwidth_gbps": "10.00",
+          "bandwidth_link": "",
+          "contact_count": 0,
+          "created_at": "2026-11-12T04:30:42.970866Z",
+          "updated_at": "2026-11-12T04:30:42.970873Z"
+        }
+      ]
+    }
+  },
+  "client_contracts_list_lead": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/client-contracts/"
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "6a8e2765-fa34-4d4a-aad0-1562aa505a68",
+          "client": "0a6c5813-b054-4c14-9307-69db99e5faa3",
+          "contract_number": "CC-0",
+          "title": "Client contract 0",
+          "type": "SOW",
+          "effective_date": null,
+          "expiry_date": null,
+          "currency": "USD",
+          "status": "Draft",
+          "nda_signed": false,
+          "document_url": "",
+          "activated_at": null,
+          "created_at": "2026-11-12T04:30:42.973429Z",
+          "updated_at": "2026-11-12T04:30:42.973436Z"
+        }
+      ]
+    }
+  },
+  "client_contract_detail_lead": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/client-contracts/6a8e2765-fa34-4d4a-aad0-1562aa505a68/"
+    },
+    "status": 200,
+    "body": {
+      "id": "6a8e2765-fa34-4d4a-aad0-1562aa505a68",
+      "client": "0a6c5813-b054-4c14-9307-69db99e5faa3",
+      "contract_number": "CC-0",
+      "title": "Client contract 0",
+      "type": "SOW",
+      "effective_date": null,
+      "expiry_date": null,
+      "currency": "USD",
+      "status": "Draft",
+      "nda_signed": false,
+      "document_url": "",
+      "activated_at": null,
+      "created_at": "2026-11-12T04:30:42.973429Z",
+      "updated_at": "2026-11-12T04:30:42.973436Z"
+    }
+  },
+  "vendor_contracts_list_lead": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contracts/"
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "0a0cd1aa-9b21-49fe-a381-ec889149adf4",
+          "vendor": "e17d4a08-6734-44c8-a9cd-bedec6203da8",
+          "contract_number": "VC-0",
+          "title": "Vendor contract 0",
+          "type": "SOW",
+          "effective_date": null,
+          "expiry_date": null,
+          "currency": "USD",
+          "nda_signed": false,
+          "security_tier": "",
+          "status": "Draft",
+          "activated_at": null,
+          "created_at": "2026-11-12T04:30:42.979728Z",
+          "updated_at": "2026-11-12T04:30:42.979735Z"
+        }
+      ]
+    }
+  },
+  "client_contacts_list_lead": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/client-contacts/"
+    },
+    "status": 403,
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "363f7c9f-909c-4c33-8f27-f64888503986"
+      }
+    }
+  },
+  "deliveries_list_lead": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/deliveries/?project=1303a0ca-1ef4-4b2d-b193-4194aa31fa74"
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "3e94fa1b-65b9-43c0-8270-b9a8a5f0e867",
+          "name": "Episode 1 turnover",
+          "code": "DLV-CRT-0001",
+          "status": "Draft",
+          "client_status": "Pending",
+          "delivery_method": "S3",
+          "version_count": 0,
+          "total_size_bytes": 0,
+          "total_frames": 0,
+          "client_name": "Acme Pictures",
+          "project_name": "Project 0",
+          "expires_at": null,
+          "is_expired": false,
+          "is_archived": false,
+          "created_at": "2026-11-12T04:30:43.035134Z",
+          "updated_at": "2026-11-12T04:30:43.035156Z"
+        }
+      ]
+    }
+  },
+  "dashboard_lead": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/1303a0ca-1ef4-4b2d-b193-4194aa31fa74/dashboard/"
+    },
+    "status": 200,
+    "body": {
+      "project": {
+        "id": "1303a0ca-1ef4-4b2d-b193-4194aa31fa74",
+        "name": "Project 0",
+        "code": "CRT",
+        "type": "Feature Film",
+        "description": "",
+        "status": "In Progress",
+        "fps": 24.0,
+        "resolution": "4096x2160",
+        "aspect_ratio": "2.39:1",
+        "color_space": "ACEScg",
+        "start_date": "",
+        "delivery_date": "",
+        "thumbnail_url": "https://www.lee-black.com/",
+        "supervisor_name": "user0@example.com",
+        "coordinator_name": "user1@example.com",
+        "client_name": "Acme Pictures",
+        "budget_usd": 1000000.0
+      },
+      "summary": {
+        "total_shots": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "shots_at_risk": 0,
+        "shots_completion_pct": 0,
+        "total_tasks": 0,
+        "open_tasks": 0,
+        "in_progress_tasks": 0,
+        "completed_tasks": 0,
+        "overdue_tasks": 0,
+        "tasks_completion_pct": 0,
+        "total_assets": 0,
+        "in_progress_assets": 0,
+        "approved_assets": 0,
+        "needs_revision_assets": 0,
+        "total_reviews": 0,
+        "pending_reviews": 0,
+        "approved_reviews": 0,
+        "changes_requested_reviews": 0,
+        "rejected_reviews": 0,
+        "total_deliveries": 1,
+        "upcoming_deliveries": 1,
+        "delivered_deliveries": 0,
+        "late_deliveries": 0
+      },
+      "production": {
+        "overall_progress_pct": 0,
+        "completed_shots": 0,
+        "in_progress_shots": 0,
+        "not_started_shots": 0,
+        "status_breakdown": [
+          {
+            "status": "Not Started",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "In Progress",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Internal Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Client Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Approved",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Final",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "On Hold",
+            "count": 0,
+            "percentage": 0
+          }
+        ],
+        "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks"
+      },
+      "shots": {
+        "total": 0,
+        "by_status": {
+          "Not Started": 0,
+          "In Progress": 0,
+          "Internal Review": 0,
+          "Client Review": 0,
+          "Approved": 0,
+          "Final": 0,
+          "On Hold": 0
+        },
+        "recent_shots": []
+      },
+      "tasks": {
+        "total": 0,
+        "open": 0,
+        "in_progress": 0,
+        "blocked": 0,
+        "review": 0,
+        "completed": 0,
+        "overdue": 0,
+        "critical": 0,
+        "recent_tasks": []
+      },
+      "reviews": {
+        "pending": 0,
+        "approved": 0,
+        "changes_requested": 0,
+        "rejected": 0,
+        "recent_reviews": []
+      },
+      "schedule": {
+        "start_date": "2026-11-12",
+        "delivery_date": "2027-05-11",
+        "days_total": 180,
+        "days_elapsed": 0,
+        "days_remaining": 180,
+        "is_delayed": false,
+        "milestones": []
+      },
+      "workload": {
+        "team_members": []
+      },
+      "deliveries": {
+        "total": 1,
+        "upcoming": 1,
+        "delivered": 0,
+        "late": 0,
+        "items": [
+          {
+            "id": "3e94fa1b-65b9-43c0-8270-b9a8a5f0e867",
+            "title": "Episode 1 turnover",
+            "package_name": "DLV-CRT-0001",
+            "status": "Draft",
+            "recipient": "Acme Pictures",
+            "due_date": ""
+          }
+        ]
+      },
+      "activity": [
+        {
+          "id": "16bcdbd6-1f76-4f88-a47c-0d439d05be3e",
+          "entity_type": "DeliveryPackage",
+          "entity_id": "3e94fa1b-65b9-43c0-8270-b9a8a5f0e867",
+          "action": "Created DeliveryPackage",
+          "user_name": "System",
+          "timestamp": "2026-11-12T04:30:43.038367+00:00",
+          "description": "created DeliveryPackage Episode 1 turnover",
+          "entity_code": "Episode 1 turnover"
+        },
+        {
+          "id": "3390cac0-7e20-4fb4-bacf-75c39e66b3fa",
+          "entity_type": "Project",
+          "entity_id": "1303a0ca-1ef4-4b2d-b193-4194aa31fa74",
+          "action": "Created Project",
+          "user_name": "System",
+          "timestamp": "2026-11-12T04:30:43.000371+00:00",
+          "description": "created Project Project 0",
+          "entity_code": "Project 0"
+        }
+      ]
+    }
+  }
+}

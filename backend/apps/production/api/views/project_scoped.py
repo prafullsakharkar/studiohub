@@ -85,6 +85,7 @@ from apps.production.models import (
     Task,
     Workflow,
 )
+from apps.production.permissions.checks import has_permission_code
 from apps.production.selectors.asset import AssetSelector
 from apps.production.selectors.dashboard import ProjectDashboardSelector
 from apps.production.selectors.delivery_figures import DELIVERY_VIEW, delivery_figures
@@ -405,7 +406,12 @@ class ProjectSummaryView(ProjectScopedAPIView):
         return Response(
             {
                 "project": project_data,
-                "counts": ProjectSelector.summary_counts(self.project),
+                "counts": ProjectSelector.summary_counts(
+                    self.project,
+                    include_deliveries=has_permission_code(
+                        request, delivery_figures().view_permission
+                    ),
+                ),
                 "project_id": str(self.project.id),
             }
         )
@@ -422,7 +428,13 @@ class ProjectDashboardView(ProjectScopedAPIView):
     permission_map = {"get": (ProjectPermissions.VIEW,)}
 
     def get(self, request, *args, **kwargs):
-        return Response(ProjectDashboardSelector.build(self.project))
+        return Response(
+            ProjectDashboardSelector.build(
+                self.project,
+                include_deliveries=has_permission_code(request, delivery_figures().view_permission),
+                include_budget=has_permission_code(request, ProjectPermissions.VIEW_BUDGET),
+            )
+        )
 
 
 # ----------------------------------------------------------------------

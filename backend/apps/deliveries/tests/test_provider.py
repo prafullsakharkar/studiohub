@@ -116,8 +116,10 @@ class TestProductionUsesIt:
         DeliveryPackage.objects.filter(project=project).update(status="Complete")
         make_package(project, code="DSH-2")
 
-        assert ProjectSelector.summary_counts(project)["deliveries"] == 2
-        deliveries = ProjectDashboardSelector.build(project)["deliveries"]
+        assert ProjectSelector.summary_counts(project, include_deliveries=True)["deliveries"] == 2
+        deliveries = ProjectDashboardSelector.build(
+            project, include_deliveries=True, include_budget=True
+        )["deliveries"]
         assert (deliveries["total"], deliveries["delivered"]) == (2, 1)
         assert len(deliveries["items"]) == 2
 
@@ -125,8 +127,10 @@ class TestProductionUsesIt:
         project = ProjectFactory.create(code="PRVG")
         make_package(project, code="HIDDEN-1")
 
-        assert ProjectSelector.summary_counts(project)["deliveries"] == 0
-        deliveries = ProjectDashboardSelector.build(project)["deliveries"]
+        assert ProjectSelector.summary_counts(project, include_deliveries=True)["deliveries"] == 0
+        deliveries = ProjectDashboardSelector.build(
+            project, include_deliveries=True, include_budget=True
+        )["deliveries"]
         assert (deliveries["total"], deliveries["items"]) == (0, [])
 
     def test_the_nested_route_lists_the_projects_deliveries(self):

@@ -39,8 +39,15 @@ def anon():
 
 
 @pytest.fixture
-def reader():
+def plain():
+    """A signed-in user with no permission at all (CR-53: no longer reads clients or vendors)."""
     return client_for()
+
+
+@pytest.fixture
+def reader():
+    """Reads clients and vendors (CR-53) and holds none of the field permissions."""
+    return client_for(P.PARTNER_VIEW)
 
 
 @pytest.fixture
@@ -50,7 +57,9 @@ def manager():
 
 @pytest.fixture
 def privileged():
-    return client_for(P.DIRECTORY_MANAGE, P.PERSON_VIEW_SENSITIVE, P.CLIENT_VIEW_FINANCIAL)
+    return client_for(
+        P.DIRECTORY_MANAGE, P.PERSON_VIEW_SENSITIVE, P.CLIENT_VIEW_FINANCIAL, P.PARTNER_VIEW
+    )
 
 
 def codes(response):
@@ -67,7 +76,15 @@ class TestAuthorizationMatrix:
         assert anon.get(f"{API}/{path}/").status_code == 401
 
     @pytest.mark.parametrize("slug", ["clients", "vendors"])
-    def test_a_plain_user_reads_but_cannot_write(self, reader, slug):
+    def test_a_plain_user_reads_nothing(self, plain, slug):
+        """CR-53: reading needs masterdata.partner.view; a missing id looks like a forbidden one."""
+        row = (ClientFactory if slug == "clients" else VendorFactory)()
+        assert plain.get(f"{API}/{slug}/").status_code == 403
+        assert plain.get(f"{API}/{slug}/{row.pk}/").status_code == 403
+        assert plain.get(f"{API}/{slug}/{uuid.uuid4()}/").status_code == 403
+
+    @pytest.mark.parametrize("slug", ["clients", "vendors"])
+    def test_a_partner_reader_reads_but_cannot_write(self, reader, slug):
         row = (ClientFactory if slug == "clients" else VendorFactory)()
         assert reader.get(f"{API}/{slug}/").status_code == 200
         assert reader.get(f"{API}/{slug}/{row.pk}/").status_code == 200
@@ -173,9 +190,17 @@ class TestH1Gating:
 
     def test_each_permission_unlocks_only_its_own_fields(self):
         row = self.make()
-        sensitive = client_for(P.PERSON_VIEW_SENSITIVE).get(f"{API}/clients/{row.pk}/").json()
+        sensitive = (
+            client_for(P.PARTNER_VIEW, P.PERSON_VIEW_SENSITIVE)
+            .get(f"{API}/clients/{row.pk}/")
+            .json()
+        )
         assert set(SENSITIVE) <= set(sensitive) and "total_billed_usd" not in sensitive
-        financial = client_for(P.CLIENT_VIEW_FINANCIAL).get(f"{API}/clients/{row.pk}/").json()
+        financial = (
+            client_for(P.PARTNER_VIEW, P.CLIENT_VIEW_FINANCIAL)
+            .get(f"{API}/clients/{row.pk}/")
+            .json()
+        )
         assert "total_billed_usd" in financial and not set(SENSITIVE) & set(financial)
 
     def test_a_write_naming_a_hidden_field_is_403_and_changes_nothing(self, manager):
@@ -229,7 +254,7 @@ class TestH1Gating:
         self.make()
         assert reader.get(f"{API}/clients/?search=jane@apex").json()["count"] == 0
         assert reader.get(f"{API}/clients/?search=Jane").json()["count"] == 0
-        allowed = client_for(P.PERSON_VIEW_SENSITIVE)
+        allowed = client_for(P.PARTNER_VIEW, P.PERSON_VIEW_SENSITIVE)
         assert allowed.get(f"{API}/clients/?search=Jane").json()["count"] == 1
 
     def test_ordinary_filters_and_ordering_still_work(self, reader):

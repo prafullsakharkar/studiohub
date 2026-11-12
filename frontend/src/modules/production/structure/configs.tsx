@@ -76,7 +76,8 @@ export const projectsFormConfig: DirectoryFormConfig<Project> = {
     { kind: 'text', name: 'resolution', label: 'Resolution', hint: 'For example 4096x2160.' },
     { kind: 'text', name: 'aspect_ratio', label: 'Aspect ratio' },
     { kind: 'text', name: 'color_space', label: 'Color space' },
-    { kind: 'number', name: 'budget_usd', label: 'Budget (USD)' },
+    // Read and written only with project.view_budget (CR-55): hidden, it is never sent.
+    { kind: 'number', name: 'budget_usd', label: 'Budget (USD)', permission: 'project.view_budget' },
   ],
 };
 

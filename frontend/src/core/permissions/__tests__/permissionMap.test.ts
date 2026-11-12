@@ -31,6 +31,21 @@ describe('PERMISSION_MAP', () => {
     expect(Object.entries(PERMISSION_MAP).filter(([, r]) => !r.why.trim()).map(([k]) => k)).toEqual([]);
   });
 
+  it('clients and vendors follow masterdata.partner.view; the rest of the directory stays open (CR-53)', () => {
+    for (const code of ['page.clients', 'page.vendors', 'client.view', 'vendor.view']) {
+      expect(resolveRule(code), code).toMatchObject({ kind: 'codes', all: ['masterdata.partner.view'] });
+    }
+    for (const code of ['page.people', 'people.view', 'department.view', 'team.view', 'office.view', 'position.view']) {
+      expect(resolveRule(code)?.kind, code).toBe('open');
+    }
+  });
+
+  it('the project budget follows project.view_budget for reading and editing (CR-55)', () => {
+    for (const code of ['field.project.budget.view', 'field.project.budget.edit']) {
+      expect(resolveRule(code), code).toMatchObject({ kind: 'codes', all: ['project.view_budget'] });
+    }
+  });
+
   it('a legacy key never shadows a real backend code, except on purpose', () => {
     // settings.update is seeded but enforced by no view (writes need settings.manage), so granting
     // it must not light up write controls. Any new shadow must be justified here.
