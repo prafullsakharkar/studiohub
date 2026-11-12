@@ -1,4 +1,6 @@
 import React from 'react';
+import { AuthContext } from '@/core/auth/AuthContext';
+import { partialMembershipOf } from '@/core/permissions/access';
 import { useProductionStore } from '@/core/production/useProductionStore';
 import { useProjectDashboard } from '../hooks/useProjectDashboard';
 import {
@@ -17,15 +19,22 @@ import {
   DashboardSkeleton,
   DashboardEmptyState,
   DashboardErrorState,
+  DashboardPartialAccess,
 } from '../components';
 
 export const ProjectDashboardPage: React.FC = () => {
   const { activeProjectId } = useProductionStore();
   const { data, isLoading, isError, error, isFetching, refetch } = useProjectDashboard();
+  const partial = partialMembershipOf(React.useContext(AuthContext)?.user ?? null, activeProjectId ?? '');
 
   // 1. Guard against unselected project
   if (!activeProjectId) {
     return <DashboardEmptyState />;
+  }
+
+  // The dashboard sums up the whole project; a member limited to part of it is told so instead (no request is made).
+  if (partial) {
+    return <DashboardPartialAccess limitedTo={partial} />;
   }
 
   // 2. Loading state with VFX HUD Skeleton

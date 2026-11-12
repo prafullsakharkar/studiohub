@@ -46,6 +46,28 @@ export function findActiveMembership(user: User, projectId: string): ProjectMemb
   });
 }
 
+/** What an active membership of a project is limited to; `null` when it covers the whole project. */
+export type PartialMembership = 'show' | 'department' | 'external';
+
+/**
+ * Whether the user's membership of `projectId` covers only part of it, and which part. The views that sum up a
+ * project as a whole (its dashboard, summary, members, notes, schedule, activity) answer 404 to such a member:
+ * the backend's `user_has_full_project_access` admits internal memberships bound to no show and naming no
+ * department, and never a vendor or client membership (TM-002).
+ *
+ * `null` for a superuser, for a whole-project membership, and when there is no active membership at all: then the
+ * server decides (a platform administrator reaches every project without one).
+ */
+export function partialMembershipOf(user: User | null, projectId: string): PartialMembership | null {
+  if (!user || user.is_superuser || !projectId) return null;
+  const membership = findActiveMembership(user, projectId);
+  if (!membership) return null;
+  if (membership.vendor_id || membership.client_id) return 'external';
+  if (membership.show_id || membership.showId) return 'show';
+  if (membership.department || membership.department_id) return 'department';
+  return null;
+}
+
 function membershipAllows(user: User, context: AccessContext): boolean {
   if (!context.projectId || user.is_superuser) return true;
   const membership = findActiveMembership(user, context.projectId);
