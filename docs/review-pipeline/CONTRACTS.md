@@ -1,0 +1,16 @@
+# Review pipeline: contracts
+
+Each entry is the API before and after one change. Paths are under `/api/v1/`. A contract is written before the code and changed only with the owner's approval.
+
+## RP-1 Data model cleanup
+
+| ID | Where | Before | After |
+|---|---|---|---|
+| C-RP-01 | Every version response: `GET versions/`, `archived/`, `{id}/`; the answers to `POST versions/`, `PATCH`/`PUT versions/{id}/`, `publish/`, `unpublish/`, `promote/`, `add-to-playlist/` and any other action that returns the version | Six JSON lists: `reviews`, `playlists`, `notes_list`, `media_items`, `attachments`, `activity`. They were stored copies (D-18), not rebuilt from the records, and only `playlists` was ever written to. | The six keys are **left out**. `publishing_info` and every other field are unchanged. The reviews and playlists that hold a version are read with C-RP-03 and C-RP-04; its history is read from the audit trail, as the frontend already does. No write accepted these keys before, and none accepts them now. |
+| C-RP-02 | `POST versions/{id}/add-to-playlist/` | Added a `PlaylistEntry` and appended `{playlist_id, playlist_name}` to the version's `playlists` JSON, even without a `playlist_id`. | Adds the `PlaylistEntry` only. Request, permissions, errors and status code are unchanged. The answer is the version (C-RP-01 shape). |
+| C-RP-03 | `GET reviews/` | No way to ask which reviews show a version. | Optional query parameter `version_id`. It lists the reviews with a live item (`ReviewItem`, not deleted) for that version. An empty value means no filter. An unknown or malformed value gives an empty list, never a 400. It combines with every other filter and keeps the list's own narrowing. Nothing is written. |
+| C-RP-04 | `GET playlists/` | Filters `status`, `project`, `client_only` only. | The same three, plus optional `version_id`: the playlists with a live entry (`PlaylistEntry`, not deleted) for that version. Same rules as C-RP-03. |
+| C-RP-05 | `POST reviews/{id}/comments/` and `POST reviews/{id}/annotations/` | No way to say which version of the review a comment or a drawing is on. | Optional `version_id` (UUID or `null`). When it is given, it must be a version shown in this review (a live `ReviewItem`). Otherwise the answer is **400** `{"version_id": ["This version is not in the review."]}`, also for a version of another project or an item that was removed. A malformed UUID gets the serializer's own 400. A reply (`parent_id`) takes its thread's version: leaving `version_id` out, or naming the same one, is accepted; naming another is **400** `{"version_id": ["A reply is on its thread's version."]}`. Leaving it out of a new comment or annotation keeps it on the whole review (`version_id: null`), as before. |
+| C-RP-06 | Comment and annotation shapes: the answers to C-RP-05, and `comments[]` (with `replies[]`) and `annotations[]` in the review detail and in every action that returns the review | No version. | Each comment, reply and annotation carries `version_id` (string or `null`). Rows written before RP-1 are `null`. Nothing else in the shapes changes. |
+
+The column drop of PLAN WP 1.6 (migration `production` 0004) changes no API beyond C-RP-01.

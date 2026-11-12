@@ -1,4 +1,3 @@
-from django.db import transaction
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -154,14 +153,7 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
             if playlist_id
             else None
         )
-        with transaction.atomic():
-            instance.playlists = [
-                *(instance.playlists or []),
-                {"playlist_id": str(playlist_id) if playlist_id else None, "playlist_name": body.get("playlist_name", "")},
-            ]
-            instance.save(update_fields=["playlists"])
-            if playlist is not None:
-                PlaylistService.add_entry(
-                    user=request.user, playlist=playlist, version_ref=instance.id
-                )
+        # The playlist entry is the only record (C-RP-02); the version's ``playlists`` JSON is no longer written.
+        if playlist is not None:
+            PlaylistService.add_entry(user=request.user, playlist=playlist, version_ref=instance.id)
         return Response(VersionDetailSerializer(instance).data)

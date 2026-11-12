@@ -1,8 +1,10 @@
+from uuid import UUID
+
 import django_filters
-from django.db.models import Q
+from django.db.models import Exists, OuterRef, Q
 
 from apps.core.filters import BaseFilterSet
-from apps.production.models import Review
+from apps.production.models import Review, ReviewItem
 
 
 class ReviewFilterSet(BaseFilterSet):
@@ -16,10 +18,22 @@ class ReviewFilterSet(BaseFilterSet):
     project_id = django_filters.CharFilter(method="filter_project")
     entity_code = django_filters.CharFilter(field_name="entity_code", lookup_expr="iexact")
     entity_type = django_filters.CharFilter(field_name="entity_type", lookup_expr="iexact")
+    #: the reviews showing this version (a live ``ReviewItem``); unknown or malformed: no rows, never a 400 (C-RP-03)
+    version_id = django_filters.CharFilter(method="filter_version")
 
     class Meta:
         model = Review
-        fields = ["status", "project", "project_id", "entity_code", "entity_type"]
+        fields = ["status", "project", "project_id", "entity_code", "entity_type", "version_id"]
+
+    def filter_version(self, queryset, name, value):
+        if not value:
+            return queryset
+        try:
+            key = UUID(str(value))
+        except ValueError:
+            return queryset.none()
+        items = ReviewItem.objects.filter(review=OuterRef("pk"), version_id=key, is_deleted=False)
+        return queryset.filter(Exists(items))
 
 
     def filter_project(self, queryset, name, value):

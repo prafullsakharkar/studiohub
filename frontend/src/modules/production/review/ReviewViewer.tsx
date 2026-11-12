@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Layers, SplitSquareVertical } from 'lucide-react';
 import type React from 'react';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { reviewsApi, versionsApi } from '@/api/production/review';
 import type { Review } from '@/api/production/review';
 import { useCan } from '@/core/permissions/useCan';
@@ -25,11 +25,14 @@ interface Feedback {
   resolved: boolean;
   /** An annotation that has a drawing on its frame. */
   drawn?: boolean;
+  /** On the whole review rather than on the version on show. */
+  wholeReview: boolean;
 }
 
 /**
  * The review's versions in the player, with the comments and annotations that name a frame marked on the timeline
- * (click one to go to it) and a box to comment on the frame being shown. Drawing on the frame is a later step.
+ * (click one to go to it) and a box to comment on the frame being shown. What is written here is on the version on
+ * show (C-RP-05); the timeline and the list show that version's feedback and the feedback on the whole review.
  * Two of the versions can be put against each other (A/B wipe or side by side); `compareWith` opens it on that version.
  */
 export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | null }> = ({ review, compareWith = null }) => {
@@ -62,18 +65,21 @@ export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | nul
   const fps = toFps(version?.fps);
   const closed = review.status === 'Closed';
 
+  // A comment or annotation on another version of the review is not this picture's; one on the whole review is everyone's.
+  const shownId = current?.id;
+  const onShown = useCallback((versionId: string | null) => versionId === null || versionId === shownId, [shownId]);
   const feedback = useMemo<Feedback[]>(
     () =>
       [
-        ...review.comments.filter((c) => c.frame_number !== null).map((c) => ({ key: `c-${c.id}`, kind: 'Comment' as const, frame: c.frame_number as number, author: c.author, text: c.text, resolved: c.is_resolved })),
-        ...review.annotations.filter((a) => a.frame_number !== null).map((a) => ({ key: `a-${a.id}`, kind: 'Annotation' as const, frame: a.frame_number as number, author: a.author_name, text: a.comment, resolved: false, drawn: parseDrawing(a.drawing_coordinates).length > 0 })),
+        ...review.comments.filter((c) => c.frame_number !== null && onShown(c.version_id)).map((c) => ({ key: `c-${c.id}`, kind: 'Comment' as const, frame: c.frame_number as number, author: c.author, text: c.text, resolved: c.is_resolved, wholeReview: c.version_id === null })),
+        ...review.annotations.filter((a) => a.frame_number !== null && onShown(a.version_id)).map((a) => ({ key: `a-${a.id}`, kind: 'Annotation' as const, frame: a.frame_number as number, author: a.author_name, text: a.comment, resolved: false, drawn: parseDrawing(a.drawing_coordinates).length > 0, wholeReview: a.version_id === null })),
       ].sort((a, b) => a.frame - b.frame),
-    [review.comments, review.annotations],
+    [review.comments, review.annotations, onShown],
   );
   const markers = useMemo<PlayerMarker[]>(() => feedback.map((f) => ({ frame: f.frame, label: `${f.kind.toLowerCase()} by ${f.author || 'someone'}`, tone: f.resolved ? 'resolved' : f.kind === 'Annotation' ? 'annotation' : 'comment' })), [feedback]);
 
   // The drawings already saved on the frame being shown.
-  const savedHere = review.annotations.filter((a) => a.frame_number === frame).flatMap((a) => parseDrawing(a.drawing_coordinates));
+  const savedHere = review.annotations.filter((a) => a.frame_number === frame && onShown(a.version_id)).flatMap((a) => parseDrawing(a.drawing_coordinates));
   const canDraw = canEdit && !closed && !comparing;
   const lockedElsewhere = draft.length > 0 && draftFrame !== frame;
   const layerTool = drawing && !lockedElsewhere ? tool : null;
@@ -92,7 +98,7 @@ export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | nul
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div role="group" aria-label="Version on show" className="flex flex-wrap gap-1.5">
             {versions.map((v) => (
-              <button key={v.id} type="button" aria-pressed={v.id === current.id} onClick={() => setPicked(v.id)} className={cn('rounded-lg border px-2.5 py-1 font-mono text-xs', v.id === current.id ? 'border-cyan-500/60 bg-cyan-500/10 text-cyan-200' : 'border-slate-800 text-slate-300 hover:border-slate-700')}>
+              <button key={v.id} type="button" aria-pressed={v.id === current.id} onClick={() => { if (v.id !== current.id) stopDrawing(); setPicked(v.id); }} className={cn('rounded-lg border px-2.5 py-1 font-mono text-xs', v.id === current.id ? 'border-cyan-500/60 bg-cyan-500/10 text-cyan-200' : 'border-slate-800 text-slate-300 hover:border-slate-700')}>
                 {v.code}
               </button>
             ))}
@@ -200,7 +206,7 @@ export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | nul
                     disabled={draft.length === 0 || draftFrame === null}
                     onClick={async () => {
                       const target = draftFrame as number;
-                      if (await write(() => reviewsApi.addAnnotation(review.id, { comment: note.trim(), frame_number: target, timecode: timecode(target, startFrame, fps), drawing_coordinates: toDrawing(draft) }))) stopDrawing();
+                      if (await write(() => reviewsApi.addAnnotation(review.id, { comment: note.trim(), frame_number: target, timecode: timecode(target, startFrame, fps), drawing_coordinates: toDrawing(draft), version_id: current.id }))) stopDrawing();
                     }}
                   >
                     Save annotation
@@ -212,14 +218,14 @@ export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | nul
           {canEdit && !closed && (
             <div className="flex flex-wrap items-end gap-2">
               <label className="min-w-64 flex-1 text-xs text-slate-400">
-                {`Comment on frame ${frame}`}
+                {versions.length > 1 ? `Comment on ${current.code}, frame ${frame}` : `Comment on frame ${frame}`}
                 <input aria-label="Comment on this frame" value={text} onChange={(e) => setText(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200" />
               </label>
               <Button
                 size="sm"
                 variant="primary"
                 disabled={!text.trim()}
-                onClick={async () => (await write(() => reviewsApi.addComment(review.id, { text: text.trim(), frame_number: frame, timecode: timecode(frame, startFrame, fps) }))) && setText('')}
+                onClick={async () => (await write(() => reviewsApi.addComment(review.id, { text: text.trim(), frame_number: frame, timecode: timecode(frame, startFrame, fps), version_id: current.id }))) && setText('')}
               >
                 Add comment
               </Button>
@@ -239,7 +245,7 @@ export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | nul
                   <button type="button" aria-label={`Go to frame ${f.frame}: ${f.text}`} disabled={comparing} title={comparing ? 'Stop comparing to go to a frame' : undefined} onClick={() => player.current?.seekToFrame(f.frame)} className={cn('w-full rounded-lg border border-slate-800 bg-slate-900/60 p-2 text-left text-xs hover:border-slate-700 disabled:cursor-not-allowed disabled:opacity-60', f.resolved && 'opacity-60')}>
                     <span className="flex items-center justify-between gap-2 font-mono text-[11px] text-slate-400">
                       <span>{`Frame ${f.frame}`}</span>
-                      <span>{f.resolved ? 'Resolved' : f.drawn ? 'Annotation · drawing' : f.kind}</span>
+                      <span>{`${f.resolved ? 'Resolved' : f.drawn ? 'Annotation · drawing' : f.kind}${f.wholeReview && versions.length > 1 ? ' · whole review' : ''}`}</span>
                     </span>
                     <span className="mt-0.5 block text-slate-200">{f.text}</span>
                     <span className="block text-[11px] text-slate-500">{f.author}</span>

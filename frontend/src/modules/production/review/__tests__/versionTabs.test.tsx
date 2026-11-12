@@ -43,28 +43,27 @@ afterEach(() => {
 });
 
 describe('version playlists tab', () => {
-  const base = flow.playlists_list.body.results[0];
-  const holding = { ...base, id: 'pl-1', name: 'Friday dailies', code: 'PL1', entries: [{ id: 'e1', version_id: 'someone-else', item_order: 0, legacy_id: '' }, { id: 'e2', version_id: version.id, item_order: 1, legacy_id: '' }, { id: 'e3', version_id: 'another', item_order: 2, legacy_id: '' }] };
-  const notHolding = { ...base, id: 'pl-2', name: 'Elsewhere', entries: [{ id: 'e4', version_id: 'another', item_order: 0, legacy_id: '' }] };
+  // Captured with ?version_id= (C-RP-04): "Seeded" holds it once; "Dailies (renamed)" holds it twice, after another version.
+  const holding = flow.rp1_playlists_by_version.body;
+  const none = flow.rp1_playlists_by_version_none.body;
+  const serve = (c: MockCall): MockReply => (param(c, 'version_id') === version.id ? { status: 200, body: holding } : { status: 200, body: none });
 
-  it('lists the playlists of the project that hold the version, with its place in each', async () => {
-    const { calls } = mockFetch(() => page([holding, notHolding]));
+  it('lists the playlists the server says hold the version, with its place in each, asking by version_id', async () => {
+    const { calls } = mockFetch(serve);
     mount(<VersionPlaylistsTab version={version} />);
     const list = within(await screen.findByRole('list', { name: 'Playlists holding this version' }));
-    expect(list.getAllByRole('listitem')).toHaveLength(1);
-    expect(list.getByRole('link', { name: 'Friday dailies' }).getAttribute('href')).toBe('/playlists/pl-1');
-    expect(list.getByText('Entry 2 of 3')).toBeTruthy();
-    expect(param(calls[0], 'project_id')).toBe(version.project_id);
+    expect(list.getAllByRole('listitem')).toHaveLength(holding.results.length);
+    for (const p of holding.results) expect(list.getByRole('link', { name: p.name }).getAttribute('href')).toBe(`/playlists/${p.id}`);
+    expect(list.getByText('Entry 1 of 1')).toBeTruthy();
+    expect(list.getByText('Entry 2 of 3 · in 2 entries')).toBeTruthy();
+    expect(param(calls[0], 'version_id')).toBe(version.id);
+    expect(param(calls[0], 'project_id')).toBeNull(); // no longer the whole project filtered on the client
   });
 
-  it('says when it is in no playlist, and when it is in one twice', async () => {
-    mockFetch(() => page([notHolding]));
+  it('says when it is in no playlist', async () => {
+    mockFetch(() => ({ status: 200, body: none }));
     mount(<VersionPlaylistsTab version={version} />);
     expect(await screen.findByText(/not in any playlist/)).toBeTruthy();
-    cleanup();
-    mockFetch(() => page([{ ...holding, entries: [...holding.entries, { id: 'e9', version_id: version.id, item_order: 3, legacy_id: '' }] }]));
-    mount(<VersionPlaylistsTab version={version} />);
-    expect(await screen.findByText(/in 2 entries/)).toBeTruthy();
   });
 });
 

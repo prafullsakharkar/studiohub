@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import type React from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { reviewsApi, versionsApi } from '@/api/production/review';
+import { playlistsApi, reviewsApi, versionsApi } from '@/api/production/review';
 import { projectScopedApi, projectsApi, sequencesApi } from '@/api/production/structure';
 import { shotsApi, tasksApi } from '@/api/production/work';
 import { AuthProvider } from '@/core/auth/AuthProvider';
@@ -183,5 +183,52 @@ describe('review parts', () => {
     render(tree(pages, `/reviews/${created.id}`));
     await clickAction('Retake');
     await waitFor(async () => expect((await reviewsApi.get(created.id)).status).toBe('Retake'), { timeout: 15000 });
+  }, 150000);
+});
+
+describe('RP-1: a review of two versions (docs/review-pipeline/CONTRACTS.md)', () => {
+  it('a comment and an annotation go on the version chosen; the version lists the reviews and playlists that hold it', async () => {
+    await signIn('artist');
+    const first = await versionsApi.create({ project: fixture.project, shot: fixture.shot, task: fixture.task, notes: 'rp1 first' });
+    const second = await versionsApi.create({ project: fixture.project, shot: fixture.shot, task: fixture.task, notes: 'rp1 second' });
+
+    await signIn('supervisor');
+    const review = await reviewsApi.create({ project: fixture.project, title: 'Two versions', code: `R2${uid}`, entity_type: 'Shot', entity_id: fixture.shot });
+    await reviewsApi.addVersion(review.id, first.id);
+    await reviewsApi.addVersion(review.id, second.id);
+
+    // a comment on the second version and an annotation on the first, from the real panels (C-RP-05)
+    render(tree(pages, `/reviews/${review.id}`));
+    fireEvent.click(await screen.findByRole('tab', { name: 'Comments' }, { timeout: 20000 }));
+    fireEvent.change(await screen.findByLabelText('Comment'), { target: { value: 'Softer than the first' } });
+    fireEvent.change(screen.getByLabelText('Comment on version'), { target: { value: second.id } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
+    await waitFor(async () => expect((await reviewsApi.get(review.id)).comments.map((c) => [c.text, c.version_id])).toEqual([['Softer than the first', second.id]]), { timeout: 15000 });
+    const thread = (await screen.findByText('Softer than the first', {}, { timeout: 15000 })).closest('li') as HTMLElement;
+    expect(within(thread).getByText(second.code)).toBeTruthy(); // the thread says which version (C-RP-06)
+    fireEvent.click(screen.getByRole('tab', { name: 'Annotations' }));
+    fireEvent.change(await screen.findByLabelText('Annotation'), { target: { value: 'circle the prop' } });
+    fireEvent.change(screen.getByLabelText('Annotation on version'), { target: { value: first.id } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add annotation' }));
+    await waitFor(async () => expect((await reviewsApi.get(review.id)).annotations.map((a) => [a.comment, a.version_id])).toEqual([['circle the prop', first.id]]), { timeout: 15000 });
+    // the server refuses a version that is not on the review
+    const outside = (await versionsApi.list({ project_id: fixture.project })).results.find((v) => v.id !== first.id && v.id !== second.id);
+    if (outside) await expect(reviewsApi.addComment(review.id, { text: 'x', version_id: outside.id })).rejects.toMatchObject({ status: 400 });
+    cleanup();
+
+    // the lead puts the second version on a playlist; its page lists that playlist and the review, by version_id (C-RP-03, C-RP-04)
+    await signIn('lead');
+    const playlist = await playlistsApi.create({ project: fixture.project, name: 'RP-1 dailies', code: `PL${uid}` });
+    await playlistsApi.addEntry(playlist.id, { version_id: second.id });
+    render(tree(pages, `/versions/${second.id}`));
+    fireEvent.click(await screen.findByRole('tab', { name: 'Reviews' }, { timeout: 20000 }));
+    const reviews = within(await screen.findByRole('list', { name: 'Reviews of this version' }, { timeout: 15000 }));
+    expect(reviews.getAllByRole('listitem')).toHaveLength(1);
+    expect(reviews.getByText(new RegExp(review.code))).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Playlists' }));
+    const playlists = within(await screen.findByRole('list', { name: 'Playlists holding this version' }, { timeout: 15000 }));
+    expect(playlists.getAllByRole('listitem')).toHaveLength(1);
+    expect(playlists.getByRole('link', { name: 'RP-1 dailies' })).toBeTruthy();
+    expect(await versionsApi.get(second.id)).not.toHaveProperty('playlists'); // the version carries no list of them (C-RP-01)
   }, 150000);
 });

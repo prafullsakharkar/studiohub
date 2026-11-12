@@ -10,6 +10,7 @@ import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { mockFetch } from '@/test/fetchMock';
 import type { MockCall, MockReply } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
+import type { Review, ReviewComment } from '@/api/production/review';
 import type { User } from '@/types/identity';
 import { ReviewWorkspace } from '../ReviewWorkspace';
 import { VersionWorkspace } from '../VersionWorkspace';
@@ -218,6 +219,35 @@ describe('review workspace', () => {
     expect(screen.queryByRole('button', { name: 'Add comment' })).toBeNull();
   });
 
+  it('a comment or annotation can be put on one of the review’s versions, and says which (C-RP-05, C-RP-06)', async () => {
+    const rp1 = flow.rp1_review_detail.body as Review; // RV004 as captured: a comment on its second version, one on the whole review
+    const [first, second] = [...rp1.versions].sort((a, b) => a.order - b.order);
+    const { calls } = await open(lead, rp1, (c) => (c.method === 'POST' ? { status: 201, body: flow.rp1_comment_on_version.body } : undefined));
+    fireEvent.click(await screen.findByRole('tab', { name: 'Comments' }));
+    const list = within(await screen.findByRole('list', { name: 'Comments' }));
+    const onSecond = rp1.comments.find((c) => c.version_id === second.id) as ReviewComment;
+    const thread = list.getByText(onSecond.text).closest('li') as HTMLElement;
+    expect(within(thread).getAllByText(second.code)).toHaveLength(1); // the thread says it once; its reply does not repeat it
+    const wholeThread = list.getByText((rp1.comments.find((c) => c.version_id === null) as ReviewComment).text).closest('li') as HTMLElement;
+    expect(within(wholeThread).queryByText(first.code)).toBeNull();
+    expect(within(wholeThread).queryByText(second.code)).toBeNull();
+    expect((screen.getByLabelText('Comment on version') as HTMLSelectElement).value).toBe(''); // the whole review unless chosen
+    fireEvent.change(screen.getByLabelText('Comment'), { target: { value: 'Softer than v1' } });
+    fireEvent.change(screen.getByLabelText('Comment on version'), { target: { value: second.id } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ text: 'Softer than v1', frame_number: null, version_id: second.id });
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Annotations' }));
+    const annotations = within(await screen.findByRole('list', { name: 'Annotations' }));
+    expect(annotations.getByText(first.code)).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Annotation'), { target: { value: 'circle the prop' } });
+    fireEvent.change(screen.getByLabelText('Annotation on version'), { target: { value: first.id } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add annotation' }));
+    await waitFor(() => expect(calls.filter((c) => c.method === 'POST')).toHaveLength(2));
+    expect(calls.filter((c) => c.method === 'POST')[1].body).toEqual({ comment: 'circle the prop', frame_number: null, version_id: first.id });
+  });
+
   it('replies carry the parent and resolve/reopen hit the comment routes', async () => {
     const body = flow.reviews_detail_after_approve.body;
     const parent = body.comments.find((c: any) => c.replies.length > 0);
@@ -256,19 +286,24 @@ describe('version workspace', () => {
     expect(posts[0].body).toMatchObject({ project: v.project_id, entity_type: v.entity_type, entity_id: v.entity_id, entity_code: v.entity_code });
     expect(path(posts[1])).toBe(`/api/v1/reviews/${created.id}/versions/`);
     expect(posts[1].body).toEqual({ version_id: v.id });
-    const list = calls.find((c) => c.method === 'GET' && path(c) === '/api/v1/reviews/')!;
-    expect(Object.fromEntries(new URL(list.url).searchParams)).toMatchObject({ entity_id: v.entity_id, entity_type: v.entity_type }); // the only filters that narrow reviews by what they are about
+    const list = calls.find((c) => c.method === 'GET' && path(c) === '/api/v1/reviews/') as MockCall;
+    expect(new URL(list.url).searchParams.get('version_id')).toBe(v.id); // the reviews showing it (C-RP-03)
   });
 
-  it('lists only the reviews that actually contain the version', async () => {
+  it('lists the reviews the server says show the version, asking by version_id and filtering nothing itself', async () => {
     const v = flow.versions_detail.body;
-    const containing = { ...flow.reviews_detail_after_approve.body, versions: [{ ...flow.reviews_detail_after_approve.body.versions[0], id: v.id }] };
-    const other = { ...flow.reviews_detail_after_approve.body, id: 'other', code: 'OTHER', versions: [{ ...flow.reviews_detail_after_approve.body.versions[0], id: 'not-this-one' }] };
-    mockFetch((c) => (path(c) === '/api/v1/reviews/' ? page([containing, other]) : { status: 200, body: v }));
+    const showing = flow.rp1_reviews_by_version_first.body as { results: Review[] }; // RV004 and RV001, captured with ?version_id= (C-RP-03)
+    const { calls } = mockFetch((c) => {
+      if (path(c) !== '/api/v1/reviews/') return { status: 200, body: v };
+      return new URL(c.url).searchParams.get('version_id') === v.id ? { status: 200, body: showing } : page([]);
+    });
     renderAt(`/versions/${v.id}`, lead, route);
     fireEvent.click(await screen.findByRole('tab', { name: 'Reviews' }));
     const list = await screen.findByRole('list', { name: 'Reviews of this version' });
-    expect(within(list).getAllByRole('listitem')).toHaveLength(1);
-    expect(within(list).getByText(new RegExp(containing.code))).toBeTruthy();
+    expect(within(list).getAllByRole('listitem')).toHaveLength(showing.results.length);
+    for (const r of showing.results) expect(within(list).getByText(new RegExp(r.code))).toBeTruthy();
+    const params = Object.fromEntries(new URL((calls.find((c) => path(c) === '/api/v1/reviews/') as MockCall).url).searchParams);
+    expect(params.version_id).toBe(v.id);
+    expect(params).not.toHaveProperty('entity_id'); // no longer read by entity and filtered on the client
   });
 });

@@ -16,12 +16,11 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 
 const Empty: React.FC<{ children: React.ReactNode }> = ({ children }) => <p className="rounded-lg border border-dashed border-slate-800 p-4 text-xs text-slate-500">{children}</p>;
 
-/** The playlists of the version's project that hold it, with where it sits in each. (Adding it to one is the button in the page header.) */
+/** The playlists holding the version (`version_id`, C-RP-04), with where it sits in each. (Adding it to one is the button in the page header.) */
 export const VersionPlaylistsTab: React.FC<{ version: Version }> = ({ version }) => {
   const playlists = useQuery({
     queryKey: [...playlistsApi.keys.all, 'holding', version.id],
-    queryFn: ({ signal }) => fetchAllRows(playlistsApi.list, { project_id: version.project_id }, { signal }),
-    select: (rows) => rows.filter((p) => p.entries.some((e) => e.version_id === version.id)),
+    queryFn: ({ signal }) => fetchAllRows(playlistsApi.list, { version_id: version.id }, { signal }),
   });
   if (playlists.isLoading) return <p className="text-xs text-slate-500">Loading…</p>;
   const rows = playlists.data ?? [];

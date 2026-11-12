@@ -12,6 +12,7 @@ import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
+import { fetchAllRows } from '@/shared/data/listing';
 import { StatusHistory } from '@/modules/production/work/StatusHistory';
 import { StatusMenu } from '@/modules/production/work/StatusMenu';
 import { PlaylistPicker } from './pickers';
@@ -39,14 +40,14 @@ const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, c
   </div>
 );
 
-/** Reviews of this version. The server cannot list "reviews containing a version", so the entity's reviews are read and filtered here. */
+/** The reviews showing this version, every page of them (`version_id`, C-RP-03). */
 const VersionReviews: React.FC<{ version: Version }> = ({ version }) => {
   const canCreate = useCan('review.create');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const reviews = useQuery({
     queryKey: [...reviewsApi.keys.lists(), 'of-version', version.id],
-    queryFn: async ({ signal }) => (await reviewsApi.list({ project_id: version.project_id, entity_type: version.entity_type, entity_id: version.entity_id, page_size: 100 }, signal)).results.filter((r) => r.versions.some((v) => v.id === version.id)),
+    queryFn: ({ signal }) => fetchAllRows(reviewsApi.list, { version_id: version.id }, { signal }),
   });
   const [starting, setStarting] = useState(false);
   const [title, setTitle] = useState(`${version.entity_code} ${version.version_number} review`);

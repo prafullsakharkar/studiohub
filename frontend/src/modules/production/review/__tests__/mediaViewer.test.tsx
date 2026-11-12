@@ -9,6 +9,7 @@ import { mockFetch } from '@/test/fetchMock';
 import type { MockCall, MockReply } from '@/test/fetchMock';
 import { fakeClock } from '@/test/mediaElement';
 import { loadSample } from '@/test/samples';
+import type { Review, ReviewAnnotation, ReviewComment } from '@/api/production/review';
 import type { User } from '@/types/identity';
 import { ReviewVersionsPanel } from '../ReviewPanels';
 import { ReviewViewer } from '../ReviewViewer';
@@ -101,7 +102,7 @@ describe('review viewer', () => {
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
     const post = calls.find((c) => c.method === 'POST') as MockCall;
     expect(path(post)).toBe(`/api/v1/reviews/${review.id}/comments/`);
-    expect(post.body).toEqual({ text: 'Grain is too heavy here', frame_number: 1040, timecode: '00:00:01:15' }); // 39 frames in at 24 fps
+    expect(post.body).toEqual({ text: 'Grain is too heavy here', frame_number: 1040, timecode: '00:00:01:15', version_id: review.versions[0].id }); // 39 frames in at 24 fps, on the version on show
   });
 
   it('offers no comment box to someone who cannot update reviews, or on a closed review', async () => {
@@ -129,6 +130,28 @@ describe('review viewer', () => {
     await waitFor(() => expect(calls.some((c) => path(c) === `/api/v1/versions/${second.id}/`)).toBe(true));
     expect(within(group).getByRole('button', { name: second.code }).getAttribute('aria-pressed')).toBe('true');
     expect(screen.getByRole('group', { name: `${second.code} in review` })).toBeTruthy();
+  });
+
+  it('shows the feedback on the version on show and on the whole review, never another version’s (C-RP-06)', async () => {
+    // RV004 as captured: a comment on its second version, an annotation on its first. One whole-review comment with a frame
+    // (as written before RP-1) is put beside them.
+    const rp1 = flow.rp1_review_detail.body as Review;
+    const whole = review.comments[0];
+    expect(whole.version_id).toBeNull();
+    mockFetch(() => reply(withVideo));
+    mount(<ReviewViewer review={{ ...rp1, comments: [...rp1.comments, whole] }} />);
+    await screen.findByLabelText('Scrub');
+    const [first, second] = [...rp1.versions].sort((a, b) => a.order - b.order);
+    const onSecond = rp1.comments.find((c) => c.version_id === second.id) as ReviewComment;
+    const onFirst = rp1.annotations.find((a) => a.version_id === first.id) as ReviewAnnotation;
+    const feedback = () => within(screen.getByRole('complementary', { name: 'Feedback on frames' }));
+    expect(feedback().getByText(onFirst.comment)).toBeTruthy();
+    expect(feedback().queryByText(onSecond.text)).toBeNull();
+    expect(feedback().getByRole('button', { name: `Go to frame ${whole.frame_number}: ${whole.text}` }).textContent).toContain('Comment · whole review');
+    fireEvent.click(within(screen.getByRole('group', { name: 'Version on show' })).getByRole('button', { name: second.code }));
+    expect(await feedback().findByText(onSecond.text)).toBeTruthy();
+    expect(feedback().queryByText(onFirst.comment)).toBeNull();
+    expect(feedback().getByText(whole.text)).toBeTruthy();
   });
 
   it('a version with no preview linked shows its picture and says nothing can be played', async () => {
@@ -210,11 +233,11 @@ describe('review compare', () => {
       });
     }
     fireEvent.change(screen.getByLabelText('Scrub'), { target: { value: '1020' } });
-    await screen.findByText('Comment on frame 1020');
+    await screen.findByText(`Comment on ${first.code}, frame 1020`);
     fireEvent.change(screen.getByLabelText('Comment on this frame'), { target: { value: 'V002 is softer' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
-    expect((calls.find((c) => c.method === 'POST') as MockCall).body).toMatchObject({ text: 'V002 is softer', frame_number: 1020 });
+    expect((calls.find((c) => c.method === 'POST') as MockCall).body).toMatchObject({ text: 'V002 is softer', frame_number: 1020, version_id: first.id }); // on A, the version on show
   });
 
   it('the Versions tab offers the compare on every version but the first, and says which one was picked', () => {

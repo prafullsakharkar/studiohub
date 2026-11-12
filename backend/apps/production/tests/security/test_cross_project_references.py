@@ -210,7 +210,7 @@ class TestAddToPlaylist:
         foreign.refresh_from_db()
         version.refresh_from_db()
         assert not PlaylistEntry.objects.filter(playlist=foreign).exists()
-        assert version.playlists == []
+        assert not PlaylistEntry.objects.filter(version=version).exists()  # nothing written anywhere
 
     def test_playlist_of_a_project_the_caller_is_not_in_is_refused_too(self, project_a, project_b):
         version = VersionFactory.create(project=project_a, code="V1")

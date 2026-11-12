@@ -28,7 +28,9 @@ class VersionSerializer(BaseReadSerializer[Any]):
             "status", "is_published", "published_at", "published_by_id", "is_hero", "is_archived",
             "thumbnail_url", "video_url", "source_file_url",
             "frame_range", "start_frame", "end_frame", "resolution", "fps", "file_size_mb", "color_space", "file_path",
-            "notes", "changelog", "tags", "publishing_info", "media_items", "attachments", "reviews", "playlists", "notes_list", "activity",
+            # No lists of what holds the version (C-RP-01; the JSON copies were dropped by RP-1): the reviews
+            # and playlists of a version are read with ``?version_id=`` on their own lists (C-RP-03, C-RP-04).
+            "notes", "changelog", "tags", "publishing_info",
             "created_at", "updated_at",
         )
         read_only_fields = ("id", "uuid", "created_at", "updated_at")

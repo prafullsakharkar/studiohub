@@ -51,11 +51,45 @@ describe('review row types match the captured responses', () => {
   });
 });
 
+describe('RP-1: what holds a version, and what is said about it (docs/review-pipeline/CONTRACTS.md)', () => {
+  const version = flow.versions_detail.body;
+  it('a version carries no lists of what holds it (C-RP-01), whatever answered it', () => {
+    for (const key of ['versions_list', 'versions_detail', 'versions_publish', 'versions_add_to_playlist', 'rp1_version_after_add_to_playlist']) {
+      const row = firstRow(key);
+      for (const gone of ['reviews', 'playlists', 'notes_list', 'media_items', 'attachments', 'activity']) expect(row, `${key}.${gone}`).not.toHaveProperty(gone);
+      expect(row, key).toHaveProperty('publishing_info');
+    }
+  });
+
+  it('reviews and playlists are listed by version through what they show and hold (C-RP-03, C-RP-04)', () => {
+    for (const r of flow.rp1_reviews_by_version_first.body.results) expect(r.versions.some((v: { id: string }) => v.id === version.id)).toBe(true);
+    for (const p of flow.rp1_playlists_by_version.body.results) expect(p.entries.some((e: { version_id: string }) => e.version_id === version.id)).toBe(true);
+    expect(count('rp1_reviews_by_version')).toBe(1); // the second version was taken off RV001: only RV004 shows it
+    expect(flow.rp1_reviews_by_version_malformed.status).toBe(200); // junk is an empty list, never a 400
+    expect(count('rp1_reviews_by_version_malformed')).toBe(0);
+    expect(count('rp1_playlists_by_version_none')).toBe(0);
+  });
+
+  it('a comment or annotation is on a version of the review or on the whole review; a reply is on its thread’s (C-RP-05, C-RP-06)', () => {
+    const thread = flow.rp1_comment_on_version.body;
+    expect(thread.version_id).toBeTruthy();
+    expect(flow.rp1_comment_reply_quiet.body.version_id).toBe(thread.version_id);
+    expect(flow.rp1_comment_whole_review.body.version_id).toBeNull();
+    expect(flow.rp1_annotation_on_version.body.version_id).toBe(version.id);
+    expect(flow.rp1_comment_reply_other_version.body.version_id).toEqual(["A reply is on its thread's version."]);
+    for (const key of ['rp1_comment_version_not_in_review', 'rp1_annotation_version_not_in_review']) {
+      expect(flow[key].status, key).toBe(400);
+      expect(flow[key].body.version_id, key).toEqual(['This version is not in the review.']);
+    }
+    expect(flow.rp1_comment_version_malformed.status).toBe(400);
+  });
+});
+
 describe('versions', () => {
   it('the server numbers them: a version_number sent on create is ignored', () => {
     expect(flow.versions_create_number_ignored.status).toBe(201);
     expect(flow.versions_create_number_ignored.body.version_number).toBe('v001');
-    expect(flow.versions_create.body.code).toBe('SH0010_COMPOSITING_V001'); // a blank code is derived
+    expect(flow.versions_create.body.code).toBe('REV_SH0010_COMPOSITING_V001'); // a blank code is derived (from the shot's code, which carries the project's: CR-49)
   });
 
   it('about a shot or an asset, never both; project is required', () => {
