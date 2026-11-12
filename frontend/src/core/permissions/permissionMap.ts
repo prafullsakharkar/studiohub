@@ -206,8 +206,9 @@ export const PERMISSION_MAP: Readonly<Record<string, PermissionRule>> = {
   'field.people.compensation.view': codes('PersonSerializer gates sensitive fields.', 'masterdata.person.view_sensitive'),
   'field.client.contract_value.view': codes('Financial fields are gated.', 'masterdata.client.view_financial'),
   'field.vendor.rate.view': codes('Financial fields are gated.', 'masterdata.client.view_financial'),
-  'field.project.budget.view': open(NO_BACKEND_GATE),
-  'field.project.budget.edit': codes('Editing a project needs project.update.', 'project.update'),
+  // ProjectSerializer leaves budget_usd out without it, and a write naming it is 403 (CR-55).
+  'field.project.budget.view': codes('The project budget needs project.view_budget.', 'project.view_budget'),
+  'field.project.budget.edit': codes('The project budget needs project.view_budget.', 'project.view_budget'),
   'field.project.billing.view': open(NO_BACKEND_GATE),
   'field.project.billing.edit': codes('Editing a project needs project.update.', 'project.update'),
   'field.task.cost.view': open(NO_BACKEND_GATE),

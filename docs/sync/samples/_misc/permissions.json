@@ -1,5 +1,5 @@
 {
- "_source": "docs/sync/tools/perm_catalog.py (Phase 0, backend @ sync/phase-0-discovery); + identity.directory.manage, identity.user.require_mfa (CR-40, from init_platform.PERMISSION_SPECS); + masterdata.partner.view, held by org-admin, production-admin, vfx-supervisor, and delivery.view withdrawn from artist (CR-53, from init_platform)",
+ "_source": "docs/sync/tools/perm_catalog.py (Phase 0, backend @ sync/phase-0-discovery); + identity.directory.manage, identity.user.require_mfa (CR-40, from init_platform.PERMISSION_SPECS); + masterdata.partner.view, held by org-admin, production-admin, vfx-supervisor, and delivery.view withdrawn from artist (CR-53, from init_platform); + project.view_budget, held by platform-admin, org-admin, production-admin (CR-55, from init_platform)",
  "catalog": [
   "asset.create",
   "asset.delete",
@@ -65,6 +65,7 @@
   "project.delete",
   "project.update",
   "project.view",
+  "project.view_budget",
   "publishing.create",
   "publishing.delete",
   "publishing.deprecate",
@@ -273,7 +274,8 @@
  },
  "role_permissions": {
   "platform-admin": [
-   "<ALL>"
+   "<ALL>",
+   "project.view_budget"
   ],
   "org-admin": [
    "asset.create",
@@ -316,6 +318,7 @@
    "project.delete",
    "project.update",
    "project.view",
+   "project.view_budget",
    "publishing.create",
    "publishing.delete",
    "publishing.deprecate",
@@ -421,6 +424,7 @@
    "project.delete",
    "project.update",
    "project.view",
+   "project.view_budget",
    "publishing.create",
    "publishing.delete",
    "publishing.deprecate",

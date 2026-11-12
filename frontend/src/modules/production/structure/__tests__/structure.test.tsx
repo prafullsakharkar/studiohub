@@ -164,6 +164,66 @@ describe('project form', () => {
   });
 });
 
+describe('project form: budget (CR-55)', () => {
+  // Captured after CR-55: the supervisor's project has no budget_usd, the producer's has it.
+  const cr55 = loadSample<Record<string, Captured>>('production/_budget_counts_cr54_55_after.json');
+  const asSupervisor = cr55.project_detail_vfx_supervisor.body;
+  const asProducer = cr55.project_detail_production_admin.body;
+  const editor = (...extra: string[]) => ({ ...artist, permissions: [...artist.permissions, 'project.create', 'project.update', ...extra] }) as User;
+  const editRoutes = (
+    <>
+      <Route path="/projects/:id/edit" element={<DirectoryFormPage config={projectsFormConfig} />} />
+      <Route path="/projects/:id" element={<Opened />} />
+    </>
+  );
+
+  it('the captures agree with the rule: the field is absent without project.view_budget', () => {
+    expect('budget_usd' in asSupervisor).toBe(false);
+    expect(asProducer.budget_usd).toBe('4800000.00');
+    expect(cr55.patch_budget_vfx_supervisor.status).toBe(403);
+  });
+
+  it('an editor without the code edits a project with no budget input and never sends one', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'PATCH' ? reply(cr55.patch_name_vfx_supervisor) : { body: asSupervisor }));
+    renderAt(`/projects/${asSupervisor.id}/edit`, editor(), editRoutes);
+
+    await waitFor(() => expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe(asSupervisor.name));
+    expect(screen.queryByLabelText('Budget (USD)')).toBeNull();
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'BDG renamed' } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(await screen.findByText(`opened ${asSupervisor.id}`)).toBeTruthy();
+    const patch = calls.find((c) => c.method === 'PATCH')!;
+    expect(patch.body).toEqual({ name: 'BDG renamed' });
+  });
+
+  it('an editor without the code creates a project with no budget input', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(flow.projects_create_duplicate) : { body: { count: 0, next: null, previous: null, results: [] } }));
+    renderAt('/projects/new', editor(), <Route path="/projects/new" element={<DirectoryFormPage config={projectsFormConfig} />} />);
+
+    fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Gamma' } });
+    expect(screen.queryByLabelText('Budget (USD)')).toBeNull();
+    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'GAMMA' } });
+    fireEvent.click(screen.getByRole('button', { name: /create project/i }));
+
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    expect(calls.find((c) => c.method === 'POST')!.body).not.toHaveProperty('budget_usd');
+  });
+
+  it('a holder of the code sees the budget and saves a change to it', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'PATCH' ? reply(cr55.patch_name_vfx_supervisor) : { body: asProducer }));
+    renderAt(`/projects/${asProducer.id}/edit`, editor('project.view_budget'), editRoutes);
+
+    const budget = (await screen.findByLabelText('Budget (USD)')) as HTMLInputElement;
+    await waitFor(() => expect(Number(budget.value)).toBe(4800000));
+    fireEvent.change(budget, { target: { value: '5000000' } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(await screen.findByText(`opened ${asProducer.id}`)).toBeTruthy();
+    expect(calls.find((c) => c.method === 'PATCH')!.body).toEqual({ budget_usd: 5000000 });
+  });
+});
+
 describe('project form: vendors (CR-42)', () => {
   const cr42 = loadSample<Record<string, Captured>>('production/_vendor_ids_cr42_flow.json');
   const vendors = loadSample<Record<string, Captured>>('masterdata/vendors.json');
@@ -296,5 +356,22 @@ describe('project children and panels', () => {
     renderAt('/x', superuser, <Route path="/x" element={<OverviewPanel projectId={PID} />} />);
     const counts = await screen.findByLabelText('Project counts');
     expect(within(counts).getByText('sequences')).toBeTruthy();
+  });
+
+  it('overview: the delivery count shows only with delivery.view, the server answering 0 without it (CR-54)', async () => {
+    const cr54 = loadSample<Record<string, Captured>>('production/_budget_counts_cr54_55_after.json');
+    expect(cr54.summary_artist.body.counts.deliveries).toBe(0);
+    const noDeliveries = { ...artist, permissions: artist.permissions.filter((p) => p !== 'delivery.view') } as User;
+    mockFetch(() => reply(cr54.summary_artist));
+    renderAt('/x', noDeliveries, <Route path="/x" element={<OverviewPanel projectId={PID} />} />);
+    const counts = await screen.findByLabelText('Project counts');
+    expect(within(counts).getByText('shots')).toBeTruthy();
+    expect(within(counts).queryByText('deliveries')).toBeNull();
+    cleanup();
+
+    mockFetch(() => reply(cr54.summary_lead_artist));
+    renderAt('/x', { ...artist, permissions: [...artist.permissions, 'delivery.view'] } as User, <Route path="/x" element={<OverviewPanel projectId={PID} />} />);
+    const term = within(await screen.findByLabelText('Project counts')).getByText('deliveries');
+    expect(term.parentElement!.textContent).toBe('deliveries2');
   });
 });

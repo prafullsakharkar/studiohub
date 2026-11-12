@@ -1,0 +1,1493 @@
+{
+  "projects_list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/"
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "uuid": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "code": "BDG",
+          "project_code": "BDG",
+          "name": "Project 0",
+          "description": "",
+          "type": "Feature Film",
+          "status": "In Progress",
+          "workflow_type": "standard",
+          "fps": "24.000",
+          "resolution": "4096x2160",
+          "aspect_ratio": "2.39:1",
+          "color_space": "ACEScg",
+          "start_date": null,
+          "delivery_date": null,
+          "thumbnail_url": "http://www.dixon.info/",
+          "total_shots": 0,
+          "approved_shots": 0,
+          "in_progress_shots": 0,
+          "total_assets": 0,
+          "supervisor_id": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+          "supervisor_name": "user0@example.com",
+          "coordinator_id": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+          "coordinator_name": "user1@example.com",
+          "client_id": "",
+          "client_name": "",
+          "client_contact_id": "",
+          "client_contact_name": "",
+          "vendor_ids": [],
+          "vendor_names": [],
+          "vendor_team_ids": [],
+          "created_at": "2026-11-12T06:22:50.043057Z",
+          "updated_at": "2026-11-12T06:22:50.043065Z"
+        }
+      ]
+    }
+  },
+  "project_detail_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/"
+    },
+    "status": 200,
+    "body": {
+      "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+      "uuid": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+      "code": "BDG",
+      "project_code": "BDG",
+      "name": "Project 0",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "workflow_type": "standard",
+      "fps": "24.000",
+      "resolution": "4096x2160",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "http://www.dixon.info/",
+      "total_shots": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "total_assets": 0,
+      "supervisor_id": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+      "supervisor_name": "user0@example.com",
+      "coordinator_id": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+      "coordinator_name": "user1@example.com",
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": [],
+      "created_at": "2026-11-12T06:22:50.043057Z",
+      "updated_at": "2026-11-12T06:22:50.043065Z"
+    }
+  },
+  "statistics_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/statistics/"
+    },
+    "status": 200,
+    "body": {
+      "sequences": 0,
+      "shots": 0,
+      "tasks": 0,
+      "assets": 0,
+      "versions": 0,
+      "reviews": 0,
+      "deliveries": 0,
+      "notes": 0,
+      "editorial": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "completed_tasks": 0
+    }
+  },
+  "summary_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/summary/"
+    },
+    "status": 200,
+    "body": {
+      "project": {
+        "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+        "uuid": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+        "code": "BDG",
+        "project_code": "BDG",
+        "name": "Project 0",
+        "description": "",
+        "type": "Feature Film",
+        "status": "In Progress",
+        "workflow_type": "standard",
+        "fps": "24.000",
+        "resolution": "4096x2160",
+        "aspect_ratio": "2.39:1",
+        "color_space": "ACEScg",
+        "start_date": null,
+        "delivery_date": null,
+        "thumbnail_url": "http://www.dixon.info/",
+        "total_shots": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "total_assets": 0,
+        "supervisor_id": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+        "supervisor_name": "user0@example.com",
+        "coordinator_id": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+        "coordinator_name": "user1@example.com",
+        "client_id": "",
+        "client_name": "",
+        "client_contact_id": "",
+        "client_contact_name": "",
+        "vendor_ids": [],
+        "vendor_names": [],
+        "vendor_team_ids": [],
+        "created_at": "2026-11-12T06:22:50.043057Z",
+        "updated_at": "2026-11-12T06:22:50.043065Z"
+      },
+      "counts": {
+        "sequences": 0,
+        "shots": 0,
+        "tasks": 0,
+        "assets": 0,
+        "versions": 0,
+        "reviews": 0,
+        "deliveries": 0,
+        "notes": 0,
+        "editorial": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "completed_tasks": 0
+      },
+      "project_id": "2620e494-9e52-440f-82dd-a13bd9039b7d"
+    }
+  },
+  "dashboard_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/dashboard/"
+    },
+    "status": 200,
+    "body": {
+      "project": {
+        "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+        "name": "Project 0",
+        "code": "BDG",
+        "type": "Feature Film",
+        "description": "",
+        "status": "In Progress",
+        "fps": 24.0,
+        "resolution": "4096x2160",
+        "aspect_ratio": "2.39:1",
+        "color_space": "ACEScg",
+        "start_date": "",
+        "delivery_date": "",
+        "thumbnail_url": "http://www.dixon.info/",
+        "supervisor_name": "user0@example.com",
+        "coordinator_name": "user1@example.com"
+      },
+      "summary": {
+        "total_shots": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "shots_at_risk": 0,
+        "shots_completion_pct": 0,
+        "total_tasks": 0,
+        "open_tasks": 0,
+        "in_progress_tasks": 0,
+        "completed_tasks": 0,
+        "overdue_tasks": 0,
+        "tasks_completion_pct": 0,
+        "total_assets": 0,
+        "in_progress_assets": 0,
+        "approved_assets": 0,
+        "needs_revision_assets": 0,
+        "total_reviews": 0,
+        "pending_reviews": 0,
+        "approved_reviews": 0,
+        "changes_requested_reviews": 0,
+        "rejected_reviews": 0,
+        "total_deliveries": 0,
+        "upcoming_deliveries": 0,
+        "delivered_deliveries": 0,
+        "late_deliveries": 0
+      },
+      "production": {
+        "overall_progress_pct": 0,
+        "completed_shots": 0,
+        "in_progress_shots": 0,
+        "not_started_shots": 0,
+        "status_breakdown": [
+          {
+            "status": "Not Started",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "In Progress",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Internal Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Client Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Approved",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Final",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "On Hold",
+            "count": 0,
+            "percentage": 0
+          }
+        ],
+        "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks"
+      },
+      "shots": {
+        "total": 0,
+        "by_status": {
+          "Not Started": 0,
+          "In Progress": 0,
+          "Internal Review": 0,
+          "Client Review": 0,
+          "Approved": 0,
+          "Final": 0,
+          "On Hold": 0
+        },
+        "recent_shots": []
+      },
+      "tasks": {
+        "total": 0,
+        "open": 0,
+        "in_progress": 0,
+        "blocked": 0,
+        "review": 0,
+        "completed": 0,
+        "overdue": 0,
+        "critical": 0,
+        "recent_tasks": []
+      },
+      "reviews": {
+        "pending": 0,
+        "approved": 0,
+        "changes_requested": 0,
+        "rejected": 0,
+        "recent_reviews": []
+      },
+      "schedule": {
+        "start_date": "2026-11-12",
+        "delivery_date": "2027-05-11",
+        "days_total": 180,
+        "days_elapsed": 0,
+        "days_remaining": 180,
+        "is_delayed": false,
+        "milestones": []
+      },
+      "workload": {
+        "team_members": []
+      },
+      "deliveries": {
+        "total": 0,
+        "upcoming": 0,
+        "delivered": 0,
+        "late": 0,
+        "items": []
+      },
+      "activity": [
+        {
+          "id": "05080b7f-046c-47fd-a677-ce41ae684925",
+          "entity_type": "Project",
+          "entity_id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "action": "Created Project",
+          "user_name": "System",
+          "timestamp": "2026-11-12T06:22:50.044743+00:00",
+          "description": "created Project Project 0",
+          "entity_code": "Project 0"
+        }
+      ]
+    }
+  },
+  "projects_list_lead_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/"
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "uuid": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "code": "BDG",
+          "project_code": "BDG",
+          "name": "Project 0",
+          "description": "",
+          "type": "Feature Film",
+          "status": "In Progress",
+          "workflow_type": "standard",
+          "fps": "24.000",
+          "resolution": "4096x2160",
+          "aspect_ratio": "2.39:1",
+          "color_space": "ACEScg",
+          "start_date": null,
+          "delivery_date": null,
+          "thumbnail_url": "http://www.dixon.info/",
+          "total_shots": 0,
+          "approved_shots": 0,
+          "in_progress_shots": 0,
+          "total_assets": 0,
+          "supervisor_id": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+          "supervisor_name": "user0@example.com",
+          "coordinator_id": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+          "coordinator_name": "user1@example.com",
+          "client_id": "",
+          "client_name": "",
+          "client_contact_id": "",
+          "client_contact_name": "",
+          "vendor_ids": [],
+          "vendor_names": [],
+          "vendor_team_ids": [],
+          "created_at": "2026-11-12T06:22:50.043057Z",
+          "updated_at": "2026-11-12T06:22:50.043065Z"
+        }
+      ]
+    }
+  },
+  "project_detail_lead_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/"
+    },
+    "status": 200,
+    "body": {
+      "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+      "uuid": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+      "code": "BDG",
+      "project_code": "BDG",
+      "name": "Project 0",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "workflow_type": "standard",
+      "fps": "24.000",
+      "resolution": "4096x2160",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "http://www.dixon.info/",
+      "total_shots": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "total_assets": 0,
+      "supervisor_id": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+      "supervisor_name": "user0@example.com",
+      "coordinator_id": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+      "coordinator_name": "user1@example.com",
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": [],
+      "created_at": "2026-11-12T06:22:50.043057Z",
+      "updated_at": "2026-11-12T06:22:50.043065Z"
+    }
+  },
+  "statistics_lead_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/statistics/"
+    },
+    "status": 200,
+    "body": {
+      "sequences": 0,
+      "shots": 0,
+      "tasks": 0,
+      "assets": 0,
+      "versions": 0,
+      "reviews": 0,
+      "deliveries": 2,
+      "notes": 0,
+      "editorial": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "completed_tasks": 0
+    }
+  },
+  "summary_lead_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/summary/"
+    },
+    "status": 200,
+    "body": {
+      "project": {
+        "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+        "uuid": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+        "code": "BDG",
+        "project_code": "BDG",
+        "name": "Project 0",
+        "description": "",
+        "type": "Feature Film",
+        "status": "In Progress",
+        "workflow_type": "standard",
+        "fps": "24.000",
+        "resolution": "4096x2160",
+        "aspect_ratio": "2.39:1",
+        "color_space": "ACEScg",
+        "start_date": null,
+        "delivery_date": null,
+        "thumbnail_url": "http://www.dixon.info/",
+        "total_shots": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "total_assets": 0,
+        "supervisor_id": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+        "supervisor_name": "user0@example.com",
+        "coordinator_id": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+        "coordinator_name": "user1@example.com",
+        "client_id": "",
+        "client_name": "",
+        "client_contact_id": "",
+        "client_contact_name": "",
+        "vendor_ids": [],
+        "vendor_names": [],
+        "vendor_team_ids": [],
+        "created_at": "2026-11-12T06:22:50.043057Z",
+        "updated_at": "2026-11-12T06:22:50.043065Z"
+      },
+      "counts": {
+        "sequences": 0,
+        "shots": 0,
+        "tasks": 0,
+        "assets": 0,
+        "versions": 0,
+        "reviews": 0,
+        "deliveries": 2,
+        "notes": 0,
+        "editorial": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "completed_tasks": 0
+      },
+      "project_id": "2620e494-9e52-440f-82dd-a13bd9039b7d"
+    }
+  },
+  "dashboard_lead_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/dashboard/"
+    },
+    "status": 200,
+    "body": {
+      "project": {
+        "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+        "name": "Project 0",
+        "code": "BDG",
+        "type": "Feature Film",
+        "description": "",
+        "status": "In Progress",
+        "fps": 24.0,
+        "resolution": "4096x2160",
+        "aspect_ratio": "2.39:1",
+        "color_space": "ACEScg",
+        "start_date": "",
+        "delivery_date": "",
+        "thumbnail_url": "http://www.dixon.info/",
+        "supervisor_name": "user0@example.com",
+        "coordinator_name": "user1@example.com"
+      },
+      "summary": {
+        "total_shots": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "shots_at_risk": 0,
+        "shots_completion_pct": 0,
+        "total_tasks": 0,
+        "open_tasks": 0,
+        "in_progress_tasks": 0,
+        "completed_tasks": 0,
+        "overdue_tasks": 0,
+        "tasks_completion_pct": 0,
+        "total_assets": 0,
+        "in_progress_assets": 0,
+        "approved_assets": 0,
+        "needs_revision_assets": 0,
+        "total_reviews": 0,
+        "pending_reviews": 0,
+        "approved_reviews": 0,
+        "changes_requested_reviews": 0,
+        "rejected_reviews": 0,
+        "total_deliveries": 2,
+        "upcoming_deliveries": 2,
+        "delivered_deliveries": 0,
+        "late_deliveries": 0
+      },
+      "production": {
+        "overall_progress_pct": 0,
+        "completed_shots": 0,
+        "in_progress_shots": 0,
+        "not_started_shots": 0,
+        "status_breakdown": [
+          {
+            "status": "Not Started",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "In Progress",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Internal Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Client Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Approved",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Final",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "On Hold",
+            "count": 0,
+            "percentage": 0
+          }
+        ],
+        "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks"
+      },
+      "shots": {
+        "total": 0,
+        "by_status": {
+          "Not Started": 0,
+          "In Progress": 0,
+          "Internal Review": 0,
+          "Client Review": 0,
+          "Approved": 0,
+          "Final": 0,
+          "On Hold": 0
+        },
+        "recent_shots": []
+      },
+      "tasks": {
+        "total": 0,
+        "open": 0,
+        "in_progress": 0,
+        "blocked": 0,
+        "review": 0,
+        "completed": 0,
+        "overdue": 0,
+        "critical": 0,
+        "recent_tasks": []
+      },
+      "reviews": {
+        "pending": 0,
+        "approved": 0,
+        "changes_requested": 0,
+        "rejected": 0,
+        "recent_reviews": []
+      },
+      "schedule": {
+        "start_date": "2026-11-12",
+        "delivery_date": "2027-05-11",
+        "days_total": 180,
+        "days_elapsed": 0,
+        "days_remaining": 180,
+        "is_delayed": false,
+        "milestones": []
+      },
+      "workload": {
+        "team_members": []
+      },
+      "deliveries": {
+        "total": 2,
+        "upcoming": 2,
+        "delivered": 0,
+        "late": 0,
+        "items": [
+          {
+            "id": "8e238fbf-4b4f-4676-88fc-a87e5e1c0952",
+            "title": "Turnover 2",
+            "package_name": "DLV-BDG-0002",
+            "status": "Draft",
+            "recipient": "",
+            "due_date": ""
+          },
+          {
+            "id": "a0f0c9ad-45f4-4eb9-8363-4e7e3bbc2db0",
+            "title": "Turnover 1",
+            "package_name": "DLV-BDG-0001",
+            "status": "Draft",
+            "recipient": "",
+            "due_date": ""
+          }
+        ]
+      },
+      "activity": [
+        {
+          "id": "b8e28d0e-0612-418a-9f20-e7725769a692",
+          "entity_type": "DeliveryPackage",
+          "entity_id": "8e238fbf-4b4f-4676-88fc-a87e5e1c0952",
+          "action": "Created DeliveryPackage",
+          "user_name": "System",
+          "timestamp": "2026-11-12T06:22:50.085008+00:00",
+          "description": "created DeliveryPackage Turnover 2",
+          "entity_code": "Turnover 2"
+        },
+        {
+          "id": "29519a58-bcaa-4def-9ab3-48ef5dea09b6",
+          "entity_type": "DeliveryPackage",
+          "entity_id": "a0f0c9ad-45f4-4eb9-8363-4e7e3bbc2db0",
+          "action": "Created DeliveryPackage",
+          "user_name": "System",
+          "timestamp": "2026-11-12T06:22:50.065162+00:00",
+          "description": "created DeliveryPackage Turnover 1",
+          "entity_code": "Turnover 1"
+        },
+        {
+          "id": "05080b7f-046c-47fd-a677-ce41ae684925",
+          "entity_type": "Project",
+          "entity_id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "action": "Created Project",
+          "user_name": "System",
+          "timestamp": "2026-11-12T06:22:50.044743+00:00",
+          "description": "created Project Project 0",
+          "entity_code": "Project 0"
+        }
+      ]
+    }
+  },
+  "projects_list_vfx_supervisor": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/"
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "uuid": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "code": "BDG",
+          "project_code": "BDG",
+          "name": "Project 0",
+          "description": "",
+          "type": "Feature Film",
+          "status": "In Progress",
+          "workflow_type": "standard",
+          "fps": "24.000",
+          "resolution": "4096x2160",
+          "aspect_ratio": "2.39:1",
+          "color_space": "ACEScg",
+          "start_date": null,
+          "delivery_date": null,
+          "thumbnail_url": "http://www.dixon.info/",
+          "total_shots": 0,
+          "approved_shots": 0,
+          "in_progress_shots": 0,
+          "total_assets": 0,
+          "supervisor_id": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+          "supervisor_name": "user0@example.com",
+          "coordinator_id": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+          "coordinator_name": "user1@example.com",
+          "client_id": "",
+          "client_name": "",
+          "client_contact_id": "",
+          "client_contact_name": "",
+          "vendor_ids": [],
+          "vendor_names": [],
+          "vendor_team_ids": [],
+          "created_at": "2026-11-12T06:22:50.043057Z",
+          "updated_at": "2026-11-12T06:22:50.043065Z"
+        }
+      ]
+    }
+  },
+  "project_detail_vfx_supervisor": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/"
+    },
+    "status": 200,
+    "body": {
+      "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+      "uuid": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+      "code": "BDG",
+      "project_code": "BDG",
+      "name": "Project 0",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "workflow_type": "standard",
+      "fps": "24.000",
+      "resolution": "4096x2160",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "http://www.dixon.info/",
+      "total_shots": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "total_assets": 0,
+      "supervisor_id": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+      "supervisor_name": "user0@example.com",
+      "coordinator_id": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+      "coordinator_name": "user1@example.com",
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": [],
+      "created_at": "2026-11-12T06:22:50.043057Z",
+      "updated_at": "2026-11-12T06:22:50.043065Z"
+    }
+  },
+  "statistics_vfx_supervisor": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/statistics/"
+    },
+    "status": 200,
+    "body": {
+      "sequences": 0,
+      "shots": 0,
+      "tasks": 0,
+      "assets": 0,
+      "versions": 0,
+      "reviews": 0,
+      "deliveries": 2,
+      "notes": 0,
+      "editorial": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "completed_tasks": 0
+    }
+  },
+  "summary_vfx_supervisor": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/summary/"
+    },
+    "status": 200,
+    "body": {
+      "project": {
+        "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+        "uuid": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+        "code": "BDG",
+        "project_code": "BDG",
+        "name": "Project 0",
+        "description": "",
+        "type": "Feature Film",
+        "status": "In Progress",
+        "workflow_type": "standard",
+        "fps": "24.000",
+        "resolution": "4096x2160",
+        "aspect_ratio": "2.39:1",
+        "color_space": "ACEScg",
+        "start_date": null,
+        "delivery_date": null,
+        "thumbnail_url": "http://www.dixon.info/",
+        "total_shots": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "total_assets": 0,
+        "supervisor_id": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+        "supervisor_name": "user0@example.com",
+        "coordinator_id": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+        "coordinator_name": "user1@example.com",
+        "client_id": "",
+        "client_name": "",
+        "client_contact_id": "",
+        "client_contact_name": "",
+        "vendor_ids": [],
+        "vendor_names": [],
+        "vendor_team_ids": [],
+        "created_at": "2026-11-12T06:22:50.043057Z",
+        "updated_at": "2026-11-12T06:22:50.043065Z"
+      },
+      "counts": {
+        "sequences": 0,
+        "shots": 0,
+        "tasks": 0,
+        "assets": 0,
+        "versions": 0,
+        "reviews": 0,
+        "deliveries": 2,
+        "notes": 0,
+        "editorial": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "completed_tasks": 0
+      },
+      "project_id": "2620e494-9e52-440f-82dd-a13bd9039b7d"
+    }
+  },
+  "dashboard_vfx_supervisor": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/dashboard/"
+    },
+    "status": 200,
+    "body": {
+      "project": {
+        "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+        "name": "Project 0",
+        "code": "BDG",
+        "type": "Feature Film",
+        "description": "",
+        "status": "In Progress",
+        "fps": 24.0,
+        "resolution": "4096x2160",
+        "aspect_ratio": "2.39:1",
+        "color_space": "ACEScg",
+        "start_date": "",
+        "delivery_date": "",
+        "thumbnail_url": "http://www.dixon.info/",
+        "supervisor_name": "user0@example.com",
+        "coordinator_name": "user1@example.com"
+      },
+      "summary": {
+        "total_shots": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "shots_at_risk": 0,
+        "shots_completion_pct": 0,
+        "total_tasks": 0,
+        "open_tasks": 0,
+        "in_progress_tasks": 0,
+        "completed_tasks": 0,
+        "overdue_tasks": 0,
+        "tasks_completion_pct": 0,
+        "total_assets": 0,
+        "in_progress_assets": 0,
+        "approved_assets": 0,
+        "needs_revision_assets": 0,
+        "total_reviews": 0,
+        "pending_reviews": 0,
+        "approved_reviews": 0,
+        "changes_requested_reviews": 0,
+        "rejected_reviews": 0,
+        "total_deliveries": 2,
+        "upcoming_deliveries": 2,
+        "delivered_deliveries": 0,
+        "late_deliveries": 0
+      },
+      "production": {
+        "overall_progress_pct": 0,
+        "completed_shots": 0,
+        "in_progress_shots": 0,
+        "not_started_shots": 0,
+        "status_breakdown": [
+          {
+            "status": "Not Started",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "In Progress",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Internal Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Client Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Approved",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Final",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "On Hold",
+            "count": 0,
+            "percentage": 0
+          }
+        ],
+        "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks"
+      },
+      "shots": {
+        "total": 0,
+        "by_status": {
+          "Not Started": 0,
+          "In Progress": 0,
+          "Internal Review": 0,
+          "Client Review": 0,
+          "Approved": 0,
+          "Final": 0,
+          "On Hold": 0
+        },
+        "recent_shots": []
+      },
+      "tasks": {
+        "total": 0,
+        "open": 0,
+        "in_progress": 0,
+        "blocked": 0,
+        "review": 0,
+        "completed": 0,
+        "overdue": 0,
+        "critical": 0,
+        "recent_tasks": []
+      },
+      "reviews": {
+        "pending": 0,
+        "approved": 0,
+        "changes_requested": 0,
+        "rejected": 0,
+        "recent_reviews": []
+      },
+      "schedule": {
+        "start_date": "2026-11-12",
+        "delivery_date": "2027-05-11",
+        "days_total": 180,
+        "days_elapsed": 0,
+        "days_remaining": 180,
+        "is_delayed": false,
+        "milestones": []
+      },
+      "workload": {
+        "team_members": []
+      },
+      "deliveries": {
+        "total": 2,
+        "upcoming": 2,
+        "delivered": 0,
+        "late": 0,
+        "items": [
+          {
+            "id": "8e238fbf-4b4f-4676-88fc-a87e5e1c0952",
+            "title": "Turnover 2",
+            "package_name": "DLV-BDG-0002",
+            "status": "Draft",
+            "recipient": "",
+            "due_date": ""
+          },
+          {
+            "id": "a0f0c9ad-45f4-4eb9-8363-4e7e3bbc2db0",
+            "title": "Turnover 1",
+            "package_name": "DLV-BDG-0001",
+            "status": "Draft",
+            "recipient": "",
+            "due_date": ""
+          }
+        ]
+      },
+      "activity": [
+        {
+          "id": "b8e28d0e-0612-418a-9f20-e7725769a692",
+          "entity_type": "DeliveryPackage",
+          "entity_id": "8e238fbf-4b4f-4676-88fc-a87e5e1c0952",
+          "action": "Created DeliveryPackage",
+          "user_name": "System",
+          "timestamp": "2026-11-12T06:22:50.085008+00:00",
+          "description": "created DeliveryPackage Turnover 2",
+          "entity_code": "Turnover 2"
+        },
+        {
+          "id": "29519a58-bcaa-4def-9ab3-48ef5dea09b6",
+          "entity_type": "DeliveryPackage",
+          "entity_id": "a0f0c9ad-45f4-4eb9-8363-4e7e3bbc2db0",
+          "action": "Created DeliveryPackage",
+          "user_name": "System",
+          "timestamp": "2026-11-12T06:22:50.065162+00:00",
+          "description": "created DeliveryPackage Turnover 1",
+          "entity_code": "Turnover 1"
+        },
+        {
+          "id": "05080b7f-046c-47fd-a677-ce41ae684925",
+          "entity_type": "Project",
+          "entity_id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "action": "Created Project",
+          "user_name": "System",
+          "timestamp": "2026-11-12T06:22:50.044743+00:00",
+          "description": "created Project Project 0",
+          "entity_code": "Project 0"
+        }
+      ]
+    }
+  },
+  "patch_budget_vfx_supervisor": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/",
+      "body": {
+        "budget_usd": "1.00"
+      }
+    },
+    "status": 403,
+    "body": {
+      "detail": "Setting budget_usd requires project.view_budget.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "808c5808-1292-4f27-8701-83e8406b2882"
+      }
+    }
+  },
+  "patch_name_vfx_supervisor": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/",
+      "body": {
+        "name": "BDG renamed"
+      }
+    },
+    "status": 200,
+    "body": {
+      "code": "BDG",
+      "name": "BDG renamed",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "fps": "24.000",
+      "resolution": "4096x2160",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "http://www.dixon.info/",
+      "supervisor": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+      "coordinator": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": []
+    }
+  },
+  "projects_list_production_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/"
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "uuid": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "code": "BDG",
+          "project_code": "BDG",
+          "name": "BDG renamed",
+          "description": "",
+          "type": "Feature Film",
+          "status": "In Progress",
+          "workflow_type": "standard",
+          "fps": "24.000",
+          "resolution": "4096x2160",
+          "aspect_ratio": "2.39:1",
+          "color_space": "ACEScg",
+          "start_date": null,
+          "delivery_date": null,
+          "thumbnail_url": "http://www.dixon.info/",
+          "total_shots": 0,
+          "approved_shots": 0,
+          "in_progress_shots": 0,
+          "total_assets": 0,
+          "budget_usd": "4800000.00",
+          "supervisor_id": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+          "supervisor_name": "user0@example.com",
+          "coordinator_id": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+          "coordinator_name": "user1@example.com",
+          "client_id": "",
+          "client_name": "",
+          "client_contact_id": "",
+          "client_contact_name": "",
+          "vendor_ids": [],
+          "vendor_names": [],
+          "vendor_team_ids": [],
+          "created_at": "2026-11-12T06:22:50.043057Z",
+          "updated_at": "2026-11-12T06:22:51.253561Z"
+        }
+      ]
+    }
+  },
+  "project_detail_production_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/"
+    },
+    "status": 200,
+    "body": {
+      "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+      "uuid": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+      "code": "BDG",
+      "project_code": "BDG",
+      "name": "BDG renamed",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "workflow_type": "standard",
+      "fps": "24.000",
+      "resolution": "4096x2160",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "http://www.dixon.info/",
+      "total_shots": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "total_assets": 0,
+      "budget_usd": "4800000.00",
+      "supervisor_id": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+      "supervisor_name": "user0@example.com",
+      "coordinator_id": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+      "coordinator_name": "user1@example.com",
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": [],
+      "created_at": "2026-11-12T06:22:50.043057Z",
+      "updated_at": "2026-11-12T06:22:51.253561Z"
+    }
+  },
+  "statistics_production_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/statistics/"
+    },
+    "status": 200,
+    "body": {
+      "sequences": 0,
+      "shots": 0,
+      "tasks": 0,
+      "assets": 0,
+      "versions": 0,
+      "reviews": 0,
+      "deliveries": 2,
+      "notes": 0,
+      "editorial": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "completed_tasks": 0
+    }
+  },
+  "summary_production_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/summary/"
+    },
+    "status": 200,
+    "body": {
+      "project": {
+        "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+        "uuid": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+        "code": "BDG",
+        "project_code": "BDG",
+        "name": "BDG renamed",
+        "description": "",
+        "type": "Feature Film",
+        "status": "In Progress",
+        "workflow_type": "standard",
+        "fps": "24.000",
+        "resolution": "4096x2160",
+        "aspect_ratio": "2.39:1",
+        "color_space": "ACEScg",
+        "start_date": null,
+        "delivery_date": null,
+        "thumbnail_url": "http://www.dixon.info/",
+        "total_shots": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "total_assets": 0,
+        "budget_usd": "4800000.00",
+        "supervisor_id": "e4e8e197-7716-40ff-9456-28f33f30fe76",
+        "supervisor_name": "user0@example.com",
+        "coordinator_id": "cc56fb19-5c13-43e3-ba9d-86bea4b353f5",
+        "coordinator_name": "user1@example.com",
+        "client_id": "",
+        "client_name": "",
+        "client_contact_id": "",
+        "client_contact_name": "",
+        "vendor_ids": [],
+        "vendor_names": [],
+        "vendor_team_ids": [],
+        "created_at": "2026-11-12T06:22:50.043057Z",
+        "updated_at": "2026-11-12T06:22:51.253561Z"
+      },
+      "counts": {
+        "sequences": 0,
+        "shots": 0,
+        "tasks": 0,
+        "assets": 0,
+        "versions": 0,
+        "reviews": 0,
+        "deliveries": 2,
+        "notes": 0,
+        "editorial": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "completed_tasks": 0
+      },
+      "project_id": "2620e494-9e52-440f-82dd-a13bd9039b7d"
+    }
+  },
+  "dashboard_production_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/2620e494-9e52-440f-82dd-a13bd9039b7d/dashboard/"
+    },
+    "status": 200,
+    "body": {
+      "project": {
+        "id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+        "name": "BDG renamed",
+        "code": "BDG",
+        "type": "Feature Film",
+        "description": "",
+        "status": "In Progress",
+        "fps": 24.0,
+        "resolution": "4096x2160",
+        "aspect_ratio": "2.39:1",
+        "color_space": "ACEScg",
+        "start_date": "",
+        "delivery_date": "",
+        "thumbnail_url": "http://www.dixon.info/",
+        "supervisor_name": "user0@example.com",
+        "coordinator_name": "user1@example.com",
+        "budget_usd": 4800000.0
+      },
+      "summary": {
+        "total_shots": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "shots_at_risk": 0,
+        "shots_completion_pct": 0,
+        "total_tasks": 0,
+        "open_tasks": 0,
+        "in_progress_tasks": 0,
+        "completed_tasks": 0,
+        "overdue_tasks": 0,
+        "tasks_completion_pct": 0,
+        "total_assets": 0,
+        "in_progress_assets": 0,
+        "approved_assets": 0,
+        "needs_revision_assets": 0,
+        "total_reviews": 0,
+        "pending_reviews": 0,
+        "approved_reviews": 0,
+        "changes_requested_reviews": 0,
+        "rejected_reviews": 0,
+        "total_deliveries": 2,
+        "upcoming_deliveries": 2,
+        "delivered_deliveries": 0,
+        "late_deliveries": 0
+      },
+      "production": {
+        "overall_progress_pct": 0,
+        "completed_shots": 0,
+        "in_progress_shots": 0,
+        "not_started_shots": 0,
+        "status_breakdown": [
+          {
+            "status": "Not Started",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "In Progress",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Internal Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Client Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Approved",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Final",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "On Hold",
+            "count": 0,
+            "percentage": 0
+          }
+        ],
+        "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks"
+      },
+      "shots": {
+        "total": 0,
+        "by_status": {
+          "Not Started": 0,
+          "In Progress": 0,
+          "Internal Review": 0,
+          "Client Review": 0,
+          "Approved": 0,
+          "Final": 0,
+          "On Hold": 0
+        },
+        "recent_shots": []
+      },
+      "tasks": {
+        "total": 0,
+        "open": 0,
+        "in_progress": 0,
+        "blocked": 0,
+        "review": 0,
+        "completed": 0,
+        "overdue": 0,
+        "critical": 0,
+        "recent_tasks": []
+      },
+      "reviews": {
+        "pending": 0,
+        "approved": 0,
+        "changes_requested": 0,
+        "rejected": 0,
+        "recent_reviews": []
+      },
+      "schedule": {
+        "start_date": "2026-11-12",
+        "delivery_date": "2027-05-11",
+        "days_total": 180,
+        "days_elapsed": 0,
+        "days_remaining": 180,
+        "is_delayed": false,
+        "milestones": []
+      },
+      "workload": {
+        "team_members": []
+      },
+      "deliveries": {
+        "total": 2,
+        "upcoming": 2,
+        "delivered": 0,
+        "late": 0,
+        "items": [
+          {
+            "id": "8e238fbf-4b4f-4676-88fc-a87e5e1c0952",
+            "title": "Turnover 2",
+            "package_name": "DLV-BDG-0002",
+            "status": "Draft",
+            "recipient": "",
+            "due_date": ""
+          },
+          {
+            "id": "a0f0c9ad-45f4-4eb9-8363-4e7e3bbc2db0",
+            "title": "Turnover 1",
+            "package_name": "DLV-BDG-0001",
+            "status": "Draft",
+            "recipient": "",
+            "due_date": ""
+          }
+        ]
+      },
+      "activity": [
+        {
+          "id": "6137b7ee-9de4-4b50-8f13-8499dadc22df",
+          "entity_type": "Project",
+          "entity_id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "action": "Updated Project",
+          "user_name": "vfx-supervisor@example.test",
+          "timestamp": "2026-11-12T06:22:51.255711+00:00",
+          "description": "updated Project BDG renamed",
+          "entity_code": "BDG renamed"
+        },
+        {
+          "id": "b8e28d0e-0612-418a-9f20-e7725769a692",
+          "entity_type": "DeliveryPackage",
+          "entity_id": "8e238fbf-4b4f-4676-88fc-a87e5e1c0952",
+          "action": "Created DeliveryPackage",
+          "user_name": "System",
+          "timestamp": "2026-11-12T06:22:50.085008+00:00",
+          "description": "created DeliveryPackage Turnover 2",
+          "entity_code": "Turnover 2"
+        },
+        {
+          "id": "29519a58-bcaa-4def-9ab3-48ef5dea09b6",
+          "entity_type": "DeliveryPackage",
+          "entity_id": "a0f0c9ad-45f4-4eb9-8363-4e7e3bbc2db0",
+          "action": "Created DeliveryPackage",
+          "user_name": "System",
+          "timestamp": "2026-11-12T06:22:50.065162+00:00",
+          "description": "created DeliveryPackage Turnover 1",
+          "entity_code": "Turnover 1"
+        },
+        {
+          "id": "05080b7f-046c-47fd-a677-ce41ae684925",
+          "entity_type": "Project",
+          "entity_id": "2620e494-9e52-440f-82dd-a13bd9039b7d",
+          "action": "Created Project",
+          "user_name": "System",
+          "timestamp": "2026-11-12T06:22:50.044743+00:00",
+          "description": "created Project Project 0",
+          "entity_code": "Project 0"
+        }
+      ]
+    }
+  }
+}

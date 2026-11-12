@@ -37,7 +37,7 @@ The vfx-supervisor's writes:
 - `PATCH projects/{BDG}/ {"budget_usd": "1.00"}` → **403**, with the body `{"detail": "Setting budget_usd requires project.view_budget.", "error": {"code": "permission_denied", "request_id": …}}`.
 - `PATCH {"name": "BDG renamed"}` → **200**, and the answer has no `budget_usd`.
 
-The committed sample `samples/production/_budget_counts_cr54_55.json` keeps the responses from *before* the change, as the CRs' evidence. The capture after the change went to the scratchpad (`SYNC_SAMPLES_OUT` elsewhere, `SYNC_SAMPLE_NAME`). The supervisor's two PATCH entries were added to the tool with the change.
+The committed sample `samples/production/_budget_counts_cr54_55.json` keeps the responses from *before* the change, as the CRs' evidence. The capture after the change is `samples/production/_budget_counts_cr54_55_after.json` (`SYNC_SAMPLE_NAME`), which the frontend tests serve. The supervisor's two PATCH entries were added to the tool with the change.
 
 ## Tests
 
@@ -89,15 +89,30 @@ Unchanged and still passing: `security/test_external_segregation.py` (external m
 
 Run `manage.py init_platform` right after deploying the backend. Until it runs, `project.view_budget` is in no role, so only superusers read or write budgets. A custom role that tracks budgets needs the code added by hand.
 
-## Frontend step (not done yet)
+## Frontend step (second commit)
 
-As in CR-55:
-- `field.project.budget.view` and `.edit` map to `project.view_budget`;
-- the project form shows "Budget (USD)" only with the code;
-- the hand-written `Project` type in `src/api/production/structure.ts` makes `budget_usd` optional; the dashboard's type and schema already have it optional;
-- tests;
-- the role smoke for supervisor and producer.
+| Where | What |
+|---|---|
+| `core/permissions/permissionMap.ts` | `field.project.budget.view` and `field.project.budget.edit` are `codes('project.view_budget')`. They were `open` and `project.update`. |
+| `core/permissions/backendCodes.ts`, `samples/_misc/permissions.json` | The new code is added. The sample's grants follow `init_platform` for this change only: platform-admin, org-admin, production-admin. |
+| `modules/production/structure/configs.tsx` | The project form's "Budget (USD)" field has `permission: 'project.view_budget'`. A field hidden that way is not rendered, validated or sent (`DirectoryFormPage`). |
+| `api/production/structure.ts` | `Project.budget_usd` is optional. |
+| `modules/production/structure/panels.tsx` | The overview panel leaves the `deliveries` count out without `delivery.view`, because the server's 0 is not a count (CR-54, the optional part). |
+| `e2e/live/roles.smoke.spec.ts` | New check: in the new-project form the producer gets the budget input and the supervisor does not, with no refused or failed request. |
 
-Optional for CR-54: leave the `deliveries` count out of the overview panel without `delivery.view`.
+Tests are served from responses captured after the change (`samples/production/_budget_counts_cr54_55_after.json`, same tool):
+- `structure.test.tsx`:
+  - The captures match the rule.
+  - An editor without the code edits a project with no budget input. The PATCH body is exactly the changed name.
+  - An editor without the code creates a project with no budget input, and the POST has no `budget_usd`.
+  - A holder sees the stored budget and saves a change, and the PATCH is exactly `{budget_usd: 5000000}`.
+  - The overview hides the artist's 0 deliveries and shows the lead's 2.
+- `permissionMap.test.ts`: both budget keys resolve to `project.view_budget`.
+- Mutation checks, **4 of 4 killed**: each map entry reverted (two), the form field ungated, the overview filter removed.
 
-Until the frontend step ships, a supervisor who types a budget in the project form gets the 403 as an error on the form. Leaving the field alone works.
+Gates from `frontend/`:
+- `pnpm typecheck`; `pnpm test` **1591 passed** (150 files); `pnpm build`.
+- `biome check src --diagnostic-level=error` is clean.
+- `unreachable.mjs`: only tests, `*RowKeys.ts` and the existing helpers.
+
+**Browser role smoke** against the throwaway factory-seeded backend (`tools/run_role_smoke.sh --grep "project budget input"`): **2 passed**. In the new-project form the producer gets the budget input and the supervisor does not, with no refused or failed request. The first run lost the supervisor's page to `net::ERR_NETWORK_CHANGED`: the trace shows 18 aborted requests and a blank page. The check now reloads up to three times, as the route loop does, and the second run passed with no reload. The full route loop was not rerun: no route, guard or request changed, only one form field and one panel entry.

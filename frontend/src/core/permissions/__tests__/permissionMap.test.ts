@@ -40,6 +40,12 @@ describe('PERMISSION_MAP', () => {
     }
   });
 
+  it('the project budget follows project.view_budget for reading and editing (CR-55)', () => {
+    for (const code of ['field.project.budget.view', 'field.project.budget.edit']) {
+      expect(resolveRule(code), code).toMatchObject({ kind: 'codes', all: ['project.view_budget'] });
+    }
+  });
+
   it('a legacy key never shadows a real backend code, except on purpose', () => {
     // settings.update is seeded but enforced by no view (writes need settings.manage), so granting
     // it must not light up write controls. Any new shadow must be justified here.

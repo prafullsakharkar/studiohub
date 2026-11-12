@@ -1109,7 +1109,7 @@ Both use `ProjectSelector.summary_counts` (`apps/production/selectors/project.py
 - (b) Omit the `deliveries` key instead of answering 0. Clearer, but it changes the shape for some callers, and `ProjectCounts` in the frontend types expects the key.
 
 
-### CR-55: every internal member reads the project's budget (**security**, **APPLIED** (backend), branch `sync/cr-53-partner-reads`; verification `backend-cr-54-55-verification.md`)
+### CR-55: every internal member reads the project's budget (**security**, **APPLIED**, backend and frontend, branch `sync/cr-53-partner-reads`; verification `backend-cr-54-55-verification.md`)
 
 Found while building CR-53; the owner asked for it as a CR and approved it as written, supervisors without the budget ("approve CR-54 and CR-55", 2026-11-12). Built beyond the text: the answers to a project create and update leave the field out too (the write serializers render it), found while building it.
 

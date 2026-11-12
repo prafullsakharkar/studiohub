@@ -37,12 +37,15 @@ const Card: React.FC<{ title: string; children: React.ReactNode }> = ({ title, c
 // ---------------------------------------------------------------- overview
 export const OverviewPanel: React.FC<{ projectId: string }> = ({ projectId }) => {
   const summary = useQuery({ queryKey: key(projectId, 'summary'), queryFn: ({ signal }) => projectScopedApi.summary(projectId, signal) });
+  // Without delivery.view the server answers deliveries: 0, which is not a count (CR-54): leave it out.
+  const canReadDeliveries = useCan('delivery.view');
   const counts = summary.data?.counts;
+  const shown = counts ? Object.entries(counts).filter(([name]) => canReadDeliveries || name !== 'deliveries') : [];
   return (
     <QueryBoundary isLoading={summary.isLoading} error={summary.error} onRetry={() => void summary.refetch()} entityName="project summary">
       {counts && (
         <dl aria-label="Project counts" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {Object.entries(counts).map(([name, value]) => (
+          {shown.map(([name, value]) => (
             <div key={name} className="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
               <dt className="text-[11px] uppercase tracking-wide text-slate-500">{name.replace(/_/g, ' ')}</dt>
               <dd className="text-xl font-bold text-white">{value}</dd>

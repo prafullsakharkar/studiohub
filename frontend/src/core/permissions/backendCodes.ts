@@ -85,6 +85,7 @@ export const BACKEND_PERMISSION_CODES = [
   'project.delete',
   'project.update',
   'project.view',
+  'project.view_budget',
   'publishing.create',
   'publishing.delete',
   'publishing.deprecate',

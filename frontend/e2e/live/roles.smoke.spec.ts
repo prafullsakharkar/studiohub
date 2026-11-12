@@ -140,6 +140,30 @@ for (const { role, label, shown, refused: mustRefuse } of ROLES) {
   });
 }
 
+/** The project budget (CR-55): the producer holds project.view_budget and gets the input, the supervisor does not. */
+const BUDGET_FORM: Array<{ role: RoleKey; label: string; inputs: number }> = [
+  { role: 'producer', label: 'production admin', inputs: 1 },
+  { role: 'supervisor', label: 'vfx supervisor', inputs: 0 },
+];
+for (const { role, label, inputs } of BUDGET_FORM) {
+  test(`${label}: project budget input in the new-project form (CR-55)`, async ({ page }) => {
+    const seen = watch(page);
+    await signIn(page, role);
+    // A host network change (net::ERR_NETWORK_CHANGED) can abort the module loads and leave a blank page, as in the
+    // route loop above: load it again, up to three times, and say so.
+    const name = page.getByLabel(/^Name/);
+    for (let attempt = 1; ; attempt++) {
+      await page.goto('/projects/new', { waitUntil: 'domcontentloaded' });
+      const shown = await name.waitFor({ state: 'visible', timeout: 20_000 }).then(() => true, () => false);
+      if (shown) break;
+      if (attempt === 3) await expect(name).toBeVisible();
+      console.log(`[${label}] /projects/new did not render (attempt ${attempt}); loading it again`);
+    }
+    await expect(page.getByLabel('Budget (USD)')).toHaveCount(inputs);
+    expect([...seen.serverErrors, ...seen.unauthorized, ...seen.forbidden, ...seen.pageErrors]).toEqual([]);
+  });
+}
+
 /**
  * A phone-sized window: no page may scroll sideways, every field and button a person can reach must have a name a
  * screen reader can say, and every page has a heading. Run as the platform administrator so every route renders.
