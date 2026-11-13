@@ -362,7 +362,7 @@ The same as RP-4, plus `apps/production` in full and the backend suites of every
 
 ## RP-6 Notifications (in-app)
 
-**Status:** planned 2026-11-13; approved the same day with every recommendation (Q-RP-32 to Q-RP-40 = A, [DECISIONS.md](DECISIONS.md#rp-6-answers)). Contracts C-RP-23 to C-RP-25. WP 6.1 to 6.6 built and committed 2026-11-13 on `feature/rp-6-notifications`, not merged ([rp-6-verification.md](rp-6-verification.md)); there is no single `assign/` route (the bulk one is `bulk-assign/`) and the model has no `thread_id` (CONTRACTS, "Details settled while building RP-6"). Branch `feature/rp-6-notifications`, off `develop` at `c0459cfc` (RP-1 to RP-5 merged, v4.6.0 released). It depends on RP-2 (the note events) and uses RP-3's and RP-5's events. Q-RP-7 = A: in-app only, so no e-mail and no new outward channel.
+**Status:** planned 2026-11-13; approved the same day with every recommendation (Q-RP-32 to Q-RP-40 = A, [DECISIONS.md](DECISIONS.md#rp-6-answers)). Contracts C-RP-23 to C-RP-25. WP 6.1 to 6.6 built 2026-11-13 (`50324f4b`), merged into `develop` as `e5346727` and released in v4.7.0 ([rp-6-verification.md](rp-6-verification.md)); there is no single `assign/` route (the bulk one is `bulk-assign/`) and the model has no `thread_id` (CONTRACTS, "Details settled while building RP-6"). Branch `feature/rp-6-notifications`, off `develop` at `c0459cfc` (RP-1 to RP-5 merged, v4.6.0 released). It depends on RP-2 (the note events) and uses RP-3's and RP-5's events. Q-RP-7 = A: in-app only, so no e-mail and no new outward channel.
 
 **Goal.** What ShotGrid's and ftrack's inboxes do. A person learns, inside StudioHub, that:
 - someone wrote a note on their work or mentioned them;
