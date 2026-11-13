@@ -11963,6 +11963,158 @@ paths:
               schema:
                 $ref: '#/components/schemas/MediaList'
           description: ''
+  /api/v1/notifications/:
+    get:
+      operationId: v1_notifications_list
+      parameters:
+      - in: query
+        name: kind
+        schema:
+          type: string
+          enum:
+          - note_created
+          - note_mention
+          - note_reply
+          - note_status
+          - review_media_failed
+          - review_media_ready
+          - task_assigned
+          - task_status
+          - version_status
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: project_id
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: unread
+        schema:
+          type: boolean
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+  /api/v1/notifications/{id}/read/:
+    post:
+      operationId: v1_notifications_read_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F-]{36}$
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/notifications/{id}/unread/:
+    post:
+      operationId: v1_notifications_unread_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F-]{36}$
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/notifications/read-all/:
+    post:
+      operationId: v1_notifications_read_all_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReadAll'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReadAll'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReadAll'
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadAllResult'
+          description: ''
+  /api/v1/notifications/unread-count/:
+    get:
+      operationId: v1_notifications_unread_count_retrieve
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadCount'
+          description: ''
   /api/v1/offices/:
     get:
       operationId: v1_offices_list
@@ -41122,6 +41274,85 @@ components:
           nullable: true
         notes:
           type: string
+    Notification:
+      type: object
+      description: |-
+        One row. ``target`` and ``project`` are read from the live records of the page
+        (``context["labels"]``, see ``InboxSelector.page_labels``); a row read alone reads its own.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          enum:
+          - note_created
+          - note_mention
+          - note_reply
+          - note_status
+          - task_assigned
+          - task_status
+          - version_status
+          - review_media_ready
+          - review_media_failed
+          type: string
+          description: |-
+            * `note_created` - A note on your work
+            * `note_mention` - You were mentioned
+            * `note_reply` - A reply in your thread
+            * `note_status` - A note changed status
+            * `task_assigned` - A task was assigned to you
+            * `task_status` - Your task changed status
+            * `version_status` - Your version changed status
+            * `review_media_ready` - Your review movie is ready
+            * `review_media_failed` - Your review movie failed
+          x-spec-enum-id: ff125619eb60f538
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        actor:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
+          readOnly: true
+        project:
+          type: object
+          additionalProperties:
+            type: string
+          readOnly: true
+        target:
+          type: object
+          additionalProperties:
+            type: string
+          readOnly: true
+        record:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
+          readOnly: true
+        data:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+      required:
+      - actor
+      - created_at
+      - data
+      - id
+      - kind
+      - project
+      - read_at
+      - record
+      - target
     Office:
       type: object
       properties:
@@ -41626,6 +41857,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Group'
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
     PaginatedOfficeList:
       type: object
       required:
@@ -55424,6 +55678,20 @@ components:
       - storage_root
       - upstream_count
       - version_id
+    ReadAll:
+      type: object
+      properties:
+        before:
+          type: string
+          format: date-time
+          nullable: true
+    ReadAllResult:
+      type: object
+      properties:
+        updated:
+          type: integer
+      required:
+      - updated
     RecoveryCodeVerify:
       type: object
       properties:
@@ -61490,6 +61758,13 @@ components:
           format: uuid
       required:
       - device_id
+    UnreadCount:
+      type: object
+      properties:
+        count:
+          type: integer
+      required:
+      - count
     UserChangePassword:
       type: object
       properties:

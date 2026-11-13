@@ -15,6 +15,11 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     name: 'Workspace',
     pagePermission: 'page.workspace',
   },
+  '/notifications': {
+    path: '/notifications',
+    name: 'Notifications',
+    pagePermission: 'page.notifications',
+  },
 
   // Entity workspaces
   '/clients': {

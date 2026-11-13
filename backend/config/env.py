@@ -295,6 +295,15 @@ class Settings(BaseSettings):
     )
 
     ####################################################################
+    # In-app notifications (review-pipeline RP-6)
+    ####################################################################
+
+    # Days a notification is kept, read or not, before the daily purge deletes it (Q-RP-38).
+    notifications_retention_days: int = Field(
+        default=90, alias="NOTIFICATIONS_RETENTION_DAYS", gt=0
+    )
+
+    ####################################################################
     # Operator surfaces (off unless switched on)
     ####################################################################
 

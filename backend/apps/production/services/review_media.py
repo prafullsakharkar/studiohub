@@ -28,6 +28,8 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from apps.audit.models import AuditLog
+from apps.core.events import default_event_bus
+from apps.production.events.review_media import ReviewMediaFinished
 from apps.production.exceptions import ReviewMediaBusy, ReviewMediaDisabled
 from apps.production.models import ReviewMedia, Version
 from apps.production.transcode import detect
@@ -57,6 +59,20 @@ class _Failed(Exception):
 
 #: the processing task; ``CELERY_TASK_ROUTES`` sends it to the ``media`` queue
 PROCESS_TASK = "production.process_review_media"
+
+
+def _publish_finished(row: ReviewMedia) -> None:
+    """``ReviewMediaFinished`` for a row that just became ``ready`` or ``failed`` (RP-6, C-RP-24)."""
+    default_event_bus.publish(
+        ReviewMediaFinished(
+            review_media_id=str(row.pk),
+            version_id=str(row.version_id),  # pyright: ignore[reportAttributeAccessIssue]
+            project_id=str(row.project_id),  # pyright: ignore[reportAttributeAccessIssue]
+            status=row.status,
+            error_code=row.error_code or "",
+            created_by_id=str(row.created_by_id) if row.created_by_id else None,  # pyright: ignore[reportAttributeAccessIssue]
+        )
+    )
 
 
 def enqueue(media_id: Any) -> None:
@@ -451,6 +467,7 @@ class ReviewMediaService:
             row.finished_at = timezone.now()
             row.save()
             transaction.on_commit(lambda: [_delete_folder(f) for f in older_folders])
+            _publish_finished(row)
         logger.info(
             "review_media_ready", review_media_id=str(row.pk), superseded=len(older_folders)
         )
@@ -458,9 +475,13 @@ class ReviewMediaService:
 
     @staticmethod
     def _fail(media: ReviewMedia, code: str) -> str | None:
-        updated = ReviewMedia.objects.filter(pk=media.pk, status=Status.PROCESSING).update(
-            status=Status.FAILED, error_code=code, finished_at=timezone.now()
-        )
+        with transaction.atomic():
+            updated = ReviewMedia.objects.filter(pk=media.pk, status=Status.PROCESSING).update(
+                status=Status.FAILED, error_code=code, finished_at=timezone.now()
+            )
+            if updated:
+                media.status, media.error_code = Status.FAILED, code
+                _publish_finished(media)
         logger.warning("review_media_failed", review_media_id=str(media.pk), error_code=code)
         return Status.FAILED if updated else None
 
@@ -468,12 +489,19 @@ class ReviewMediaService:
     def sweep() -> int:
         """Fail jobs a worker dropped (``processing`` 45 minutes) or a broker lost (``queued`` a day)."""
         now = timezone.now()
-        processing = ReviewMedia.objects.filter(
-            status=Status.PROCESSING, started_at__lt=now - STALE_PROCESSING
-        ).update(status=Status.FAILED, error_code=Code.TIMEOUT, finished_at=now)
-        queued = ReviewMedia.objects.filter(
-            status=Status.QUEUED, queued_at__lt=now - STALE_QUEUED
-        ).update(status=Status.FAILED, error_code=Code.TIMEOUT, finished_at=now)
+        counts = []
+        for status, stale in (
+            (Status.PROCESSING, {"started_at__lt": now - STALE_PROCESSING}),
+            (Status.QUEUED, {"queued_at__lt": now - STALE_QUEUED}),
+        ):
+            with transaction.atomic():
+                rows = list(ReviewMedia.objects.select_for_update().filter(status=status, **stale))
+                for row in rows:
+                    row.status, row.error_code, row.finished_at = Status.FAILED, Code.TIMEOUT, now
+                    row.save(update_fields=["status", "error_code", "finished_at"])
+                    _publish_finished(row)
+            counts.append(len(rows))
+        processing, queued = counts
         if processing or queued:
             logger.warning("review_media_swept", processing=processing, queued=queued)
         return processing + queued

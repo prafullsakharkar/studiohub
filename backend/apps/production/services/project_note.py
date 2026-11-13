@@ -1,9 +1,10 @@
 """
-Project notes: threads, replies, links, a task and a status (docs/review-pipeline RP-2, C-RP-07 to C-RP-13).
+Project notes: threads, replies, links, a task and a status (docs/review-pipeline RP-2, C-RP-07 to C-RP-13),
+and the people a note mentions (RP-6, C-RP-25).
 
 The views resolve and check the records a note names (``validators/project_note.py``) and decide the
 caller's codes; this service writes, applies the authorship rules of Q-RP-11 and Q-RP-12, and
-publishes ``NoteCreated``, ``NoteReplied`` and ``NoteStatusChanged`` after commit.
+publishes ``NoteCreated``, ``NoteReplied``, ``NoteStatusChanged`` and ``NoteMentioned`` after commit.
 """
 
 from __future__ import annotations
@@ -15,8 +16,18 @@ from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from apps.core.events import default_event_bus
-from apps.production.events.notes import NoteCreated, NoteReplied, NoteStatusChanged
-from apps.production.models import ProjectMembership, ProjectNote, ProjectNoteLink
+from apps.production.events.notes import (
+    NoteCreated,
+    NoteMentioned,
+    NoteReplied,
+    NoteStatusChanged,
+)
+from apps.production.models import (
+    ProjectMembership,
+    ProjectNote,
+    ProjectNoteLink,
+    ProjectNoteMention,
+)
 from apps.production.models.project_note import ProjectNoteStatus
 from apps.production.validators.project_note import (
     NO_RECORD,
@@ -97,9 +108,20 @@ class ProjectNoteService:
             )
 
     @classmethod
+    def _write_mentions(cls, note: ProjectNote, users: list[Any]) -> list[str]:
+        """Replace ``note``'s mentions with ``users``; the ids of the people it did not mention before."""
+        before = {str(pk) for pk in note.mentions.values_list("user_id", flat=True)}  # pyright: ignore[reportAttributeAccessIssue]
+        ProjectNoteMention.objects.filter(note=note).delete()
+        ProjectNoteMention.objects.bulk_create(
+            ProjectNoteMention(note=note, user=user, position=position)
+            for position, user in enumerate(users)
+        )
+        return [str(user.pk) for user in users if str(user.pk) not in before]
+
+    @classmethod
     @transaction.atomic
     def create_note(
-        cls, *, user, project, links: list[ResolvedLink], task=None, **fields
+        cls, *, user, project, links: list[ResolvedLink], task=None, mentions=(), **fields
     ) -> ProjectNote:
         """A new thread (C-RP-07): always ``Open``; links, mirror and author come from the server."""
         note = ProjectNote.objects.create(
@@ -113,6 +135,7 @@ class ProjectNoteService:
             **fields,
         )
         cls._write_links(note, links)
+        mention_ids = cls._write_mentions(note, list(mentions))
         default_event_bus.publish(
             NoteCreated(
                 **_ids(note),
@@ -122,13 +145,14 @@ class ProjectNoteService:
                     {"entity_type": lk.entity_type, "entity_id": str(lk.instance.pk)}
                     for lk in links
                 ],
+                mention_ids=mention_ids,
             )
         )
         return note
 
     @classmethod
     @transaction.atomic
-    def reply(cls, *, user, thread: ProjectNote, body: str) -> ProjectNote:
+    def reply(cls, *, user, thread: ProjectNote, body: str, mentions=()) -> ProjectNote:
         """A reply on the thread's root (C-RP-11): its project, no links, no task, ``Open``."""
         root = thread.parent if thread.parent_id else thread  # pyright: ignore[reportAttributeAccessIssue]
         assert root is not None
@@ -143,11 +167,13 @@ class ProjectNoteService:
             updated_by=user,
             **_author_fields(user, root.project),
         )
+        mention_ids = cls._write_mentions(reply, list(mentions))
         default_event_bus.publish(
             NoteReplied(
                 **_ids(reply),
                 author_id=str(user.pk) if user else None,
                 thread_author_id=str(root.author_id) if root.author_id else None,  # pyright: ignore[reportAttributeAccessIssue]
+                mention_ids=mention_ids,
             )
         )
         return reply
@@ -168,9 +194,13 @@ class ProjectNoteService:
         fields: dict[str, Any],
         links: list[ResolvedLink] | None = None,
         task: Any = UNSET,
+        mentions: list[Any] | None = None,
         may_update: bool,
     ) -> ProjectNote:
-        """C-RP-12: the author, or a holder of ``note.update`` (Q-RP-11 = A)."""
+        """
+        C-RP-12: the author, or a holder of ``note.update`` (Q-RP-11 = A). ``mentions`` replaces the
+        note's mentions (a reply's too); only the people added are notified (C-RP-25).
+        """
         cls.require_editor(user=user, note=note, may_update=may_update)
         is_reply = note.parent_id is not None  # pyright: ignore[reportAttributeAccessIssue]
         allowed = REPLY_FIELDS if is_reply else THREAD_FIELDS
@@ -189,6 +219,16 @@ class ProjectNoteService:
                 cls._write_links(note, links)
         note.updated_by = user
         note.save()
+        if mentions is not None:
+            added = cls._write_mentions(note, mentions)
+            if added:
+                default_event_bus.publish(
+                    NoteMentioned(
+                        **_ids(note),
+                        actor_id=str(user.pk) if user else None,
+                        mention_ids=added,
+                    )
+                )
         return note
 
     @classmethod

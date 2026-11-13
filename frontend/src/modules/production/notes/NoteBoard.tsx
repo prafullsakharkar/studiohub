@@ -16,6 +16,7 @@ import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { fetchAllRows } from '@/shared/data/listing';
+import { MentionPicker } from './MentionPicker';
 import { NoteFormDialog } from './NoteFormDialog';
 import type { NoteTarget } from './NoteFormDialog';
 
@@ -68,6 +69,16 @@ const Links: React.FC<{ note: ProjectNote; hide?: NoteTarget }> = ({ note, hide 
   );
 };
 
+/** The people a note or reply mentions (RP-6, C-RP-25). */
+const Mentions: React.FC<{ note: ProjectNote }> = ({ note }) =>
+  note.mentions?.length ? (
+    <ul className="flex flex-wrap items-center gap-1 text-[11px] text-cyan-300" aria-label="Mentions">
+      {note.mentions.map((m) => (
+        <li key={m.id}>@{m.name || 'someone'}</li>
+      ))}
+    </ul>
+  ) : null;
+
 const ThreadBody: React.FC<{ projectId: string; note: ProjectNote; onEdit: () => void }> = ({ projectId, note, onEdit }) => {
   const refresh = useNoteWrites(projectId);
   const { user } = useCurrentUser();
@@ -75,6 +86,7 @@ const ThreadBody: React.FC<{ projectId: string; note: ProjectNote; onEdit: () =>
   const canUpdate = useCan('note.update', { projectId });
   const canDelete = useCan('note.delete', { projectId });
   const [reply, setReply] = useState('');
+  const [replyMentions, setReplyMentions] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
   const [deleting, setDeleting] = useState<ProjectNote | null>(null);
   const thread = useQuery({ queryKey: noteKeys.thread(projectId, note.id), queryFn: ({ signal }) => projectScopedApi.note(projectId, note.id, signal) });
@@ -101,8 +113,9 @@ const ThreadBody: React.FC<{ projectId: string; note: ProjectNote; onEdit: () =>
     if (!reply.trim()) return;
     setSending(true);
     try {
-      await projectScopedApi.replyToNote(projectId, note.id, reply.trim());
+      await projectScopedApi.replyToNote(projectId, note.id, reply.trim(), replyMentions);
       setReply('');
+      setReplyMentions([]);
       await refresh();
     } catch (error) {
       notify.fromError(error);
@@ -119,6 +132,7 @@ const ThreadBody: React.FC<{ projectId: string; note: ProjectNote; onEdit: () =>
             {replies.map((r) => (
               <li key={r.id} className="rounded border border-slate-800 bg-slate-950/60 p-2">
                 <p className="whitespace-pre-wrap text-slate-300">{r.body}</p>
+                <Mentions note={r} />
                 <p className="mt-1 flex items-center justify-between text-[11px] text-slate-500">
                   <span>
                     {r.author_name || 'Unknown author'} · <time dateTime={r.created_at}>{formatDateTime(r.created_at)}</time>
@@ -135,14 +149,17 @@ const ThreadBody: React.FC<{ projectId: string; note: ProjectNote; onEdit: () =>
         )}
       </QueryBoundary>
       {canCreate && (
-        <div className="flex items-end gap-2">
-          <label className="flex-1 text-[11px] text-slate-400">
-            Reply
-            <textarea aria-label={`Reply to ${note.subject}`} rows={2} value={reply} onChange={(e) => setReply(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200" />
-          </label>
-          <Button size="sm" variant="secondary" isLoading={sending} disabled={!reply.trim()} onClick={() => void send()}>
-            Reply
-          </Button>
+        <div className="space-y-2">
+          <div className="flex items-end gap-2">
+            <label className="flex-1 text-[11px] text-slate-400">
+              Reply
+              <textarea aria-label={`Reply to ${note.subject}`} rows={2} value={reply} onChange={(e) => setReply(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200" />
+            </label>
+            <Button size="sm" variant="secondary" isLoading={sending} disabled={!reply.trim()} onClick={() => void send()}>
+              Reply
+            </Button>
+          </div>
+          <MentionPicker id={`reply-mentions-${note.id}`} projectId={projectId} value={replyMentions} onChange={setReplyMentions} />
         </div>
       )}
       <div className="flex flex-wrap items-center gap-2">
@@ -205,6 +222,7 @@ const ThreadCard: React.FC<{ projectId: string; note: ProjectNote; target?: Note
         </span>
       </div>
       {note.body && <p className="mt-1 whitespace-pre-wrap text-slate-400">{note.body}</p>}
+      <Mentions note={note} />
       <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500">
         <span>{note.author_name || 'Unknown author'}</span>
         <button type="button" aria-expanded={open} className="flex items-center gap-1 text-cyan-300 hover:text-cyan-200" onClick={() => setOpen((v) => !v)}>

@@ -34,6 +34,7 @@ import { ServerErrorPage } from '@/pages/ServerErrorPage';
 
 // Pages load on first use, one chunk per module (see lazyNamed).
 const DashboardPage = lazyNamed(() => import('@/modules/dashboard'), 'DashboardPage');
+const NotificationsPage = lazyNamed(() => import('@/modules/notifications'), 'NotificationsPage');
 const DeliveriesPage = lazyNamed(() => import('@/modules/deliveries'), 'DeliveriesPage');
 const DeliveryFormPage = lazyNamed(() => import('@/modules/deliveries'), 'DeliveryFormPage');
 const DeliveryWorkspacePage = lazyNamed(() => import('@/modules/deliveries'), 'DeliveryWorkspacePage');
@@ -191,6 +192,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="/dashboard" element={<DashboardPage />} />
 
           <Route path="/workspace" element={<Navigate to="/dashboard" replace />} />
+
+          <Route path="/notifications" element={<NotificationsPage />} />
 
           {/* PEOPLE */}
 

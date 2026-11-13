@@ -33,6 +33,7 @@ LOCAL_APPS = [
     "apps.publishing",
     "apps.scheduling",
     "apps.masterdata",
+    "apps.notifications",
 ]
 
 INSTALLED_APPS = (

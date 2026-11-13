@@ -60,6 +60,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "production.sweep_review_media",
         "schedule": crontab(minute="*/10"),
     },
+    # In-app notifications older than NOTIFICATIONS_RETENTION_DAYS (review-pipeline RP-6).
+    "notifications-purge": {
+        "task": "notifications.purge",
+        "schedule": crontab(hour=4, minute=10),
+    },
 }
 
 # Review media runs on its own queue, consumed only by the `celery-media` worker, which has ffmpeg.

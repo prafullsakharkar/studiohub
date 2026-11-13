@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
-import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { auditKeys } from '@/api/audit/audit';
 import { reviewMediaRefetchInterval, reviewsApi, versionsApi } from '@/api/production/review';
 import { tasksApi } from '@/api/production/work';
@@ -140,7 +140,13 @@ export const VersionWorkspace: React.FC = () => {
   const queryClient = useQueryClient();
   const canUpdate = useCan('version.update');
   const canPublish = useCan('version.publish');
-  const [tab, setTab] = useState<TabId>('overview');
+  // `?tab=` opens a tab, as a notification's link does (RP-6: `?tab=notes`, `?tab=media`).
+  const requested = useSearchParams()[0].get('tab');
+  const asked = TABS.some((t) => t.id === requested) ? (requested as TabId) : null;
+  const [tab, setTab] = useState<TabId>(asked ?? 'overview');
+  useEffect(() => {
+    if (asked) setTab(asked);
+  }, [asked]);
   const [action, setAction] = useState<ReturnType<typeof versionActions>[number] | null>(null);
   // While the media worker runs a job the version is refetched every 5 seconds; its signed links are fetched again before they expire (RP-5).
   const query = useQuery({ queryKey: versionsApi.keys.detail(versionId), queryFn: ({ signal }) => versionsApi.get(versionId, signal), enabled: Boolean(versionId), refetchInterval: (q) => reviewMediaRefetchInterval([q.state.data]) });
