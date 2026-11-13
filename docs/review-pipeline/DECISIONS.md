@@ -89,7 +89,7 @@ The owner took every recommendation of [PLAN.md, RP-6 questions](PLAN.md#questio
 | RP-3 Approval roll-up (fixed rule) | built and merged into `develop` ([rp-3-verification.md](rp-3-verification.md)) |
 | RP-4 Publishing depth | built and merged into `develop` ([rp-4-verification.md](rp-4-verification.md)) |
 | RP-5 Media pipeline (ffmpeg worker) | planned in [PLAN.md](PLAN.md#rp-5-media-pipeline-review-movies-thumbnails-filmstrips); answered (Q-RP-24 to Q-RP-31 = A); built and merged into `develop`, released in v4.6.0 ([rp-5-verification.md](rp-5-verification.md)) |
-| RP-6 Notifications (in-app) | planned in [PLAN.md](PLAN.md#rp-6-notifications-in-app); answered (Q-RP-32 to Q-RP-40 = A); built and committed on `feature/rp-6-notifications`, not merged ([rp-6-verification.md](rp-6-verification.md)) |
+| RP-6 Notifications (in-app) | planned in [PLAN.md](PLAN.md#rp-6-notifications-in-app); answered (Q-RP-32 to Q-RP-40 = A); built and merged into `develop`, released in v4.7.0 ([rp-6-verification.md](rp-6-verification.md)) |
 | RP-7 Share links | **dropped** (Q-RP-8 = B) |
 | RP-8 Live review | not planned (Q-RP-9 = B) |
 | RP-9 DCC integrations | separate repository (Q-RP-10 = B) |

@@ -1,6 +1,6 @@
 # RP-6 Notifications (in-app): verification
 
-Branch `feature/rp-6-notifications`, off `develop` at `c0459cfc` (RP-1 to RP-5 merged, v4.6.0 released). The plan and contracts are commit `bd817bdc` (Q-RP-32 to Q-RP-40 answered as recommended). **Backend (WP 6.1 to 6.4), frontend (WP 6.5) and docs (WP 6.6) are built and committed on this branch**, followed by a separate commit that removes the dead toast-store actions (section 0, item 4). Nothing is merged or pushed.
+Branch `feature/rp-6-notifications`, off `develop` at `c0459cfc` (RP-1 to RP-5 merged, v4.6.0 released). The plan and contracts are commit `bd817bdc` (Q-RP-32 to Q-RP-40 answered as recommended). **Backend (WP 6.1 to 6.4), frontend (WP 6.5) and docs (WP 6.6) are built and committed on this branch**, followed by a separate commit that removes the dead toast-store actions (section 0, item 4). Merged into `develop` as `e5346727` and into `main` as `94f7342c`; released as v4.7.0.
 
 ## 0. Read first
 
@@ -49,7 +49,7 @@ Branch `feature/rp-6-notifications`, off `develop` at `c0459cfc` (RP-1 to RP-5 m
 - **No live run.** Nothing ran the browser smoke or a live vitest file against a backend. The capture tool, which goes through the real routes, is the end-to-end evidence.
 - **Polling, not push** (Q-RP-36 = A): a new row shows within a minute, or when the window regains focus.
 - **No per-person preferences** (Q-RP-37 = A) and no e-mail (Q-RP-7 = A).
-- **Not every backend app ran.** Only `production`, `notifications` and `core` ran (targeted tests only). `identity`, `masterdata`, `audit`, `settings`, `deliveries`, `publishing` and `scheduling` did not; the changes outside the two apps are settings, URLs and the core guard tests.
+- **Every backend app ran in CI only.** Locally only `production`, `notifications` and `core` ran (targeted tests only). After the merge, CI on `develop` (`e5346727`, run 43430746885) ran every app: **7,393 pass**, and the frontend 1,733.
 - **The toast history stays** in the store (section 0, item 4). Removing it would mean rewriting eight unrelated test files.
 
 ## 4. Before deploying
