@@ -49,6 +49,21 @@ The owner took every recommendation of [PLAN.md, RP-4 questions](PLAN.md#questio
 | Q-RP-22 | **B** | Each template has an `enforce` switch, off by default. Only an enforcing template refuses a registration. |
 | Q-RP-23 | **A** | Studio-wide templates, overridden by a project's own, managed with the new code `publishing.template.manage` (platform-admin, org-admin, production-admin). |
 
+## RP-5 answers
+
+The owner took every recommendation of [PLAN.md, RP-5 questions](PLAN.md#questions-before-rp-5-starts) on 2026-11-13 ("go ahead").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-24 | **A** | Uploads and results live under `MEDIA_ROOT/review_media/` and leave only through signed links, as attachments do. |
+| Q-RP-25 | **A** | A job starts from a file uploaded to the version. Published files on storage roots can come later. |
+| Q-RP-26 | **A** | Movies (`mov`, `mp4`, `m4v`, `mkv`, `webm`, `mxf`, `avi`) and display-ready stills (`jpg`, `png`, `tif`). EXR and DPX are refused. |
+| Q-RP-27 | **A** | One deployment setting, `REVIEW_MEDIA_ENABLED`, off by default. The feature flags stay unread. |
+| Q-RP-28 | **A** | A playback link lasts one hour; every request re-checks the user and their access. |
+| Q-RP-29 | **A** | The probe never changes the version's fields; the player uses the probe's frame rate for the proxy. |
+| Q-RP-30 | **A** | Upload, retry and remove need `version.update` with the version in reach. |
+| Q-RP-31 | **A** | At most 2 GiB per upload (`REVIEW_MEDIA_MAX_BYTES`), no quota. |
+
 ## Phases after the answers
 
 | Phase | Status |
@@ -56,8 +71,8 @@ The owner took every recommendation of [PLAN.md, RP-4 questions](PLAN.md#questio
 | RP-1 Data model cleanup | built and merged into `develop` ([rp-1-verification.md](rp-1-verification.md)) |
 | RP-2 Notes (replies, links) | built and merged into `develop` ([rp-2-verification.md](rp-2-verification.md)) |
 | RP-3 Approval roll-up (fixed rule) | built and merged into `develop` ([rp-3-verification.md](rp-3-verification.md)) |
-| RP-4 Publishing depth | planned in [PLAN.md](PLAN.md#rp-4-publishing-depth-dependencies-loader-path-templates); answered (Q-RP-19 = A, Q-RP-20 = A, Q-RP-21 = B, Q-RP-22 = B, Q-RP-23 = A), being built on `feature/rp-4-publishing-depth` |
-| RP-5 Media pipeline (ffmpeg worker) | independent |
+| RP-4 Publishing depth | built and merged into `develop` ([rp-4-verification.md](rp-4-verification.md)) |
+| RP-5 Media pipeline (ffmpeg worker) | planned in [PLAN.md](PLAN.md#rp-5-media-pipeline-review-movies-thumbnails-filmstrips); answered (Q-RP-24 to Q-RP-31 = A), being built on `feature/rp-5-media-pipeline` |
 | RP-6 Notifications (in-app) | after RP-2 |
 | RP-7 Share links | **dropped** (Q-RP-8 = B) |
 | RP-8 Live review | not planned (Q-RP-9 = B) |
