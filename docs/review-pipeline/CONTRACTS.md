@@ -137,3 +137,13 @@ Details settled while building RP-6 (the owner is told in [rp-6-verification.md]
   - A reply that mentions someone and an edit that adds them to the thread are two actions, so the same person can get two `note_mention` rows on one thread.
   - The frontend offers active members of the whole project only (no show, department, client or vendor). The server checks again.
 - **Frontend:** the header bell no longer lists this tab's toasts. Toasts are unchanged. The toast store's `markAsRead`, `markAllAsRead` and `clearNotification` had no other caller and were removed.
+
+## RP-10 Loose ends
+
+C-RP-26 amends C-RP-19, C-RP-20 and C-RP-22. C-RP-27 changes no answer. Notes stay out of the change log (Q-RP-42 = A), so nothing changes there.
+
+| ID | Where | Before | After |
+|---|---|---|---|
+| C-RP-26 | `POST versions/{id}/review-media/`, `POST review-media/{id}/retry/`, `DELETE review-media/{id}/` | `version.update` and the version in reach. | Allowed to a holder of `version.update`, or to the version's artist (`Version.artist` is the caller) who holds `version.create`; the version must be in reach as before. Anyone else who reads the version gets **403**; a version out of reach is still a 404 identical to an unknown id. The right follows the field: someone who is no longer the version's artist loses it. Every other part of C-RP-19, C-RP-20 and C-RP-22 is unchanged (switch, busy, refusals, retry limits, removal). |
+| C-RP-27 | The OpenAPI schema of the notes routes (C-RP-07 to C-RP-12, C-RP-25) | Untyped request and response bodies. | Each of `GET`/`POST notes/`, `GET`/`PATCH`/`DELETE notes/{note_id}/`, `POST notes/{note_id}/replies/` and `POST notes/{note_id}/status/` names its request serializer and its response (the C-RP-08 note shape, the C-RP-10 thread, the paginated list, 204). The answers do not change. |
+
