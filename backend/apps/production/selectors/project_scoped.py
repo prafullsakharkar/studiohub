@@ -1,6 +1,6 @@
 from django.db.models import QuerySet
 
-from apps.production.models import EditorialCut, ProjectMembership, ProjectNote
+from apps.production.models import EditorialCut, ProjectMembership
 from apps.production.selectors.base import ProductionBaseSelector
 
 
@@ -17,10 +17,3 @@ class EditorialCutSelector(ProductionBaseSelector):
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[EditorialCut]:
         return EditorialCut.objects.select_related("project").all()
 
-
-class ProjectNoteSelector(ProductionBaseSelector):
-    @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet[ProjectNote]:
-        return ProjectNote.objects.select_related(
-            "project", "author"
-        ).all()

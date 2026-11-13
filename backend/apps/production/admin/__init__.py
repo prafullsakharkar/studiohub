@@ -5,7 +5,7 @@ Production admin module.
 from .asset import AssetAdmin
 from .automation import AutomationAuditLogAdmin, AutomationRuleAdmin
 from .episode import EpisodeAdmin
-from .media import MediaAdmin
+from .media import MediaAdmin, ReviewMediaAdmin
 from .playlist import PlaylistAdmin, PlaylistEntryAdmin
 from .project import ProjectAdmin
 from .project_scoped import (
@@ -50,6 +50,7 @@ __all__ = [
     "VersionAdmin",
     "ReviewAdmin",
     "MediaAdmin",
+    "ReviewMediaAdmin",
     "PlaylistAdmin",
     "PlaylistEntryAdmin",
     "ReviewActivityAdmin",

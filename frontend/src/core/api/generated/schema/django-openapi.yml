@@ -556,6 +556,248 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/organizations/projects/{project_id}/notes/{note_id}:
+    get:
+      operationId: organizations_projects_notes_retrieve_3
+      description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
+        a note (C-RP-10, C-RP-12, C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: organizations_projects_notes_partial_update
+      description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
+        a note (C-RP-10, C-RP-12, C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: organizations_projects_notes_destroy
+      description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
+        a note (C-RP-10, C-RP-12, C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '204':
+          description: No response body
+  /api/organizations/projects/{project_id}/notes/{note_id}/:
+    get:
+      operationId: organizations_projects_notes_retrieve_4
+      description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
+        a note (C-RP-10, C-RP-12, C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: organizations_projects_notes_partial_update_2
+      description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
+        a note (C-RP-10, C-RP-12, C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: organizations_projects_notes_destroy_2
+      description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
+        a note (C-RP-10, C-RP-12, C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '204':
+          description: No response body
+  /api/organizations/projects/{project_id}/notes/{note_id}/replies:
+    post:
+      operationId: organizations_projects_notes_replies_create
+      description: '``POST`` a reply on the thread (C-RP-11).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+  /api/organizations/projects/{project_id}/notes/{note_id}/replies/:
+    post:
+      operationId: organizations_projects_notes_replies_create_2
+      description: '``POST`` a reply on the thread (C-RP-11).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+  /api/organizations/projects/{project_id}/notes/{note_id}/status:
+    post:
+      operationId: organizations_projects_notes_status_create
+      description: '``POST`` a thread''s new status (C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+  /api/organizations/projects/{project_id}/notes/{note_id}/status/:
+    post:
+      operationId: organizations_projects_notes_status_create_2
+      description: '``POST`` a thread''s new status (C-RP-13).'
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
   /api/organizations/projects/{project_id}/pipeline:
     get:
       operationId: organizations_projects_pipeline_retrieve
@@ -17163,6 +17405,10 @@ paths:
         name: status
         schema:
           type: string
+      - in: query
+        name: version_id
+        schema:
+          type: string
       tags:
       - v1
       security:
@@ -19490,6 +19736,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/PublishedFile'
           description: ''
+  /api/v1/publishing/files/{uuid}/dependencies/:
+    get:
+      operationId: v1_publishing_files_dependencies_retrieve
+      description: The files this one was built from, and the files built from it
+        (C-RP-16).
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dependencies'
+          description: ''
   /api/v1/publishing/files/{uuid}/deprecate/:
     post:
       operationId: v1_publishing_files_deprecate_create
@@ -19639,6 +19911,287 @@ paths:
               schema:
                 type: object
                 additionalProperties: {}
+          description: ''
+  /api/v1/publishing/files/loader/:
+    get:
+      operationId: v1_publishing_files_loader_list
+      description: The latest, approved or hero file of each stream of a shot, asset
+        or task (C-RP-17).
+      parameters:
+      - in: query
+        name: asset
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: file_type
+        schema:
+          type: string
+          maxLength: 64
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: query
+        name: role
+        schema:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          x-spec-enum-id: c73a28eb7fe4696c
+          minLength: 1
+        description: |-
+          * `main` - Main
+          * `proxy` - Proxy
+          * `thumbnail` - Thumbnail
+          * `sidecar` - Sidecar
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: shot
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: task
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: which
+        schema:
+          enum:
+          - latest
+          - approved
+          - hero
+          type: string
+          x-spec-enum-id: ba1aadf7ad677590
+          minLength: 1
+        description: |-
+          * `latest` - latest
+          * `approved` - approved
+          * `hero` - hero
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoaderRow'
+          description: ''
+  /api/v1/publishing/files/resolve-path/:
+    get:
+      operationId: v1_publishing_files_resolve_path_retrieve
+      description: Where a file of this version, type and role should be registered
+        (C-RP-18).
+      parameters:
+      - in: query
+        name: file_type
+        schema:
+          type: string
+          maxLength: 64
+          minLength: 1
+        required: true
+      - in: query
+        name: role
+        schema:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          x-spec-enum-id: c73a28eb7fe4696c
+          minLength: 1
+        description: |-
+          * `main` - Main
+          * `proxy` - Proxy
+          * `thumbnail` - Thumbnail
+          * `sidecar` - Sidecar
+      - in: query
+        name: version_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolvedPath'
+          description: ''
+  /api/v1/publishing/path-templates/:
+    get:
+      operationId: v1_publishing_path_templates_list
+      description: |-
+        Platform-global reads (org-free).
+
+        ``serializer_map`` (action -> serializer) mirrors the declarative
+        contract of the former org-scoped base so viewsets keep resolving
+        serializers per action without a global ``serializer_class``.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPathTemplateList'
+          description: ''
+    post:
+      operationId: v1_publishing_path_templates_create
+      description: |-
+        Platform-global reads (org-free).
+
+        ``serializer_map`` (action -> serializer) mirrors the declarative
+        contract of the former org-scoped base so viewsets keep resolving
+        serializers per action without a global ``serializer_class``.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathTemplateCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PathTemplateCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PathTemplateCreate'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathTemplate'
+          description: ''
+  /api/v1/publishing/path-templates/{uuid}/:
+    get:
+      operationId: v1_publishing_path_templates_retrieve
+      description: |-
+        Platform-global reads (org-free).
+
+        ``serializer_map`` (action -> serializer) mirrors the declarative
+        contract of the former org-scoped base so viewsets keep resolving
+        serializers per action without a global ``serializer_class``.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathTemplate'
+          description: ''
+    patch:
+      operationId: v1_publishing_path_templates_partial_update
+      description: |-
+        Platform-global reads (org-free).
+
+        ``serializer_map`` (action -> serializer) mirrors the declarative
+        contract of the former org-scoped base so viewsets keep resolving
+        serializers per action without a global ``serializer_class``.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPathTemplateUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPathTemplateUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPathTemplateUpdate'
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathTemplate'
           description: ''
   /api/v1/publishing/storage-roots/:
     get:
@@ -19850,6 +20403,80 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/review-media/{id}/:
+    delete:
+      operationId: v1_review_media_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/review-media/{id}/{output}/:
+    get:
+      operationId: v1_review_media_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: output
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/review-media/{id}/retry/:
+    post:
+      operationId: v1_review_media_retry_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewMedia'
+          description: ''
   /api/v1/reviews/:
     get:
       operationId: v1_reviews_list
@@ -19922,6 +20549,10 @@ paths:
           type: string
       - in: query
         name: status
+        schema:
+          type: string
+      - in: query
+        name: version_id
         schema:
           type: string
       tags:
@@ -21094,6 +21725,10 @@ paths:
         schema:
           type: string
         required: true
+      - in: query
+        name: version_id
+        schema:
+          type: string
       tags:
       - v1
       security:
@@ -32334,6 +32969,103 @@ paths:
               schema:
                 $ref: '#/components/schemas/VersionList'
           description: ''
+  /api/v1/versions/{uuid}/review-media/:
+    get:
+      operationId: v1_versions_review_media_list
+      description: Every review media row of the version, newest first.
+      parameters:
+      - in: query
+        name: department
+        schema:
+          type: string
+      - in: query
+        name: entity_id
+        schema:
+          type: string
+      - in: query
+        name: entity_type
+        schema:
+          type: string
+      - in: query
+        name: is_archived
+        schema:
+          type: boolean
+      - in: query
+        name: is_published
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: query
+        name: project
+        schema:
+          type: string
+      - in: query
+        name: project_id
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: path
+        name: uuid
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewMedia'
+          description: ''
+    post:
+      operationId: v1_versions_review_media_create
+      description: Upload a review movie or still; the media worker processes it (202).
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewMediaUpload'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewMedia'
+          description: ''
   /api/v1/versions/{uuid}/status-history/:
     get:
       operationId: v1_versions_status_history_list
@@ -33651,6 +34383,10 @@ components:
           type: string
           default: ''
         drawing_coordinates:
+          nullable: true
+        version_id:
+          type: string
+          format: uuid
           nullable: true
     ApplyTemplate:
       type: object
@@ -37144,6 +37880,82 @@ components:
       - id
       - name
       - updated_at
+    Dependencies:
+      type: object
+      properties:
+        upstream:
+          type: array
+          items:
+            $ref: '#/components/schemas/DependencyRow'
+        downstream:
+          type: array
+          items:
+            $ref: '#/components/schemas/DependencyRow'
+      required:
+      - downstream
+      - upstream
+    DependencyRow:
+      type: object
+      description: One upstream or downstream file in ``GET files/{id}/dependencies/``
+        (C-RP-16).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Universally unique identifier.
+        storage_root:
+          type: string
+          readOnly: true
+        relative_path:
+          type: string
+          readOnly: true
+        role:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          description: |-
+            * `main` - Main
+            * `proxy` - Proxy
+            * `thumbnail` - Thumbnail
+            * `sidecar` - Sidecar
+          x-spec-enum-id: c73a28eb7fe4696c
+          readOnly: true
+        file_type:
+          type: string
+          readOnly: true
+        status:
+          enum:
+          - Registered
+          - Deprecated
+          - Revoked
+          type: string
+          description: |-
+            * `Registered` - Registered
+            * `Deprecated` - Deprecated
+            * `Revoked` - Revoked
+          x-spec-enum-id: b55dd3d8530682ef
+          readOnly: true
+        version_id:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+          readOnly: true
+        version_code:
+          type: string
+          readOnly: true
+      required:
+      - file_type
+      - id
+      - relative_path
+      - role
+      - status
+      - storage_root
+      - version_code
+      - version_id
     Deprecate:
       type: object
       properties:
@@ -38496,6 +39308,190 @@ components:
           default: false
       required:
       - user
+    LoaderRow:
+      type: object
+      description: A file of ``GET files/loader/``, with its version and task (C-RP-17).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Universally unique identifier.
+        version_id:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+          readOnly: true
+        project_id:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+          readOnly: true
+        storage_root:
+          type: string
+          readOnly: true
+        relative_path:
+          type: string
+          readOnly: true
+        role:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          description: |-
+            * `main` - Main
+            * `proxy` - Proxy
+            * `thumbnail` - Thumbnail
+            * `sidecar` - Sidecar
+          x-spec-enum-id: c73a28eb7fe4696c
+          readOnly: true
+        file_type:
+          type: string
+          readOnly: true
+        size_bytes:
+          type: integer
+          readOnly: true
+        sha256:
+          type: string
+          readOnly: true
+        frame_start:
+          type: integer
+          readOnly: true
+          nullable: true
+        frame_end:
+          type: integer
+          readOnly: true
+          nullable: true
+        checksum_state:
+          enum:
+          - declared
+          - verified
+          - mismatch
+          - missing
+          type: string
+          description: |-
+            * `declared` - Declared
+            * `verified` - Verified
+            * `mismatch` - Mismatch
+            * `missing` - Missing
+          x-spec-enum-id: 370eefd32fed3d05
+          readOnly: true
+        checksum_checked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        status:
+          enum:
+          - Registered
+          - Deprecated
+          - Revoked
+          type: string
+          description: |-
+            * `Registered` - Registered
+            * `Deprecated` - Deprecated
+            * `Revoked` - Revoked
+          x-spec-enum-id: b55dd3d8530682ef
+          readOnly: true
+        status_changed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        revoke_reason:
+          type: string
+          description: Shown to holders of ``publishing.revoke`` and to whoever registered
+            the file.
+          readOnly: true
+        export_job_id:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Object creation timestamp.
+        created_by_id:
+          type: string
+          format: uuid
+          readOnly: true
+        upstream_count:
+          type: integer
+          description: How many files this one was built from (C-RP-16); annotated
+            by the selector on reads.
+          readOnly: true
+        downstream_count:
+          type: integer
+          readOnly: true
+        version:
+          allOf:
+          - $ref: '#/components/schemas/LoaderVersion'
+          readOnly: true
+        task:
+          allOf:
+          - $ref: '#/components/schemas/LoaderTask'
+          nullable: true
+          readOnly: true
+      required:
+      - checksum_checked_at
+      - checksum_state
+      - created_at
+      - created_by_id
+      - downstream_count
+      - export_job_id
+      - file_type
+      - frame_end
+      - frame_start
+      - id
+      - project_id
+      - relative_path
+      - revoke_reason
+      - role
+      - sha256
+      - size_bytes
+      - status
+      - status_changed_at
+      - storage_root
+      - task
+      - upstream_count
+      - version
+      - version_id
+    LoaderTask:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+      required:
+      - code
+      - id
+    LoaderVersion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        version_index:
+          type: integer
+        status:
+          type: string
+        is_hero:
+          type: boolean
+      required:
+      - code
+      - id
+      - is_hero
+      - status
+      - version_index
     Localization:
       type: object
       description: Serializer for Localization.
@@ -40653,6 +41649,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Office'
+    PaginatedPathTemplateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PathTemplate'
     PaginatedPermissionList:
       type: object
       required:
@@ -43308,6 +44327,41 @@ components:
           format: date-time
           readOnly: true
           description: Last update timestamp.
+    PatchedPathTemplateUpdate:
+      type: object
+      description: An unknown key is a 400, so a caller never believes a field was
+        stored when it was not.
+      properties:
+        project:
+          type: string
+          format: uuid
+          nullable: true
+        file_type:
+          type: string
+          maxLength: 64
+        role:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          description: |-
+            * `main` - Main
+            * `proxy` - Proxy
+            * `thumbnail` - Thumbnail
+            * `sidecar` - Sidecar
+          x-spec-enum-id: c73a28eb7fe4696c
+        storage_root:
+          type: string
+          maxLength: 64
+        pattern:
+          type: string
+          maxLength: 1024
+        enforce:
+          type: boolean
+        is_active:
+          type: boolean
     PatchedPermission:
       type: object
       description: Base serializer for Identity models.
@@ -44961,6 +46015,10 @@ components:
         color_space:
           type: string
           maxLength: 50
+        approve_task_on_version_approval:
+          type: boolean
+          description: When on, approving a version also approves its task (review
+            pipeline RP-3, C-RP-15). Off by default.
         start_date:
           type: string
           format: date
@@ -47402,6 +48460,108 @@ components:
         nodes: {}
         transitions: {}
         automation_rules: {}
+    PathTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Universally unique identifier.
+        project_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        file_type:
+          type: string
+          readOnly: true
+        role:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          description: |-
+            * `main` - Main
+            * `proxy` - Proxy
+            * `thumbnail` - Thumbnail
+            * `sidecar` - Sidecar
+          x-spec-enum-id: c73a28eb7fe4696c
+          readOnly: true
+        storage_root:
+          type: string
+          readOnly: true
+        pattern:
+          type: string
+          readOnly: true
+        enforce:
+          type: boolean
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Object creation timestamp.
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Last update timestamp.
+      required:
+      - created_at
+      - enforce
+      - file_type
+      - id
+      - is_active
+      - pattern
+      - project_id
+      - role
+      - storage_root
+      - updated_at
+    PathTemplateCreate:
+      type: object
+      description: An unknown key is a 400, so a caller never believes a field was
+        stored when it was not.
+      properties:
+        project:
+          type: string
+          format: uuid
+          nullable: true
+        file_type:
+          type: string
+          maxLength: 64
+        role:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          description: |-
+            * `main` - Main
+            * `proxy` - Proxy
+            * `thumbnail` - Thumbnail
+            * `sidecar` - Sidecar
+          x-spec-enum-id: c73a28eb7fe4696c
+        storage_root:
+          type: string
+          maxLength: 64
+        pattern:
+          type: string
+          maxLength: 1024
+        enforce:
+          type: boolean
+        is_active:
+          type: boolean
+      required:
+      - file_type
+      - pattern
+      - storage_root
     Permission:
       type: object
       description: Base serializer for Identity models.
@@ -53112,6 +54272,10 @@ components:
         color_space:
           type: string
           maxLength: 50
+        approve_task_on_version_approval:
+          type: boolean
+          description: When on, approving a version also approves its task (review
+            pipeline RP-3, C-RP-15). Off by default.
         start_date:
           type: string
           format: date
@@ -53247,6 +54411,10 @@ components:
         color_space:
           type: string
           maxLength: 50
+        approve_task_on_version_approval:
+          type: boolean
+          description: When on, approving a version also approves its task (review
+            pipeline RP-3, C-RP-15). Off by default.
         start_date:
           type: string
           format: date
@@ -53418,6 +54586,10 @@ components:
         color_space:
           type: string
           maxLength: 50
+        approve_task_on_version_approval:
+          type: boolean
+          description: When on, approving a version also approves its task (review
+            pipeline RP-3, C-RP-15). Off by default.
         start_date:
           type: string
           format: date
@@ -53565,6 +54737,10 @@ components:
         color_space:
           type: string
           maxLength: 50
+        approve_task_on_version_approval:
+          type: boolean
+          description: When on, approving a version also approves its task (review
+            pipeline RP-3, C-RP-15). Off by default.
         start_date:
           type: string
           format: date
@@ -54218,11 +55394,20 @@ components:
           type: string
           format: uuid
           readOnly: true
+        upstream_count:
+          type: integer
+          description: How many files this one was built from (C-RP-16); annotated
+            by the selector on reads.
+          readOnly: true
+        downstream_count:
+          type: integer
+          readOnly: true
       required:
       - checksum_checked_at
       - checksum_state
       - created_at
       - created_by_id
+      - downstream_count
       - export_job_id
       - file_type
       - frame_end
@@ -54237,6 +55422,7 @@ components:
       - status
       - status_changed_at
       - storage_root
+      - upstream_count
       - version_id
     RecoveryCodeVerify:
       type: object
@@ -54287,6 +55473,12 @@ components:
           type: string
           format: uuid
           nullable: true
+        upstream_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 50
       required:
       - relative_path
       - sha256
@@ -54381,6 +55573,26 @@ components:
           nullable: true
       required:
       - alert_id
+    ResolvedPath:
+      type: object
+      properties:
+        template_id:
+          type: string
+          format: uuid
+        storage_root:
+          type: string
+        pattern:
+          type: string
+        relative_path:
+          type: string
+        enforce:
+          type: boolean
+      required:
+      - enforce
+      - pattern
+      - relative_path
+      - storage_root
+      - template_id
     ResourceCreate:
       type: object
       description: Serializer for creating a resource.
@@ -54990,6 +56202,10 @@ components:
           type: string
           format: uuid
           nullable: true
+        version_id:
+          type: string
+          format: uuid
+          nullable: true
     ReviewCreate:
       type: object
       description: Base serializer for write operations.
@@ -55255,6 +56471,182 @@ components:
       - updated_at
       - uuid
       - versions
+    ReviewMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        version_id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          enum:
+          - movie
+          - still
+          type: string
+          description: |-
+            * `movie` - Movie
+            * `still` - Still
+          x-spec-enum-id: de35a18994dece15
+          readOnly: true
+        status:
+          enum:
+          - queued
+          - processing
+          - ready
+          - failed
+          - superseded
+          - removed
+          type: string
+          description: |-
+            * `queued` - Queued
+            * `processing` - Processing
+            * `ready` - Ready
+            * `failed` - Failed
+            * `superseded` - Superseded
+            * `removed` - Removed
+          x-spec-enum-id: 3a403a610bd905b8
+          readOnly: true
+        source_name:
+          type: string
+          readOnly: true
+        source_size:
+          type: integer
+          readOnly: true
+        probe:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMediaProbe'
+          nullable: true
+          readOnly: true
+        error_code:
+          enum:
+          - probe_failed
+          - unsupported_stream
+          - transcode_failed
+          - timeout
+          - source_missing
+          type: string
+          description: |-
+            * `probe_failed` - The file could not be read.
+            * `unsupported_stream` - The file has no picture the server can use.
+            * `transcode_failed` - The review copy could not be made.
+            * `timeout` - Processing took too long and was stopped.
+            * `source_missing` - The uploaded file is no longer on the server.
+          x-spec-enum-id: 6f788d7c97d53878
+          readOnly: true
+        error_message:
+          type: string
+          readOnly: true
+        attempts:
+          type: integer
+          readOnly: true
+        queued_at:
+          type: string
+          format: date-time
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_by:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMediaUser'
+          nullable: true
+          readOnly: true
+        proxy_url:
+          type: string
+          nullable: true
+          readOnly: true
+        thumbnail_url:
+          type: string
+          nullable: true
+          readOnly: true
+        filmstrip_url:
+          type: string
+          nullable: true
+          readOnly: true
+        filmstrip_tiles:
+          type: integer
+          readOnly: true
+        links_expire_at:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+      required:
+      - attempts
+      - created_by
+      - error_code
+      - error_message
+      - filmstrip_tiles
+      - filmstrip_url
+      - finished_at
+      - id
+      - kind
+      - links_expire_at
+      - probe
+      - proxy_url
+      - queued_at
+      - source_name
+      - source_size
+      - started_at
+      - status
+      - thumbnail_url
+      - version_id
+    ReviewMediaProbe:
+      type: object
+      properties:
+        width:
+          type: integer
+        height:
+          type: integer
+        fps:
+          type: number
+          format: double
+        frames:
+          type: integer
+        duration_seconds:
+          type: number
+          format: double
+        video_codec:
+          type: string
+        has_audio:
+          type: boolean
+      required:
+      - duration_seconds
+      - fps
+      - frames
+      - has_audio
+      - height
+      - video_codec
+      - width
+    ReviewMediaUpload:
+      type: object
+      properties:
+        file:
+          type: string
+      required:
+      - file
+    ReviewMediaUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+      - id
+      - name
     ReviewNote:
       type: object
       description: Rejects keys the serializer does not declare.
@@ -61015,12 +62407,16 @@ components:
           type: string
         tags: {}
         publishing_info: {}
-        media_items: {}
-        attachments: {}
-        reviews: {}
-        playlists: {}
-        notes_list: {}
-        activity: {}
+        review_media:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMedia'
+          nullable: true
+          readOnly: true
+        review_media_job:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMedia'
+          nullable: true
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -61042,6 +62438,8 @@ components:
       - project_code
       - project_id
       - published_by_id
+      - review_media
+      - review_media_job
       - shot_id
       - task_id
       - updated_at
@@ -61202,12 +62600,16 @@ components:
           type: string
         tags: {}
         publishing_info: {}
-        media_items: {}
-        attachments: {}
-        reviews: {}
-        playlists: {}
-        notes_list: {}
-        activity: {}
+        review_media:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMedia'
+          nullable: true
+          readOnly: true
+        review_media_job:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMedia'
+          nullable: true
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -61229,6 +62631,8 @@ components:
       - project_code
       - project_id
       - published_by_id
+      - review_media
+      - review_media_job
       - shot_id
       - task_id
       - updated_at

@@ -59,6 +59,10 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen
 
+      - name: Install ffmpeg
+        # The review media tests that run the real ffmpeg (review-pipeline RP-5) skip without it.
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg
+
       - name: Ruff lint
         run: uv run ruff check .
 

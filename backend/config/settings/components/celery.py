@@ -55,4 +55,15 @@ CELERY_BEAT_SCHEDULE = {
         "task": "audit.purge",
         "schedule": crontab(hour=3, minute=45),
     },
+    # Review media jobs left in `processing` by a worker that died (review-pipeline RP-5).
+    "production-review-media-sweep": {
+        "task": "production.sweep_review_media",
+        "schedule": crontab(minute="*/10"),
+    },
+}
+
+# Review media runs on its own queue, consumed only by the `celery-media` worker, which has ffmpeg.
+# The general worker consumes the default queue and never takes these (review-pipeline RP-5).
+CELERY_TASK_ROUTES = {
+    "production.process_review_media": {"queue": "media"},
 }

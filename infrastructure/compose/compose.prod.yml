@@ -143,6 +143,28 @@ services:
     networks:
       - backend
 
+  # Review media worker (review-pipeline RP-5): the image's `worker` target (with ffmpeg), the
+  # `media` queue only, and the media volume where uploads and their proxies live. Its jobs only
+  # arrive once REVIEW_MEDIA_ENABLED=true; without it the service idles.
+  celery-media:
+    logging: *default-logging
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/django/Dockerfile
+      target: worker
+    command: /start-celery-media.sh
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      django:
+        condition: service_healthy
+    volumes:
+      - media_volume:/app/media
+      - tls_data:/tls:ro
+    networks:
+      - backend
+
   # Flower is optional and NOT part of the default stack. It is only started
   # explicitly with `--profile monitoring` and is bound to localhost. In real
   # production, put Flower behind an authenticated reverse proxy — never expose

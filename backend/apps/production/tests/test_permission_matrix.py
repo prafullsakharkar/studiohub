@@ -72,7 +72,8 @@ FULL = {
     # deprecate / revoke: move a registered file between its lifecycle states
     # (docs/publishing/CONTRACTS.md; delivery-pipeline Q34)
     "publishing": f"{ALL_ACTIONS} deprecate revoke",
-    "note": "create",
+    # update: another person's note; delete: any note (review-pipeline RP-2, Q-RP-11, Q-RP-12)
+    "note": "create update delete",
     "audit": "view",
 }
 LEAD = {
@@ -96,7 +97,8 @@ LEAD = {
     "delivery": "view",
     # lead-artists register the files of their own published versions (docs/delivery-pipeline Q34)
     "publishing": "view create",
-    "note": "create",
+    # leads edit and address others' notes, but delete none (review-pipeline RP-2, Q-RP-11, Q-RP-12)
+    "note": "create update",
     "audit": "view",
 }
 ARTIST = {
@@ -131,13 +133,16 @@ def _codes(table: dict[str, str]) -> set[str]:
 EXPECTED = {
     # The code freeze on shots and assets is lifted by production-admin only.
     # The project budget is the producer's and the studio admin's (docs/sync CR-55).
-    "production-admin": _codes(FULL) | {"production.code.rename", "project.view_budget"},
+    # Path templates: producers and studio admins (review-pipeline RP-4, Q-RP-23).
+    "production-admin": _codes(FULL)
+    | {"production.code.rename", "project.view_budget", "publishing.template.manage"},
     # Deleting export job records and deliveries is an admin task; producers send and read the
     # passcode, supervisors sign off (Q34).
     "vfx-supervisor": _codes(FULL)
     - {"publishing.delete", "delivery.delete", "delivery.send", "delivery.view_secret"},
     # Storage roots are studio-wide; org-admin administers them.
-    "org-admin": _codes(FULL) | {"publishing.storage.manage", "project.view_budget"},
+    "org-admin": _codes(FULL)
+    | {"publishing.storage.manage", "project.view_budget", "publishing.template.manage"},
     "lead-artist": _codes(LEAD),
     "artist": _codes(ARTIST),
     "org-member": set(),
@@ -240,6 +245,9 @@ def test_every_code_the_production_constants_define_is_enforced_or_deliberately_
         "timelog.view_all",
         "tasktemplate.manage_studio",
         "project.view_budget",
+        # RP-2: the notes routes admit writers with note.create; these decide whose note (Q-RP-11, Q-RP-12).
+        "note.update",
+        "note.delete",
     } | set(OPT_IN_PERMISSION_CODES)
     # Declared, but the analytics views are scoped by membership only (CONTRACTS C-04).
     # schedule.create/update/delete are checked by the scheduling app's own viewsets, not by

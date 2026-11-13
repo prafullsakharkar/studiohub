@@ -257,6 +257,8 @@ describe('published files', () => {
   const revoked = flow.files_detail_revoked.body;
   const page = (results: any[]) => ({ status: 200, body: { count: results.length, next: null, previous: null, results } });
   const row = (f: any) => `${f.relative_path}`;
+  /** The file page also reads the file's dependencies (RP-4); a captured read of a file with none. */
+  const noLinks = { status: 200, body: loadSample<Record<string, Captured>>('publishing/_dependencies_flow.json').dependencies_none.body };
 
   it('the list offers the lifecycle by status and permission; there is no search, no edit, no delete', async () => {
     mockFetch(() => page([registered, deprecated, revoked]));
@@ -300,14 +302,14 @@ describe('published files', () => {
   });
 
   it('the file page shows where it is and why a revoked file was revoked; a revoked file has no actions', async () => {
-    mockFetch(() => ({ status: 200, body: revoked }));
+    mockFetch((c) => (path(c).endsWith('/dependencies/') ? noLinks : { status: 200, body: revoked }));
     renderAt(`/publishing/files/${revoked.id}`, producer, <Route path="/publishing/files/:fileId" element={<PublishedFilePage />} />);
     expect(await screen.findByText(/This file was revoked: Wrong plate/)).toBeTruthy();
     expect(screen.queryByRole('toolbar', { name: 'File actions' })).toBeNull();
     expect(screen.getByText(revoked.sha256)).toBeTruthy();
     cleanup();
 
-    mockFetch(() => ({ status: 200, body: registered }));
+    mockFetch((c) => (path(c).endsWith('/dependencies/') ? noLinks : { status: 200, body: registered }));
     renderAt(`/publishing/files/${registered.id}`, producer, <Route path="/publishing/files/:fileId" element={<PublishedFilePage />} />);
     const bar = await screen.findByRole('toolbar', { name: 'File actions' });
     expect(within(bar).getAllByRole('button').map((b) => b.textContent)).toEqual(['Deprecate', 'Revoke']);

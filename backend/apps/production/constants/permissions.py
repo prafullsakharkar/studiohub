@@ -145,6 +145,9 @@ class AutomationPermissions:
 
 class NotePermissions:
     CREATE = "note.create"
+    # RP-2: another person's note (Q-RP-11 = A) and deleting any note (Q-RP-12 = A).
+    UPDATE = "note.update"
+    DELETE = "note.delete"
 
 
 class OverridePermissions:

@@ -53,3 +53,17 @@ class VersionSelector(ProductionBaseSelector):
         except ValueError:
             return None
         return Version.objects.select_related("project").filter(pk=pk).first()
+
+
+class VersionReadSelector(VersionSelector):
+    """The version routes' reads: versions with their review media rows prefetched (C-RP-21)."""
+
+    @classmethod
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Version]:
+        from apps.production.selectors.review_media import ReviewMediaSelector
+
+        return (
+            super()
+            .get_queryset(request=request, view=view)
+            .prefetch_related(ReviewMediaSelector.prefetch())
+        )

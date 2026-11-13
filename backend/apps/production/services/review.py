@@ -197,16 +197,27 @@ class ReviewService(BusinessService):
         is_client_visible=True,
         tags=None,
         parent_id=None,
+        version_id=None,
     ):
-        """Add a comment (or a reply) written by ``actor``; whatever author the client names is ignored."""
+        """Add a comment (or a reply) written by ``actor``; whatever author the client names is ignored.
+
+        ``version_id`` must be a version shown in the review; a reply is on its thread's version (C-RP-05).
+        """
         parent = None
         if parent_id:
             parent = cls._comment(review, parent_id)
             if parent.parent_id:  # pyright: ignore[reportAttributeAccessIssue]
                 raise ValidationError({"parent_id": ["Reply to the first comment of the thread."]})
+            thread_version = parent.version_id  # pyright: ignore[reportAttributeAccessIssue]
+            if version_id is not None and version_id != thread_version:
+                raise ValidationError({"version_id": ["A reply is on its thread's version."]})
+            version_id = thread_version
+        else:
+            version_id = cls._review_version(review, version_id)
         return ReviewComment.objects.create(
             review=review,
             parent=parent,
+            version_id=version_id,
             author=actor,
             author_name=cls._name(actor),
             text=text,
@@ -216,6 +227,17 @@ class ReviewService(BusinessService):
             tags=tags or [],
             created_by=actor,
         )
+
+    @staticmethod
+    def _review_version(review, version_id):
+        """``version_id`` when it is a version shown in ``review`` (a live item), else a 400; None stays None."""
+        if version_id is None:
+            return None
+        if not ReviewItem.objects.filter(
+            review=review, version_id=version_id, is_deleted=False
+        ).exists():
+            raise ValidationError({"version_id": ["This version is not in the review."]})
+        return version_id
 
     @staticmethod
     def _comment(review, comment_id):
@@ -252,10 +274,20 @@ class ReviewService(BusinessService):
 
     @classmethod
     def add_annotation(
-        cls, *, actor, review, comment="", frame_number=None, timecode="", drawing_coordinates=None
+        cls,
+        *,
+        actor,
+        review,
+        comment="",
+        frame_number=None,
+        timecode="",
+        drawing_coordinates=None,
+        version_id=None,
     ):
+        """Add a drawing or marked frame; ``version_id`` must be a version shown in the review (C-RP-05)."""
         return ReviewAnnotation.objects.create(
             review=review,
+            version_id=cls._review_version(review, version_id),
             author=actor,
             author_name=cls._name(actor),
             comment=comment,

@@ -84,6 +84,7 @@ COPY --chmod=755 infrastructure/docker/django/start-prod.sh /start-prod.sh
 COPY --chmod=755 infrastructure/docker/django/start-celery.sh /start-celery.sh
 COPY --chmod=755 infrastructure/docker/django/start-beat.sh /start-beat.sh
 COPY --chmod=755 infrastructure/docker/django/start-flower.sh /start-flower.sh
+COPY --chmod=755 infrastructure/docker/django/start-celery-media.sh /start-celery-media.sh
 
 # Writable media/static dirs owned by the app user so collectstatic and media
 # uploads work without running as root.
@@ -96,3 +97,27 @@ EXPOSE 8000
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/start-prod.sh"]
+
+# ---------------------------------------------------------------------------
+#
+# worker -> the review media worker (review-pipeline RP-5, ADR-0040): the application image plus
+#           Debian's ffmpeg. Only the `celery-media` service runs it (`--target worker`); it
+#           consumes the `media` queue alone. The web and general worker images carry no ffmpeg.
+
+FROM runtime AS worker
+
+USER root
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+USER app
+
+CMD ["/start-celery-media.sh"]
+
+# ---------------------------------------------------------------------------
+#
+# The default image (no --target) stays the application image above.
+
+FROM runtime AS app

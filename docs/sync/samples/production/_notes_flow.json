@@ -1,0 +1,2171 @@
+{
+  "create_bad_id_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "877b84e9-7932-4ddd-8efc-1af54d7a333b"
+      },
+      "links": [
+        "One of these records is not in the project."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "877b84e9-7932-4ddd-8efc-1af54d7a333b"
+    },
+    "request": {
+      "body": {
+        "links": [
+          {
+            "entity_id": "SH0010",
+            "entity_type": "Shot"
+          }
+        ],
+        "subject": "x"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/"
+    },
+    "status": 400
+  },
+  "create_empty_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "dac64442-1f81-481c-bf6b-308e26eb9200"
+      },
+      "subject": [
+        "This field is required."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "dac64442-1f81-481c-bf6b-308e26eb9200"
+    },
+    "request": {
+      "body": {},
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/"
+    },
+    "status": 400
+  },
+  "create_old_body": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "",
+      "category": "Pipeline Notice",
+      "created_at": "2026-11-12T11:41:39.369070Z",
+      "entity_code": "RPN_CHR_HERO",
+      "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+      "entity_name": "Hero",
+      "entity_type": "Asset",
+      "frame_number": null,
+      "id": "a943e488-7bc6-4825-9207-445628196ab9",
+      "links": [
+        {
+          "code": "RPN_CHR_HERO",
+          "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+          "entity_type": "Asset",
+          "name": "Hero"
+        }
+      ],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "reply_count": 0,
+      "status": "Open",
+      "subject": "Fix the rig",
+      "tags": [],
+      "task_code": null,
+      "task_id": null,
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:39.369078Z"
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "41d967d5-9c55-4872-b9cf-99edab7796ae"
+    },
+    "request": {
+      "body": {
+        "category": "Pipeline Notice",
+        "entity_code": "RPN_CHR_HERO",
+        "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+        "entity_name": "Hero",
+        "entity_type": "Asset",
+        "subject": "Fix the rig"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/"
+    },
+    "status": 201
+  },
+  "create_on_project": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "",
+      "category": "General",
+      "created_at": "2026-11-12T11:41:39.395030Z",
+      "entity_code": "",
+      "entity_id": "",
+      "entity_name": "",
+      "entity_type": "Project",
+      "frame_number": null,
+      "id": "4cca0302-ed52-466a-bda9-88a3d4757883",
+      "links": [],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "reply_count": 0,
+      "status": "Open",
+      "subject": "Delivery spec",
+      "tags": [],
+      "task_code": null,
+      "task_id": null,
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:39.395039Z"
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "55784cac-a459-48f5-b237-3f951ce9cf02"
+    },
+    "request": {
+      "body": {
+        "subject": "Delivery spec"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/"
+    },
+    "status": 201
+  },
+  "create_other_project_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "41865b44-fc47-4d18-b7ae-a447c6d4616d"
+      },
+      "links": [
+        "One of these records is not in the project."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "41865b44-fc47-4d18-b7ae-a447c6d4616d"
+    },
+    "request": {
+      "body": {
+        "links": [
+          {
+            "entity_id": "c2ebc03b-088e-4a48-852f-68bdcbb2fcd6",
+            "entity_type": "Shot"
+          }
+        ],
+        "subject": "x"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/"
+    },
+    "status": 400
+  },
+  "create_task_elsewhere_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "68d11105-ac7b-4b94-811b-c6a44b7a1337"
+      },
+      "task_id": [
+        "This task is not in the project."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "68d11105-ac7b-4b94-811b-c6a44b7a1337"
+    },
+    "request": {
+      "body": {
+        "subject": "x",
+        "task_id": "c2ebc03b-088e-4a48-852f-68bdcbb2fcd6"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/"
+    },
+    "status": 400
+  },
+  "create_thread": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "Left edge on the matte.",
+      "category": "Supervisor Note",
+      "created_at": "2026-11-12T11:41:39.308341Z",
+      "entity_code": "RPN_SH0010",
+      "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+      "entity_name": "Hero walk",
+      "entity_type": "Shot",
+      "frame_number": null,
+      "id": "661befdd-856a-4b63-84de-1b28e2465699",
+      "links": [
+        {
+          "code": "RPN_SH0010",
+          "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+          "entity_type": "Shot",
+          "name": "Hero walk"
+        },
+        {
+          "code": "RPN_SH0010_COMP_V001",
+          "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+          "entity_type": "Version",
+          "name": ""
+        }
+      ],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "reply_count": 0,
+      "status": "Open",
+      "subject": "Edge is soft",
+      "tags": [],
+      "task_code": "RPN_T_COMP",
+      "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:39.308351Z"
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "133c4ff8-4972-4efc-b70e-10618748d137"
+    },
+    "request": {
+      "body": {
+        "body": "Left edge on the matte.",
+        "category": "Supervisor Note",
+        "entity_code": "TYPED",
+        "links": [
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+            "entity_type": "Version"
+          }
+        ],
+        "status": "Closed",
+        "subject": "Edge is soft",
+        "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/"
+    },
+    "status": 201
+  },
+  "create_too_many_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "4e68fb55-2d96-4378-b65a-d098ee0de78e"
+      },
+      "links": [
+        "A note links to at most 20 records."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "4e68fb55-2d96-4378-b65a-d098ee0de78e"
+    },
+    "request": {
+      "body": {
+        "links": [
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          }
+        ],
+        "subject": "x"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/"
+    },
+    "status": 400
+  },
+  "delete_by_author_after_others_replied_403": {
+    "body": {
+      "detail": "Only the author, before anyone else has replied, or someone who may delete notes, can delete this note.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "e548670d-def0-4b98-96e4-16c7856bb45b"
+      }
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "e548670d-def0-4b98-96e4-16c7856bb45b"
+    },
+    "request": {
+      "body": null,
+      "method": "DELETE",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/4cca0302-ed52-466a-bda9-88a3d4757883/"
+    },
+    "status": 403
+  },
+  "delete_by_supervisor": {
+    "body": {
+      "_len": 0,
+      "_non_json": null
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "X-Request-ID": "af5a4a91-05ca-4171-8473-f7473f8946c0"
+    },
+    "request": {
+      "body": null,
+      "method": "DELETE",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/661befdd-856a-4b63-84de-1b28e2465699/"
+    },
+    "status": 204
+  },
+  "delete_own_note": {
+    "body": {
+      "_len": 0,
+      "_non_json": null
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "X-Request-ID": "f2c8a7c4-babe-41d9-98a4-768bb6d25248"
+    },
+    "request": {
+      "body": null,
+      "method": "DELETE",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/a943e488-7bc6-4825-9207-445628196ab9/"
+    },
+    "status": 204
+  },
+  "delete_reply_by_author": {
+    "body": {
+      "_len": 0,
+      "_non_json": null
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "X-Request-ID": "c0dffd93-d519-4a9d-82d0-447b33ecffd1"
+    },
+    "request": {
+      "body": null,
+      "method": "DELETE",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/f9d2275b-150c-4171-aad7-e43ea5b6cd8a/"
+    },
+    "status": 204
+  },
+  "detail": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "Left edge on the matte.",
+      "category": "Supervisor Note",
+      "created_at": "2026-11-12T11:41:39.308341Z",
+      "entity_code": "RPN_SH0010",
+      "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+      "entity_name": "Hero walk",
+      "entity_type": "Shot",
+      "frame_number": null,
+      "id": "661befdd-856a-4b63-84de-1b28e2465699",
+      "links": [
+        {
+          "code": "RPN_SH0010",
+          "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+          "entity_type": "Shot",
+          "name": "Hero walk"
+        },
+        {
+          "code": "RPN_SH0010_COMP_V001",
+          "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+          "entity_type": "Version",
+          "name": ""
+        }
+      ],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "replies": [
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "Softened, see v002.",
+          "category": "Supervisor Note",
+          "created_at": "2026-11-12T11:41:39.500328Z",
+          "entity_code": "",
+          "entity_id": "",
+          "entity_name": "",
+          "entity_type": "Project",
+          "frame_number": null,
+          "id": "c670570b-c1d1-4e86-a6e0-71432e4f3c2e",
+          "links": [],
+          "parent_id": "661befdd-856a-4b63-84de-1b28e2465699",
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 0,
+          "status": "Open",
+          "subject": "Re: Edge is soft",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.500338Z"
+        },
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "14cd6e08-6f33-4ca9-baf7-0a6070bea4d6",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "Looks right to me.",
+          "category": "Supervisor Note",
+          "created_at": "2026-11-12T11:41:39.558295Z",
+          "entity_code": "",
+          "entity_id": "",
+          "entity_name": "",
+          "entity_type": "Project",
+          "frame_number": null,
+          "id": "f9d2275b-150c-4171-aad7-e43ea5b6cd8a",
+          "links": [],
+          "parent_id": "661befdd-856a-4b63-84de-1b28e2465699",
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 0,
+          "status": "Open",
+          "subject": "Re: Edge is soft",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.558307Z"
+        },
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "Agreed.",
+          "category": "Supervisor Note",
+          "created_at": "2026-11-12T11:41:39.605264Z",
+          "entity_code": "",
+          "entity_id": "",
+          "entity_name": "",
+          "entity_type": "Project",
+          "frame_number": null,
+          "id": "9c3642a4-86ed-4b04-9791-fe21e858473c",
+          "links": [],
+          "parent_id": "661befdd-856a-4b63-84de-1b28e2465699",
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 0,
+          "status": "Open",
+          "subject": "Re: Edge is soft",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.605276Z"
+        }
+      ],
+      "reply_count": 3,
+      "status": "Open",
+      "subject": "Edge is soft",
+      "tags": [],
+      "task_code": "RPN_T_COMP",
+      "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:39.308351Z"
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "2b5606bb-6d4a-4f16-97c5-798d97f1a814"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/661befdd-856a-4b63-84de-1b28e2465699/"
+    },
+    "status": 200
+  },
+  "detail_after_delete_404": {
+    "body": {
+      "detail": "Note not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "09e0644d-4d57-4b67-a29a-2b4fe325042a"
+      }
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "09e0644d-4d57-4b67-a29a-2b4fe325042a"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/661befdd-856a-4b63-84de-1b28e2465699/"
+    },
+    "status": 404
+  },
+  "detail_by_reply_id": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "Left edge on the matte.",
+      "category": "Supervisor Note",
+      "created_at": "2026-11-12T11:41:39.308341Z",
+      "entity_code": "RPN_SH0010",
+      "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+      "entity_name": "Hero walk",
+      "entity_type": "Shot",
+      "frame_number": null,
+      "id": "661befdd-856a-4b63-84de-1b28e2465699",
+      "links": [
+        {
+          "code": "RPN_SH0010",
+          "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+          "entity_type": "Shot",
+          "name": "Hero walk"
+        },
+        {
+          "code": "RPN_SH0010_COMP_V001",
+          "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+          "entity_type": "Version",
+          "name": ""
+        }
+      ],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "replies": [
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "Softened, see v002.",
+          "category": "Supervisor Note",
+          "created_at": "2026-11-12T11:41:39.500328Z",
+          "entity_code": "",
+          "entity_id": "",
+          "entity_name": "",
+          "entity_type": "Project",
+          "frame_number": null,
+          "id": "c670570b-c1d1-4e86-a6e0-71432e4f3c2e",
+          "links": [],
+          "parent_id": "661befdd-856a-4b63-84de-1b28e2465699",
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 0,
+          "status": "Open",
+          "subject": "Re: Edge is soft",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.500338Z"
+        },
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "14cd6e08-6f33-4ca9-baf7-0a6070bea4d6",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "Looks right to me.",
+          "category": "Supervisor Note",
+          "created_at": "2026-11-12T11:41:39.558295Z",
+          "entity_code": "",
+          "entity_id": "",
+          "entity_name": "",
+          "entity_type": "Project",
+          "frame_number": null,
+          "id": "f9d2275b-150c-4171-aad7-e43ea5b6cd8a",
+          "links": [],
+          "parent_id": "661befdd-856a-4b63-84de-1b28e2465699",
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 0,
+          "status": "Open",
+          "subject": "Re: Edge is soft",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.558307Z"
+        },
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "Agreed.",
+          "category": "Supervisor Note",
+          "created_at": "2026-11-12T11:41:39.605264Z",
+          "entity_code": "",
+          "entity_id": "",
+          "entity_name": "",
+          "entity_type": "Project",
+          "frame_number": null,
+          "id": "9c3642a4-86ed-4b04-9791-fe21e858473c",
+          "links": [],
+          "parent_id": "661befdd-856a-4b63-84de-1b28e2465699",
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 0,
+          "status": "Open",
+          "subject": "Re: Edge is soft",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.605276Z"
+        }
+      ],
+      "reply_count": 3,
+      "status": "Open",
+      "subject": "Edge is soft",
+      "tags": [],
+      "task_code": "RPN_T_COMP",
+      "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:39.308351Z"
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "756b4b90-b0cc-4972-9140-7e7b8bb79314"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/c670570b-c1d1-4e86-a6e0-71432e4f3c2e/"
+    },
+    "status": 200
+  },
+  "detail_on_project": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "",
+      "category": "General",
+      "created_at": "2026-11-12T11:41:39.395030Z",
+      "entity_code": "",
+      "entity_id": "",
+      "entity_name": "",
+      "entity_type": "Project",
+      "frame_number": null,
+      "id": "4cca0302-ed52-466a-bda9-88a3d4757883",
+      "links": [],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "replies": [],
+      "reply_count": 0,
+      "status": "Open",
+      "subject": "Delivery spec",
+      "tags": [],
+      "task_code": null,
+      "task_id": null,
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:39.395039Z"
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "51e9d229-042d-4802-8aac-3680dd2b3bc2"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/4cca0302-ed52-466a-bda9-88a3d4757883/"
+    },
+    "status": 200
+  },
+  "detail_unknown_404": {
+    "body": {
+      "detail": "Note not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "cb1b00f8-c03c-4f27-a4a5-1e2adeda98ab"
+      }
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "cb1b00f8-c03c-4f27-a4a5-1e2adeda98ab"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/00000000-0000-0000-0000-000000000000/"
+    },
+    "status": 404
+  },
+  "ids": {
+    "artist": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+    "asset": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+    "foreign_shot": "c2ebc03b-088e-4a48-852f-68bdcbb2fcd6",
+    "lead": "14cd6e08-6f33-4ca9-baf7-0a6070bea4d6",
+    "project": "0afb984a-1692-476e-af59-0fce923393b2",
+    "sequence": "3b7d1bff-4a0e-4df7-be2e-de1b2f2781eb",
+    "shot": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+    "shot2": "a0d65b34-cd59-45b3-8e2e-17c735351998",
+    "supervisor": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+    "task": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+    "version": "988a496a-0c44-4651-9d34-e4be63efa817"
+  },
+  "list": {
+    "body": {
+      "count": 3,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "",
+          "category": "General",
+          "created_at": "2026-11-12T11:41:39.395030Z",
+          "entity_code": "",
+          "entity_id": "",
+          "entity_name": "",
+          "entity_type": "Project",
+          "frame_number": null,
+          "id": "4cca0302-ed52-466a-bda9-88a3d4757883",
+          "links": [],
+          "parent_id": null,
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 0,
+          "status": "Open",
+          "subject": "Delivery spec",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.395039Z"
+        },
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "",
+          "category": "Pipeline Notice",
+          "created_at": "2026-11-12T11:41:39.369070Z",
+          "entity_code": "RPN_CHR_HERO",
+          "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+          "entity_name": "Hero",
+          "entity_type": "Asset",
+          "frame_number": null,
+          "id": "a943e488-7bc6-4825-9207-445628196ab9",
+          "links": [
+            {
+              "code": "RPN_CHR_HERO",
+              "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+              "entity_type": "Asset",
+              "name": "Hero"
+            }
+          ],
+          "parent_id": null,
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 0,
+          "status": "Open",
+          "subject": "Fix the rig",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.369078Z"
+        },
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "Left edge on the matte.",
+          "category": "Supervisor Note",
+          "created_at": "2026-11-12T11:41:39.308341Z",
+          "entity_code": "RPN_SH0010",
+          "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+          "entity_name": "Hero walk",
+          "entity_type": "Shot",
+          "frame_number": null,
+          "id": "661befdd-856a-4b63-84de-1b28e2465699",
+          "links": [
+            {
+              "code": "RPN_SH0010",
+              "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+              "entity_type": "Shot",
+              "name": "Hero walk"
+            },
+            {
+              "code": "RPN_SH0010_COMP_V001",
+              "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+              "entity_type": "Version",
+              "name": ""
+            }
+          ],
+          "parent_id": null,
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 3,
+          "status": "Open",
+          "subject": "Edge is soft",
+          "tags": [],
+          "task_code": "RPN_T_COMP",
+          "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.308351Z"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "918b1efe-fcb5-46ec-86b6-e9648f7177d9"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/"
+    },
+    "status": 200
+  },
+  "list_after_deletes": {
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "",
+          "category": "Turnover Requirement",
+          "created_at": "2026-11-12T11:41:39.395030Z",
+          "entity_code": "",
+          "entity_id": "",
+          "entity_name": "",
+          "entity_type": "Project",
+          "frame_number": null,
+          "id": "4cca0302-ed52-466a-bda9-88a3d4757883",
+          "links": [],
+          "parent_id": null,
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 1,
+          "status": "Open",
+          "subject": "Delivery spec",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:40.309581Z"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "5f07b443-f7be-47b5-80ff-650223e52d42"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/"
+    },
+    "status": 200
+  },
+  "list_by_asset": {
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "",
+          "category": "Pipeline Notice",
+          "created_at": "2026-11-12T11:41:39.369070Z",
+          "entity_code": "RPN_CHR_HERO",
+          "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+          "entity_name": "Hero",
+          "entity_type": "Asset",
+          "frame_number": null,
+          "id": "a943e488-7bc6-4825-9207-445628196ab9",
+          "links": [
+            {
+              "code": "RPN_CHR_HERO",
+              "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+              "entity_type": "Asset",
+              "name": "Hero"
+            }
+          ],
+          "parent_id": null,
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 0,
+          "status": "Open",
+          "subject": "Fix the rig",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.369078Z"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "269cb340-8cb0-4a59-b71c-ef51cf2def41"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/?entity_type=Asset&entity_id=c2241961-01ed-43e3-ac59-bdec687d5bbc"
+    },
+    "status": 200
+  },
+  "list_by_other_shot": {
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": []
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "9a398842-3ed8-47bb-a530-bb02f81bcd10"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/?entity_type=Shot&entity_id=a0d65b34-cd59-45b3-8e2e-17c735351998"
+    },
+    "status": 200
+  },
+  "list_by_shot": {
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "Left edge on the matte.",
+          "category": "Supervisor Note",
+          "created_at": "2026-11-12T11:41:39.308341Z",
+          "entity_code": "RPN_SH0010",
+          "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+          "entity_name": "Hero walk",
+          "entity_type": "Shot",
+          "frame_number": null,
+          "id": "661befdd-856a-4b63-84de-1b28e2465699",
+          "links": [
+            {
+              "code": "RPN_SH0010",
+              "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+              "entity_type": "Shot",
+              "name": "Hero walk"
+            },
+            {
+              "code": "RPN_SH0010_COMP_V001",
+              "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+              "entity_type": "Version",
+              "name": ""
+            }
+          ],
+          "parent_id": null,
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 3,
+          "status": "Open",
+          "subject": "Edge is soft",
+          "tags": [],
+          "task_code": "RPN_T_COMP",
+          "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.308351Z"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "6d09ad4d-a405-4272-a6e5-320d307e5f94"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/?entity_type=Shot&entity_id=6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451"
+    },
+    "status": 200
+  },
+  "list_by_task": {
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "Left edge on the matte.",
+          "category": "Supervisor Note",
+          "created_at": "2026-11-12T11:41:39.308341Z",
+          "entity_code": "RPN_SH0010",
+          "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+          "entity_name": "Hero walk",
+          "entity_type": "Shot",
+          "frame_number": null,
+          "id": "661befdd-856a-4b63-84de-1b28e2465699",
+          "links": [
+            {
+              "code": "RPN_SH0010",
+              "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+              "entity_type": "Shot",
+              "name": "Hero walk"
+            },
+            {
+              "code": "RPN_SH0010_COMP_V001",
+              "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+              "entity_type": "Version",
+              "name": ""
+            }
+          ],
+          "parent_id": null,
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 3,
+          "status": "Open",
+          "subject": "Edge is soft",
+          "tags": [],
+          "task_code": "RPN_T_COMP",
+          "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.308351Z"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "a648d29e-a64a-4bbd-b49c-99e900bc15a2"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/?task_id=0ddfda0d-83fc-41d8-a5aa-07789cdf2331"
+    },
+    "status": 200
+  },
+  "list_by_version": {
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "Left edge on the matte.",
+          "category": "Supervisor Note",
+          "created_at": "2026-11-12T11:41:39.308341Z",
+          "entity_code": "RPN_SH0010",
+          "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+          "entity_name": "Hero walk",
+          "entity_type": "Shot",
+          "frame_number": null,
+          "id": "661befdd-856a-4b63-84de-1b28e2465699",
+          "links": [
+            {
+              "code": "RPN_SH0010",
+              "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+              "entity_type": "Shot",
+              "name": "Hero walk"
+            },
+            {
+              "code": "RPN_SH0010_COMP_V001",
+              "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+              "entity_type": "Version",
+              "name": ""
+            }
+          ],
+          "parent_id": null,
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 3,
+          "status": "Open",
+          "subject": "Edge is soft",
+          "tags": [],
+          "task_code": "RPN_T_COMP",
+          "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.308351Z"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "5bd93436-c7d4-47dd-ab6d-ceed94a616c8"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/?entity_type=Version&entity_id=988a496a-0c44-4651-9d34-e4be63efa817"
+    },
+    "status": 200
+  },
+  "list_open": {
+    "body": {
+      "count": 3,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "",
+          "category": "General",
+          "created_at": "2026-11-12T11:41:39.395030Z",
+          "entity_code": "",
+          "entity_id": "",
+          "entity_name": "",
+          "entity_type": "Project",
+          "frame_number": null,
+          "id": "4cca0302-ed52-466a-bda9-88a3d4757883",
+          "links": [],
+          "parent_id": null,
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 0,
+          "status": "Open",
+          "subject": "Delivery spec",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.395039Z"
+        },
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "",
+          "category": "Pipeline Notice",
+          "created_at": "2026-11-12T11:41:39.369070Z",
+          "entity_code": "RPN_CHR_HERO",
+          "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+          "entity_name": "Hero",
+          "entity_type": "Asset",
+          "frame_number": null,
+          "id": "a943e488-7bc6-4825-9207-445628196ab9",
+          "links": [
+            {
+              "code": "RPN_CHR_HERO",
+              "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+              "entity_type": "Asset",
+              "name": "Hero"
+            }
+          ],
+          "parent_id": null,
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 0,
+          "status": "Open",
+          "subject": "Fix the rig",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.369078Z"
+        },
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+          "author_name": "user@example.test",
+          "author_role": "Artist",
+          "body": "Left edge on the matte.",
+          "category": "Supervisor Note",
+          "created_at": "2026-11-12T11:41:39.308341Z",
+          "entity_code": "RPN_SH0010",
+          "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+          "entity_name": "Hero walk",
+          "entity_type": "Shot",
+          "frame_number": null,
+          "id": "661befdd-856a-4b63-84de-1b28e2465699",
+          "links": [
+            {
+              "code": "RPN_SH0010",
+              "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+              "entity_type": "Shot",
+              "name": "Hero walk"
+            },
+            {
+              "code": "RPN_SH0010_COMP_V001",
+              "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+              "entity_type": "Version",
+              "name": ""
+            }
+          ],
+          "parent_id": null,
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+          "reply_count": 3,
+          "status": "Open",
+          "subject": "Edge is soft",
+          "tags": [],
+          "task_code": "RPN_T_COMP",
+          "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+          "timecode_ref": "",
+          "updated_at": "2026-11-12T11:41:39.308351Z"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "5d89956b-7384-43e2-882b-e1ac534bb6d0"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/?status=Open"
+    },
+    "status": 200
+  },
+  "list_unknown_type": {
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": []
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "8e02d791-f65f-4ef6-aba1-15d57288a43c"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/?entity_type=Spaceship"
+    },
+    "status": 200
+  },
+  "patch_by_author": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "Left edge on the matte.",
+      "category": "Supervisor Note",
+      "created_at": "2026-11-12T11:41:39.308341Z",
+      "entity_code": "RPN_SH0010",
+      "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+      "entity_name": "Hero walk",
+      "entity_type": "Shot",
+      "frame_number": null,
+      "id": "661befdd-856a-4b63-84de-1b28e2465699",
+      "links": [
+        {
+          "code": "RPN_SH0010",
+          "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+          "entity_type": "Shot",
+          "name": "Hero walk"
+        },
+        {
+          "code": "RPN_SH0010_COMP_V001",
+          "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+          "entity_type": "Version",
+          "name": ""
+        },
+        {
+          "code": "RPN_CHR_HERO",
+          "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+          "entity_type": "Asset",
+          "name": "Hero"
+        }
+      ],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "reply_count": 3,
+      "status": "Open",
+      "subject": "Edge is soft (left)",
+      "tags": [],
+      "task_code": "RPN_T_COMP",
+      "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:40.225158Z"
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "1b3e58c9-c787-4e45-b0db-09d26909b14a"
+    },
+    "request": {
+      "body": {
+        "links": [
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          },
+          {
+            "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+            "entity_type": "Version"
+          },
+          {
+            "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+            "entity_type": "Asset"
+          }
+        ],
+        "subject": "Edge is soft (left)"
+      },
+      "method": "PATCH",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/661befdd-856a-4b63-84de-1b28e2465699/"
+    },
+    "status": 200
+  },
+  "patch_by_other_403": {
+    "body": {
+      "detail": "Only the author, or someone who may edit notes, can change this note.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "8602b1de-f4fb-467f-aa7b-becb461acd7a"
+      }
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "8602b1de-f4fb-467f-aa7b-becb461acd7a"
+    },
+    "request": {
+      "body": {
+        "body": "mine now"
+      },
+      "method": "PATCH",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/661befdd-856a-4b63-84de-1b28e2465699/"
+    },
+    "status": 403
+  },
+  "patch_reply_body": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "Softened, see v002 and v003.",
+      "category": "Supervisor Note",
+      "created_at": "2026-11-12T11:41:39.500328Z",
+      "entity_code": "",
+      "entity_id": "",
+      "entity_name": "",
+      "entity_type": "Project",
+      "frame_number": null,
+      "id": "c670570b-c1d1-4e86-a6e0-71432e4f3c2e",
+      "links": [],
+      "parent_id": "661befdd-856a-4b63-84de-1b28e2465699",
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "reply_count": 0,
+      "status": "Open",
+      "subject": "Re: Edge is soft",
+      "tags": [],
+      "task_code": null,
+      "task_id": null,
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:40.358244Z"
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "ce33beaf-ef4a-4e80-aeb4-7bf361e23b8a"
+    },
+    "request": {
+      "body": {
+        "body": "Softened, see v002 and v003."
+      },
+      "method": "PATCH",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/c670570b-c1d1-4e86-a6e0-71432e4f3c2e/"
+    },
+    "status": 200
+  },
+  "patch_reply_links_400": {
+    "body": {
+      "detail": [
+        "A reply takes only its body."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "bfac9ee8-3588-4dad-8830-14bccce504b9"
+      }
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "bfac9ee8-3588-4dad-8830-14bccce504b9"
+    },
+    "request": {
+      "body": {
+        "links": [
+          {
+            "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+            "entity_type": "Shot"
+          }
+        ]
+      },
+      "method": "PATCH",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/c670570b-c1d1-4e86-a6e0-71432e4f3c2e/"
+    },
+    "status": 400
+  },
+  "patch_task_cleared": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "",
+      "category": "Turnover Requirement",
+      "created_at": "2026-11-12T11:41:39.395030Z",
+      "entity_code": "",
+      "entity_id": "",
+      "entity_name": "",
+      "entity_type": "Project",
+      "frame_number": null,
+      "id": "4cca0302-ed52-466a-bda9-88a3d4757883",
+      "links": [],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "reply_count": 0,
+      "status": "Open",
+      "subject": "Delivery spec",
+      "tags": [],
+      "task_code": null,
+      "task_id": null,
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:40.309581Z"
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "63251969-0ddc-48b2-bcd9-a234290718ad"
+    },
+    "request": {
+      "body": {
+        "category": "Turnover Requirement",
+        "task_id": null
+      },
+      "method": "PATCH",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/4cca0302-ed52-466a-bda9-88a3d4757883/"
+    },
+    "status": 200
+  },
+  "reply_blank_400": {
+    "body": {
+      "body": [
+        "This field may not be blank."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "ce2c81d5-e6de-45f7-94af-bb89cbc10542"
+      }
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "ce2c81d5-e6de-45f7-94af-bb89cbc10542"
+    },
+    "request": {
+      "body": {
+        "body": "  "
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/661befdd-856a-4b63-84de-1b28e2465699/replies/"
+    },
+    "status": 400
+  },
+  "reply_by_artist": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "Softened, see v002.",
+      "category": "Supervisor Note",
+      "created_at": "2026-11-12T11:41:39.500328Z",
+      "entity_code": "",
+      "entity_id": "",
+      "entity_name": "",
+      "entity_type": "Project",
+      "frame_number": null,
+      "id": "c670570b-c1d1-4e86-a6e0-71432e4f3c2e",
+      "links": [],
+      "parent_id": "661befdd-856a-4b63-84de-1b28e2465699",
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "reply_count": 0,
+      "status": "Open",
+      "subject": "Re: Edge is soft",
+      "tags": [],
+      "task_code": null,
+      "task_id": null,
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:39.500338Z"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "69f0bdb2-fa51-42da-9503-daeb40841747"
+    },
+    "request": {
+      "body": {
+        "body": "Softened, see v002."
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/661befdd-856a-4b63-84de-1b28e2465699/replies/"
+    },
+    "status": 201
+  },
+  "reply_by_lead": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "14cd6e08-6f33-4ca9-baf7-0a6070bea4d6",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "Looks right to me.",
+      "category": "Supervisor Note",
+      "created_at": "2026-11-12T11:41:39.558295Z",
+      "entity_code": "",
+      "entity_id": "",
+      "entity_name": "",
+      "entity_type": "Project",
+      "frame_number": null,
+      "id": "f9d2275b-150c-4171-aad7-e43ea5b6cd8a",
+      "links": [],
+      "parent_id": "661befdd-856a-4b63-84de-1b28e2465699",
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "reply_count": 0,
+      "status": "Open",
+      "subject": "Re: Edge is soft",
+      "tags": [],
+      "task_code": null,
+      "task_id": null,
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:39.558307Z"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "497e5bb4-8d96-4059-ac9b-08caff0d5a08"
+    },
+    "request": {
+      "body": {
+        "body": "Looks right to me."
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/661befdd-856a-4b63-84de-1b28e2465699/replies/"
+    },
+    "status": 201
+  },
+  "reply_to_reply": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "Agreed.",
+      "category": "Supervisor Note",
+      "created_at": "2026-11-12T11:41:39.605264Z",
+      "entity_code": "",
+      "entity_id": "",
+      "entity_name": "",
+      "entity_type": "Project",
+      "frame_number": null,
+      "id": "9c3642a4-86ed-4b04-9791-fe21e858473c",
+      "links": [],
+      "parent_id": "661befdd-856a-4b63-84de-1b28e2465699",
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "reply_count": 0,
+      "status": "Open",
+      "subject": "Re: Edge is soft",
+      "tags": [],
+      "task_code": null,
+      "task_id": null,
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:39.605276Z"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "dcf36e38-3933-47a5-bd5d-798009e353f9"
+    },
+    "request": {
+      "body": {
+        "body": "Agreed."
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/c670570b-c1d1-4e86-a6e0-71432e4f3c2e/replies/"
+    },
+    "status": 201
+  },
+  "show_bound_list_404": {
+    "body": {
+      "detail": "Project 0afb984a-1692-476e-af59-0fce923393b2 not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "f9e5bb38-cc9b-40de-ade2-26eafc51686e"
+      }
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "f9e5bb38-cc9b-40de-ade2-26eafc51686e"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/"
+    },
+    "status": 404
+  },
+  "status_by_assignee": {
+    "body": {
+      "addressed_at": "2026-11-12T11:41:40.442180Z",
+      "addressed_by": "user@example.test",
+      "author_avatar": "",
+      "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "Left edge on the matte.",
+      "category": "Supervisor Note",
+      "created_at": "2026-11-12T11:41:39.308341Z",
+      "entity_code": "RPN_SH0010",
+      "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+      "entity_name": "Hero walk",
+      "entity_type": "Shot",
+      "frame_number": null,
+      "id": "661befdd-856a-4b63-84de-1b28e2465699",
+      "links": [
+        {
+          "code": "RPN_SH0010",
+          "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+          "entity_type": "Shot",
+          "name": "Hero walk"
+        },
+        {
+          "code": "RPN_SH0010_COMP_V001",
+          "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+          "entity_type": "Version",
+          "name": ""
+        },
+        {
+          "code": "RPN_CHR_HERO",
+          "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+          "entity_type": "Asset",
+          "name": "Hero"
+        }
+      ],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "reply_count": 3,
+      "status": "Addressed",
+      "subject": "Edge is soft (left)",
+      "tags": [],
+      "task_code": "RPN_T_COMP",
+      "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:40.442358Z"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "645b0a64-f3aa-4030-9a03-a8417eb9d82a"
+    },
+    "request": {
+      "body": {
+        "status": "Addressed"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/661befdd-856a-4b63-84de-1b28e2465699/status/"
+    },
+    "status": 200
+  },
+  "status_by_other_403": {
+    "body": {
+      "detail": "Only the author, the task's assignee, or someone who may edit notes, can change its status.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "7d8857bb-146a-4149-823a-a25b563c06a2"
+      }
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "7d8857bb-146a-4149-823a-a25b563c06a2"
+    },
+    "request": {
+      "body": {
+        "status": "Closed"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/a943e488-7bc6-4825-9207-445628196ab9/status/"
+    },
+    "status": 403
+  },
+  "status_closed_by_supervisor": {
+    "body": {
+      "addressed_at": "2026-11-12T11:41:40.442180Z",
+      "addressed_by": "user@example.test",
+      "author_avatar": "",
+      "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "Left edge on the matte.",
+      "category": "Supervisor Note",
+      "created_at": "2026-11-12T11:41:39.308341Z",
+      "entity_code": "RPN_SH0010",
+      "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+      "entity_name": "Hero walk",
+      "entity_type": "Shot",
+      "frame_number": null,
+      "id": "661befdd-856a-4b63-84de-1b28e2465699",
+      "links": [
+        {
+          "code": "RPN_SH0010",
+          "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+          "entity_type": "Shot",
+          "name": "Hero walk"
+        },
+        {
+          "code": "RPN_SH0010_COMP_V001",
+          "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+          "entity_type": "Version",
+          "name": ""
+        },
+        {
+          "code": "RPN_CHR_HERO",
+          "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+          "entity_type": "Asset",
+          "name": "Hero"
+        }
+      ],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "reply_count": 3,
+      "status": "Closed",
+      "subject": "Edge is soft (left)",
+      "tags": [],
+      "task_code": "RPN_T_COMP",
+      "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:40.526673Z"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "0c4e4706-56ce-43a7-b81f-d186a52e5415"
+    },
+    "request": {
+      "body": {
+        "status": "Closed"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/661befdd-856a-4b63-84de-1b28e2465699/status/"
+    },
+    "status": 200
+  },
+  "status_reopened": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "1645fa36-d213-44b1-81a5-f95d7b750ca0",
+      "author_name": "user@example.test",
+      "author_role": "Artist",
+      "body": "Left edge on the matte.",
+      "category": "Supervisor Note",
+      "created_at": "2026-11-12T11:41:39.308341Z",
+      "entity_code": "RPN_SH0010",
+      "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+      "entity_name": "Hero walk",
+      "entity_type": "Shot",
+      "frame_number": null,
+      "id": "661befdd-856a-4b63-84de-1b28e2465699",
+      "links": [
+        {
+          "code": "RPN_SH0010",
+          "entity_id": "6c8cd8f3-b8f0-4f74-a095-0b54cd5bc451",
+          "entity_type": "Shot",
+          "name": "Hero walk"
+        },
+        {
+          "code": "RPN_SH0010_COMP_V001",
+          "entity_id": "988a496a-0c44-4651-9d34-e4be63efa817",
+          "entity_type": "Version",
+          "name": ""
+        },
+        {
+          "code": "RPN_CHR_HERO",
+          "entity_id": "c2241961-01ed-43e3-ac59-bdec687d5bbc",
+          "entity_type": "Asset",
+          "name": "Hero"
+        }
+      ],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "reply_count": 3,
+      "status": "Open",
+      "subject": "Edge is soft (left)",
+      "tags": [],
+      "task_code": "RPN_T_COMP",
+      "task_id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+      "timecode_ref": "",
+      "updated_at": "2026-11-12T11:41:40.583821Z"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "80a92830-08a2-4a5f-a23d-9fae1397d421"
+    },
+    "request": {
+      "body": {
+        "status": "Open"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/661befdd-856a-4b63-84de-1b28e2465699/status/"
+    },
+    "status": 200
+  },
+  "status_reply_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "54355d99-c472-4309-a2cc-93d187dc44d6"
+      },
+      "status": [
+        "A reply has no status of its own."
+      ]
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "54355d99-c472-4309-a2cc-93d187dc44d6"
+    },
+    "request": {
+      "body": {
+        "status": "Closed"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/c670570b-c1d1-4e86-a6e0-71432e4f3c2e/status/"
+    },
+    "status": 400
+  },
+  "status_unknown_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "a6cc5d9e-5fce-40fa-a449-0bc395e96309"
+      },
+      "status": [
+        "\"Lost\" is not a valid choice."
+      ]
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "a6cc5d9e-5fce-40fa-a449-0bc395e96309"
+    },
+    "request": {
+      "body": {
+        "status": "Lost"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/0afb984a-1692-476e-af59-0fce923393b2/notes/661befdd-856a-4b63-84de-1b28e2465699/status/"
+    },
+    "status": 400
+  },
+  "task_detail": {
+    "body": {
+      "asset_id": null,
+      "assignee_avatar": null,
+      "assignee_id": "218476a4-4e4e-47bb-abe8-0d378eb5a1a0",
+      "assignee_name": "user@example.test",
+      "assignee_role": "",
+      "code": "RPN_T_COMP",
+      "created_at": "2026-11-12T11:41:39.177744Z",
+      "department": "Comp",
+      "department_id": "",
+      "dependencies": {},
+      "description": "",
+      "due_date": null,
+      "entity_code": "",
+      "entity_id": "",
+      "entity_name": "",
+      "entity_type": "General",
+      "estimated_hours": "0.00",
+      "id": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+      "is_archived": false,
+      "logged_hours": "0.00",
+      "pending_hours": "0.00",
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "0afb984a-1692-476e-af59-0fce923393b2",
+      "project_name": "Notes",
+      "reviewer_avatar": null,
+      "reviewer_id": null,
+      "reviewer_name": "",
+      "schedule": {},
+      "sequence_id": null,
+      "shot_id": null,
+      "software": "",
+      "status": "Not Started",
+      "tags": [],
+      "task_type_code": "",
+      "task_type_id": null,
+      "task_type_name": "",
+      "team_id": null,
+      "team_name": "",
+      "title": "Comp",
+      "updated_at": "2026-11-12T11:41:39.177752Z",
+      "uuid": "0ddfda0d-83fc-41d8-a5aa-07789cdf2331",
+      "vendor_code": "",
+      "vendor_id": "",
+      "vendor_name": "",
+      "workflow": {}
+    },
+    "headers": {
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "3c8f81a8-ce10-4a06-b1d5-f171205dacc3"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/tasks/0ddfda0d-83fc-41d8-a5aa-07789cdf2331/"
+    },
+    "status": 200
+  }
+}

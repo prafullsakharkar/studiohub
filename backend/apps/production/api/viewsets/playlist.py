@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
+from apps.production.api.filtersets.playlist import PlaylistFilterSet
 from apps.production.api.serializers.actions import (
     AddEntrySerializer,
     RemoveEntrySerializer,
@@ -51,7 +52,7 @@ class PlaylistViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissing
     }
 
     search_fields = ("name", "code")
-    filterset_fields = ("status", "project", "client_only")
+    filterset_class = PlaylistFilterSet
     ordering_fields = ("name", "created_at")
 
     def perform_create(self, serializer):

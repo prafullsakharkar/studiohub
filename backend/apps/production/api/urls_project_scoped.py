@@ -8,6 +8,12 @@ Both slashless and trailing-slash variants are served to match
 
 from django.urls import path
 
+from apps.production.api.views.project_notes import (
+    ProjectNoteDetailView,
+    ProjectNoteRepliesView,
+    ProjectNoteStatusView,
+    ProjectNotesView,
+)
 from apps.production.api.views.project_scoped import (
     ProjectActivityView,
     ProjectAssetsView,
@@ -17,7 +23,6 @@ from apps.production.api.views.project_scoped import (
     ProjectFilesView,
     ProjectMemberDetailView,
     ProjectMembersView,
-    ProjectNotesView,
     ProjectPipelineView,
     ProjectResourcesView,
     ProjectReviewsView,
@@ -66,3 +71,14 @@ for _suffix, _name in (("", "project-member-detail"), ("/", "project-member-deta
     urlpatterns.append(
         path(f"projects/{PROJECT}/members/<uuid:member_id>{_suffix}", ProjectMemberDetailView.as_view(), name=_name)
     )
+
+# RP-2 (docs/review-pipeline C-RP-10 to C-RP-13): one note, its replies and its status.
+for _suffix, _view, _name in (
+    ("", ProjectNoteDetailView, "project-note-detail"),
+    ("/replies", ProjectNoteRepliesView, "project-note-replies"),
+    ("/status", ProjectNoteStatusView, "project-note-status"),
+):
+    urlpatterns += [
+        path(f"projects/{PROJECT}/notes/<str:note_id>{_suffix}", _view.as_view(), name=_name),
+        path(f"projects/{PROJECT}/notes/<str:note_id>{_suffix}/", _view.as_view(), name=f"{_name}-slash"),
+    ]

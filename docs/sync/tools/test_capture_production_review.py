@@ -1,6 +1,8 @@
 """
 Phase 7 sample capture: versions, reviews, playlists, media, workflows, automations (docs/sync).
 
+Codes follow CR-49 (they start with the project's code, ``REV_``). RP-1 calls are prefixed ``rp1_``.
+
 Real JWT flow for an MFA superuser, a lead-artist, two artists and a vfx-supervisor (the seeded role that
 holds `review.approve`); every call is recorded whatever its status, so failures are data. Pytest test
 database only, rolled back.
@@ -69,11 +71,11 @@ def test_capture_production_review(django_user_model):
     pid = call(a, "setup_project", "POST", "/api/v1/projects/", {"code": "REV", "name": "Review", "workflow_type": "standard"}).json()["id"]
     for who, role in ((lead, "Lead"), (artist, "Artist"), (artist2, "Artist"), (sup, "Supervisor")):
         call(a, f"setup_member_{who.email.split('@')[0]}", "POST", f"/api/organizations/projects/{pid}/members/", {"user_id": str(who.id), "role": role})
-    qid = call(a, "setup_sequence", "POST", "/api/v1/sequences/", {"project": pid, "code": "SQ010", "name": "Opening"}).json()["id"]
-    sid = call(a, "setup_shot", "POST", "/api/v1/shots/", {"project": pid, "sequence_id": qid, "code": "SH0010", "name": "Walk"}).json()["id"]
-    sid2 = call(a, "setup_shot_two", "POST", "/api/v1/shots/", {"project": pid, "sequence_id": qid, "code": "SH0020", "name": "Turn"}).json()["id"]
-    aid = call(a, "setup_asset", "POST", "/api/v1/assets/", {"project": pid, "code": "CHR_HERO", "name": "Hero", "category": "Character"}).json()["id"]
-    tid = call(a, "setup_task", "POST", "/api/v1/tasks/", {"project": pid, "title": "Comp", "code": "T001", "entity_type": "Shot", "entity_id": sid, "assignee": str(artist.id)}).json()["id"]
+    qid = call(a, "setup_sequence", "POST", "/api/v1/sequences/", {"project": pid, "code": "REV_SQ010", "name": "Opening"}).json()["id"]
+    sid = call(a, "setup_shot", "POST", "/api/v1/shots/", {"project": pid, "sequence_id": qid, "code": "REV_SH0010", "name": "Walk"}).json()["id"]
+    sid2 = call(a, "setup_shot_two", "POST", "/api/v1/shots/", {"project": pid, "sequence_id": qid, "code": "REV_SH0020", "name": "Turn"}).json()["id"]
+    aid = call(a, "setup_asset", "POST", "/api/v1/assets/", {"project": pid, "code": "REV_CHR_HERO", "name": "Hero", "category": "Character"}).json()["id"]
+    tid = call(a, "setup_task", "POST", "/api/v1/tasks/", {"project": pid, "title": "Comp", "code": "REV_T001", "entity_type": "Shot", "entity_id": sid, "assignee": str(artist.id)}).json()["id"]
 
     # ------------------------------------------------------------ versions
     call(ar, "versions_create_empty", "POST", "/api/v1/versions/", {})
@@ -276,6 +278,29 @@ def test_capture_production_review(django_user_model):
     call(ar, "automations_artist_rules", "GET", "/api/v1/automations/rules/")
     call(sv, "automations_supervisor_rules", "GET", "/api/v1/automations/rules/")
 
+    # ------------------------------------------------------------ RP-1 (docs/review-pipeline/CONTRACTS.md C-RP-01..06)
+    # A review of two versions: comments and drawings on one of them, a reply, the refusals; then the
+    # reviews and playlists that hold a version, through their live rows.
+    rv4 = call(sv, "rp1_review_create", "POST", "/api/v1/reviews/", {"project": pid, "title": "Two versions", "code": "RV004", "entity_type": "Shot", "entity_id": sid}).json()["id"]
+    call(sv, "rp1_review_add_first", "POST", f"/api/v1/reviews/{rv4}/versions/", {"version_id": vid})
+    call(sv, "rp1_review_add_second", "POST", f"/api/v1/reviews/{rv4}/versions/", {"version_id": vid2})
+    on_v2 = call(sv, "rp1_comment_on_version", "POST", f"/api/v1/reviews/{rv4}/comments/", {"text": "Edge flicker on v2", "frame_number": 1012, "version_id": vid2}).json()
+    call(sv, "rp1_comment_whole_review", "POST", f"/api/v1/reviews/{rv4}/comments/", {"text": "Both read dark"})
+    call(sv, "rp1_comment_reply_quiet", "POST", f"/api/v1/reviews/{rv4}/comments/", {"text": "Agreed", "parent_id": on_v2.get("id")})
+    call(sv, "rp1_comment_reply_other_version", "POST", f"/api/v1/reviews/{rv4}/comments/", {"text": "Here", "parent_id": on_v2.get("id"), "version_id": vid})
+    call(sv, "rp1_comment_version_not_in_review", "POST", f"/api/v1/reviews/{rv4}/comments/", {"text": "x", "version_id": own_id})
+    call(sv, "rp1_comment_version_malformed", "POST", f"/api/v1/reviews/{rv4}/comments/", {"text": "x", "version_id": "nope"})
+    call(sv, "rp1_annotation_on_version", "POST", f"/api/v1/reviews/{rv4}/annotations/", {"frame_number": 1012, "comment": "here", "version_id": vid, "drawing_coordinates": {"version": 1, "shapes": []}})
+    call(sv, "rp1_annotation_version_not_in_review", "POST", f"/api/v1/reviews/{rv4}/annotations/", {"comment": "x", "version_id": own_id})
+    call(sv, "rp1_review_detail", "GET", f"/api/v1/reviews/{rv4}/")
+    # vid2 was taken off RV001 earlier (reviews_remove_version): only RV004 lists it
+    call(sv, "rp1_reviews_by_version", "GET", f"/api/v1/reviews/?project={pid}&version_id={vid2}")
+    call(sv, "rp1_reviews_by_version_first", "GET", f"/api/v1/reviews/?version_id={vid}")
+    call(sv, "rp1_reviews_by_version_malformed", "GET", "/api/v1/reviews/?version_id=nope")
+    call(ld, "rp1_playlists_by_version", "GET", f"/api/v1/playlists/?version_id={vid}")
+    call(ld, "rp1_playlists_by_version_none", "GET", f"/api/v1/playlists/?version_id={own_id}")
+    call(ld, "rp1_version_after_add_to_playlist", "GET", f"/api/v1/versions/{vid}/")
+
     # ------------------------------------------------------------ filter probes: one param each (unknown params are silently ignored)
     def probe(prefix, base, params, client):
         call(client, f"{prefix}_baseline", "GET", base)
@@ -283,7 +308,7 @@ def test_capture_production_review(django_user_model):
             call(client, f"{prefix}_by_{name}_{re.sub('[^A-Za-z0-9]+', '', str(value))[:10]}", "GET", f"{base}{'&' if '?' in base else '?'}{name}={value}")
 
     probe("fp_versions", f"/api/v1/versions/?project_id={pid}", [("status", "Approved"), ("department", "Compositing"), ("entity_type", "Shot"), ("entity_id", sid), ("shot_id", sid), ("asset_id", aid), ("task_id", tid), ("is_published", "true"), ("is_hero", "true"), ("is_archived", "false"), ("artist", artist.id), ("search", "second"), ("nonsense", "1")], ld)
-    probe("fp_reviews", f"/api/v1/reviews/?project_id={pid}", [("status", "Closed"), ("entity_type", "Shot"), ("entity_code", "SH0010"), ("entity_id", sid), ("search", "Walk"), ("nonsense", "1")], sv)
+    probe("fp_reviews", f"/api/v1/reviews/?project_id={pid}", [("status", "Closed"), ("entity_type", "Shot"), ("entity_code", "REV_SH0010"), ("entity_id", sid), ("search", "Walk"), ("nonsense", "1")], sv)
     probe("fp_playlists", f"/api/v1/playlists/?project_id={pid}", [("status", "Active"), ("client_only", "true"), ("search", "Dailies"), ("nonsense", "1")], ld)
     probe("fp_media", f"/api/v1/media/?project_id={pid}", [("media_type", "Video"), ("entity_type", "Shot"), ("entity_id", sid), ("nonsense", "1")], ld)
     probe("fp_workflows", f"/api/v1/workflows/?project_id={pid}", [("category", "Production"), ("department", "Compositing"), ("is_active", "true"), ("event_type", "x"), ("search", "Comp"), ("nonsense", "1")], a)

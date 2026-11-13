@@ -9,6 +9,7 @@ Production API URLs — mounted at /api/v1/ (top-level) to match frontend contra
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
+from apps.production.api.views.review_media_stream import ReviewMediaStreamView
 from apps.production.api.viewsets.analytics import AnalyticsDepartmentsView, AnalyticsKpisView
 from apps.production.api.viewsets.asset import AssetViewSet
 from apps.production.api.viewsets.editorial_track import EditorialTrackViewSet
@@ -17,6 +18,7 @@ from apps.production.api.viewsets.media import MediaViewSet
 from apps.production.api.viewsets.playlist import PlaylistViewSet
 from apps.production.api.viewsets.project import ProjectViewSet
 from apps.production.api.viewsets.review import ReviewViewSet
+from apps.production.api.viewsets.review_media import ReviewMediaViewSet
 from apps.production.api.viewsets.scheduling import (
     AutomationAuditLogsView,
     AutomationRuleDetailView,
@@ -43,6 +45,7 @@ router.register(r"reviews", ReviewViewSet, basename="review")
 router.register(r"sequences", SequenceViewSet, basename="sequence")
 router.register(r"episodes", EpisodeViewSet, basename="episode")
 router.register(r"media", MediaViewSet, basename="media")
+router.register(r"review-media", ReviewMediaViewSet, basename="review-media")
 router.register(r"playlists", PlaylistViewSet, basename="playlist")
 router.register(r"workflows", WorkflowViewSet, basename="workflow")
 router.register(r"task-templates", TaskTemplateViewSet, basename="task-template")
@@ -52,6 +55,12 @@ router.register(r"shows", ShowViewSet, basename="show")
 app_name = "production"
 
 urlpatterns = router.urls + [
+    # Review media playback (C-RP-21): a signed link, no Authorization header.
+    path(
+        "review-media/<uuid:pk>/<str:output>/",
+        ReviewMediaStreamView.as_view(),
+        name="review-media-stream",
+    ),
     # Automation (bare array, outside workflows)
     path("automations/rules/", AutomationRulesView.as_view(), name="automation-rules-list"),
     path("automations/rules/<str:pk>/", AutomationRuleDetailView.as_view(), name="automation-rules-detail"),

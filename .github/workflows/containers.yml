@@ -83,3 +83,16 @@ jobs:
           docker run --rm -v "$RUNNER_TEMP/studiohub-django.tar:/image.tar:ro" "$TRIVY_IMAGE"
           image --input /image.tar --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed
           --exit-code 1
+
+      # The review media worker (review-pipeline RP-5): the same image plus Debian's ffmpeg.
+      - name: Build the media worker
+        run: docker build -f infrastructure/docker/django/Dockerfile --target worker -t studiohub-worker:scan .
+
+      - name: Export the media worker to a file
+        run: docker save studiohub-worker:scan -o "$RUNNER_TEMP/studiohub-worker.tar"
+
+      - name: Scan the media worker (fixed HIGH and CRITICAL findings fail the job)
+        run: >-
+          docker run --rm -v "$RUNNER_TEMP/studiohub-worker.tar:/image.tar:ro" "$TRIVY_IMAGE"
+          image --input /image.tar --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed
+          --exit-code 1

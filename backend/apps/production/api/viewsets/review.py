@@ -158,6 +158,7 @@ class ReviewViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: ig
             frame_number=body.get("frame_number"),
             timecode=body.get("timecode") or "",
             drawing_coordinates=body.get("drawing_coordinates"),
+            version_id=body.get("version_id"),
         )
         return Response(parts.annotation_dict(row), status=201)
 
@@ -176,6 +177,7 @@ class ReviewViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: ig
             is_client_visible=body["is_client_visible"],
             tags=body["tags"],
             parent_id=body.get("parent_id"),
+            version_id=body.get("version_id"),
         )
         return Response(parts.comment_dict(row), status=201)
 

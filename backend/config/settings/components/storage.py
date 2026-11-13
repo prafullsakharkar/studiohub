@@ -47,3 +47,20 @@ ATTACHMENT_LINK_TTL_SECONDS = 300
 
 # nginx ``internal`` location that maps to MEDIA_ROOT; empty = Django streams the file.
 MEDIA_ACCEL_PREFIX = settings.media_accel_prefix.rstrip("/")
+
+# ---------------------------------------------------------------------------
+# Review media (production.ReviewMedia, review-pipeline RP-5): uploads and what the worker makes.
+# ---------------------------------------------------------------------------
+
+# Uploads and results live under MEDIA_ROOT/<REVIEW_MEDIA_DIR>/ and leave only through signed links.
+REVIEW_MEDIA_DIR = "review_media"
+
+REVIEW_MEDIA_ENABLED = settings.review_media_enabled
+
+REVIEW_MEDIA_MAX_BYTES = settings.review_media_max_bytes
+
+REVIEW_MEDIA_LINK_TTL_SECONDS = settings.review_media_link_ttl_seconds
+
+# The programs the media worker runs (Debian's ffmpeg package in the image's `worker` target).
+REVIEW_MEDIA_FFMPEG = "ffmpeg"
+REVIEW_MEDIA_FFPROBE = "ffprobe"

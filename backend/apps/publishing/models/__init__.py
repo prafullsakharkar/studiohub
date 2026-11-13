@@ -8,8 +8,10 @@ from django.db.models.functions import Upper
 
 from apps.core.models.bases.entity import EntityModel
 from apps.publishing.models.counter import PublishCounter
+from apps.publishing.models.dependency import PublishedFileDependency
 from apps.publishing.models.file import PublishedFile, PublishedFileEvent
 from apps.publishing.models.storage import StorageRoot
+from apps.publishing.models.template import PublishPathTemplate
 
 
 class PublishItem(EntityModel):
@@ -437,8 +439,10 @@ __all__ = [
     "PublishCounter",
     "PublishDestination",
     "PublishItem",
+    "PublishPathTemplate",
     "PublishValidationRule",
     "PublishedFile",
+    "PublishedFileDependency",
     "PublishedFileEvent",
     "StorageRoot",
 ]

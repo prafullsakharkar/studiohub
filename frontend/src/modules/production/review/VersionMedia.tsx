@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type React from 'react';
 import { useState } from 'react';
-import { mediaApi } from '@/api/production/review';
+import { mediaApi, versionPlayback } from '@/api/production/review';
 import type { Media, Version } from '@/api/production/review';
 import { fetchAllRows } from '@/shared/data/listing';
 import { MediaPlayer } from '@/shared/components/media/MediaPlayer';
@@ -10,6 +10,7 @@ import { SmartImg } from '@/components/ui/SmartImg';
 import { safeWebUrl } from '@/shared/utils/safeUrl';
 import { cn } from '@/shared/utils/cn';
 import { mediaName } from './mediaCard';
+import { ReviewMoviePanel } from './ReviewMoviePanel';
 
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div>
@@ -32,22 +33,25 @@ export const VersionMediaTab: React.FC<{ version: Version }> = ({ version }) => 
   });
   const items: Media[] = linked.data ?? [];
   const item = items.find((m) => m.id === chosen);
-  const fps = toFps(version.fps);
+  const playback = versionPlayback(version);
+  const fps = toFps(playback.fps);
   const own = !item;
-  const src = own ? version.video_url : item.preview_url || item.source_url;
-  const poster = own ? version.thumbnail_url : item.thumbnail_url;
+  const src = own ? playback.src : item.preview_url || item.source_url;
+  const poster = own ? playback.poster : item.thumbnail_url;
   const label = own ? `${version.code} preview` : mediaName(item);
+  const probe = version.review_media?.probe;
 
   return (
     <div className="space-y-4">
-      <MediaPlayer key={`${chosen ?? 'own'}`} label={label} src={src} poster={poster} fps={fps} startFrame={own ? (version.start_frame ?? 1) : 1} />
+      <ReviewMoviePanel version={version} />
+      <MediaPlayer key={`${chosen ?? 'own'}|${own ? (src ?? poster ?? '') : ''}`} label={label} src={src} poster={poster} fps={fps} startFrame={own ? (version.start_frame ?? 1) : 1} />
       <dl aria-label="Preview details" className="grid gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-6">
-        <Fact label="Resolution">{own ? version.resolution : item.resolution}</Fact>
+        <Fact label="Resolution">{own ? version.resolution || (probe ? `${probe.width}×${probe.height}` : '') : item.resolution}</Fact>
         <Fact label="Frame rate">{String(fps)}</Fact>
         <Fact label="Frames">{own ? version.frame_range : ''}</Fact>
         <Fact label="Colour space">{own ? version.color_space : ''}</Fact>
         <Fact label="Size">{Number(own ? version.file_size_mb : item.file_size_mb) > 0 ? `${own ? version.file_size_mb : item.file_size_mb} MB` : ''}</Fact>
-        <Fact label="Source">{own ? 'This version' : mediaName(item)}</Fact>
+        <Fact label="Source">{own ? (playback.generated ? 'Review copy made by the server' : 'This version') : mediaName(item)}</Fact>
       </dl>
 
       <section aria-label={`Media on ${version.entity_code || 'this record'}`} className="space-y-2">

@@ -3,7 +3,8 @@ import type React from 'react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { auditKeys } from '@/api/audit/audit';
-import { reviewsApi, versionsApi } from '@/api/production/review';
+import { reviewMediaRefetchInterval, reviewsApi, versionsApi } from '@/api/production/review';
+import { tasksApi } from '@/api/production/work';
 import type { Version } from '@/api/production/review';
 import { EntityHistory } from '@/components/history/EntityHistory';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
@@ -12,6 +13,8 @@ import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
+import { fetchAllRows } from '@/shared/data/listing';
+import { EntityNotesTab } from '@/modules/production/work/EntityNotes';
 import { StatusHistory } from '@/modules/production/work/StatusHistory';
 import { StatusMenu } from '@/modules/production/work/StatusMenu';
 import { PlaylistPicker } from './pickers';
@@ -20,13 +23,14 @@ import { VersionMediaTab } from './VersionMedia';
 import { versionActions, versionBadges } from './versions';
 import { formatDateTime } from '@/core/locale/studioLocale';
 
-type TabId = 'overview' | 'media' | 'reviews' | 'playlists' | 'publishing' | 'compare' | 'status' | 'changes';
+type TabId = 'overview' | 'media' | 'reviews' | 'playlists' | 'notes' | 'publishing' | 'compare' | 'status' | 'changes';
 const TABS: ReadonlyArray<{ id: TabId; label: string }> = [
   { id: 'overview', label: 'Overview' },
   { id: 'media', label: 'Media' },
   { id: 'compare', label: 'Compare' },
   { id: 'reviews', label: 'Reviews' },
   { id: 'playlists', label: 'Playlists' },
+  { id: 'notes', label: 'Notes' },
   { id: 'publishing', label: 'Publishing' },
   { id: 'status', label: 'Status history' },
   { id: 'changes', label: 'Changes' },
@@ -39,14 +43,14 @@ const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, c
   </div>
 );
 
-/** Reviews of this version. The server cannot list "reviews containing a version", so the entity's reviews are read and filtered here. */
+/** The reviews showing this version, every page of them (`version_id`, C-RP-03). */
 const VersionReviews: React.FC<{ version: Version }> = ({ version }) => {
   const canCreate = useCan('review.create');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const reviews = useQuery({
     queryKey: [...reviewsApi.keys.lists(), 'of-version', version.id],
-    queryFn: async ({ signal }) => (await reviewsApi.list({ project_id: version.project_id, entity_type: version.entity_type, entity_id: version.entity_id, page_size: 100 }, signal)).results.filter((r) => r.versions.some((v) => v.id === version.id)),
+    queryFn: ({ signal }) => fetchAllRows(reviewsApi.list, { version_id: version.id }, { signal }),
   });
   const [starting, setStarting] = useState(false);
   const [title, setTitle] = useState(`${version.entity_code} ${version.version_number} review`);
@@ -138,9 +142,11 @@ export const VersionWorkspace: React.FC = () => {
   const canPublish = useCan('version.publish');
   const [tab, setTab] = useState<TabId>('overview');
   const [action, setAction] = useState<ReturnType<typeof versionActions>[number] | null>(null);
-  const query = useQuery({ queryKey: versionsApi.keys.detail(versionId), queryFn: ({ signal }) => versionsApi.get(versionId, signal), enabled: Boolean(versionId) });
+  // While the media worker runs a job the version is refetched every 5 seconds; its signed links are fetched again before they expire (RP-5).
+  const query = useQuery({ queryKey: versionsApi.keys.detail(versionId), queryFn: ({ signal }) => versionsApi.get(versionId, signal), enabled: Boolean(versionId), refetchInterval: (q) => reviewMediaRefetchInterval([q.state.data]) });
   const v = query.data;
-  const refresh = () => Promise.all([versionsApi.keys.all, auditKeys.all].map((queryKey) => queryClient.invalidateQueries({ queryKey })));
+  // Approving a version may approve its task on the server (RP-3, C-RP-15), so the task queries are refetched too.
+  const refresh = () => Promise.all([versionsApi.keys.all, tasksApi.keys.all, auditKeys.all].map((queryKey) => queryClient.invalidateQueries({ queryKey })));
   return (
     <div className="p-4 sm:p-6 space-y-5 w-full">
       <QueryBoundary isLoading={query.isLoading} error={query.error} onRetry={() => void query.refetch()} entityName="version">
@@ -160,7 +166,7 @@ export const VersionWorkspace: React.FC = () => {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {versionBadges(v)}
-                <StatusMenu entity="version" status={v.status} name={v.code} canChange={canUpdate && !v.is_published} change={(next) => versionsApi.update(v.id, { status: next })} invalidate={[versionsApi.keys.all]} />
+                <StatusMenu entity="version" status={v.status} name={v.code} canChange={canUpdate && !v.is_published} change={(next) => versionsApi.update(v.id, { status: next })} invalidate={[versionsApi.keys.all, tasksApi.keys.all]} />
                 {versionActions(v, canPublish).map((a) => (
                   <Button key={a.label} size="sm" variant="outline" onClick={() => setAction(a)}>
                     {a.label}
@@ -204,6 +210,7 @@ export const VersionWorkspace: React.FC = () => {
             {tab === 'compare' && <VersionCompareTab version={v} />}
             {tab === 'reviews' && <VersionReviews version={v} />}
             {tab === 'playlists' && <VersionPlaylistsTab version={v} />}
+            {tab === 'notes' && <EntityNotesTab target={{ type: 'Version', id: v.id, code: v.code, name: '', projectId: v.project_id }} />}
             {tab === 'publishing' && <VersionPublishingTab version={v} />}
             {tab === 'status' && <StatusHistory queryKey={[...versionsApi.keys.detail(v.id), 'status-history']} fetch={(signal) => versionsApi.statusHistory(v.id, signal)} />}
             {tab === 'changes' && <EntityHistory targetType="Version" targetId={v.id} />}

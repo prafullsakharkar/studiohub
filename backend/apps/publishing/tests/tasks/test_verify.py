@@ -170,9 +170,7 @@ def test_compute_checksum_returns_none_for_a_directory(mount, register):
     assert compute_checksum(str(mount), PublishedFile.objects.get(pk=file.pk)) is None
 
 
-def test_registering_queues_nothing_because_no_celery_app_exists(
-    mount, register, django_capture_on_commit_callbacks
-):
+def test_registering_queues_no_verification(mount, register, django_capture_on_commit_callbacks):
     _write(mount, "s/plate.exr")
 
     with django_capture_on_commit_callbacks(execute=True) as callbacks:

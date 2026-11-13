@@ -414,6 +414,112 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/organizations/projects/{project_id}/notes/{note_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description ``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE`` a note (C-RP-10, C-RP-12, C-RP-13). */
+        get: operations["organizations_projects_notes_retrieve_3"];
+        put?: never;
+        post?: never;
+        /** @description ``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE`` a note (C-RP-10, C-RP-12, C-RP-13). */
+        delete: operations["organizations_projects_notes_destroy"];
+        options?: never;
+        head?: never;
+        /** @description ``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE`` a note (C-RP-10, C-RP-12, C-RP-13). */
+        patch: operations["organizations_projects_notes_partial_update"];
+        trace?: never;
+    };
+    "/api/organizations/projects/{project_id}/notes/{note_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description ``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE`` a note (C-RP-10, C-RP-12, C-RP-13). */
+        get: operations["organizations_projects_notes_retrieve_4"];
+        put?: never;
+        post?: never;
+        /** @description ``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE`` a note (C-RP-10, C-RP-12, C-RP-13). */
+        delete: operations["organizations_projects_notes_destroy_2"];
+        options?: never;
+        head?: never;
+        /** @description ``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE`` a note (C-RP-10, C-RP-12, C-RP-13). */
+        patch: operations["organizations_projects_notes_partial_update_2"];
+        trace?: never;
+    };
+    "/api/organizations/projects/{project_id}/notes/{note_id}/replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description ``POST`` a reply on the thread (C-RP-11). */
+        post: operations["organizations_projects_notes_replies_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/organizations/projects/{project_id}/notes/{note_id}/replies/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description ``POST`` a reply on the thread (C-RP-11). */
+        post: operations["organizations_projects_notes_replies_create_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/organizations/projects/{project_id}/notes/{note_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description ``POST`` a thread's new status (C-RP-13). */
+        post: operations["organizations_projects_notes_status_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/organizations/projects/{project_id}/notes/{note_id}/status/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description ``POST`` a thread's new status (C-RP-13). */
+        post: operations["organizations_projects_notes_status_create_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/organizations/projects/{project_id}/pipeline": {
         parameters: {
             query?: never;
@@ -7354,6 +7460,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/publishing/files/{uuid}/dependencies/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The files this one was built from, and the files built from it (C-RP-16). */
+        get: operations["v1_publishing_files_dependencies_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/publishing/files/{uuid}/deprecate/": {
         parameters: {
             query?: never;
@@ -7422,6 +7545,100 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/publishing/files/loader/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The latest, approved or hero file of each stream of a shot, asset or task (C-RP-17). */
+        get: operations["v1_publishing_files_loader_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publishing/files/resolve-path/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Where a file of this version, type and role should be registered (C-RP-18). */
+        get: operations["v1_publishing_files_resolve_path_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publishing/path-templates/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Platform-global reads (org-free).
+         *
+         *     ``serializer_map`` (action -> serializer) mirrors the declarative
+         *     contract of the former org-scoped base so viewsets keep resolving
+         *     serializers per action without a global ``serializer_class``.
+         */
+        get: operations["v1_publishing_path_templates_list"];
+        put?: never;
+        /**
+         * @description Platform-global reads (org-free).
+         *
+         *     ``serializer_map`` (action -> serializer) mirrors the declarative
+         *     contract of the former org-scoped base so viewsets keep resolving
+         *     serializers per action without a global ``serializer_class``.
+         */
+        post: operations["v1_publishing_path_templates_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publishing/path-templates/{uuid}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Platform-global reads (org-free).
+         *
+         *     ``serializer_map`` (action -> serializer) mirrors the declarative
+         *     contract of the former org-scoped base so viewsets keep resolving
+         *     serializers per action without a global ``serializer_class``.
+         */
+        get: operations["v1_publishing_path_templates_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * @description Platform-global reads (org-free).
+         *
+         *     ``serializer_map`` (action -> serializer) mirrors the declarative
+         *     contract of the former org-scoped base so viewsets keep resolving
+         *     serializers per action without a global ``serializer_class``.
+         */
+        patch: operations["v1_publishing_path_templates_partial_update"];
+        trace?: never;
+    };
     "/api/v1/publishing/storage-roots/": {
         parameters: {
             query?: never;
@@ -7488,6 +7705,54 @@ export interface paths {
          *     the Core soft-delete contract (same as the former org-scoped base).
          */
         patch: operations["v1_publishing_storage_roots_partial_update"];
+        trace?: never;
+    };
+    "/api/v1/review-media/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["v1_review_media_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review-media/{id}/{output}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_review_media_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review-media/{id}/retry/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_review_media_retry_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/reviews/": {
@@ -12778,6 +13043,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/versions/{uuid}/review-media/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Every review media row of the version, newest first. */
+        get: operations["v1_versions_review_media_list"];
+        put?: never;
+        /** @description Upload a review movie or still; the media worker processes it (202). */
+        post: operations["v1_versions_review_media_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/versions/{uuid}/status-history/": {
         parameters: {
             query?: never;
@@ -13574,6 +13857,8 @@ export interface components {
             /** @default  */
             comment: string;
             drawing_coordinates?: unknown;
+            /** Format: uuid */
+            version_id?: string | null;
         };
         /** @description Body of ``POST /task-templates/{id}/apply/``. */
         ApplyTemplate: {
@@ -15420,6 +15705,42 @@ export interface components {
              */
             readonly updated_at: string;
         };
+        Dependencies: {
+            upstream: components["schemas"]["DependencyRow"][];
+            downstream: components["schemas"]["DependencyRow"][];
+        };
+        /** @description One upstream or downstream file in ``GET files/{id}/dependencies/`` (C-RP-16). */
+        DependencyRow: {
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly id: string;
+            readonly storage_root: string;
+            readonly relative_path: string;
+            /**
+             * @description * `main` - Main
+             *     * `proxy` - Proxy
+             *     * `thumbnail` - Thumbnail
+             *     * `sidecar` - Sidecar
+             * @enum {string}
+             */
+            readonly role: "main" | "proxy" | "thumbnail" | "sidecar";
+            readonly file_type: string;
+            /**
+             * @description * `Registered` - Registered
+             *     * `Deprecated` - Deprecated
+             *     * `Revoked` - Revoked
+             * @enum {string}
+             */
+            readonly status: "Registered" | "Deprecated" | "Revoked";
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly version_id: string;
+            readonly version_code: string;
+        };
         Deprecate: {
             note?: string;
             override_reason?: string;
@@ -16169,6 +16490,90 @@ export interface components {
             user: string;
             /** @default false */
             move: boolean;
+        };
+        /** @description A file of ``GET files/loader/``, with its version and task (C-RP-17). */
+        LoaderRow: {
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly id: string;
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly version_id: string;
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly project_id: string;
+            readonly storage_root: string;
+            readonly relative_path: string;
+            /**
+             * @description * `main` - Main
+             *     * `proxy` - Proxy
+             *     * `thumbnail` - Thumbnail
+             *     * `sidecar` - Sidecar
+             * @enum {string}
+             */
+            readonly role: "main" | "proxy" | "thumbnail" | "sidecar";
+            readonly file_type: string;
+            readonly size_bytes: number;
+            readonly sha256: string;
+            readonly frame_start: number | null;
+            readonly frame_end: number | null;
+            /**
+             * @description * `declared` - Declared
+             *     * `verified` - Verified
+             *     * `mismatch` - Mismatch
+             *     * `missing` - Missing
+             * @enum {string}
+             */
+            readonly checksum_state: "declared" | "verified" | "mismatch" | "missing";
+            /** Format: date-time */
+            readonly checksum_checked_at: string | null;
+            /**
+             * @description * `Registered` - Registered
+             *     * `Deprecated` - Deprecated
+             *     * `Revoked` - Revoked
+             * @enum {string}
+             */
+            readonly status: "Registered" | "Deprecated" | "Revoked";
+            /** Format: date-time */
+            readonly status_changed_at: string | null;
+            /** @description Shown to holders of ``publishing.revoke`` and to whoever registered the file. */
+            readonly revoke_reason: string;
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly export_job_id: string | null;
+            /**
+             * Format: date-time
+             * @description Object creation timestamp.
+             */
+            readonly created_at: string;
+            /** Format: uuid */
+            readonly created_by_id: string;
+            /** @description How many files this one was built from (C-RP-16); annotated by the selector on reads. */
+            readonly upstream_count: number;
+            readonly downstream_count: number;
+            readonly version: components["schemas"]["LoaderVersion"];
+            readonly task: components["schemas"]["LoaderTask"] | null;
+        };
+        LoaderTask: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+        };
+        LoaderVersion: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            version_index: number;
+            status: string;
+            is_hero: boolean;
         };
         /** @description Serializer for Localization. */
         Localization: {
@@ -17385,6 +17790,21 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["Office"][];
+        };
+        PaginatedPathTemplateList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["PathTemplate"][];
         };
         PaginatedPermissionList: {
             /** @example 123 */
@@ -18995,6 +19415,24 @@ export interface components {
              */
             readonly updated_at?: string;
         };
+        /** @description An unknown key is a 400, so a caller never believes a field was stored when it was not. */
+        PatchedPathTemplateUpdate: {
+            /** Format: uuid */
+            project?: string | null;
+            file_type?: string;
+            /**
+             * @description * `main` - Main
+             *     * `proxy` - Proxy
+             *     * `thumbnail` - Thumbnail
+             *     * `sidecar` - Sidecar
+             * @enum {string}
+             */
+            role?: "main" | "proxy" | "thumbnail" | "sidecar";
+            storage_root?: string;
+            pattern?: string;
+            enforce?: boolean;
+            is_active?: boolean;
+        };
         /** @description Base serializer for Identity models. */
         PatchedPermission: {
             /**
@@ -19879,6 +20317,8 @@ export interface components {
             resolution?: string;
             aspect_ratio?: string;
             color_space?: string;
+            /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
+            approve_task_on_version_approval?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -21316,6 +21756,56 @@ export interface components {
             nodes?: unknown;
             transitions?: unknown;
             automation_rules?: unknown;
+        };
+        PathTemplate: {
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly id: string;
+            /** Format: uuid */
+            readonly project_id: string | null;
+            readonly file_type: string;
+            /**
+             * @description * `main` - Main
+             *     * `proxy` - Proxy
+             *     * `thumbnail` - Thumbnail
+             *     * `sidecar` - Sidecar
+             * @enum {string}
+             */
+            readonly role: "main" | "proxy" | "thumbnail" | "sidecar";
+            readonly storage_root: string;
+            readonly pattern: string;
+            readonly enforce: boolean;
+            readonly is_active: boolean;
+            /**
+             * Format: date-time
+             * @description Object creation timestamp.
+             */
+            readonly created_at: string;
+            /**
+             * Format: date-time
+             * @description Last update timestamp.
+             */
+            readonly updated_at: string;
+        };
+        /** @description An unknown key is a 400, so a caller never believes a field was stored when it was not. */
+        PathTemplateCreate: {
+            /** Format: uuid */
+            project?: string | null;
+            file_type: string;
+            /**
+             * @description * `main` - Main
+             *     * `proxy` - Proxy
+             *     * `thumbnail` - Thumbnail
+             *     * `sidecar` - Sidecar
+             * @enum {string}
+             */
+            role?: "main" | "proxy" | "thumbnail" | "sidecar";
+            storage_root: string;
+            pattern: string;
+            enforce?: boolean;
+            is_active?: boolean;
         };
         /** @description Base serializer for Identity models. */
         Permission: {
@@ -24259,6 +24749,8 @@ export interface components {
             resolution?: string;
             aspect_ratio?: string;
             color_space?: string;
+            /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
+            approve_task_on_version_approval?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -24330,6 +24822,8 @@ export interface components {
             resolution?: string;
             aspect_ratio?: string;
             color_space?: string;
+            /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
+            approve_task_on_version_approval?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -24411,6 +24905,8 @@ export interface components {
             resolution?: string;
             aspect_ratio?: string;
             color_space?: string;
+            /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
+            approve_task_on_version_approval?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -24473,6 +24969,8 @@ export interface components {
             resolution?: string;
             aspect_ratio?: string;
             color_space?: string;
+            /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
+            approve_task_on_version_approval?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -24809,6 +25307,9 @@ export interface components {
             readonly created_at: string;
             /** Format: uuid */
             readonly created_by_id: string;
+            /** @description How many files this one was built from (C-RP-16); annotated by the selector on reads. */
+            readonly upstream_count: number;
+            readonly downstream_count: number;
         };
         RecoveryCodeVerify: {
             code: string;
@@ -24829,6 +25330,7 @@ export interface components {
             frame_end?: number | null;
             /** Format: uuid */
             export_job_id?: string | null;
+            upstream_ids?: string[];
         };
         /** @description Body of an action that an override permission may carry (reason mandatory when used). */
         RejectTimelog: {
@@ -24869,6 +25371,14 @@ export interface components {
         ResolveOverbooking: {
             alert_id: string;
             resource_id?: string | null;
+        };
+        ResolvedPath: {
+            /** Format: uuid */
+            template_id: string;
+            storage_root: string;
+            pattern: string;
+            relative_path: string;
+            enforce: boolean;
         };
         /** @description Serializer for creating a resource. */
         ResourceCreate: {
@@ -25234,6 +25744,8 @@ export interface components {
             tags?: string[];
             /** Format: uuid */
             parent_id?: string | null;
+            /** Format: uuid */
+            version_id?: string | null;
         };
         /** @description Base serializer for write operations. */
         ReviewCreate: {
@@ -25349,6 +25861,74 @@ export interface components {
              * @description Last update timestamp.
              */
             readonly updated_at: string;
+        };
+        ReviewMedia: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly version_id: string;
+            /**
+             * @description * `movie` - Movie
+             *     * `still` - Still
+             * @enum {string}
+             */
+            readonly kind: "movie" | "still";
+            /**
+             * @description * `queued` - Queued
+             *     * `processing` - Processing
+             *     * `ready` - Ready
+             *     * `failed` - Failed
+             *     * `superseded` - Superseded
+             *     * `removed` - Removed
+             * @enum {string}
+             */
+            readonly status: "queued" | "processing" | "ready" | "failed" | "superseded" | "removed";
+            readonly source_name: string;
+            readonly source_size: number;
+            readonly probe: components["schemas"]["ReviewMediaProbe"] | null;
+            /**
+             * @description * `probe_failed` - The file could not be read.
+             *     * `unsupported_stream` - The file has no picture the server can use.
+             *     * `transcode_failed` - The review copy could not be made.
+             *     * `timeout` - Processing took too long and was stopped.
+             *     * `source_missing` - The uploaded file is no longer on the server.
+             * @enum {string}
+             */
+            readonly error_code: "probe_failed" | "unsupported_stream" | "transcode_failed" | "timeout" | "source_missing";
+            readonly error_message: string;
+            readonly attempts: number;
+            /** Format: date-time */
+            readonly queued_at: string;
+            /** Format: date-time */
+            readonly started_at: string | null;
+            /** Format: date-time */
+            readonly finished_at: string | null;
+            readonly created_by: components["schemas"]["ReviewMediaUser"] | null;
+            readonly proxy_url: string | null;
+            readonly thumbnail_url: string | null;
+            readonly filmstrip_url: string | null;
+            readonly filmstrip_tiles: number;
+            /** Format: date-time */
+            readonly links_expire_at: string | null;
+        };
+        ReviewMediaProbe: {
+            width: number;
+            height: number;
+            /** Format: double */
+            fps: number;
+            frames: number;
+            /** Format: double */
+            duration_seconds: number;
+            video_codec: string;
+            has_audio: boolean;
+        };
+        ReviewMediaUpload: {
+            file: string;
+        };
+        ReviewMediaUser: {
+            /** Format: uuid */
+            id: string;
+            name: string;
         };
         /** @description Rejects keys the serializer does not declare. */
         ReviewNote: {
@@ -28357,12 +28937,8 @@ export interface components {
             changelog?: string;
             tags?: unknown;
             publishing_info?: unknown;
-            media_items?: unknown;
-            attachments?: unknown;
-            reviews?: unknown;
-            playlists?: unknown;
-            notes_list?: unknown;
-            activity?: unknown;
+            readonly review_media: components["schemas"]["ReviewMedia"] | null;
+            readonly review_media_job: components["schemas"]["ReviewMedia"] | null;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -28440,12 +29016,8 @@ export interface components {
             changelog?: string;
             tags?: unknown;
             publishing_info?: unknown;
-            media_items?: unknown;
-            attachments?: unknown;
-            reviews?: unknown;
-            playlists?: unknown;
-            notes_list?: unknown;
-            activity?: unknown;
+            readonly review_media: components["schemas"]["ReviewMedia"] | null;
+            readonly review_media_job: components["schemas"]["ReviewMedia"] | null;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -29153,6 +29725,216 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_retrieve_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_retrieve_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_destroy_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_partial_update_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_replies_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_replies_create_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_status_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_notes_status_create_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
                 project_id: string;
             };
             cookie?: never;
@@ -43444,6 +44226,7 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 status?: string;
+                version_id?: string;
             };
             header?: never;
             path?: never;
@@ -45091,6 +45874,27 @@ export interface operations {
             };
         };
     };
+    v1_publishing_files_dependencies_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dependencies"];
+                };
+            };
+        };
+    };
     v1_publishing_files_deprecate_create: {
         parameters: {
             query?: never;
@@ -45205,6 +46009,177 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+        };
+    };
+    v1_publishing_files_loader_list: {
+        parameters: {
+            query?: {
+                asset?: string;
+                file_type?: string;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /**
+                 * @description * `main` - Main
+                 *     * `proxy` - Proxy
+                 *     * `thumbnail` - Thumbnail
+                 *     * `sidecar` - Sidecar
+                 */
+                role?: "main" | "proxy" | "thumbnail" | "sidecar";
+                /** @description A search term. */
+                search?: string;
+                shot?: string;
+                task?: string;
+                /**
+                 * @description * `latest` - latest
+                 *     * `approved` - approved
+                 *     * `hero` - hero
+                 */
+                which?: "latest" | "approved" | "hero";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoaderRow"][];
+                };
+            };
+        };
+    };
+    v1_publishing_files_resolve_path_retrieve: {
+        parameters: {
+            query: {
+                file_type: string;
+                /**
+                 * @description * `main` - Main
+                 *     * `proxy` - Proxy
+                 *     * `thumbnail` - Thumbnail
+                 *     * `sidecar` - Sidecar
+                 */
+                role?: "main" | "proxy" | "thumbnail" | "sidecar";
+                version_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResolvedPath"];
+                };
+            };
+        };
+    };
+    v1_publishing_path_templates_list: {
+        parameters: {
+            query?: {
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description A search term. */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPathTemplateList"];
+                };
+            };
+        };
+    };
+    v1_publishing_path_templates_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PathTemplateCreate"];
+                "application/x-www-form-urlencoded": components["schemas"]["PathTemplateCreate"];
+                "multipart/form-data": components["schemas"]["PathTemplateCreate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PathTemplate"];
+                };
+            };
+        };
+    };
+    v1_publishing_path_templates_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PathTemplate"];
+                };
+            };
+        };
+    };
+    v1_publishing_path_templates_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedPathTemplateUpdate"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPathTemplateUpdate"];
+                "multipart/form-data": components["schemas"]["PatchedPathTemplateUpdate"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PathTemplate"];
                 };
             };
         };
@@ -45357,6 +46332,71 @@ export interface operations {
             };
         };
     };
+    v1_review_media_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v1_review_media_retrieve: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+                output: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+        };
+    };
+    v1_review_media_retry_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewMedia"];
+                };
+            };
+        };
+    };
     v1_reviews_list: {
         parameters: {
             query?: {
@@ -45373,6 +46413,7 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 status?: string;
+                version_id?: string;
             };
             header?: never;
             path?: never;
@@ -45927,6 +46968,7 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 status?: string;
+                version_id?: string;
             };
             header?: never;
             path: {
@@ -53988,6 +55030,65 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VersionList"];
+                };
+            };
+        };
+    };
+    v1_versions_review_media_list: {
+        parameters: {
+            query?: {
+                department?: string;
+                entity_id?: string;
+                entity_type?: string;
+                is_archived?: boolean;
+                is_published?: boolean;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                project?: string;
+                project_id?: string;
+                /** @description A search term. */
+                search?: string;
+                status?: string;
+            };
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewMedia"][];
+                };
+            };
+        };
+    };
+    v1_versions_review_media_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["ReviewMediaUpload"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewMedia"];
                 };
             };
         };

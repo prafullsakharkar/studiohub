@@ -55,6 +55,13 @@ class Project(EntityModel):
     resolution = models.CharField(max_length=50, default="4096x2160 (4K DCI)", blank=True)
     aspect_ratio = models.CharField(max_length=20, default="2.39:1", blank=True)
     color_space = models.CharField(max_length=50, default="ACEScg", blank=True)
+    approve_task_on_version_approval = models.BooleanField(
+        default=False,
+        help_text=(
+            "When on, approving a version also approves its task (review pipeline RP-3, "
+            "C-RP-15). Off by default."
+        ),
+    )
 
     start_date = models.DateField(null=True, blank=True)
     delivery_date = models.DateField(null=True, blank=True)

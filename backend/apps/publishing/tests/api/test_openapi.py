@@ -48,6 +48,7 @@ def test_the_registration_body_has_the_documented_fields(schema):
     assert set(properties) == {
         "version_id", "storage_root", "relative_path", "role", "file_type", "size_bytes",
         "sha256", "frame_start", "frame_end", "export_job_id",
+        "upstream_ids",  # review-pipeline RP-4, C-RP-16
     }  # fmt: skip
 
 

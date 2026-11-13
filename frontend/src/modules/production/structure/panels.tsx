@@ -11,6 +11,7 @@ import { useCurrentUser } from '@/core/auth/useCurrentUser';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { Field, FormBanner, Table, formatDate, inputClass } from '@/modules/identity/components/ui';
+import { NoteBoard } from '@/modules/production/notes/NoteBoard';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { fetchAllRows } from '@/shared/data/listing';
@@ -261,66 +262,8 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
 };
 
 // ---------------------------------------------------------------- notes
-const noteSchema = z.object({ subject: z.string().trim().min(1, 'Enter a subject'), body: z.string().optional() });
-
-export const NotesPanel: React.FC<{ projectId: string }> = ({ projectId }) => {
-  const queryClient = useQueryClient();
-  const notes = useQuery({ queryKey: key(projectId, 'notes'), queryFn: ({ signal }) => projectScopedApi.notes(projectId, signal) });
-  const {
-    register,
-    submit,
-    reset,
-    serverError,
-    clearServerError,
-    formState: { errors, isSubmitting },
-  } = useServerForm<z.infer<typeof noteSchema>>({ resolver: zodResolver(noteSchema), defaultValues: { subject: '', body: '' } });
-
-  const onAdd = submit(async (values) => {
-    await projectScopedApi.addNote(projectId, { subject: values.subject, ...(values.body ? { body: values.body } : {}) });
-    reset();
-    await queryClient.invalidateQueries({ queryKey: key(projectId, 'notes') });
-  });
-
-  return (
-    <div className="space-y-4">
-      <form noValidate onSubmit={onAdd} className="space-y-3 max-w-xl">
-        <FormBanner error={serverError} />
-        <Field id="note-subject" label="Subject" error={errors.subject?.message}>
-          <input id="note-subject" className={inputClass(Boolean(errors.subject))} {...register('subject', { onChange: clearServerError })} />
-        </Field>
-        <Field id="note-body" label="Note">
-          <textarea id="note-body" rows={3} className={inputClass()} {...register('body')} />
-        </Field>
-        <Button type="submit" size="sm" variant="primary" isLoading={isSubmitting}>
-          Add note
-        </Button>
-      </form>
-      <QueryBoundary
-        isLoading={notes.isLoading}
-        error={notes.error}
-        onRetry={() => void notes.refetch()}
-        entityName="notes"
-        isEmpty={(notes.data?.results ?? []).length === 0}
-        empty={{ title: 'No notes', description: 'Notes on the project appear here.' }}
-      >
-        <ul className="space-y-2">
-          {(notes.data?.results ?? []).map((n) => (
-            <li key={n.id} className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-xs">
-              <div className="flex justify-between gap-3">
-                <span className="font-semibold text-slate-200">{n.subject}</span>
-                <time dateTime={n.created_at} className="font-mono text-[10px] text-slate-500">
-                  {formatDate(n.created_at)}
-                </time>
-              </div>
-              {n.body && <p className="mt-1 text-slate-400 whitespace-pre-wrap">{n.body}</p>}
-              <p className="mt-1 text-[11px] text-slate-500">{n.author_name}</p>
-            </li>
-          ))}
-        </ul>
-      </QueryBoundary>
-    </div>
-  );
-};
+/** The project's notes: every thread, newest first (review pipeline RP-2). */
+export const NotesPanel: React.FC<{ projectId: string }> = ({ projectId }) => <NoteBoard projectId={projectId} emptyDescription="Notes on the project appear here." />;
 
 // ---------------------------------------------------------------- pipeline, resources, schedule
 export const PipelinePanel: React.FC<{ projectId: string }> = ({ projectId }) => {

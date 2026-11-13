@@ -41,6 +41,7 @@ def comment_dict(row: Any, *, replies: bool = True) -> dict[str, Any]:
     data = {
         "id": str(row.pk),
         "parent_id": str(row.parent_id) if row.parent_id else None,
+        "version_id": str(row.version_id) if row.version_id else None,
         "author": row.author_name,
         "author_id": str(row.author_id) if row.author_id else None,
         "text": row.text,
@@ -74,6 +75,7 @@ def note_dict(row: Any) -> dict[str, Any]:
 def annotation_dict(row: Any) -> dict[str, Any]:
     return {
         "id": str(row.pk),
+        "version_id": str(row.version_id) if row.version_id else None,
         "frame_number": row.frame_number,
         "timecode": row.timecode or None,
         "author_name": row.author_name,

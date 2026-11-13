@@ -15,6 +15,8 @@ class ProductionConfig(AppConfig):
 
         providers.register()
 
+        from . import checks  # noqa: F401  (registers the deploy checks)
+
         # Import signals if any
         with contextlib.suppress(ImportError):
             from . import signals  # noqa: F401

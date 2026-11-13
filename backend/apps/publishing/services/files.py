@@ -1,6 +1,7 @@
 """
 The published file registry: registration, lifecycle, checksum verification
-(docs/publishing/CONTRACTS.md DOM-PUB-02 to DOM-PUB-04).
+(docs/publishing/CONTRACTS.md DOM-PUB-02 to DOM-PUB-04), dependencies and path templates
+(review-pipeline RP-4, C-RP-16 and C-RP-18).
 
 Every public method is one ``transaction.atomic()``. A registered file is never edited: the only
 writes after registration are the lifecycle fields, all made here.
@@ -22,6 +23,7 @@ from apps.core.api.exceptions.api import NotFoundException
 from apps.core.events import default_event_bus
 from apps.masterdata.selectors.catalog import MasterFileTypeSelector
 from apps.production.permissions.checks import has_explicit_permission_code, has_permission_code
+from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.version import VersionSelector
 from apps.publishing.constants import workflow
 from apps.publishing.domain.paths import PathRuleError, is_sequence_pattern, normalize_relative_path
@@ -31,8 +33,16 @@ from apps.publishing.exceptions import (
     PathAlreadyRegistered,
     TransitionNotPermitted,
 )
-from apps.publishing.models import PublishedFile, PublishedFileEvent, PublishItem, StorageRoot
+from apps.publishing.models import (
+    PublishedFile,
+    PublishedFileDependency,
+    PublishedFileEvent,
+    PublishItem,
+    StorageRoot,
+)
+from apps.publishing.models.dependency import MAX_UPSTREAMS
 from apps.publishing.services import audit
+from apps.publishing.services import templates as path_templates
 
 BULK_LIMIT = 100
 _SHA256 = re.compile(r"^[0-9a-fA-F]{64}$")
@@ -49,6 +59,7 @@ _REGISTRATION_KEYS = frozenset(
         "frame_start",
         "frame_end",
         "export_job_id",
+        "upstream_ids",
     }
 )
 
@@ -147,9 +158,59 @@ def _clean_registration(version_project_id: Any, data: dict[str, Any]) -> dict[s
             errors["export_job_id"] = ["Unknown export job."]
     cleaned["export_job"] = job
 
+    upstream_ids, upstream_errors = _parse_upstream_ids(data.get("upstream_ids"))
+    if upstream_errors:
+        errors["upstream_ids"] = upstream_errors
+    cleaned["upstream_ids"] = upstream_ids
+
     if errors:
         raise ValidationError(errors)
     return cleaned
+
+
+def _parse_upstream_ids(value: Any) -> tuple[frozenset[UUID], list[str]]:
+    """The upstream ids of a registration body, or the errors of its format (C-RP-16)."""
+    if value is None:
+        return frozenset(), []
+    if not isinstance(value, (list, tuple)):
+        return frozenset(), ["A list of file ids."]
+    if len(value) > MAX_UPSTREAMS:
+        return frozenset(), [f"At most {MAX_UPSTREAMS} upstream files."]
+    ids: list[UUID] = []
+    for item in value:
+        try:
+            ids.append(item if isinstance(item, UUID) else UUID(str(item)))
+        except ValueError:
+            return frozenset(), [f"Not a file id: {str(item)[:40]}"]
+    if len(set(ids)) != len(ids):
+        return frozenset(), ["A file is listed twice."]
+    return frozenset(ids), []
+
+
+def _resolve_upstreams(request: Any, version: Any, ids: frozenset[UUID]) -> list[PublishedFile]:
+    """
+    The upstream files, locked so none is revoked while the dependency is written.
+
+    Each must be a live file of the version's project that the caller can read, and not
+    ``Revoked`` (Q-RP-20 = A). Another project's file, a file the caller cannot read and an
+    unknown id get the same message.
+    """
+    if not ids:
+        return []
+    visible = ProductionBaseSelector.visible_project_ids(request)
+    rows = PublishedFile.objects.filter(pk__in=ids, project_id=version.project_id)
+    if visible is not None and version.project_id not in visible:
+        rows = rows.none()
+    found = {row.pk: row for row in rows.select_for_update().order_by("pk")}
+    errors = [f"Unknown upstream file: {pk}" for pk in sorted(ids - set(found), key=str)]
+    errors += [
+        f"The upstream file is revoked: {pk}"
+        for pk, row in sorted(found.items(), key=lambda item: str(item[0]))
+        if row.status == PublishedFile.Status.REVOKED
+    ]
+    if errors:
+        raise ValidationError({"upstream_ids": errors})
+    return [found[pk] for pk in sorted(found, key=str)]
 
 
 def _same_content(existing: PublishedFile, version_id: Any, cleaned: dict[str, Any]) -> bool:
@@ -161,6 +222,13 @@ def _same_content(existing: PublishedFile, version_id: Any, cleaned: dict[str, A
         and existing.role == cleaned["role"]
         and existing.frame_start == cleaned["frame_start"]
         and existing.frame_end == cleaned["frame_end"]
+        # A retry names the same upstreams, or it is a different registration (C-RP-16).
+        and set(
+            PublishedFileDependency.objects.filter(downstream=existing).values_list(
+                "upstream_id", flat=True
+            )
+        )
+        == set(cleaned["upstream_ids"])
     )
 
 
@@ -189,6 +257,10 @@ class PublishedFileService:
         if existing is not None:
             return cls._same_or_conflict(existing, version.pk, cleaned), False
 
+        path_templates.enforce(version, cleaned)
+        upstream_ids = cleaned.pop("upstream_ids")
+        upstreams = _resolve_upstreams(request, version, upstream_ids)
+
         try:
             with transaction.atomic():
                 file = PublishedFile.objects.create(
@@ -202,8 +274,18 @@ class PublishedFileService:
             existing = PublishedFile.all_objects.get(
                 storage_root=cleaned["storage_root"], relative_path=cleaned["relative_path"]
             )
-            return cls._same_or_conflict(existing, version.pk, cleaned), False
+            return cls._same_or_conflict(
+                existing, version.pk, {**cleaned, "upstream_ids": upstream_ids}
+            ), False
 
+        PublishedFileDependency.objects.bulk_create(
+            [
+                PublishedFileDependency(
+                    downstream=file, upstream=upstream, created_by=_actor_or_none(actor)
+                )
+                for upstream in upstreams
+            ]
+        )
         PublishedFileEvent.objects.create(
             file=file,
             kind=PublishedFileEvent.Kind.REGISTERED,
@@ -219,6 +301,7 @@ class PublishedFileService:
             metadata={
                 "version_id": str(version.pk),
                 "project_id": str(version.project_id),  # pyright: ignore[reportAttributeAccessIssue]
+                "upstream_count": len(upstreams),
             },
         )
         return file, True
