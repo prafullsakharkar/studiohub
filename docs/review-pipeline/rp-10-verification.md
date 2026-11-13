@@ -1,6 +1,6 @@
 # RP-10 Loose ends of RP-5 and RP-6: verification
 
-Branch `feature/rp-10-loose-ends`, off `develop` at `e5346727` (RP-1 to RP-6 merged; v4.7.0 released from `main` `52dd08e4`). The plan and contracts are commit `0e48ec50` (Q-RP-41 to Q-RP-45 answered as recommended). **WP 10.1 to 10.8 are built and not yet committed.**
+Branch `feature/rp-10-loose-ends`, off `develop` at `e5346727` (RP-1 to RP-6 merged; v4.7.0 released from `main` `52dd08e4`). The plan and contracts are commit `0e48ec50` (Q-RP-41 to Q-RP-45 answered as recommended). **WP 10.1 to 10.8 are commit `ff1bc2fc`**, not yet merged.
 
 ## 0. Read first
 
@@ -46,4 +46,4 @@ There is no migration, no new permission code and no new setting.
 
 ## 4. Not done in RP-10
 
-Nothing planned was left out. Found on the way and not fixed here: the role smoke's no-role entry is out of date since `f37003e2` (section 2, "Role smoke"). Not committed and not merged: that waits for the owner.
+Nothing planned was left out. Found on the way and fixed in a separate, test-only commit after RP-10: the role smoke's no-role entry, out of date since `f37003e2` (section 2, "Role smoke"). The spec now counts the "No access yet" page as a refusal and expects it on all 61 routes. `run_role_smoke.sh --grep "user with no role"` passes (1 passed in 3.7 minutes; every route `refused (no role)`, no 403 call). Not merged: that waits for the owner.
