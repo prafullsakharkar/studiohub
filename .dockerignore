@@ -34,11 +34,17 @@
 **/dist
 **/build
 
-# Local databases and generated media (collectstatic runs inside the image)
+# Local databases and generated media (collectstatic runs inside the image). The media and static
+# folders are named by path, not `**/`: a `**/media` pattern also dropped the Python package
+# `apps/production/api/serializers/media/` from every image built since v4.1.0
+# (`backend/apps/core/tests/test_image_contents.py` guards this).
 **/db.sqlite3
-**/media
-**/static
-**/staticfiles
+backend/media
+backend/static
+backend/staticfiles
+media
+static
+staticfiles
 
 # Celery beat / runtime scratch files, logs
 **/celerybeat-schedule*
