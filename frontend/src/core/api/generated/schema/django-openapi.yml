@@ -488,7 +488,11 @@ paths:
       - apiKey: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProjectNoteList'
+          description: ''
     post:
       operationId: organizations_projects_notes_create
       description: |-
@@ -504,13 +508,29 @@ paths:
         required: true
       tags:
       - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteCreate'
+        required: true
       security:
       - sessionJWT: []
       - personalAccessToken: []
       - apiKey: []
       responses:
-        '200':
-          description: No response body
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectNote'
+          description: ''
   /api/organizations/projects/{project_id}/notes/:
     get:
       operationId: organizations_projects_notes_retrieve_2
@@ -533,7 +553,11 @@ paths:
       - apiKey: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProjectNoteList'
+          description: ''
     post:
       operationId: organizations_projects_notes_create_2
       description: |-
@@ -549,13 +573,29 @@ paths:
         required: true
       tags:
       - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteCreate'
+        required: true
       security:
       - sessionJWT: []
       - personalAccessToken: []
       - apiKey: []
       responses:
-        '200':
-          description: No response body
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectNote'
+          description: ''
   /api/organizations/projects/{project_id}/notes/{note_id}:
     get:
       operationId: organizations_projects_notes_retrieve_3
@@ -580,7 +620,11 @@ paths:
       - apiKey: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectNoteDetail'
+          description: ''
     patch:
       operationId: organizations_projects_notes_partial_update
       description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
@@ -598,13 +642,28 @@ paths:
         required: true
       tags:
       - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectNoteUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectNoteUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectNoteUpdate'
       security:
       - sessionJWT: []
       - personalAccessToken: []
       - apiKey: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectNote'
+          description: ''
     delete:
       operationId: organizations_projects_notes_destroy
       description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
@@ -653,7 +712,11 @@ paths:
       - apiKey: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectNoteDetail'
+          description: ''
     patch:
       operationId: organizations_projects_notes_partial_update_2
       description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
@@ -671,13 +734,28 @@ paths:
         required: true
       tags:
       - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectNoteUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectNoteUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectNoteUpdate'
       security:
       - sessionJWT: []
       - personalAccessToken: []
       - apiKey: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectNote'
+          description: ''
     delete:
       operationId: organizations_projects_notes_destroy_2
       description: '``GET`` a thread with its replies, ``PATCH`` a note, ``DELETE``
@@ -719,13 +797,29 @@ paths:
         required: true
       tags:
       - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteReply'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteReply'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteReply'
+        required: true
       security:
       - sessionJWT: []
       - personalAccessToken: []
       - apiKey: []
       responses:
-        '200':
-          description: No response body
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectNote'
+          description: ''
   /api/organizations/projects/{project_id}/notes/{note_id}/replies/:
     post:
       operationId: organizations_projects_notes_replies_create_2
@@ -743,13 +837,29 @@ paths:
         required: true
       tags:
       - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteReply'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteReply'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteReply'
+        required: true
       security:
       - sessionJWT: []
       - personalAccessToken: []
       - apiKey: []
       responses:
-        '200':
-          description: No response body
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectNote'
+          description: ''
   /api/organizations/projects/{project_id}/notes/{note_id}/status:
     post:
       operationId: organizations_projects_notes_status_create
@@ -767,13 +877,29 @@ paths:
         required: true
       tags:
       - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteStatus'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteStatus'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteStatus'
+        required: true
       security:
       - sessionJWT: []
       - personalAccessToken: []
       - apiKey: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectNote'
+          description: ''
   /api/organizations/projects/{project_id}/notes/{note_id}/status/:
     post:
       operationId: organizations_projects_notes_status_create_2
@@ -791,13 +917,29 @@ paths:
         required: true
       tags:
       - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteStatus'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteStatus'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteStatus'
+        required: true
       security:
       - sessionJWT: []
       - personalAccessToken: []
       - apiKey: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectNote'
+          description: ''
   /api/organizations/projects/{project_id}/pipeline:
     get:
       operationId: organizations_projects_pipeline_retrieve
@@ -41274,6 +41416,20 @@ components:
           nullable: true
         notes:
           type: string
+    NoteLinkInput:
+      type: object
+      description: One record a note names. Checked by ``validators/project_note.py``,
+        so every refusal reads the same.
+      properties:
+        entity_type:
+          type: string
+          maxLength: 20
+        entity_id:
+          type: string
+          maxLength: 64
+      required:
+      - entity_id
+      - entity_type
     Notification:
       type: object
       description: |-
@@ -42041,6 +42197,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProjectList'
+    PaginatedProjectNoteList:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectNote'
+      required:
+      - count
+      - next
+      - previous
+      - results
     PaginatedPublishListList:
       type: object
       required:
@@ -46216,6 +46392,68 @@ components:
           format: date-time
           readOnly: true
           description: Last update timestamp.
+    PatchedProjectNoteUpdate:
+      type: object
+      description: What a ``PATCH`` may change (C-RP-12); a reply takes only ``body``
+        (checked by the service).
+      properties:
+        subject:
+          type: string
+          maxLength: 255
+        body:
+          type: string
+        category:
+          enum:
+          - Director Feedback
+          - Supervisor Note
+          - Client Note
+          - Pipeline Notice
+          - Turnover Requirement
+          - General
+          type: string
+          description: |-
+            * `Director Feedback` - Director Feedback
+            * `Supervisor Note` - Supervisor Note
+            * `Client Note` - Client Note
+            * `Pipeline Notice` - Pipeline Notice
+            * `Turnover Requirement` - Turnover Requirement
+            * `General` - General
+          x-spec-enum-id: 5d04391de5ff4466
+        priority:
+          enum:
+          - Critical
+          - High
+          - Medium
+          - Low
+          type: string
+          description: |-
+            * `Critical` - Critical
+            * `High` - High
+            * `Medium` - Medium
+            * `Low` - Low
+          x-spec-enum-id: 588dc8bee23fb323
+        tags: {}
+        timecode_ref:
+          type: string
+          maxLength: 20
+        frame_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteLinkInput'
+        task_id:
+          type: string
+          nullable: true
+          maxLength: 64
+        mention_ids:
+          type: array
+          items:
+            type: string
+            maxLength: 64
     PatchedProjectUpdate:
       type: object
       description: Base serializer for write operations.
@@ -54938,6 +55176,468 @@ components:
       - updated_at
       - uuid
       - vendor_names
+    ProjectNote:
+      type: object
+      description: |-
+        Frontend ProjectNote shape (C-RP-08).
+
+        ``links`` carry each record's code and name as they are now, read in one query per type for the
+        whole page (``context["link_labels"]``, see ``ProjectNoteSelector.link_labels``); without it, the
+        labels are read per note.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Universally unique identifier.
+        project_id:
+          type: string
+          format: uuid
+          readOnly: true
+        project_code:
+          type: string
+          readOnly: true
+        entity_type:
+          type: string
+          maxLength: 20
+        entity_id:
+          type: string
+          maxLength: 50
+        entity_code:
+          type: string
+          maxLength: 50
+        entity_name:
+          type: string
+          maxLength: 255
+        author_id:
+          type: string
+          readOnly: true
+        author_name:
+          type: string
+          maxLength: 255
+        author_avatar:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        author_role:
+          type: string
+          maxLength: 100
+        subject:
+          type: string
+          maxLength: 255
+        body:
+          type: string
+        category:
+          enum:
+          - Director Feedback
+          - Supervisor Note
+          - Client Note
+          - Pipeline Notice
+          - Turnover Requirement
+          - General
+          type: string
+          description: |-
+            * `Director Feedback` - Director Feedback
+            * `Supervisor Note` - Supervisor Note
+            * `Client Note` - Client Note
+            * `Pipeline Notice` - Pipeline Notice
+            * `Turnover Requirement` - Turnover Requirement
+            * `General` - General
+          x-spec-enum-id: 5d04391de5ff4466
+        priority:
+          enum:
+          - Critical
+          - High
+          - Medium
+          - Low
+          type: string
+          description: |-
+            * `Critical` - Critical
+            * `High` - High
+            * `Medium` - Medium
+            * `Low` - Low
+          x-spec-enum-id: 588dc8bee23fb323
+        tags: {}
+        status:
+          enum:
+          - Open
+          - Addressed
+          - Closed
+          type: string
+          description: |-
+            * `Open` - Open
+            * `Addressed` - Addressed
+            * `Closed` - Closed
+          x-spec-enum-id: bd636312b90400a6
+        addressed_by:
+          type: string
+          maxLength: 255
+        addressed_at:
+          type: string
+          format: date-time
+          nullable: true
+        timecode_ref:
+          type: string
+          maxLength: 20
+        frame_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Object creation timestamp.
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Last update timestamp.
+        parent_id:
+          type: string
+          nullable: true
+          readOnly: true
+        links:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+          readOnly: true
+        task_id:
+          type: string
+          nullable: true
+          readOnly: true
+        task_code:
+          type: string
+          nullable: true
+          readOnly: true
+        reply_count:
+          type: integer
+          readOnly: true
+        mentions:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+          description: The people the note mentions, in the order written (RP-6, C-RP-25).
+          readOnly: true
+      required:
+      - author_id
+      - created_at
+      - id
+      - links
+      - mentions
+      - parent_id
+      - project_code
+      - project_id
+      - reply_count
+      - subject
+      - task_code
+      - task_id
+      - updated_at
+    ProjectNoteCreate:
+      type: object
+      description: |-
+        Accept frontend Partial<ProjectNote> (C-RP-07). Ownership, status and the records' code and name
+        are the server's: ``entity_code``, ``entity_name``, ``status`` and the author fields are accepted
+        for older clients and ignored.
+      properties:
+        entity_type:
+          type: string
+          maxLength: 20
+        entity_id:
+          type: string
+          maxLength: 50
+        entity_code:
+          type: string
+          maxLength: 50
+        entity_name:
+          type: string
+          maxLength: 255
+        author_name:
+          type: string
+          maxLength: 255
+        author_avatar:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        author_role:
+          type: string
+          maxLength: 100
+        subject:
+          type: string
+          maxLength: 255
+        body:
+          type: string
+        category:
+          enum:
+          - Director Feedback
+          - Supervisor Note
+          - Client Note
+          - Pipeline Notice
+          - Turnover Requirement
+          - General
+          type: string
+          description: |-
+            * `Director Feedback` - Director Feedback
+            * `Supervisor Note` - Supervisor Note
+            * `Client Note` - Client Note
+            * `Pipeline Notice` - Pipeline Notice
+            * `Turnover Requirement` - Turnover Requirement
+            * `General` - General
+          x-spec-enum-id: 5d04391de5ff4466
+        priority:
+          enum:
+          - Critical
+          - High
+          - Medium
+          - Low
+          type: string
+          description: |-
+            * `Critical` - Critical
+            * `High` - High
+            * `Medium` - Medium
+            * `Low` - Low
+          x-spec-enum-id: 588dc8bee23fb323
+        tags: {}
+        status:
+          enum:
+          - Open
+          - Addressed
+          - Closed
+          type: string
+          description: |-
+            * `Open` - Open
+            * `Addressed` - Addressed
+            * `Closed` - Closed
+          x-spec-enum-id: bd636312b90400a6
+        timecode_ref:
+          type: string
+          maxLength: 20
+        frame_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteLinkInput'
+        task_id:
+          type: string
+          nullable: true
+          maxLength: 64
+        mention_ids:
+          type: array
+          items:
+            type: string
+            maxLength: 64
+      required:
+      - subject
+    ProjectNoteDetail:
+      type: object
+      description: One thread with its live replies, oldest first (C-RP-10).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Universally unique identifier.
+        project_id:
+          type: string
+          format: uuid
+          readOnly: true
+        project_code:
+          type: string
+          readOnly: true
+        entity_type:
+          type: string
+          maxLength: 20
+        entity_id:
+          type: string
+          maxLength: 50
+        entity_code:
+          type: string
+          maxLength: 50
+        entity_name:
+          type: string
+          maxLength: 255
+        author_id:
+          type: string
+          readOnly: true
+        author_name:
+          type: string
+          maxLength: 255
+        author_avatar:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        author_role:
+          type: string
+          maxLength: 100
+        subject:
+          type: string
+          maxLength: 255
+        body:
+          type: string
+        category:
+          enum:
+          - Director Feedback
+          - Supervisor Note
+          - Client Note
+          - Pipeline Notice
+          - Turnover Requirement
+          - General
+          type: string
+          description: |-
+            * `Director Feedback` - Director Feedback
+            * `Supervisor Note` - Supervisor Note
+            * `Client Note` - Client Note
+            * `Pipeline Notice` - Pipeline Notice
+            * `Turnover Requirement` - Turnover Requirement
+            * `General` - General
+          x-spec-enum-id: 5d04391de5ff4466
+        priority:
+          enum:
+          - Critical
+          - High
+          - Medium
+          - Low
+          type: string
+          description: |-
+            * `Critical` - Critical
+            * `High` - High
+            * `Medium` - Medium
+            * `Low` - Low
+          x-spec-enum-id: 588dc8bee23fb323
+        tags: {}
+        status:
+          enum:
+          - Open
+          - Addressed
+          - Closed
+          type: string
+          description: |-
+            * `Open` - Open
+            * `Addressed` - Addressed
+            * `Closed` - Closed
+          x-spec-enum-id: bd636312b90400a6
+        addressed_by:
+          type: string
+          maxLength: 255
+        addressed_at:
+          type: string
+          format: date-time
+          nullable: true
+        timecode_ref:
+          type: string
+          maxLength: 20
+        frame_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Object creation timestamp.
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Last update timestamp.
+        parent_id:
+          type: string
+          nullable: true
+          readOnly: true
+        links:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+          readOnly: true
+        task_id:
+          type: string
+          nullable: true
+          readOnly: true
+        task_code:
+          type: string
+          nullable: true
+          readOnly: true
+        reply_count:
+          type: integer
+          readOnly: true
+        mentions:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+          description: The people the note mentions, in the order written (RP-6, C-RP-25).
+          readOnly: true
+        replies:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          readOnly: true
+      required:
+      - author_id
+      - created_at
+      - id
+      - links
+      - mentions
+      - parent_id
+      - project_code
+      - project_id
+      - replies
+      - reply_count
+      - subject
+      - task_code
+      - task_id
+      - updated_at
+    ProjectNoteReply:
+      type: object
+      properties:
+        body:
+          type: string
+        mention_ids:
+          type: array
+          items:
+            type: string
+            maxLength: 64
+      required:
+      - body
+    ProjectNoteStatus:
+      type: object
+      properties:
+        status:
+          enum:
+          - Open
+          - Addressed
+          - Closed
+          type: string
+          description: |-
+            * `Open` - Open
+            * `Addressed` - Addressed
+            * `Closed` - Closed
+          x-spec-enum-id: bd636312b90400a6
+      required:
+      - status
     ProjectUpdate:
       type: object
       description: Base serializer for write operations.

@@ -1,6 +1,6 @@
 import { ArrowLeftRight, ChevronLeft, ChevronRight, Columns, Layers, Maximize2, Minimize2, Pause, Play, Repeat, RotateCcw, Sparkles, SplitSquareVertical, Zap } from 'lucide-react';
 import type React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { cn } from '@/shared/utils/cn';
 import { PRIMARY_FILL, SELECTED } from '@/shared/utils/kitStyles';
 import { safeWebUrl } from '@/shared/utils/safeUrl';
@@ -13,6 +13,8 @@ export interface CompareSource {
   label: string;
   src?: string | null;
   poster?: string | null;
+  /** What the video is apart from its address (a review movie's id): a renewed link of it keeps the frame (RP-10). */
+  sourceId?: string | null;
 }
 /** A version the toolbar offers for side A or B. */
 export interface CompareChoice {
@@ -104,10 +106,30 @@ export const MediaCompare: React.FC<MediaCompareProps> = ({ a, b, fps = DEFAULT_
     frameCallback.current?.(frame);
   }, [frame]);
 
-  // A new pair of videos starts from the head. Swapping A and B keeps the frame.
-  const pair = `${a.src ?? ''}|${b.src ?? ''}`;
-  // biome-ignore lint/correctness/useExhaustiveDependencies: only the pair of addresses (and the first frame number) restart the compare
+  // A new pair of videos starts from the head. Swapping A and B keeps the frame, and so does a new address for the
+  // same source (a renewed link): the frame and whether it played are remembered until that side has loaded again.
+  const pair = `${a.sourceId || a.src || ''}|${b.sourceId || b.src || ''}`;
+  const resume = useRef<{ frame: number; playing: boolean; a: boolean; b: boolean } | null>(null);
+  // Compared on the sources as given (`a`, `b`), not as shown: swapping them is not a new address.
+  const givenA = safeWebUrl(a.src);
+  const givenB = safeWebUrl(b.src);
+  const last = useRef({ pair, givenA, givenB });
+  // biome-ignore lint/correctness/useExhaustiveDependencies: read the frame, the playing state and the swap at the moment an address changes
+  useLayoutEffect(() => {
+    const before = last.current;
+    last.current = { pair, givenA, givenB };
+    if (before.pair !== pair) return;
+    const renewed = { a: Boolean(givenA) && before.givenA !== givenA, b: Boolean(givenB) && before.givenB !== givenB };
+    // The video in front (`videoA`) shows `b` while swapped.
+    const shownA = swapped ? renewed.b : renewed.a;
+    const shownB = swapped ? renewed.a : renewed.b;
+    if (!shownA && !shownB) return;
+    const held = resume.current;
+    resume.current = { frame: held?.frame ?? frame, playing: held?.playing ?? playing, a: shownA || Boolean(held?.a), b: shownB || Boolean(held?.b) };
+  }, [pair, givenA, givenB]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only the pair of sources (and the first frame number) restart the compare
   useEffect(() => {
+    resume.current = null;
     setLengths({ a: 0, b: 0 });
     setFrame(startFrame);
     setPlaying(false);
@@ -229,8 +251,16 @@ export const MediaCompare: React.FC<MediaCompareProps> = ({ a, b, fps = DEFAULT_
     const frames = frameCount(e.currentTarget.duration, fps);
     setLengths((current) => ({ ...current, [side]: frames }));
     e.currentTarget.playbackRate = speed;
-    // A video made again (the mode changed) goes back to the frame being shown, not to the head.
-    e.currentTarget.currentTime = frameToTime(frame, startFrame, fps);
+    // A video made again (the mode changed) goes back to the frame being shown, not to the head. While side A loads a
+    // renewed address the frame shown is not its clock, so it goes back to the frame remembered then.
+    const back = resume.current;
+    e.currentTarget.currentTime = frameToTime(back?.a ? back.frame : frame, startFrame, fps);
+    if (back?.[side]) {
+      if (back.playing) void Promise.resolve(e.currentTarget.play()).catch(() => setPlaying(false));
+      const left = { ...back, [side]: false };
+      resume.current = left.a || left.b ? left : null;
+      if (side === 'a') setFrame(back.frame);
+    }
   };
   const changeMode = (next: CompareMode) => {
     videoA.current?.pause();

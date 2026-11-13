@@ -78,7 +78,7 @@ Files live under `MEDIA_ROOT/review_media/<project>/<version>/<row>/`.
   (`docs/07-deployment/pre-deploy-checklist.md`).
 - A link expires: the frontend refetches the version a minute before `links_expire_at`, and a player then reloads the
   movie.
-- Artists hold `version.view` but not `version.update`, so they watch review movies and do not upload them.
+- Artists hold `version.view` but not `version.update`, so they watch review movies and do not upload them. *Amended by review-pipeline RP-10 (C-RP-26, Q-RP-41 = A): a version's artist who holds `version.create` (the seeded `artist` role does) uploads, retries and removes the review movie of their own version.*
   Uploading is open to org-admin, production-admin, vfx-supervisor, lead-artist (and platform-admin).
 - ffmpeg is a large attack surface even with the whitelists. The worker runs as the image's `app` user and mounts no
   volume but the media one. Debian security updates reach it with each image rebuild, and Trivy scans the `worker` image in

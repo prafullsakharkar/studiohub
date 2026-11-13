@@ -5,6 +5,7 @@ import { reviewMediaApi, reviewMediaInFlight, versionsApi } from '@/api/producti
 import type { ReviewMedia, Version } from '@/api/production/review';
 import { serverMessage } from '@/api/errors/serverMessage';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
+import { useCurrentUser } from '@/core/auth/useCurrentUser';
 import { formatDateTime, formatNumber } from '@/core/locale/studioLocale';
 import { useCan } from '@/core/permissions/useCan';
 import { notify } from '@/core/notifications/notify';
@@ -35,11 +36,14 @@ const JOB_TEXT: Partial<Record<ReviewMedia['status'], string>> = {
 
 /**
  * The version's review movie (RP-5, C-RP-19 to C-RP-22): upload a movie or still, follow the worker's job, retry a
- * failure, replace or remove the copy. Uploading, retrying and removing need `version.update`; reading needs only the
- * version. The version is refetched while a job runs (`VersionWorkspace`), so this panel shows what the server says.
+ * failure, replace or remove the copy. Uploading, retrying and removing need `version.update`, or being the version's
+ * artist with `version.create` (RP-10, C-RP-26); reading needs only the version. The version is refetched while a job runs (`VersionWorkspace`), so this panel shows what the server says.
  */
 export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) => {
   const canUpdate = useCan('version.update');
+  const canCreate = useCan('version.create');
+  const { user } = useCurrentUser();
+  const canManage = canUpdate || (canCreate && Boolean(user?.id) && version.artist_id === user?.id);
   const queryClient = useQueryClient();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -82,7 +86,7 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
               : 'Upload a movie or still: the server makes a copy every browser can play.'}
           </p>
         </div>
-        {canUpdate && (
+        {canManage && (
           <div className="flex flex-wrap items-center gap-2">
             <input ref={input} type="file" accept={ACCEPT} aria-label="Movie or still to upload" className="hidden" onChange={(e) => { upload(e.target.files?.[0]); e.target.value = ''; }} />
             <Button size="sm" variant={current ? 'outline' : 'primary'} disabled={busy !== null || running} onClick={() => input.current?.click()}>
@@ -124,7 +128,7 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
             {job.source_name}: {job.error_message}
             {job.attempts >= MAX_ATTEMPTS ? ' Upload the file again.' : ''}
           </span>
-          {canUpdate && job.attempts < MAX_ATTEMPTS && (
+          {canManage && job.attempts < MAX_ATTEMPTS && (
             <Button size="sm" variant="outline" disabled={busy !== null} onClick={() => void act('Retrying…', () => reviewMediaApi.retry(job.id))}>
               Retry
             </Button>

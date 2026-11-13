@@ -301,6 +301,32 @@ def test_capture_review_media(
         == ReviewMedia.Status.READY
     )
     flow["version_with_still"] = call(ar, "GET", vpath)
+
+    # RP-10, C-RP-26: the version's artist (seeded `artist` role: version view and create) uploads,
+    # retries and removes on their own version; another artist on the project may not.
+    colleague = user("colleague@example.test", "artist")
+    make(f"/api/organizations/projects/{pid}/members/", {"user_id": str(colleague.id), "role": "Artist"})
+    own = VersionFactory.create(
+        project=project, code="RPM_SH0010_COMP_V002", shot=shot_row, task=task_row, version_index=2,
+        status="Pending Review", start_frame=1001, end_frame=1048, fps=24, artist=artist,
+    )  # fmt: skip
+    own_path, own_rm = f"/api/v1/versions/{own.pk}/", f"/api/v1/versions/{own.pk}/review-media/"
+    flow["rp10_own_version"] = call(ar, "GET", own_path)
+    flow["rp10_upload_by_colleague_403"] = call(
+        client(colleague), "POST", own_rm, {"file": upload("comp_v002.mov", movie)}, multipart=True
+    )
+    with django_capture_on_commit_callbacks(execute=True):
+        flow["rp10_upload_own_202"] = call(
+            ar, "POST", own_rm, {"file": upload("comp_v002.mov", movie)}, multipart=True
+        )
+    own_movie = flow["rp10_upload_own_202"]["body"]["id"]
+    assert ReviewMediaService.process(own_movie) == ReviewMedia.Status.READY
+    flow["rp10_own_version_ready"] = call(ar, "GET", own_path)
+    flow["rp10_remove_by_colleague_403"] = call(
+        client(colleague), "DELETE", f"/api/v1/review-media/{own_movie}/"
+    )
+    with django_capture_on_commit_callbacks(execute=True):
+        flow["rp10_remove_own_204"] = call(ar, "DELETE", f"/api/v1/review-media/{own_movie}/")
     flow["ids"] = {
         "project": pid,
         "shot": shot["id"],
@@ -308,6 +334,9 @@ def test_capture_review_media(
         "version": vid,
         "movie": first,
         "broken": broken,
+        "artist": str(artist.id),
+        "colleague": str(colleague.id),
+        "own_version": str(own.pk),
     }
     flow["queued"] = len(queued)
 

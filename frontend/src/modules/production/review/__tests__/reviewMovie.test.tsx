@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext } from '@/core/auth/AuthContext';
@@ -9,12 +9,15 @@ import { mockFetch } from '@/test/fetchMock';
 import type { MockCall, MockReply } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
 import { apiClient } from '@/api/client/ApiClient';
+import { versionsApi } from '@/api/production/review';
 import type { Version } from '@/api/production/review';
+import { fakeClock } from '@/test/mediaElement';
 import type { CardContext } from '@/modules/directory/types';
 import type { User } from '@/types/identity';
 import { ReviewMoviePanel } from '../ReviewMoviePanel';
 import { ReviewViewer } from '../ReviewViewer';
 import { VersionWorkspace } from '../VersionWorkspace';
+import { VersionCompareTab } from '../VersionExtras';
 import { VersionMediaTab } from '../VersionMedia';
 import { versionCard } from '../versionCard';
 
@@ -71,6 +74,50 @@ describe('the review movie panel', () => {
     const region = panel();
     expect(within(region).queryByRole('button')).toBeNull();
     expect(within(region).getByRole('alert').textContent).toContain('The file could not be read.');
+  });
+
+  describe('C-RP-26: the version’s artist (RP-10)', () => {
+    const ids = flow.ids as unknown as Record<string, string>;
+    const own = flow.rp10_own_version.body as Version;
+    const ownReady = flow.rp10_own_version_ready.body as Version;
+    // the artist sample (version.view and version.create, no version.update), as the captured artist and colleague
+    const asUser = (id: string) => ({ ...artist, id }) as User;
+
+    it('the captured version names the artist, and the artist sample holds version.create without version.update', () => {
+      expect(own.artist_id).toBe(ids.artist);
+      expect(artist.permissions).toContain('version.create');
+      expect(artist.permissions).not.toContain('version.update');
+    });
+
+    it('may upload to their own version, and remove its movie', () => {
+      mockFetch(() => ({ status: 500 }));
+      mount(<ReviewMoviePanel version={own} />, asUser(ids.artist));
+      expect(within(panel()).getByRole('button', { name: 'Upload' })).toBeTruthy();
+      cleanup();
+      mount(<ReviewMoviePanel version={ownReady} />, asUser(ids.artist));
+      for (const name of ['Replace', 'Remove']) expect(within(panel()).getByRole('button', { name })).toBeTruthy();
+    });
+
+    it('their own version, without version.create, gives no action', () => {
+      mockFetch(() => ({ status: 500 }));
+      const viewer = { ...artist, id: ids.artist, permissions: artist.permissions.filter((code) => code !== 'version.create') } as User;
+      mount(<ReviewMoviePanel version={ownReady} />, viewer);
+      expect(within(panel()).queryByRole('button')).toBeNull();
+    });
+
+    it('another artist sees the movie but no action', () => {
+      mockFetch(() => ({ status: 500 }));
+      mount(<ReviewMoviePanel version={ownReady} />, asUser(ids.colleague));
+      expect(within(panel()).queryByRole('button')).toBeNull();
+    });
+
+    it('when the server refuses the upload (its captured 403), the panel says so', async () => {
+      mockFetch((c) => (c.method === 'POST' ? captured('rp10_upload_by_colleague_403') : captured('rp10_own_version')));
+      const withRight = { ...artist, id: ids.colleague, permissions: [...artist.permissions, 'version.update'] } as User;
+      mount(<ReviewMoviePanel version={own} />, withRight);
+      pick('comp_v002.mov');
+      await waitFor(() => expect(within(panel()).getByRole('alert').textContent).toBeTruthy());
+    });
   });
 
   it('uploads the chosen file as multipart `file` and refetches the version', async () => {
@@ -238,3 +285,140 @@ describe('the review viewer plays the review copy', () => {
     expect(video.getAttribute('poster')).toBe(`http://api.test${ready.review_media?.thumbnail_url}`);
   });
 });
+
+/** A version as served after its links were signed again: the same movie, a new token. */
+const renewedLinks = (v: Version): Version => {
+  const media = v.review_media as NonNullable<Version['review_media']>;
+  const again = (link: string | null) => (link ? `${link}${link.includes('?') ? '&' : '?'}renewed=1` : link);
+  return { ...v, review_media: { ...media, proxy_url: again(media.proxy_url), thumbnail_url: again(media.thumbnail_url), filmstrip_url: again(media.filmstrip_url) } };
+};
+/** The video tells its length (3 s) and the scrub goes to a frame. */
+function loadAndGoTo(video: HTMLVideoElement, target: number) {
+  fakeClock(video, 3);
+  act(() => {
+    fireEvent.loadedMetadata(video);
+  });
+  fireEvent.change(screen.getAllByLabelText('Scrub')[0], { target: { value: String(target) } });
+}
+function mountWith(client: QueryClient, ui: React.ReactElement) {
+  render(
+    <MemoryRouter>
+      <QueryClientProvider client={client}>
+        <AuthContext.Provider value={{ user: admin, refreshUser: vi.fn() } as unknown as AuthContextValue}>{ui}</AuthContext.Provider>
+      </QueryClientProvider>
+    </MemoryRouter>,
+  );
+}
+const newClient = () => new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Number.POSITIVE_INFINITY, staleTime: Number.POSITIVE_INFINITY } } });
+
+describe('RP-10 WP 10.3: compare plays the review copy', () => {
+  // B: another version of the same shot, with only a link of its own (no review copy).
+  const own = { ...none, id: 'own-link', code: 'RP5_SH010_V009', video_url: 'https://cdn.example.com/p/own.mp4', thumbnail_url: 'https://cdn.example.com/p/own.jpg', created_at: '2026-11-14T00:00:00Z' } as Version;
+
+  it('the compare tab: A plays its proxy with its thumbnail as poster and the probe’s rate; B, without a ready movie, keeps video_url', async () => {
+    const a = { ...ready, fps: '25.000' } as Version; // the probe (24) wins over the version’s own rate
+    mockFetch(() => ({ status: 200, body: [a, own] }));
+    mount(<VersionCompareTab version={a} />);
+    const videoA = (await screen.findByLabelText(`${a.code} video`)) as HTMLVideoElement;
+    expect(videoA.getAttribute('src')).toBe(`http://api.test${ready.review_media?.proxy_url}`);
+    expect(videoA.getAttribute('poster')).toBe(`http://api.test${ready.review_media?.thumbnail_url}`);
+    const videoB = screen.getByLabelText(`${own.code} video`) as HTMLVideoElement;
+    expect(videoB.getAttribute('src')).toBe(own.video_url);
+    expect(videoB.getAttribute('poster')).toBe(own.thumbnail_url);
+    expect(screen.getByText('24 FPS lock')).toBeTruthy();
+  });
+
+  it('the review viewer’s compare mode: each side plays what it has', async () => {
+    const review = reviewFlow.reviews_start_review.body;
+    const first = review.versions[0];
+    const second = { ...first, id: own.id, code: own.code, order: first.order + 1 };
+    mockFetch((c) => ({ status: 200, body: path(c).includes(own.id) ? own : { ...ready, id: first.id, code: first.code } }));
+    mount(<ReviewViewer review={{ ...review, versions: [first, second] }} compareWith={own.id} />);
+    const videoA = (await screen.findByLabelText(`${first.code} video`)) as HTMLVideoElement;
+    expect(videoA.getAttribute('src')).toBe(`http://api.test${ready.review_media?.proxy_url}`);
+    expect(videoA.getAttribute('poster')).toBe(`http://api.test${ready.review_media?.thumbnail_url}`);
+    expect((screen.getByLabelText(`${own.code} video`) as HTMLVideoElement).getAttribute('src')).toBe(own.video_url);
+    expect(screen.getByText('24 FPS lock')).toBeTruthy();
+  });
+});
+
+describe('RP-10 WP 10.2: a renewed link does not restart the player', () => {
+  it('the media tab: the same video goes on at the frame it was on', async () => {
+    mockFetch(() => ({ status: 200, body: [] }));
+    const client = newClient();
+    const tab = (version: Version) => (
+      <MemoryRouter>
+        <QueryClientProvider client={client}>
+          <AuthContext.Provider value={{ user: admin, refreshUser: vi.fn() } as unknown as AuthContextValue}>
+            <VersionMediaTab version={version} />
+          </AuthContext.Provider>
+        </QueryClientProvider>
+      </MemoryRouter>
+    );
+    const { rerender } = render(tab(ready));
+    const video = (await screen.findByLabelText(`${ready.code} preview video`)) as HTMLVideoElement;
+    const target = (ready.start_frame ?? 1) + 10;
+    loadAndGoTo(video, target);
+    const renewed = renewedLinks(ready);
+    rerender(tab(renewed));
+    const after = screen.getByLabelText(`${ready.code} preview video`) as HTMLVideoElement;
+    expect(after).toBe(video);
+    expect(after.getAttribute('src')).toBe(`http://api.test${renewed.review_media?.proxy_url}`);
+    fakeClock(after, 3);
+    act(() => {
+      fireEvent.loadedMetadata(after);
+    });
+    expect(screen.getByLabelText('Current frame').textContent).toBe(String(target));
+  });
+
+  it('the review viewer: a refetched version with a new token keeps the frame', async () => {
+    const review = reviewFlow.reviews_start_review.body;
+    const first = review.versions[0];
+    const served = { ...ready, id: first.id, code: first.code } as Version;
+    mockFetch(() => ({ status: 200, body: served }));
+    const client = newClient();
+    mountWith(client, <ReviewViewer review={review} />);
+    const video = (await screen.findByLabelText(/in review video$/)) as HTMLVideoElement;
+    const target = (ready.start_frame ?? 1) + 10;
+    loadAndGoTo(video, target);
+    act(() => {
+      client.setQueryData([...versionsApi.keys.detail(first.id), 'for-viewer'], renewedLinks(served));
+    });
+    // React Query tells its observers on a timer.
+    await waitFor(() => expect(video.getAttribute('src')).toBe(`http://api.test${renewedLinks(served).review_media?.proxy_url}`));
+    const after = screen.getByLabelText(/in review video$/) as HTMLVideoElement;
+    expect(after).toBe(video);
+    fakeClock(after, 3);
+    act(() => {
+      fireEvent.loadedMetadata(after);
+    });
+    expect(screen.getByLabelText('Current frame').textContent).toBe(String(target));
+  });
+
+  it('the compare tab: a renewed link on B keeps the frame', async () => {
+    const b = { ...ready, id: 'second-ready', code: 'RP5_SH010_V008', created_at: '2026-11-14T00:00:00Z' } as Version;
+    mockFetch(() => ({ status: 200, body: [ready, b] }));
+    const client = newClient();
+    mountWith(client, <VersionCompareTab version={ready} />);
+    const videoA = (await screen.findByLabelText(`${ready.code} video`)) as HTMLVideoElement;
+    const videoB = screen.getByLabelText(`${b.code} video`) as HTMLVideoElement;
+    fakeClock(videoB, 3);
+    act(() => {
+      fireEvent.loadedMetadata(videoB);
+    });
+    const target = (ready.start_frame ?? 1) + 10;
+    loadAndGoTo(videoA, target);
+    act(() => {
+      client.setQueryData([...versionsApi.keys.all, 'to-compare', ready.id], [ready, renewedLinks(b)]);
+    });
+    await waitFor(() => expect(videoB.getAttribute('src')).toBe(`http://api.test${renewedLinks(b).review_media?.proxy_url}`));
+    const afterB = screen.getByLabelText(`${b.code} video`) as HTMLVideoElement;
+    expect(afterB).toBe(videoB);
+    fakeClock(afterB, 3);
+    act(() => {
+      fireEvent.loadedMetadata(afterB);
+    });
+    expect(screen.getByLabelText('Current frame').textContent).toBe(String(target));
+  });
+});
+

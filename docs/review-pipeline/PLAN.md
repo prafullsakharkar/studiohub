@@ -508,3 +508,87 @@ The same as RP-5 without the Docker checks: `ruff check`, `manage.py check`, `ba
 
 - *Upgrading:* two additive migrations (`notifications` `0001`, `production` `0009`), and a new app in `INSTALLED_APPS`. Restart beat for the daily purge. There is no setting to turn on.
 - *New:* an inbox behind the bell and on a Notifications page. People are told when a note concerns their work or mentions them, when someone replies in their thread, when they are given a task, when their task or version changes status, and when their review movie is ready or has failed.
+
+## RP-10 Loose ends of RP-5 and RP-6
+
+**Status:** planned 2026-11-13; approved the same day with every recommendation (Q-RP-41 to Q-RP-45 = A, [DECISIONS.md](DECISIONS.md#rp-10-answers)). Contracts C-RP-26 and C-RP-27; WP 10.1 to 10.3 and 10.6 change no API. Branch `feature/rp-10-loose-ends`, off `develop` at `e5346727` (RP-1 to RP-6 merged and pushed). **Built** (WP 10.1 to 10.8) and committed (`ff1bc2fc`), not yet merged: [rp-10-verification.md](rp-10-verification.md). WP 10.1 leaves out `EntityVersionsTab`, which shows no pictures (CONTRACTS, "Details settled while building RP-10"). The owner chose this over RP-8 (live review), media depth and notification depth. Phase numbers are not reused, so RP-7 to RP-9 stay as decided.
+
+**Goal.** Close what the RP-2, RP-5 and RP-6 reports left open, without reversing a decision. Each item is small. None adds a model, a migration, a setting or a permission code (unless Q-RP-41 = B).
+
+### Why (what is there today)
+
+- **Cards on the Versions list and a shot's or asset's Versions tab lose their pictures after an hour.**
+  - The signed review-media links expire at `links_expire_at` (3600 s).
+  - The version page, the review viewer and compare refetch a minute before that (`reviewMediaRefetchInterval`).
+  - The Versions list (`useVersionsListConfig`, a `DirectoryListPage` config with `staleTime` 60 s) and `EntityVersionsTab` (`EntityRecords`) have no refetch interval, so a card's generated thumbnail and filmstrip stop loading until the list is fetched again.
+- **The player starts again from the first frame every hour.** `VersionMedia`, `ReviewViewer` (single and compare) and `VersionExtras` key `MediaPlayer` on the signed URL. A refreshed token is a new key, so the player is remounted.
+- **Compare has no test for the review copy.** The compare tab and the viewer's compare mode use `versionPlayback`, as the player does, but no test shows that compare plays the proxy.
+- **Artists cannot upload a review movie.** Upload, retry and remove (`upload_review_media`, `retry`, `destroy`) need `version.update`. The seeded `artist` role holds `version.view create` and `media.view create`, so an artist can create a version but not put a movie on it. Granting `version.update` would let them edit any version in reach.
+- **The four notes views have untyped bodies in the OpenAPI schema.** They are `ProjectScopedAPIView`s, and spectacular cannot guess their serializers (RP-2 report). The frontend's types come from the captured sample, so nothing is broken; the schema just says less than it could.
+- **Nothing ran against a live backend for RP-5 or RP-6.**
+  - The live harness (`docs/sync/tools/live_backend.py`) runs Django in-process. No Celery worker runs, so an uploaded movie stays `queued`.
+  - There is no live vitest file for the bell, the inbox, mentions or review movies.
+- **Notes are not in the change log, and the follow-up is undecided** (RP-2 report, section 0 item 1). Tracking them would copy subjects and bodies into change-log rows, which narrowed members can read with `audit.view`.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 10.1 | **Version lists keep their links fresh.** `usePaginatedList` and `DirectoryListConfig` take an optional `refetchInterval(rows)`, also used by the board mode. The Versions config and `EntityVersionsTab` pass `reviewMediaRefetchInterval`, so the list is refetched while a job runs and a minute before the first link expires. Frontend only. | `frontend/src/shared/data/usePaginatedList.ts`, `frontend/src/modules/directory/{DirectoryListPage,types}.ts(x)`, `frontend/src/modules/production/review/{versions,EntityRecords}.tsx` |
+| 10.2 | **A refreshed link does not restart the player** (Q-RP-44). The players are keyed by the review-media row's id, not the URL. When only the token changes, `MediaPlayer` swaps the source, seeks back to the frame it was on and keeps playing if it was playing. Frontend only. | `frontend/src/shared/components/media/MediaPlayer.tsx`, `frontend/src/modules/production/review/{VersionMedia,ReviewViewer,VersionExtras}.tsx` |
+| 10.3 | **Compare plays the review copy, under test.** Tests for the compare tab and the viewer's compare mode: each side plays its proxy, with its thumbnail as the poster and the probe's rate; a side without a ready movie keeps `video_url`. Tests only, unless they find a bug. | `frontend/src/modules/production/review/__tests__/` |
+| 10.4 | **Artists upload review movies to their own versions** (Q-RP-41). Recommended rule: upload, retry and remove are allowed to holders of `version.update`, and to the version's artist when they hold `version.create`. The three routes then ask for `version.update` or `version.create`, and the service checks the version (holder of `version.update`, or its artist) before acting. The frontend shows the panel's actions on the same rule. C-RP-19 is amended. | `backend/apps/production/{api/viewsets/version.py,api/viewsets/review_media.py,services/review_media.py,permissions/}`, `frontend/src/modules/production/review/ReviewMoviePanel.tsx` |
+| 10.5 | **The notes views are typed in the schema** (Q-RP-45). `extend_schema` names the request and response serializers of the four notes views. No behaviour changes. The schema and `openapi.ts` are regenerated. | `backend/apps/production/api/views/project_notes.py`, `frontend/src/core/api/generated/*` |
+| 10.6 | **Live runs** (Q-RP-43). <ul><li>The live harness gets an opt-in switch (`SYNC_LIVE_MEDIA=1`): review media on, and a thread that processes queued rows by calling the worker's function directly with the host's ffmpeg. There is no Celery worker; the harness only.</li><li>New live vitest files: notifications (one user's note, mention and assignment reach another's bell and inbox; read and read-all) and review movies (an upload reaches `ready` and plays the proxy; an artist uploads to their own version, under Q-RP-41 = A).</li><li>Run the role smoke once.</li></ul> | `docs/sync/tools/live_backend.py`, `frontend/src/test/live/{notifications,reviewMedia}.live.test.tsx` |
+| 10.7 | **Notes and the change log** (Q-RP-42): record the decision. Recommended: notes stay out of the change log. Docs only, under A. | `docs/review-pipeline/{DECISIONS,CONTRACTS}.md` |
+| 10.8 | Docs: CONTRACTS ("Details settled while building RP-10"), this status, the pre-deploy checklist (only if 10.4 changes who may upload), `rp-10-verification.md`. | `docs/review-pipeline/`, `docs/07-deployment/pre-deploy-checklist.md` |
+
+### Questions before RP-10 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-41 | Who may upload, retry and remove a review movie? | A: holders of `version.update` (as now), plus the version's artist when they hold `version.create`. B: a new code, `version.upload_review_media`, seeded for the artist role and every role that holds `version.update` (an `init_platform` run). C: unchanged. | **A**. It matches how artists work in ShotGrid and ftrack (they put movies on their own versions) without letting them touch anyone else's. No new code, no seeding, no deploy step. |
+| Q-RP-42 | Do notes go in the change log? | A: no. Notes keep their own fields (author, status, addressed by and at), and RP-6 notifies the people involved. B: yes, without the subject and body (ids, links, status and task only). C: yes, in full, once change-log readers need whole-project access for note rows. | **A**. B logs that something changed but not what, which helps little. C changes who may read the change log, which is an `apps/audit` decision outside this programme. |
+| Q-RP-43 | How is review media run live? | A: the live harness processes queued rows itself, in-process, with the host's ffmpeg. B: a compose stack with the real `celery-media` worker. C: no live review-media run; notifications only. | **A**. It reuses the harness every live file uses, and it runs the same processing function and ffmpeg commands. The Celery routing to the `media` queue is already proven by a backend test and by CI's image build. |
+| Q-RP-44 | What happens when a link is refreshed during playback? | A: the player keeps its place (keyed by the row's id; the source is swapped and the frame restored). B: longer links (raise `REVIEW_MEDIA_LINK_TTL_SECONDS`, for example to 8 hours) and no code change. | **A**. B weakens a security setting to hide a client bug, and still restarts the player once the longer link runs out. |
+| Q-RP-45 | Type the notes views in the schema? | A: yes, `extend_schema` on the four views. B: no. | **A**. A documentation change that makes the generated types match the sample; no behaviour change. |
+
+### Not in RP-10
+
+- No live review (RP-8), image sequences, OCIO, burn-ins or object storage (ADR-0040, "Not decided here").
+- No notification preferences, e-mail or push (Q-RP-7, Q-RP-36, Q-RP-37).
+- No removal of the toast history in the toast store (eight test files read it), of the dead `notification.*` settings, or of `core/services/notifications.py`.
+- No `AutomationRule` engine (Q-RP-5 = A).
+
+### Tests (targeted, test database)
+
+- **10.1:** the Versions list and the Versions tab refetch while a job runs and before the first link expires, and not otherwise.
+- **10.2:** a refreshed link keeps the player's frame and its playing state; a different row (a replaced movie) starts again.
+- **10.3:** compare and the viewer's compare play each side's proxy, poster and rate; a side without a ready movie keeps `video_url`.
+- **10.4 (under A):**
+  - the version's artist with `version.create` may upload, retry and remove;
+  - another artist on the same project may not (403);
+  - an artist who is no longer the version's artist may not;
+  - holders of `version.update` keep every right;
+  - the frontend shows the actions on the same rule.
+  - The role matrix test is unchanged.
+- **10.5:** the schema names the serializers of the four notes views, and the generated types only add.
+- **10.6:** the live files pass against the harness; the role smoke passes.
+
+Mutation checks. Each change below must make a test fail:
+- no refetch on the Versions list;
+- the player keyed by URL again;
+- the source swapped without restoring the frame;
+- compare playing `video_url` over the proxy;
+- an artist allowed on another's version;
+- the artist rule without `version.create`;
+- the frontend showing upload to every artist.
+
+### Gates
+
+The same as RP-6: `ruff check`, `manage.py check`, `basedpyright` (no new findings in the files changed), `apps/production` in full. Frontend: `pnpm typecheck && pnpm test && pnpm build`, Biome at 0 errors, and the unreachable-code check. The live files and the role smoke (10.6) run once, one run at a time.
+
+### Release notes (draft)
+
+- *Upgrading:* no migration, no setting, nothing to run.
+- *Changed:* artists can put a review movie on their own versions, retry it and remove it. Cards on version lists keep their pictures, and a playing movie keeps its place when its link is renewed.

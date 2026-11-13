@@ -25,6 +25,7 @@ from apps.production.api.viewsets.status_history import StatusHistoryMixin
 from apps.production.constants.permissions import PlaylistPermissions, VersionPermissions
 from apps.production.exceptions import ReviewMediaDisabled
 from apps.production.models import Asset, Playlist, Shot, Task
+from apps.production.permissions.review_media import require_manage_review_media
 from apps.production.selectors.review_media import ReviewMediaSelector
 from apps.production.selectors.version import VersionReadSelector
 from apps.production.services.playlist import PlaylistService
@@ -62,7 +63,8 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
         "archived": (VersionPermissions.VIEW,),
         "restore": (VersionPermissions.UPDATE,),
         "review_media": (VersionPermissions.VIEW,),
-        "upload_review_media": (VersionPermissions.UPDATE,),
+        # C-RP-26: reach decides the 404; require_manage_review_media the 403
+        "upload_review_media": (VersionPermissions.VIEW,),
     }
 
     search_fields = ("code", "version_number", "entity_code")
@@ -194,9 +196,10 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
     @review_media.mapping.post
     def upload_review_media(self, request, *args, **kwargs):
         """Upload a review movie or still; the media worker processes it (202)."""
+        version = self.get_object()
+        require_manage_review_media(request, version)  # C-RP-26
         if not settings.REVIEW_MEDIA_ENABLED:
             raise ReviewMediaDisabled()  # before the body is read
-        version = self.get_object()
         body = ReviewMediaUploadSerializer(data=request.data)
         body.is_valid(raise_exception=True)
         row = ReviewMediaService.upload(
