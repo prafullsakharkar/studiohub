@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { serverMessage } from '@/api/errors/serverMessage';
 import { publishedFilesApi } from '@/api/publishing/publishing';
-import type { BulkRegisterResult, PublishedFile, PublishedFileInput } from '@/api/publishing/publishing';
+import type { BulkRegisterResult, FileDependencyRow, PublishedFile, PublishedFileInput } from '@/api/publishing/publishing';
 import { fileActionsFrom } from '@/api/publishing/publishingFlow';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
@@ -19,6 +19,53 @@ const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, c
     <dd className="mt-0.5 text-slate-200 break-words">{children}</dd>
   </div>
 );
+
+const DependencyList: React.FC<{ title: string; empty: string; rows: FileDependencyRow[]; warnRevoked?: boolean }> = ({ title, empty, rows, warnRevoked }) => (
+  <section aria-label={title} className="space-y-2">
+    <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+      {title} ({rows.length})
+    </h2>
+    {rows.length === 0 ? (
+      <p className="text-xs text-slate-500">{empty}</p>
+    ) : (
+      <ul className="space-y-1">
+        {rows.map((row) => (
+          <li key={row.id} className={`flex flex-wrap items-center gap-2 rounded-md border px-2 py-1.5 text-xs ${warnRevoked && row.status === 'Revoked' ? 'border-rose-500/40 bg-rose-500/5' : 'border-slate-800'}`}>
+            <Link to={`/publishing/files/${row.id}`} className="font-mono text-cyan-300 hover:underline break-all">
+              {row.relative_path}
+            </Link>
+            <span className="text-slate-500">
+              {row.storage_root} · {row.role}
+              {row.file_type ? ` · ${row.file_type}` : ''} · {row.version_code}
+            </span>
+            <FileStatusBadge status={row.status} />
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+);
+
+/** What a file was built from and what was built from it (C-RP-16). Links are fixed when the downstream file is registered. */
+const FileDependencies: React.FC<{ file: PublishedFile }> = ({ file }) => {
+  const query = useQuery({ queryKey: [...publishedFilesApi.keys.detail(file.id), 'dependencies'], queryFn: ({ signal }) => publishedFilesApi.dependencies(file.id, signal) });
+  const revoked = query.data?.upstream.filter((row) => row.status === 'Revoked').length ?? 0;
+  return (
+    <QueryBoundary isLoading={query.isLoading} error={query.error} onRetry={() => void query.refetch()} entityName="dependencies">
+      {query.data && (
+        <div aria-label="Dependencies" className="grid gap-4 border-t border-slate-800 pt-4 lg:grid-cols-2">
+          {revoked > 0 && (
+            <p role="alert" className="lg:col-span-2 rounded-lg border border-rose-500/30 bg-rose-500/5 p-3 text-xs text-rose-300">
+              {revoked === 1 ? 'A file this one was built from has' : `${revoked} files this one was built from have`} been revoked. This file is unchanged: check whether it should be revoked too.
+            </p>
+          )}
+          <DependencyList title="Built from" empty="Registered without upstream files." rows={query.data.upstream} warnRevoked />
+          <DependencyList title="Used by" empty="No file names this one as an upstream." rows={query.data.downstream} />
+        </div>
+      )}
+    </QueryBoundary>
+  );
+};
 
 /** One registered file: where it is, its checksum, its state, and the lifecycle actions the caller may take. */
 export const PublishedFilePage: React.FC = () => {
@@ -83,6 +130,7 @@ export const PublishedFilePage: React.FC = () => {
                 <code className="break-all text-[11px]">{file.sha256}</code>
               </Fact>
             </dl>
+            <FileDependencies file={file} />
           </>
         )}
       </QueryBoundary>
@@ -128,7 +176,7 @@ export const BulkRegisterPage: React.FC = () => {
           ← Published files
         </Link>
         <h1 className="text-xl font-bold text-white tracking-tight">Register many files</h1>
-        <p className="text-xs text-slate-400 mt-1">Paste a JSON array of up to 100 files: version_id, storage_root (a code), relative_path, size_bytes, sha256, and optionally role, file_type, frame_start, frame_end. Each file succeeds or fails on its own.</p>
+        <p className="text-xs text-slate-400 mt-1">Paste a JSON array of up to 100 files: version_id, storage_root (a code), relative_path, size_bytes, sha256, and optionally role, file_type, frame_start, frame_end and upstream_ids (the ids of the files it was built from, fixed once registered). Each file succeeds or fails on its own.</p>
       </div>
       <label className="block text-xs text-slate-400">
         Files (JSON)

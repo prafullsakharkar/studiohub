@@ -13,7 +13,7 @@ describe('row types match the captured responses', () => {
   it.each([
     ['PublishRow', flow.jobs_list.body.results[0], K.PUBLISHROW_KEYS],
     ['Publish (the detail)', flow.jobs_detail_exported.body, K.PUBLISH_KEYS],
-    ['PublishedFile', flow.files_detail.body, K.PUBLISHEDFILE_KEYS],
+    // PublishedFile is pinned in depthContracts.test.ts: this capture predates its dependency counts (RP-4).
     ['StorageRoot', flow.roots_detail.body, K.STORAGEROOT_KEYS],
     ['PublishDestination', flow.destinations_detail.body, K.PUBLISHDESTINATION_KEYS],
   ])('%s', (_label, row, expected) => {

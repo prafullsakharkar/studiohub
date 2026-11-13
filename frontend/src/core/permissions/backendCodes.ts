@@ -94,6 +94,7 @@ export const BACKEND_PERMISSION_CODES = [
   'publishing.revoke',
   'publishing.status.override',
   'publishing.storage.manage',
+  'publishing.template.manage',
   'publishing.update',
   'publishing.view',
   'review.approve',

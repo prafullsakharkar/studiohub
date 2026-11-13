@@ -217,7 +217,7 @@ The same as RP-2. The browser role smoke adds one step: a supervisor approves a 
 
 ## RP-4 Publishing depth (dependencies, loader, path templates)
 
-**Status:** approved 2026-11-12, every recommendation taken (Q-RP-19 = A, Q-RP-20 = A, Q-RP-21 = B, Q-RP-22 = B, Q-RP-23 = A, [DECISIONS.md](DECISIONS.md#rp-4-answers)). Branch `feature/rp-4-publishing-depth`, off `develop` at `745e6cb3` (RP-3 merged, not pushed). It is independent of RP-1 to RP-3 ([DECISIONS.md](DECISIONS.md#phases-after-the-answers)). It reverses publishing Q5 for dependencies (Q-RP-2 = A); `docs/publishing/PLAN.md` §3 already names the model.
+**Status:** approved 2026-11-12, every recommendation taken (Q-RP-19 = A, Q-RP-20 = A, Q-RP-21 = B, Q-RP-22 = B, Q-RP-23 = A, [DECISIONS.md](DECISIONS.md#rp-4-answers)). Built on `feature/rp-4-publishing-depth` ([rp-4-verification.md](rp-4-verification.md)); one migration, not two, and a template mismatch is a plain field error (CONTRACTS, "Details settled while building RP-4"). Branch `feature/rp-4-publishing-depth`, off `develop` at `745e6cb3` (RP-3 merged, not pushed). It is independent of RP-1 to RP-3 ([DECISIONS.md](DECISIONS.md#phases-after-the-answers)). It reverses publishing Q5 for dependencies (Q-RP-2 = A); `docs/publishing/PLAN.md` §3 already names the model.
 
 **Goal.** Three ShotGrid / ftrack features: a published file says which files it was built from, and which files were built from it; a pipeline tool asks "the latest (or approved, or hero) file of type T for this shot, asset or task" in one call; and a project can say where a file of a given type should live.
 

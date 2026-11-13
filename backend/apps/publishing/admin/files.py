@@ -11,7 +11,9 @@ from django.contrib import admin
 from apps.publishing.models import (
     PublishCounter,
     PublishedFile,
+    PublishedFileDependency,
     PublishedFileEvent,
+    PublishPathTemplate,
     StorageRoot,
 )
 
@@ -61,3 +63,30 @@ class PublishedFileEventAdmin(ReadOnlyAdmin):
 @admin.register(PublishCounter)
 class PublishCounterAdmin(ReadOnlyAdmin):
     list_display = ("project_id", "last_number")
+
+
+@admin.register(PublishedFileDependency)
+class PublishedFileDependencyAdmin(ReadOnlyAdmin):
+    """Written with the downstream file and never changed (review-pipeline RP-4, Q-RP-19)."""
+
+    list_display = ("downstream", "upstream", "created_at")
+    list_select_related = ("downstream__storage_root", "upstream__storage_root")
+    ordering = ("-created_at",)
+
+
+@admin.register(PublishPathTemplate)
+class PublishPathTemplateAdmin(ReadOnlyAdmin):
+    """Managed through the API, which checks the pattern and the one-active-per-key rule (RP-4)."""
+
+    list_display = (
+        "project",
+        "file_type",
+        "role",
+        "storage_root",
+        "pattern",
+        "enforce",
+        "is_active",
+    )
+    list_filter = ("enforce", "is_active", "role")
+    list_select_related = ("project", "file_type", "storage_root")
+    ordering = ("project__code", "role")

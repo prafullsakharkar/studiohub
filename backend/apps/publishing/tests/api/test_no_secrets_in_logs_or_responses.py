@@ -113,6 +113,8 @@ class TestResponsesCarryNoLinks:
         "size_bytes", "sha256", "frame_start", "frame_end", "checksum_state",
         "checksum_checked_at", "status", "status_changed_at", "revoke_reason", "export_job_id",
         "created_at", "created_by_id",
+        # review-pipeline RP-4, C-RP-16: counts of the dependency links, never the linked paths.
+        "upstream_count", "downstream_count",
     }  # fmt: skip
     FORBIDDEN = (
         "http://",

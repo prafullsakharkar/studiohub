@@ -5,7 +5,7 @@ import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { Button } from '@/shared/components/Button';
 import { filesFormConfig, useFilesListConfig } from '../files';
 import { publishFormConfig, usePublishListConfig } from '../jobs';
-import { publishDestinationsFormConfig, rootsFormConfig, usePublishDestinationsListConfig, useRootsListConfig } from '../registry';
+import { pathTemplateFormConfig, publishDestinationsFormConfig, rootsFormConfig, usePathTemplatesListConfig, usePublishDestinationsListConfig, useRootsListConfig } from '../registry';
 
 const NavLink: React.FC<{ to: string; children: string }> = ({ to, children }) => (
   <Link to={to}>
@@ -16,11 +16,12 @@ const NavLink: React.FC<{ to: string; children: string }> = ({ to, children }) =
 );
 
 /** The other publishing screens, from the header of each. */
-const nav = (current: 'jobs' | 'files' | 'roots' | 'destinations') => () => (
+const nav = (current: 'jobs' | 'files' | 'roots' | 'templates' | 'destinations') => () => (
   <>
     {current !== 'jobs' && <NavLink to="/publishing">Export jobs</NavLink>}
     {current !== 'files' && <NavLink to="/publishing/files">Published files</NavLink>}
     {current !== 'roots' && <NavLink to="/publishing/storage-roots">Storage roots</NavLink>}
+    {current !== 'templates' && <NavLink to="/publishing/path-templates">Path templates</NavLink>}
     {current !== 'destinations' && <NavLink to="/publishing/destinations">Destinations</NavLink>}
   </>
 );
@@ -48,6 +49,9 @@ export const PublishedFileFormPage: React.FC = () => <DirectoryFormPage config={
 
 export const StorageRootsPage: React.FC = () => <DirectoryListPage config={{ ...useRootsListConfig(), headerExtra: nav('roots') }} />;
 export const StorageRootFormPage: React.FC = () => <DirectoryFormPage config={rootsFormConfig} />;
+
+export const PathTemplatesPage: React.FC = () => <DirectoryListPage config={{ ...usePathTemplatesListConfig(), headerExtra: nav('templates') }} />;
+export const PathTemplateFormPage: React.FC = () => <DirectoryFormPage config={pathTemplateFormConfig} />;
 
 export const PublishDestinationsPage: React.FC = () => <DirectoryListPage config={{ ...usePublishDestinationsListConfig(), headerExtra: nav('destinations') }} />;
 export const PublishDestinationFormPage: React.FC = () => <DirectoryFormPage config={publishDestinationsFormConfig} />;

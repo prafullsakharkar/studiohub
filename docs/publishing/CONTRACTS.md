@@ -121,6 +121,30 @@ Export-job map (working states move as the job runs; only the end states are gua
 
 **Job status writes (built).** `JobService` (`services/workflow.py`) is the only writer of `PublishItem.status`; a test scans the code to keep it so. The admin shows the status and the history fields read-only. Leaving Exported or Cancelled (back to Pending) needs `publishing.status.override` and a reason, and exists as a service call only: there is no endpoint for it, because `republish` is the normal way to run a finished job again.
 
+### DOM-PUB-07 `PublishedFileDependency` (review-pipeline RP-4, table `publishing_file_dependency`)
+
+| Field | Type / rule |
+|---|---|
+| `downstream`, `upstream` | FK `PublishedFile`, `PROTECT`; unique pair; never the same file (DB check) |
+| `created_at`, `created_by` | set when the downstream file is registered |
+
+Append-only: the model and queryset refuse save of an existing row, update and delete. Rows are written with the downstream file and never changed (Q-RP-19 = A). Each upstream is a live file of the same project that the registrant can read (a full member, SEC-PUB-01) and not `Revoked` (Q-RP-20 = A); the upstream rows are locked while the links are written, so none is revoked in between. Every upstream exists before its downstream, so no cycle can form. An identical retry names the same upstreams. Revoking an upstream later leaves the downstream as it is.
+
+### DOM-PUB-08 `PublishPathTemplate` (review-pipeline RP-4, table `publishing_path_template`)
+
+| Field | Type / rule |
+|---|---|
+| base | `EntityModel`; not deleted through the API: `is_active` retires |
+| `project` | FK `production.Project`, `PROTECT`, nullable: null is the studio's template |
+| `file_type` | FK `masterdata.MasterFileType`, `PROTECT` |
+| `role` | as `PublishedFile.role` |
+| `storage_root` | FK `StorageRoot`, `PROTECT` |
+| `pattern` | Char 1024, the language of `apps/publishing/domain/templates.py` |
+| `enforce` | Bool, default false (Q-RP-22 = B) |
+| `is_active` | Bool, default true |
+
+One active template per (project, file type, role), and one per (file type, role) among studio templates (partial unique constraints). The project's active template wins over the studio's (Q-RP-23 = A). The key is fixed once created. A pattern whose sample render breaks DOM-PUB-03 is refused. A registration with a file type is checked against the template that applies only when that template enforces: the root must be the template's, and the path the rendered pattern with `{name}` filled by one run of letters, digits, `_`, `-`, `.`. Files registered before a template are never checked again.
+
 ## 2. Services (signatures)
 
 ```python
@@ -172,6 +196,10 @@ All under `/api/v1/publishing/`. Existing paths keep their shapes unless stated.
 | API-PUB-11 | `POST /publishing/files/{id}/deprecate|restore|revoke/` | — | new; body `note` / `reason` / `override_reason` | new |
 | API-PUB-12 | `GET/POST/PATCH /publishing/storage-roots/` | — | new; studio-wide; DELETE refused while files exist | new |
 | API-PUB-13 | `/publishing/destinations/` | case-sensitive names, many defaults | any-case unique among live rows; one default | a second "default" clears the first |
+| API-PUB-18 | `POST files/`, `POST files/bulk-register/`, file shapes, `GET files/{id}/dependencies/` | no dependencies | **Built (RP-4, C-RP-16):** `upstream_ids` (at most 50) in the registration body; file shapes gain `upstream_count`, `downstream_count`; `dependencies/` answers `{upstream, downstream}` (direct links) | additive |
+| API-PUB-19 | `GET files/loader/` | — | **Built (RP-4, C-RP-17):** exactly one of `shot`, `asset`, `task`; `file_type`, `role`, `which` = `latest` / `approved` / `hero`; a list, one file per stream, file type and role, with `version` and `task` | new |
+| API-PUB-20 | `GET files/resolve-path/` | — | **Built (RP-4, C-RP-18):** `version_id`, `file_type`, `role`; `{template_id, storage_root, pattern, relative_path, enforce}`, 404 when no template applies | new |
+| API-PUB-21 | `/publishing/path-templates/` | — | **Built (RP-4, C-RP-18):** list (filters `project_id`, `studio` for the studio's, `file_type`, `role`, `is_active`), read, create, PATCH; no PUT, no DELETE (405) | new |
 
 **Request body rules.** Action bodies get declared serializers (OpenAPI shows them); unknown keys are ignored as today, except on file registration, where they are a 400 (pipeline tools must not believe a field was stored).
 
@@ -187,6 +215,7 @@ All under `/api/v1/publishing/`. Existing paths keep their shapes unless stated.
 | revoke file | `publishing.revoke` (new) | member; reason required |
 | cross a final state | `publishing.status.override` (new, seeded to no role) | `override_reason`; history row |
 | manage storage roots | `publishing.storage.manage` (new) | studio-wide |
+| write path templates | `publishing.template.manage` (RP-4) | platform-admin, org-admin, production-admin; a project's template needs full membership of the project |
 | destinations | `publishing.view/create/update/delete` (as today) | studio-wide |
 
 Roles (*Q34*, **built**): `PLAN.md` §6; pinned by `tests/test_permission_matrix.py`.

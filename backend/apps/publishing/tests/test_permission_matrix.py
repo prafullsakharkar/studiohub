@@ -26,8 +26,26 @@ PUBLISHING_CODES = {
 
 EXPECTED = {
     "platform-admin": PUBLISHING_CODES - {P.STATUS_OVERRIDE},
-    "org-admin": {P.VIEW, P.CREATE, P.UPDATE, P.DELETE, P.DEPRECATE, P.REVOKE, P.STORAGE_MANAGE},
-    "production-admin": {P.VIEW, P.CREATE, P.UPDATE, P.DELETE, P.DEPRECATE, P.REVOKE},
+    "org-admin": {
+        P.VIEW,
+        P.CREATE,
+        P.UPDATE,
+        P.DELETE,
+        P.DEPRECATE,
+        P.REVOKE,
+        P.STORAGE_MANAGE,
+        P.TEMPLATE_MANAGE,
+    },
+    # Path templates are written by producers and studio admins (review-pipeline RP-4, Q-RP-23).
+    "production-admin": {
+        P.VIEW,
+        P.CREATE,
+        P.UPDATE,
+        P.DELETE,
+        P.DEPRECATE,
+        P.REVOKE,
+        P.TEMPLATE_MANAGE,
+    },  # fmt: skip
     # No delete: removing export job records is an admin task.
     "vfx-supervisor": {P.VIEW, P.CREATE, P.UPDATE, P.DEPRECATE, P.REVOKE},
     # A lead registers the files of their own published versions.

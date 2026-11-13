@@ -1,5 +1,5 @@
 {
- "_source": "docs/sync/tools/perm_catalog.py (Phase 0, backend @ sync/phase-0-discovery); + identity.directory.manage, identity.user.require_mfa (CR-40, from init_platform.PERMISSION_SPECS); + masterdata.partner.view, held by org-admin, production-admin, vfx-supervisor, and delivery.view withdrawn from artist (CR-53, from init_platform); + project.view_budget, held by platform-admin, org-admin, production-admin (CR-55, from init_platform); + note.update, held by org-admin, production-admin, vfx-supervisor, lead-artist, and note.delete, held by org-admin, production-admin, vfx-supervisor (review-pipeline RP-2, from init_platform; both checked in the notes views, not through a permission_map)",
+ "_source": "docs/sync/tools/perm_catalog.py (Phase 0, backend @ sync/phase-0-discovery); + identity.directory.manage, identity.user.require_mfa (CR-40, from init_platform.PERMISSION_SPECS); + masterdata.partner.view, held by org-admin, production-admin, vfx-supervisor, and delivery.view withdrawn from artist (CR-53, from init_platform); + project.view_budget, held by platform-admin, org-admin, production-admin (CR-55, from init_platform); + note.update, held by org-admin, production-admin, vfx-supervisor, lead-artist, and note.delete, held by org-admin, production-admin, vfx-supervisor (review-pipeline RP-2, from init_platform; both checked in the notes views, not through a permission_map); + publishing.template.manage, held by org-admin, production-admin (platform-admin holds all), enforced by the path-template views (review-pipeline RP-4, Q-RP-23, from init_platform)",
  "catalog": [
   "asset.create",
   "asset.delete",
@@ -74,6 +74,7 @@
   "publishing.revoke",
   "publishing.status.override",
   "publishing.storage.manage",
+  "publishing.template.manage",
   "publishing.update",
   "publishing.view",
   "review.approve",
@@ -210,6 +211,7 @@
   "publishing.deprecate",
   "publishing.revoke",
   "publishing.storage.manage",
+  "publishing.template.manage",
   "publishing.update",
   "publishing.view",
   "review.approve",
@@ -267,9 +269,9 @@
  ],
  "roles": {
   "platform-admin": 1,
-  "org-admin": 107,
+  "org-admin": 108,
   "org-member": 1,
-  "production-admin": 99,
+  "production-admin": 100,
   "vfx-supervisor": 92,
   "lead-artist": 42,
   "artist": 24
@@ -328,6 +330,7 @@
    "publishing.deprecate",
    "publishing.revoke",
    "publishing.storage.manage",
+   "publishing.template.manage",
    "publishing.update",
    "publishing.view",
    "review.approve",
@@ -435,6 +438,7 @@
    "publishing.delete",
    "publishing.deprecate",
    "publishing.revoke",
+   "publishing.template.manage",
    "publishing.update",
    "publishing.view",
    "review.approve",
