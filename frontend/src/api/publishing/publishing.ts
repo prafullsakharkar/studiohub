@@ -15,7 +15,11 @@ import { resourceApi } from '@/api/masterdata/resource';
  *  - a file is registered once and never edited: PUT, PATCH and DELETE are 405, only its status moves
  *    (Registered → Deprecated → Registered, Registered or Deprecated → Revoked, which is final);
  *  - a file's `revoke_reason` is shown only to holders of `publishing.revoke`;
- *  - nothing returns file contents: the registry records where a file is and what its checksum is.
+ *  - nothing returns file contents: the registry records where a file is and what its checksum is;
+ *  - a file names the files it was built from (`upstream_ids`) when it is registered, never later; an upstream is a file
+ *    of the same project that is not revoked (review-pipeline RP-4, C-RP-16, pinned to `_dependencies_flow.json`);
+ *  - path templates say where a file of a type and role should live; a project's own template wins over the studio's,
+ *    and only a template with `enforce` on refuses a file registered elsewhere (C-RP-18).
  */
 const V1 = '/api/v1/publishing';
 const jobs = `${V1}/`;
@@ -151,6 +155,26 @@ export interface PublishedFile {
   export_job_id: string | null;
   created_by_id: string | null;
   created_at: string;
+  /** How many files this one was built from, and how many were built from it (C-RP-16). */
+  upstream_count: number;
+  downstream_count: number;
+}
+
+/** One file in `GET files/{id}/dependencies/`: direct links only. */
+export interface FileDependencyRow {
+  id: string;
+  storage_root: string;
+  relative_path: string;
+  role: string;
+  file_type: string;
+  status: string;
+  version_id: string;
+  version_code: string;
+}
+
+export interface FileDependencies {
+  upstream: FileDependencyRow[];
+  downstream: FileDependencyRow[];
 }
 
 export interface PublishedFileInput {
@@ -164,6 +188,8 @@ export interface PublishedFileInput {
   frame_start?: number | null;
   frame_end?: number | null;
   export_job_id?: string | null;
+  /** The files this one was built from (at most 50), fixed once it is registered. */
+  upstream_ids?: string[];
 }
 
 export interface BulkRegisterResult {
@@ -217,6 +243,39 @@ export interface PublishDestinationInput {
   is_active?: boolean;
 }
 
+// ------------------------------------------------------------------------------------------- path templates
+
+export interface PathTemplate {
+  id: string;
+  /** Null for the studio's template, which a project's own template for the same file type and role overrides. */
+  project_id: string | null;
+  /** The file type's code. */
+  file_type: string;
+  role: string;
+  /** The storage root's code. */
+  storage_root: string;
+  pattern: string;
+  /** When on, a file of this type and role registered anywhere else is refused. */
+  enforce: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PathTemplateInput {
+  /** Omit or null for a studio template. Fixed once created, like the file type and the role. */
+  project?: string | null;
+  file_type: string;
+  role?: string;
+  storage_root: string;
+  pattern: string;
+  enforce?: boolean;
+  is_active?: boolean;
+}
+
+/** The tokens a pattern may use (`{version:03}` pads, `{frame:6}` sets the frame width, `{name}` is the tool's own). */
+export const TEMPLATE_TOKENS = ['project', 'episode', 'sequence', 'shot', 'asset', 'asset_type', 'task', 'department', 'version', 'ext', 'frame', 'name'] as const;
+
 // -------------------------------------------------------------------------------------------- the API
 
 const post = <T>(id: string, action: string, body: Record<string, unknown> = {}) => apiClient.post<T>(`${jobs}${id}/${action}/`, body);
@@ -247,7 +306,11 @@ export const publishedFilesApi = {
   /** A reason is required; revoking is final for everyone but a holder of the override code. */
   revoke: (id: string, reason: string) => filePost<PublishedFile>(id, 'revoke', { reason }),
   bulkRegister: (items: PublishedFileInput[]) => apiClient.post<BulkRegisterResult>(`${files}bulk-register/`, { items }),
+  dependencies: (id: string, signal?: AbortSignal) => apiClient.get<FileDependencies>(`${files}${id}/dependencies/`, { signal }),
 };
+
+/** No delete (405): a template is retired with `is_active`. Writes need `publishing.template.manage`. */
+export const pathTemplatesApi = resourceApi<PathTemplate, PathTemplateInput>('publishing-path-templates', `${V1}/path-templates/`);
 
 export const storageRootsApi = resourceApi<StorageRoot, StorageRootInput>('publishing-roots', `${V1}/storage-roots/`);
 export const publishDestinationsApi = resourceApi<PublishDestination, PublishDestinationInput>('publishing-destinations', `${V1}/destinations/`);

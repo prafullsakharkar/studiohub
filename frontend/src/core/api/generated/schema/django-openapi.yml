@@ -19736,6 +19736,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/PublishedFile'
           description: ''
+  /api/v1/publishing/files/{uuid}/dependencies/:
+    get:
+      operationId: v1_publishing_files_dependencies_retrieve
+      description: The files this one was built from, and the files built from it
+        (C-RP-16).
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dependencies'
+          description: ''
   /api/v1/publishing/files/{uuid}/deprecate/:
     post:
       operationId: v1_publishing_files_deprecate_create
@@ -19885,6 +19911,287 @@ paths:
               schema:
                 type: object
                 additionalProperties: {}
+          description: ''
+  /api/v1/publishing/files/loader/:
+    get:
+      operationId: v1_publishing_files_loader_list
+      description: The latest, approved or hero file of each stream of a shot, asset
+        or task (C-RP-17).
+      parameters:
+      - in: query
+        name: asset
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: file_type
+        schema:
+          type: string
+          maxLength: 64
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: query
+        name: role
+        schema:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          x-spec-enum-id: c73a28eb7fe4696c
+          minLength: 1
+        description: |-
+          * `main` - Main
+          * `proxy` - Proxy
+          * `thumbnail` - Thumbnail
+          * `sidecar` - Sidecar
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: shot
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: task
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: which
+        schema:
+          enum:
+          - latest
+          - approved
+          - hero
+          type: string
+          x-spec-enum-id: ba1aadf7ad677590
+          minLength: 1
+        description: |-
+          * `latest` - latest
+          * `approved` - approved
+          * `hero` - hero
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoaderRow'
+          description: ''
+  /api/v1/publishing/files/resolve-path/:
+    get:
+      operationId: v1_publishing_files_resolve_path_retrieve
+      description: Where a file of this version, type and role should be registered
+        (C-RP-18).
+      parameters:
+      - in: query
+        name: file_type
+        schema:
+          type: string
+          maxLength: 64
+          minLength: 1
+        required: true
+      - in: query
+        name: role
+        schema:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          x-spec-enum-id: c73a28eb7fe4696c
+          minLength: 1
+        description: |-
+          * `main` - Main
+          * `proxy` - Proxy
+          * `thumbnail` - Thumbnail
+          * `sidecar` - Sidecar
+      - in: query
+        name: version_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolvedPath'
+          description: ''
+  /api/v1/publishing/path-templates/:
+    get:
+      operationId: v1_publishing_path_templates_list
+      description: |-
+        Platform-global reads (org-free).
+
+        ``serializer_map`` (action -> serializer) mirrors the declarative
+        contract of the former org-scoped base so viewsets keep resolving
+        serializers per action without a global ``serializer_class``.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPathTemplateList'
+          description: ''
+    post:
+      operationId: v1_publishing_path_templates_create
+      description: |-
+        Platform-global reads (org-free).
+
+        ``serializer_map`` (action -> serializer) mirrors the declarative
+        contract of the former org-scoped base so viewsets keep resolving
+        serializers per action without a global ``serializer_class``.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathTemplateCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PathTemplateCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PathTemplateCreate'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathTemplate'
+          description: ''
+  /api/v1/publishing/path-templates/{uuid}/:
+    get:
+      operationId: v1_publishing_path_templates_retrieve
+      description: |-
+        Platform-global reads (org-free).
+
+        ``serializer_map`` (action -> serializer) mirrors the declarative
+        contract of the former org-scoped base so viewsets keep resolving
+        serializers per action without a global ``serializer_class``.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathTemplate'
+          description: ''
+    patch:
+      operationId: v1_publishing_path_templates_partial_update
+      description: |-
+        Platform-global reads (org-free).
+
+        ``serializer_map`` (action -> serializer) mirrors the declarative
+        contract of the former org-scoped base so viewsets keep resolving
+        serializers per action without a global ``serializer_class``.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPathTemplateUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPathTemplateUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPathTemplateUpdate'
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathTemplate'
           description: ''
   /api/v1/publishing/storage-roots/:
     get:
@@ -37402,6 +37709,82 @@ components:
       - id
       - name
       - updated_at
+    Dependencies:
+      type: object
+      properties:
+        upstream:
+          type: array
+          items:
+            $ref: '#/components/schemas/DependencyRow'
+        downstream:
+          type: array
+          items:
+            $ref: '#/components/schemas/DependencyRow'
+      required:
+      - downstream
+      - upstream
+    DependencyRow:
+      type: object
+      description: One upstream or downstream file in ``GET files/{id}/dependencies/``
+        (C-RP-16).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Universally unique identifier.
+        storage_root:
+          type: string
+          readOnly: true
+        relative_path:
+          type: string
+          readOnly: true
+        role:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          description: |-
+            * `main` - Main
+            * `proxy` - Proxy
+            * `thumbnail` - Thumbnail
+            * `sidecar` - Sidecar
+          x-spec-enum-id: c73a28eb7fe4696c
+          readOnly: true
+        file_type:
+          type: string
+          readOnly: true
+        status:
+          enum:
+          - Registered
+          - Deprecated
+          - Revoked
+          type: string
+          description: |-
+            * `Registered` - Registered
+            * `Deprecated` - Deprecated
+            * `Revoked` - Revoked
+          x-spec-enum-id: b55dd3d8530682ef
+          readOnly: true
+        version_id:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+          readOnly: true
+        version_code:
+          type: string
+          readOnly: true
+      required:
+      - file_type
+      - id
+      - relative_path
+      - role
+      - status
+      - storage_root
+      - version_code
+      - version_id
     Deprecate:
       type: object
       properties:
@@ -38754,6 +39137,190 @@ components:
           default: false
       required:
       - user
+    LoaderRow:
+      type: object
+      description: A file of ``GET files/loader/``, with its version and task (C-RP-17).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Universally unique identifier.
+        version_id:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+          readOnly: true
+        project_id:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+          readOnly: true
+        storage_root:
+          type: string
+          readOnly: true
+        relative_path:
+          type: string
+          readOnly: true
+        role:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          description: |-
+            * `main` - Main
+            * `proxy` - Proxy
+            * `thumbnail` - Thumbnail
+            * `sidecar` - Sidecar
+          x-spec-enum-id: c73a28eb7fe4696c
+          readOnly: true
+        file_type:
+          type: string
+          readOnly: true
+        size_bytes:
+          type: integer
+          readOnly: true
+        sha256:
+          type: string
+          readOnly: true
+        frame_start:
+          type: integer
+          readOnly: true
+          nullable: true
+        frame_end:
+          type: integer
+          readOnly: true
+          nullable: true
+        checksum_state:
+          enum:
+          - declared
+          - verified
+          - mismatch
+          - missing
+          type: string
+          description: |-
+            * `declared` - Declared
+            * `verified` - Verified
+            * `mismatch` - Mismatch
+            * `missing` - Missing
+          x-spec-enum-id: 370eefd32fed3d05
+          readOnly: true
+        checksum_checked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        status:
+          enum:
+          - Registered
+          - Deprecated
+          - Revoked
+          type: string
+          description: |-
+            * `Registered` - Registered
+            * `Deprecated` - Deprecated
+            * `Revoked` - Revoked
+          x-spec-enum-id: b55dd3d8530682ef
+          readOnly: true
+        status_changed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        revoke_reason:
+          type: string
+          description: Shown to holders of ``publishing.revoke`` and to whoever registered
+            the file.
+          readOnly: true
+        export_job_id:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Object creation timestamp.
+        created_by_id:
+          type: string
+          format: uuid
+          readOnly: true
+        upstream_count:
+          type: integer
+          description: How many files this one was built from (C-RP-16); annotated
+            by the selector on reads.
+          readOnly: true
+        downstream_count:
+          type: integer
+          readOnly: true
+        version:
+          allOf:
+          - $ref: '#/components/schemas/LoaderVersion'
+          readOnly: true
+        task:
+          allOf:
+          - $ref: '#/components/schemas/LoaderTask'
+          nullable: true
+          readOnly: true
+      required:
+      - checksum_checked_at
+      - checksum_state
+      - created_at
+      - created_by_id
+      - downstream_count
+      - export_job_id
+      - file_type
+      - frame_end
+      - frame_start
+      - id
+      - project_id
+      - relative_path
+      - revoke_reason
+      - role
+      - sha256
+      - size_bytes
+      - status
+      - status_changed_at
+      - storage_root
+      - task
+      - upstream_count
+      - version
+      - version_id
+    LoaderTask:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+      required:
+      - code
+      - id
+    LoaderVersion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        version_index:
+          type: integer
+        status:
+          type: string
+        is_hero:
+          type: boolean
+      required:
+      - code
+      - id
+      - is_hero
+      - status
+      - version_index
     Localization:
       type: object
       description: Serializer for Localization.
@@ -40911,6 +41478,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Office'
+    PaginatedPathTemplateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PathTemplate'
     PaginatedPermissionList:
       type: object
       required:
@@ -43566,6 +44156,41 @@ components:
           format: date-time
           readOnly: true
           description: Last update timestamp.
+    PatchedPathTemplateUpdate:
+      type: object
+      description: An unknown key is a 400, so a caller never believes a field was
+        stored when it was not.
+      properties:
+        project:
+          type: string
+          format: uuid
+          nullable: true
+        file_type:
+          type: string
+          maxLength: 64
+        role:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          description: |-
+            * `main` - Main
+            * `proxy` - Proxy
+            * `thumbnail` - Thumbnail
+            * `sidecar` - Sidecar
+          x-spec-enum-id: c73a28eb7fe4696c
+        storage_root:
+          type: string
+          maxLength: 64
+        pattern:
+          type: string
+          maxLength: 1024
+        enforce:
+          type: boolean
+        is_active:
+          type: boolean
     PatchedPermission:
       type: object
       description: Base serializer for Identity models.
@@ -47664,6 +48289,108 @@ components:
         nodes: {}
         transitions: {}
         automation_rules: {}
+    PathTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Universally unique identifier.
+        project_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        file_type:
+          type: string
+          readOnly: true
+        role:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          description: |-
+            * `main` - Main
+            * `proxy` - Proxy
+            * `thumbnail` - Thumbnail
+            * `sidecar` - Sidecar
+          x-spec-enum-id: c73a28eb7fe4696c
+          readOnly: true
+        storage_root:
+          type: string
+          readOnly: true
+        pattern:
+          type: string
+          readOnly: true
+        enforce:
+          type: boolean
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Object creation timestamp.
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Last update timestamp.
+      required:
+      - created_at
+      - enforce
+      - file_type
+      - id
+      - is_active
+      - pattern
+      - project_id
+      - role
+      - storage_root
+      - updated_at
+    PathTemplateCreate:
+      type: object
+      description: An unknown key is a 400, so a caller never believes a field was
+        stored when it was not.
+      properties:
+        project:
+          type: string
+          format: uuid
+          nullable: true
+        file_type:
+          type: string
+          maxLength: 64
+        role:
+          enum:
+          - main
+          - proxy
+          - thumbnail
+          - sidecar
+          type: string
+          description: |-
+            * `main` - Main
+            * `proxy` - Proxy
+            * `thumbnail` - Thumbnail
+            * `sidecar` - Sidecar
+          x-spec-enum-id: c73a28eb7fe4696c
+        storage_root:
+          type: string
+          maxLength: 64
+        pattern:
+          type: string
+          maxLength: 1024
+        enforce:
+          type: boolean
+        is_active:
+          type: boolean
+      required:
+      - file_type
+      - pattern
+      - storage_root
     Permission:
       type: object
       description: Base serializer for Identity models.
@@ -54496,11 +55223,20 @@ components:
           type: string
           format: uuid
           readOnly: true
+        upstream_count:
+          type: integer
+          description: How many files this one was built from (C-RP-16); annotated
+            by the selector on reads.
+          readOnly: true
+        downstream_count:
+          type: integer
+          readOnly: true
       required:
       - checksum_checked_at
       - checksum_state
       - created_at
       - created_by_id
+      - downstream_count
       - export_job_id
       - file_type
       - frame_end
@@ -54515,6 +55251,7 @@ components:
       - status
       - status_changed_at
       - storage_root
+      - upstream_count
       - version_id
     RecoveryCodeVerify:
       type: object
@@ -54565,6 +55302,12 @@ components:
           type: string
           format: uuid
           nullable: true
+        upstream_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 50
       required:
       - relative_path
       - sha256
@@ -54659,6 +55402,26 @@ components:
           nullable: true
       required:
       - alert_id
+    ResolvedPath:
+      type: object
+      properties:
+        template_id:
+          type: string
+          format: uuid
+        storage_root:
+          type: string
+        pattern:
+          type: string
+        relative_path:
+          type: string
+        enforce:
+          type: boolean
+      required:
+      - enforce
+      - pattern
+      - relative_path
+      - storage_root
+      - template_id
     ResourceCreate:
       type: object
       description: Serializer for creating a resource.

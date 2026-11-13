@@ -68,6 +68,8 @@ const PublishedFilesPage = lazyNamed(() => import('@/modules/publishing'), 'Publ
 const PublishFormPage = lazyNamed(() => import('@/modules/publishing'), 'PublishFormPage');
 const PublishingPage = lazyNamed(() => import('@/modules/publishing'), 'PublishingPage');
 const PublishWorkspacePage = lazyNamed(() => import('@/modules/publishing'), 'PublishWorkspacePage');
+const PathTemplateFormPage = lazyNamed(() => import('@/modules/publishing'), 'PathTemplateFormPage');
+const PathTemplatesPage = lazyNamed(() => import('@/modules/publishing'), 'PathTemplatesPage');
 const StorageRootFormPage = lazyNamed(() => import('@/modules/publishing'), 'StorageRootFormPage');
 const StorageRootsPage = lazyNamed(() => import('@/modules/publishing'), 'StorageRootsPage');
 const CategoriesPage = lazyNamed(() => import('@/modules/settings'), 'CategoriesPage');
@@ -430,6 +432,12 @@ export const AppRoutes: React.FC = () => {
           <Route path="/publishing/storage-roots/new" element={<StorageRootFormPage />} />
 
           <Route path="/publishing/storage-roots/:id/edit" element={<StorageRootFormPage />} />
+
+          <Route path="/publishing/path-templates" element={<PathTemplatesPage />} />
+
+          <Route path="/publishing/path-templates/new" element={<PathTemplateFormPage />} />
+
+          <Route path="/publishing/path-templates/:id/edit" element={<PathTemplateFormPage />} />
 
           <Route path="/publishing/destinations" element={<PublishDestinationsPage />} />
 

@@ -6,9 +6,10 @@ Reads the file in chunks, compares with the declared SHA-256 and records ``verif
 ``mismatch`` or ``missing``. It never rewrites ``sha256`` and never raises on a bad file; a root
 without a configured mount is skipped. Logs carry the file id and the result only.
 
-The repository defines no Celery app (``config/celery.py`` is empty), so nothing queues this
-automatically. Run ``manage.py verify_published_files`` by hand or from cron. ``verify_file`` is
-also a ``shared_task``, ready for when an app is wired; called directly it just runs.
+The Celery app is ``core.celery:app`` (``autodiscover_tasks``), but nothing queues this task:
+registering a file does not, and there is no beat schedule for it. Run
+``manage.py verify_published_files`` by hand or from cron. ``verify_file`` is a ``shared_task``,
+so a worker can run it when something queues it; called directly it just runs.
 """
 
 from __future__ import annotations

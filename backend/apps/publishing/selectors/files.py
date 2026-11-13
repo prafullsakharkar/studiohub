@@ -4,6 +4,7 @@ Read side of the published file registry.
 ``PublishedFileSelector.get_queryset`` is what the API reads, narrowed to the caller's projects.
 ``files_for_versions`` / ``deliverable_files`` are the interface other apps (Deliveries) read
 files through (delivery-pipeline CONTRACTS X-04): plain values, no model instances.
+``dependencies`` and ``loader`` are the review-pipeline RP-4 reads (C-RP-16, C-RP-17).
 """
 
 from __future__ import annotations
@@ -13,11 +14,14 @@ from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
 
-from django.db.models import Exists, OuterRef, Q, QuerySet
+from django.db.models import Count, Exists, IntegerField, OuterRef, Q, QuerySet, Subquery, Value
+from django.db.models.functions import Coalesce
 
 from apps.core.selectors.base import BaseSelector
+from apps.production.constants import workflow as production_workflow
 from apps.production.selectors.base import ProductionBaseSelector
-from apps.publishing.models import PublishedFile, StorageRoot
+from apps.production.selectors.version import VersionSelector
+from apps.publishing.models import PublishedFile, PublishedFileDependency, StorageRoot
 
 
 @dataclass(frozen=True)
@@ -62,9 +66,30 @@ class PublishedFileSelector(BaseSelector):
     #: query parameters the list accepts
     _FILTERS = ("version_id", "project_id", "status", "role")
 
+    @staticmethod
+    def with_link_counts(qs: QuerySet[PublishedFile]) -> QuerySet[PublishedFile]:
+        """Annotate ``upstream_total`` and ``downstream_total`` (C-RP-16) without joining rows."""
+
+        def count(side: str) -> Coalesce:
+            rows = (
+                PublishedFileDependency.objects.filter(**{side: OuterRef("pk")})
+                .order_by()
+                .values(side)
+                .annotate(total=Count("id"))
+                .values("total")
+            )
+            return Coalesce(Subquery(rows, output_field=IntegerField()), Value(0))
+
+        return qs.annotate(
+            upstream_total=count("downstream"),
+            downstream_total=count("upstream"),
+        )
+
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[PublishedFile]:
-        qs = PublishedFile.objects.select_related("storage_root", "file_type", "version")
+        qs = cls.with_link_counts(
+            PublishedFile.objects.select_related("storage_root", "file_type", "version")
+        )
         visible = ProductionBaseSelector.visible_project_ids(request) if request else []
         if visible is not None:  # None: platform admin, nothing narrows
             qs = qs.filter(project_id__in=visible)
@@ -102,6 +127,85 @@ class PublishedFileSelector(BaseSelector):
             | Q(created_at=OuterRef("created_at"), pk__gt=OuterRef("pk"))
         )
         return qs.filter(status=PublishedFile.Status.REGISTERED).exclude(Exists(newer))
+
+    @staticmethod
+    def dependencies(file: PublishedFile) -> dict[str, list[PublishedFile]]:
+        """
+        The direct upstream and downstream files of ``file`` (C-RP-16).
+
+        Every link joins two files of one project (Q-RP-20), so whoever may read ``file`` may read
+        both lists. The project filter is kept as a guard.
+        """
+        base = PublishedFile.objects.filter(project_id=file.project_id).select_related(  # pyright: ignore[reportAttributeAccessIssue]
+            "storage_root", "file_type", "version"
+        )
+        return {
+            "upstream": list(
+                base.filter(downstream_links__downstream=file).order_by("relative_path", "pk")
+            ),
+            "downstream": list(
+                base.filter(upstream_links__upstream=file).order_by("relative_path", "pk")
+            ),
+        }
+
+    #: what ``loader`` can pick (Q-RP-21 = B)
+    LOADER_CHOICES = ("latest", "approved", "hero")
+
+    @classmethod
+    def loader(
+        cls,
+        *,
+        kind: str,
+        entity_id: Any,
+        role: str,
+        which: str,
+        file_type: str = "",
+    ) -> list[PublishedFile]:
+        """
+        One file per stream, file type and role for a shot, asset or task (C-RP-17).
+
+        ``kind`` is ``shot``, ``asset`` or ``task``; the caller has checked that the entity exists
+        and that the caller may read its project. A stream is the versions of one task, or of the
+        entity for versions with no task; their ``version_index`` is unique within it, so the highest
+        wins. Only live, published versions count (``approved``: whose status is Approved; ``hero``:
+        the hero version). The file is the newest Registered one of its version, type and role.
+        """
+        if kind not in {"shot", "asset", "task"}:
+            raise ValueError(f"Unknown entity kind: {kind}")
+        versions = VersionSelector.get_queryset().filter(
+            is_published=True, **{f"{kind}_id": entity_id}
+        )
+        if which == "approved":
+            versions = versions.filter(status=production_workflow.APPROVED)
+        elif which == "hero":
+            versions = versions.filter(is_hero=True)
+        versions = versions.values("pk")
+
+        files = PublishedFile.objects.filter(
+            version__in=versions, role=role, status=PublishedFile.Status.REGISTERED
+        )
+        if file_type:
+            files = files.filter(file_type__code__iexact=file_type)
+        rows = cls.with_link_counts(files).select_related(
+            "storage_root", "file_type", "version", "version__task"
+        )
+
+        best: dict[tuple[Any, Any, str], PublishedFile] = {}
+        for row in rows:
+            version = row.version
+            key = (version.task_id, row.file_type_id, row.role)  # pyright: ignore[reportAttributeAccessIssue]
+            rank = (version.version_index, row.created_at, str(row.pk))
+            held = best.get(key)
+            if held is None or rank > (held.version.version_index, held.created_at, str(held.pk)):
+                best[key] = row
+        return sorted(
+            best.values(),
+            key=lambda row: (
+                row.version.task.code if row.version.task else "",
+                row.file_type.code if row.file_type else "",
+                row.role,
+            ),
+        )
 
     @classmethod
     def latest_for_versions(

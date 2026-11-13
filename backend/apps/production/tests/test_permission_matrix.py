@@ -133,13 +133,16 @@ def _codes(table: dict[str, str]) -> set[str]:
 EXPECTED = {
     # The code freeze on shots and assets is lifted by production-admin only.
     # The project budget is the producer's and the studio admin's (docs/sync CR-55).
-    "production-admin": _codes(FULL) | {"production.code.rename", "project.view_budget"},
+    # Path templates: producers and studio admins (review-pipeline RP-4, Q-RP-23).
+    "production-admin": _codes(FULL)
+    | {"production.code.rename", "project.view_budget", "publishing.template.manage"},
     # Deleting export job records and deliveries is an admin task; producers send and read the
     # passcode, supervisors sign off (Q34).
     "vfx-supervisor": _codes(FULL)
     - {"publishing.delete", "delivery.delete", "delivery.send", "delivery.view_secret"},
     # Storage roots are studio-wide; org-admin administers them.
-    "org-admin": _codes(FULL) | {"publishing.storage.manage", "project.view_budget"},
+    "org-admin": _codes(FULL)
+    | {"publishing.storage.manage", "project.view_budget", "publishing.template.manage"},
     "lead-artist": _codes(LEAD),
     "artist": _codes(ARTIST),
     "org-member": set(),

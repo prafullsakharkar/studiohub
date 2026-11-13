@@ -1,0 +1,1214 @@
+{
+  "dependencies_after_upstream_revoked": {
+    "body": {
+      "downstream": [],
+      "upstream": [
+        {
+          "file_type": "ABC",
+          "id": "8b286261-ae8f-426d-b45d-ed19b334efe6",
+          "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
+          "role": "main",
+          "status": "Revoked",
+          "storage_root": "PROJECTS",
+          "version_code": "RPD_SH0010_COMP_V001",
+          "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "dec49869-00c4-4bc2-a370-c615ef521e17"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/publishing/files/d168950b-0972-4c8f-b49b-a6d82385ac5b/dependencies/"
+    },
+    "status": 200
+  },
+  "dependencies_none": {
+    "body": {
+      "downstream": [],
+      "upstream": []
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "07e29bec-c64f-4532-9702-8e08c66b46c9"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/publishing/files/501a6411-0466-4855-a84e-713a290a9611/dependencies/"
+    },
+    "status": 200
+  },
+  "dependencies_of_downstream": {
+    "body": {
+      "downstream": [],
+      "upstream": [
+        {
+          "file_type": "ABC",
+          "id": "8b286261-ae8f-426d-b45d-ed19b334efe6",
+          "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
+          "role": "main",
+          "status": "Registered",
+          "storage_root": "PROJECTS",
+          "version_code": "RPD_SH0010_COMP_V001",
+          "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "a1a41244-c91c-43c8-9439-6c74af8cc166"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/publishing/files/d168950b-0972-4c8f-b49b-a6d82385ac5b/dependencies/"
+    },
+    "status": 200
+  },
+  "dependencies_of_upstream": {
+    "body": {
+      "downstream": [
+        {
+          "file_type": "EXR",
+          "id": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
+          "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+          "role": "main",
+          "status": "Registered",
+          "storage_root": "PROJECTS",
+          "version_code": "RPD_SH0010_COMP_V001",
+          "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        }
+      ],
+      "upstream": []
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "4ee4c98b-76c9-4896-951f-96dc0b7d3ca7"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/publishing/files/8b286261-ae8f-426d-b45d-ed19b334efe6/dependencies/"
+    },
+    "status": 200
+  },
+  "file_detail_downstream": {
+    "body": {
+      "checksum_checked_at": null,
+      "checksum_state": "declared",
+      "created_at": "2026-11-12T18:41:14.869266Z",
+      "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+      "downstream_count": 0,
+      "export_job_id": null,
+      "file_type": "EXR",
+      "frame_end": 1096,
+      "frame_start": 1001,
+      "id": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
+      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+      "revoke_reason": "",
+      "role": "main",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "size_bytes": 2048,
+      "status": "Registered",
+      "status_changed_at": null,
+      "storage_root": "PROJECTS",
+      "upstream_count": 1,
+      "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "0ebd77c4-a922-4429-8231-dbf02c244196"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/publishing/files/d168950b-0972-4c8f-b49b-a6d82385ac5b/"
+    },
+    "status": 200
+  },
+  "files_list": {
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "checksum_checked_at": null,
+          "checksum_state": "declared",
+          "created_at": "2026-11-12T18:41:14.829997Z",
+          "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+          "downstream_count": 1,
+          "export_job_id": null,
+          "file_type": "ABC",
+          "frame_end": null,
+          "frame_start": null,
+          "id": "8b286261-ae8f-426d-b45d-ed19b334efe6",
+          "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+          "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
+          "revoke_reason": "",
+          "role": "main",
+          "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "size_bytes": 2048,
+          "status": "Registered",
+          "status_changed_at": null,
+          "storage_root": "PROJECTS",
+          "upstream_count": 0,
+          "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        },
+        {
+          "checksum_checked_at": null,
+          "checksum_state": "declared",
+          "created_at": "2026-11-12T18:41:14.869266Z",
+          "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+          "downstream_count": 0,
+          "export_job_id": null,
+          "file_type": "EXR",
+          "frame_end": 1096,
+          "frame_start": 1001,
+          "id": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
+          "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+          "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+          "revoke_reason": "",
+          "role": "main",
+          "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "size_bytes": 2048,
+          "status": "Registered",
+          "status_changed_at": null,
+          "storage_root": "PROJECTS",
+          "upstream_count": 1,
+          "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "b163391e-01d0-4485-b2e6-107ab7358461"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": {
+        "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e"
+      },
+      "path": "/api/v1/publishing/files/"
+    },
+    "status": 200
+  },
+  "ids": {
+    "downstream": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
+    "project": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+    "shot": "0f15329a-7bb3-4eb4-87e8-eda104e5695f",
+    "task": "563b5829-9c03-499d-ac64-82ce316f4045",
+    "upstream": "8b286261-ae8f-426d-b45d-ed19b334efe6",
+    "v1": "d02587d9-b1db-4324-bd4d-ef4faf317c37",
+    "v2": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+  },
+  "loader_approved": {
+    "body": [
+      {
+        "checksum_checked_at": null,
+        "checksum_state": "declared",
+        "created_at": "2026-11-12T18:41:14.869266Z",
+        "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+        "downstream_count": 0,
+        "export_job_id": null,
+        "file_type": "EXR",
+        "frame_end": 1096,
+        "frame_start": 1001,
+        "id": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
+        "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+        "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+        "revoke_reason": "",
+        "role": "main",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "status": "Registered",
+        "status_changed_at": null,
+        "storage_root": "PROJECTS",
+        "task": {
+          "code": "RPD_T_COMP",
+          "id": "563b5829-9c03-499d-ac64-82ce316f4045"
+        },
+        "upstream_count": 1,
+        "version": {
+          "code": "RPD_SH0010_COMP_V001",
+          "id": "d02587d9-b1db-4324-bd4d-ef4faf317c37",
+          "is_hero": true,
+          "status": "Approved",
+          "version_index": 1
+        },
+        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      }
+    ],
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "dabe1d42-389b-4cb5-9fd3-37002e929f55"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": {
+        "file_type": "EXR",
+        "shot": "0f15329a-7bb3-4eb4-87e8-eda104e5695f",
+        "which": "approved"
+      },
+      "path": "/api/v1/publishing/files/loader/"
+    },
+    "status": 200
+  },
+  "loader_hero_task": {
+    "body": [
+      {
+        "checksum_checked_at": null,
+        "checksum_state": "declared",
+        "created_at": "2026-11-12T18:41:14.829997Z",
+        "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+        "downstream_count": 1,
+        "export_job_id": null,
+        "file_type": "ABC",
+        "frame_end": null,
+        "frame_start": null,
+        "id": "8b286261-ae8f-426d-b45d-ed19b334efe6",
+        "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+        "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
+        "revoke_reason": "",
+        "role": "main",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "status": "Registered",
+        "status_changed_at": null,
+        "storage_root": "PROJECTS",
+        "task": {
+          "code": "RPD_T_COMP",
+          "id": "563b5829-9c03-499d-ac64-82ce316f4045"
+        },
+        "upstream_count": 0,
+        "version": {
+          "code": "RPD_SH0010_COMP_V001",
+          "id": "d02587d9-b1db-4324-bd4d-ef4faf317c37",
+          "is_hero": true,
+          "status": "Approved",
+          "version_index": 1
+        },
+        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      },
+      {
+        "checksum_checked_at": null,
+        "checksum_state": "declared",
+        "created_at": "2026-11-12T18:41:14.869266Z",
+        "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+        "downstream_count": 0,
+        "export_job_id": null,
+        "file_type": "EXR",
+        "frame_end": 1096,
+        "frame_start": 1001,
+        "id": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
+        "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+        "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+        "revoke_reason": "",
+        "role": "main",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "status": "Registered",
+        "status_changed_at": null,
+        "storage_root": "PROJECTS",
+        "task": {
+          "code": "RPD_T_COMP",
+          "id": "563b5829-9c03-499d-ac64-82ce316f4045"
+        },
+        "upstream_count": 1,
+        "version": {
+          "code": "RPD_SH0010_COMP_V001",
+          "id": "d02587d9-b1db-4324-bd4d-ef4faf317c37",
+          "is_hero": true,
+          "status": "Approved",
+          "version_index": 1
+        },
+        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      }
+    ],
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "dd718deb-d0a6-42c1-9218-28f0a2b4988a"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": {
+        "task": "563b5829-9c03-499d-ac64-82ce316f4045",
+        "which": "hero"
+      },
+      "path": "/api/v1/publishing/files/loader/"
+    },
+    "status": 200
+  },
+  "loader_latest": {
+    "body": [
+      {
+        "checksum_checked_at": null,
+        "checksum_state": "declared",
+        "created_at": "2026-11-12T18:41:15.108856Z",
+        "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+        "downstream_count": 0,
+        "export_job_id": null,
+        "file_type": "EXR",
+        "frame_end": 1096,
+        "frame_start": 1001,
+        "id": "501a6411-0466-4855-a84e-713a290a9611",
+        "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+        "relative_path": "RPD/RPD_SH0010/comp/v002/render.%04d.exr",
+        "revoke_reason": "",
+        "role": "main",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "status": "Registered",
+        "status_changed_at": null,
+        "storage_root": "PROJECTS",
+        "task": {
+          "code": "RPD_T_COMP",
+          "id": "563b5829-9c03-499d-ac64-82ce316f4045"
+        },
+        "upstream_count": 0,
+        "version": {
+          "code": "RPD_SH0010_COMP_V002",
+          "id": "43492b4d-34e8-417a-98cd-f561f6cf5f37",
+          "is_hero": false,
+          "status": "Pending Review",
+          "version_index": 2
+        },
+        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+      }
+    ],
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "c99593c6-5db8-4b60-b9bd-3bca292b2fa0"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": {
+        "file_type": "EXR",
+        "shot": "0f15329a-7bb3-4eb4-87e8-eda104e5695f"
+      },
+      "path": "/api/v1/publishing/files/loader/"
+    },
+    "status": 200
+  },
+  "loader_no_entity_400": {
+    "body": {
+      "detail": [
+        "Give exactly one of shot, asset or task."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "b1e55a7c-1fb0-4619-afd7-6a6fd91dc07a"
+      }
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "b1e55a7c-1fb0-4619-afd7-6a6fd91dc07a"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": {
+        "file_type": "EXR"
+      },
+      "path": "/api/v1/publishing/files/loader/"
+    },
+    "status": 400
+  },
+  "loader_unknown_404": {
+    "body": {
+      "detail": "Resource not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "72ef0967-7bed-4549-a8c0-d414cae5748d"
+      }
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "72ef0967-7bed-4549-a8c0-d414cae5748d"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": {
+        "shot": "00000000-0000-4000-8000-000000000002"
+      },
+      "path": "/api/v1/publishing/files/loader/"
+    },
+    "status": 404
+  },
+  "register_match_201": {
+    "body": {
+      "checksum_checked_at": null,
+      "checksum_state": "declared",
+      "created_at": "2026-11-12T18:41:15.554258Z",
+      "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+      "downstream_count": 0,
+      "export_job_id": null,
+      "file_type": "EXR",
+      "frame_end": 1096,
+      "frame_start": 1001,
+      "id": "a9c153ca-5f03-480a-a9a5-ed7ac17d7d7d",
+      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "relative_path": "RPD/RPD_SQ010/RPD_SH0010/RPD_T_COMP/v002/denoised.%04d.exr",
+      "revoke_reason": "",
+      "role": "main",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "size_bytes": 2048,
+      "status": "Registered",
+      "status_changed_at": null,
+      "storage_root": "PROJECTS",
+      "upstream_count": 0,
+      "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "5e73e0a6-881c-40aa-9d52-dbe8a4f66bb8"
+    },
+    "request": {
+      "body": {
+        "file_type": "EXR",
+        "frame_end": 1096,
+        "frame_start": 1001,
+        "relative_path": "RPD/RPD_SQ010/RPD_SH0010/RPD_T_COMP/v002/denoised.%04d.exr",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "storage_root": "PROJECTS",
+        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/files/"
+    },
+    "status": 201
+  },
+  "register_mismatch_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "cdbb3aea-fe72-4e6d-97f6-2c1524ce0771"
+      },
+      "relative_path": [
+        "Does not match the path template: RPD/RPD_SQ010/RPD_SH0010/RPD_T_COMP/v002/{name}.%04d.exr"
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "cdbb3aea-fe72-4e6d-97f6-2c1524ce0771"
+    },
+    "request": {
+      "body": {
+        "file_type": "EXR",
+        "frame_end": 1096,
+        "frame_start": 1001,
+        "relative_path": "RPD/elsewhere/render.%04d.exr",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "storage_root": "PROJECTS",
+        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/files/"
+    },
+    "status": 400
+  },
+  "register_revoked_upstream_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "b44dbd60-6b5f-49d7-936b-6f1167247efd"
+      },
+      "upstream_ids": [
+        "The upstream file is revoked: 8b286261-ae8f-426d-b45d-ed19b334efe6"
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "b44dbd60-6b5f-49d7-936b-6f1167247efd"
+    },
+    "request": {
+      "body": {
+        "relative_path": "RPD/x/c.exr",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "storage_root": "PROJECTS",
+        "upstream_ids": [
+          "8b286261-ae8f-426d-b45d-ed19b334efe6"
+        ],
+        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/files/"
+    },
+    "status": 400
+  },
+  "register_upstream": {
+    "body": {
+      "checksum_checked_at": null,
+      "checksum_state": "declared",
+      "created_at": "2026-11-12T18:41:14.829997Z",
+      "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+      "downstream_count": 0,
+      "export_job_id": null,
+      "file_type": "ABC",
+      "frame_end": null,
+      "frame_start": null,
+      "id": "8b286261-ae8f-426d-b45d-ed19b334efe6",
+      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
+      "revoke_reason": "",
+      "role": "main",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "size_bytes": 2048,
+      "status": "Registered",
+      "status_changed_at": null,
+      "storage_root": "PROJECTS",
+      "upstream_count": 0,
+      "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "cfea78d6-28a7-410d-8bd6-38275acb7a5b"
+    },
+    "request": {
+      "body": {
+        "file_type": "ABC",
+        "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "storage_root": "PROJECTS",
+        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/files/"
+    },
+    "status": 201
+  },
+  "register_upstream_twice_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "e5f37cd8-d797-4e26-8c59-0661a240fe81"
+      },
+      "upstream_ids": [
+        "A file is listed twice."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "e5f37cd8-d797-4e26-8c59-0661a240fe81"
+    },
+    "request": {
+      "body": {
+        "relative_path": "RPD/x/b.exr",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "storage_root": "PROJECTS",
+        "upstream_ids": [
+          "8b286261-ae8f-426d-b45d-ed19b334efe6",
+          "8b286261-ae8f-426d-b45d-ed19b334efe6"
+        ],
+        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/files/"
+    },
+    "status": 400
+  },
+  "register_upstream_unknown_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "4f1f7a3e-45dc-4432-b12a-d9079d78aadf"
+      },
+      "upstream_ids": [
+        "Unknown upstream file: 00000000-0000-4000-8000-000000000001"
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "4f1f7a3e-45dc-4432-b12a-d9079d78aadf"
+    },
+    "request": {
+      "body": {
+        "relative_path": "RPD/x/a.exr",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "storage_root": "PROJECTS",
+        "upstream_ids": [
+          "00000000-0000-4000-8000-000000000001"
+        ],
+        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/files/"
+    },
+    "status": 400
+  },
+  "register_v2_render": {
+    "body": {
+      "checksum_checked_at": null,
+      "checksum_state": "declared",
+      "created_at": "2026-11-12T18:41:15.108856Z",
+      "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+      "downstream_count": 0,
+      "export_job_id": null,
+      "file_type": "EXR",
+      "frame_end": 1096,
+      "frame_start": 1001,
+      "id": "501a6411-0466-4855-a84e-713a290a9611",
+      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "relative_path": "RPD/RPD_SH0010/comp/v002/render.%04d.exr",
+      "revoke_reason": "",
+      "role": "main",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "size_bytes": 2048,
+      "status": "Registered",
+      "status_changed_at": null,
+      "storage_root": "PROJECTS",
+      "upstream_count": 0,
+      "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "0191172b-7372-4c30-a849-8656478c22f3"
+    },
+    "request": {
+      "body": {
+        "file_type": "EXR",
+        "frame_end": 1096,
+        "frame_start": 1001,
+        "relative_path": "RPD/RPD_SH0010/comp/v002/render.%04d.exr",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "storage_root": "PROJECTS",
+        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/files/"
+    },
+    "status": 201
+  },
+  "register_with_upstream": {
+    "body": {
+      "checksum_checked_at": null,
+      "checksum_state": "declared",
+      "created_at": "2026-11-12T18:41:14.869266Z",
+      "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+      "downstream_count": 0,
+      "export_job_id": null,
+      "file_type": "EXR",
+      "frame_end": 1096,
+      "frame_start": 1001,
+      "id": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
+      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+      "revoke_reason": "",
+      "role": "main",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "size_bytes": 2048,
+      "status": "Registered",
+      "status_changed_at": null,
+      "storage_root": "PROJECTS",
+      "upstream_count": 1,
+      "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "f6e1660b-a92b-4b6c-b233-433cfb633a4d"
+    },
+    "request": {
+      "body": {
+        "file_type": "EXR",
+        "frame_end": 1096,
+        "frame_start": 1001,
+        "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "storage_root": "PROJECTS",
+        "upstream_ids": [
+          "8b286261-ae8f-426d-b45d-ed19b334efe6"
+        ],
+        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/files/"
+    },
+    "status": 201
+  },
+  "resolve_path_none_404": {
+    "body": {
+      "detail": "No path template applies to this file type and role.",
+      "error": {
+        "code": "not_found",
+        "request_id": "057fddd4-311c-4914-b699-26f54ed84453"
+      }
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "057fddd4-311c-4914-b699-26f54ed84453"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": {
+        "file_type": "ABC",
+        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+      },
+      "path": "/api/v1/publishing/files/resolve-path/"
+    },
+    "status": 404
+  },
+  "resolve_path_project": {
+    "body": {
+      "enforce": true,
+      "pattern": "{project}/{sequence}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
+      "relative_path": "RPD/RPD_SQ010/RPD_SH0010/RPD_T_COMP/v002/{name}.%04d.exr",
+      "storage_root": "PROJECTS",
+      "template_id": "5899016a-c6d8-4ddd-b285-c10912ec05bd"
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "236b69f7-6f85-4ce3-a296-0f26e70972de"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": {
+        "file_type": "EXR",
+        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+      },
+      "path": "/api/v1/publishing/files/resolve-path/"
+    },
+    "status": 200
+  },
+  "resolve_path_studio": {
+    "body": {
+      "enforce": false,
+      "pattern": "{project}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
+      "relative_path": "RPD/RPD_SH0010/RPD_T_COMP/v002/{name}.%04d.exr",
+      "storage_root": "PROJECTS",
+      "template_id": "28d89d8c-212b-4e2d-8b10-f013ae987cd9"
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "8773d647-c235-4543-a30a-75ba1b8c0fb5"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": {
+        "file_type": "EXR",
+        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+      },
+      "path": "/api/v1/publishing/files/resolve-path/"
+    },
+    "status": 200
+  },
+  "retry_other_upstreams_409": {
+    "body": {
+      "detail": "This path is already registered with different content.",
+      "error": {
+        "code": "path_already_registered",
+        "request_id": "0121936d-1fff-4a64-8502-1cc5cc66193b"
+      }
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "0121936d-1fff-4a64-8502-1cc5cc66193b"
+    },
+    "request": {
+      "body": {
+        "file_type": "EXR",
+        "frame_end": 1096,
+        "frame_start": 1001,
+        "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "size_bytes": 2048,
+        "storage_root": "PROJECTS",
+        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/files/"
+    },
+    "status": 409
+  },
+  "revoke_upstream": {
+    "body": {
+      "checksum_checked_at": null,
+      "checksum_state": "declared",
+      "created_at": "2026-11-12T18:41:14.829997Z",
+      "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+      "downstream_count": 1,
+      "export_job_id": null,
+      "file_type": "ABC",
+      "frame_end": null,
+      "frame_start": null,
+      "id": "8b286261-ae8f-426d-b45d-ed19b334efe6",
+      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
+      "revoke_reason": "Wrong cache",
+      "role": "main",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "size_bytes": 2048,
+      "status": "Revoked",
+      "status_changed_at": "2026-11-12T18:41:15.642005Z",
+      "storage_root": "PROJECTS",
+      "upstream_count": 0,
+      "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "7bc0588f-bbee-40ef-98db-36049a9457a8"
+    },
+    "request": {
+      "body": {
+        "reason": "Wrong cache"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/files/8b286261-ae8f-426d-b45d-ed19b334efe6/revoke/"
+    },
+    "status": 200
+  },
+  "template_create_bad_token_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "059ca495-c401-4ba9-9e2c-fd9e01343841"
+      },
+      "pattern": [
+        "Unknown token {shoot}."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "059ca495-c401-4ba9-9e2c-fd9e01343841"
+    },
+    "request": {
+      "body": {
+        "file_type": "ABC",
+        "pattern": "{shoot}/{name}.abc",
+        "storage_root": "PROJECTS"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/path-templates/"
+    },
+    "status": 400
+  },
+  "template_create_by_supervisor_403": {
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "1927b90a-6d62-47fe-a768-84eaaea39e01"
+      }
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "1927b90a-6d62-47fe-a768-84eaaea39e01"
+    },
+    "request": {
+      "body": {
+        "file_type": "EXR",
+        "pattern": "{shot}/{name}.exr",
+        "storage_root": "PROJECTS"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/path-templates/"
+    },
+    "status": 403
+  },
+  "template_create_duplicate_400": {
+    "body": {
+      "detail": [
+        "An active template already exists for this file type and role."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "9363a475-bfd9-4af8-9db1-5f0d04e15fcc"
+      }
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "9363a475-bfd9-4af8-9db1-5f0d04e15fcc"
+    },
+    "request": {
+      "body": {
+        "file_type": "EXR",
+        "pattern": "x/{name}.exr",
+        "storage_root": "PROJECTS"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/path-templates/"
+    },
+    "status": 400
+  },
+  "template_create_project_enforcing": {
+    "body": {
+      "created_at": "2026-11-12T18:41:15.409207Z",
+      "enforce": true,
+      "file_type": "EXR",
+      "id": "5899016a-c6d8-4ddd-b285-c10912ec05bd",
+      "is_active": true,
+      "pattern": "{project}/{sequence}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
+      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "role": "main",
+      "storage_root": "PROJECTS",
+      "updated_at": "2026-11-12T18:41:15.409217Z"
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "299b484b-c1fe-4ef0-ae22-c270c5544a61"
+    },
+    "request": {
+      "body": {
+        "enforce": true,
+        "file_type": "EXR",
+        "pattern": "{project}/{sequence}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
+        "project": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+        "storage_root": "PROJECTS"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/path-templates/"
+    },
+    "status": 201
+  },
+  "template_create_studio": {
+    "body": {
+      "created_at": "2026-11-12T18:41:15.306151Z",
+      "enforce": false,
+      "file_type": "EXR",
+      "id": "28d89d8c-212b-4e2d-8b10-f013ae987cd9",
+      "is_active": true,
+      "pattern": "{project}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
+      "project_id": null,
+      "role": "main",
+      "storage_root": "PROJECTS",
+      "updated_at": "2026-11-12T18:41:15.306167Z"
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "b17cb297-2fd4-420d-911b-b70c2acab749"
+    },
+    "request": {
+      "body": {
+        "file_type": "EXR",
+        "pattern": "{project}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
+        "storage_root": "PROJECTS"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/publishing/path-templates/"
+    },
+    "status": 201
+  },
+  "template_delete_405": {
+    "body": {
+      "detail": "Method \"DELETE\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "d581d270-1efd-4608-a240-9dd5001e3f03"
+      }
+    },
+    "headers": {
+      "Allow": "GET, PATCH, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "d581d270-1efd-4608-a240-9dd5001e3f03"
+    },
+    "request": {
+      "body": null,
+      "method": "DELETE",
+      "params": null,
+      "path": "/api/v1/publishing/path-templates/5899016a-c6d8-4ddd-b285-c10912ec05bd/"
+    },
+    "status": 405
+  },
+  "template_patch_enforce_off": {
+    "body": {
+      "created_at": "2026-11-12T18:41:15.409207Z",
+      "enforce": false,
+      "file_type": "EXR",
+      "id": "5899016a-c6d8-4ddd-b285-c10912ec05bd",
+      "is_active": true,
+      "pattern": "{project}/{sequence}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
+      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "role": "main",
+      "storage_root": "PROJECTS",
+      "updated_at": "2026-11-12T18:41:15.599003Z"
+    },
+    "headers": {
+      "Allow": "GET, PATCH, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "4069a918-3ada-4bd3-9890-06786384e08c"
+    },
+    "request": {
+      "body": {
+        "enforce": false
+      },
+      "method": "PATCH",
+      "params": null,
+      "path": "/api/v1/publishing/path-templates/5899016a-c6d8-4ddd-b285-c10912ec05bd/"
+    },
+    "status": 200
+  },
+  "template_patch_key_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "3a6c10c4-8bf5-469f-8692-e3cb798191f9"
+      },
+      "role": [
+        "Cannot be changed. Retire this template and create another."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, PATCH, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "3a6c10c4-8bf5-469f-8692-e3cb798191f9"
+    },
+    "request": {
+      "body": {
+        "role": "proxy"
+      },
+      "method": "PATCH",
+      "params": null,
+      "path": "/api/v1/publishing/path-templates/5899016a-c6d8-4ddd-b285-c10912ec05bd/"
+    },
+    "status": 400
+  },
+  "templates_list": {
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "created_at": "2026-11-12T18:41:15.409207Z",
+          "enforce": true,
+          "file_type": "EXR",
+          "id": "5899016a-c6d8-4ddd-b285-c10912ec05bd",
+          "is_active": true,
+          "pattern": "{project}/{sequence}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
+          "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+          "role": "main",
+          "storage_root": "PROJECTS",
+          "updated_at": "2026-11-12T18:41:15.409217Z"
+        },
+        {
+          "created_at": "2026-11-12T18:41:15.306151Z",
+          "enforce": false,
+          "file_type": "EXR",
+          "id": "28d89d8c-212b-4e2d-8b10-f013ae987cd9",
+          "is_active": true,
+          "pattern": "{project}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
+          "project_id": null,
+          "role": "main",
+          "storage_root": "PROJECTS",
+          "updated_at": "2026-11-12T18:41:15.306167Z"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "6dda61c4-ae12-4184-85d7-592aaf3e765f"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/publishing/path-templates/"
+    },
+    "status": 200
+  },
+  "templates_list_project": {
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "created_at": "2026-11-12T18:41:15.409207Z",
+          "enforce": true,
+          "file_type": "EXR",
+          "id": "5899016a-c6d8-4ddd-b285-c10912ec05bd",
+          "is_active": true,
+          "pattern": "{project}/{sequence}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
+          "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+          "role": "main",
+          "storage_root": "PROJECTS",
+          "updated_at": "2026-11-12T18:41:15.409217Z"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "d6355872-0b1a-4270-bef5-539fc74459d9"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": {
+        "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e"
+      },
+      "path": "/api/v1/publishing/path-templates/"
+    },
+    "status": 200
+  }
+}

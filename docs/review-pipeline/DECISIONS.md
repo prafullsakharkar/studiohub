@@ -37,14 +37,26 @@ The owner took every recommendation of [PLAN.md, RP-3 questions](PLAN.md#questio
 | Q-RP-17 | **A** | The switch is off for every project, old and new. Whoever may create or edit the project sets it on the project form. |
 | Q-RP-18 | **A** | The approval of any live version of the task counts. |
 
+## RP-4 answers
+
+The owner took every recommendation of [PLAN.md, RP-4 questions](PLAN.md#questions-before-rp-4-starts) on 2026-11-12 ("go ahead").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-19 | **A** | Dependencies are written only when the downstream file is registered, and never changed. Every upstream exists first, so no cycle can form; there is no cycle check and no lock. |
+| Q-RP-20 | **A** | An upstream is a file of the same project. |
+| Q-RP-21 | **B** | The loader picks `latest`, `approved` or `hero`. |
+| Q-RP-22 | **B** | Each template has an `enforce` switch, off by default. Only an enforcing template refuses a registration. |
+| Q-RP-23 | **A** | Studio-wide templates, overridden by a project's own, managed with the new code `publishing.template.manage` (platform-admin, org-admin, production-admin). |
+
 ## Phases after the answers
 
 | Phase | Status |
 |---|---|
 | RP-1 Data model cleanup | built and merged into `develop` ([rp-1-verification.md](rp-1-verification.md)) |
 | RP-2 Notes (replies, links) | built and merged into `develop` ([rp-2-verification.md](rp-2-verification.md)) |
-| RP-3 Approval roll-up (fixed rule) | planned in [PLAN.md](PLAN.md#rp-3-approval-roll-up-fixed-rule-per-project); answered (Q-RP-15 to Q-RP-18 = A), being built on `feature/rp-3-approval-rollup` |
-| RP-4 Publishing depth | independent |
+| RP-3 Approval roll-up (fixed rule) | built and merged into `develop` ([rp-3-verification.md](rp-3-verification.md)) |
+| RP-4 Publishing depth | planned in [PLAN.md](PLAN.md#rp-4-publishing-depth-dependencies-loader-path-templates); answered (Q-RP-19 = A, Q-RP-20 = A, Q-RP-21 = B, Q-RP-22 = B, Q-RP-23 = A), being built on `feature/rp-4-publishing-depth` |
 | RP-5 Media pipeline (ffmpeg worker) | independent |
 | RP-6 Notifications (in-app) | after RP-2 |
 | RP-7 Share links | **dropped** (Q-RP-8 = B) |
