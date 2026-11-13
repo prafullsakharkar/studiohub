@@ -152,3 +152,26 @@ class ProjectNoteLink(UUIDModel):
 
     def __str__(self):
         return f"{self.entity_type} {self.entity_id}"
+
+
+class ProjectNoteMention(UUIDModel):
+    """
+    A person a note or reply mentions (docs/review-pipeline RP-6, C-RP-25). Written only by the
+    server, after the person was found active and able to read the thread; ``position`` keeps the
+    order written. Replacing a note's mentions deletes the old rows.
+    """
+
+    note = models.ForeignKey(ProjectNote, on_delete=models.CASCADE, related_name="mentions")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
+    position = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "production_project_note_mention"
+        ordering = ("note", "position")
+        constraints = [
+            models.UniqueConstraint(fields=["note", "user"], name="uniq_project_note_mention")
+        ]
+
+    def __str__(self):
+        return f"{self.note_id} @ {self.user_id}"  # pyright: ignore[reportAttributeAccessIssue]

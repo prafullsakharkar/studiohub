@@ -271,8 +271,13 @@ export interface ProjectNoteInput {
   entity_id?: string;
   links?: NoteLinkRef[];
   task_id?: string | null;
+  /** RP-6 (C-RP-25): up to 20 user ids, each able to read the thread, or 400 `{mention_ids: [...]}`. */
+  mention_ids?: string[];
 }
-/** C-RP-12: a thread's fields (`links` replaces the list, `task_id: null` clears); a reply takes only `body`. */
+/**
+ * C-RP-12: a thread's fields (`links` replaces the list, `task_id: null` clears); a reply takes only `body` and
+ * `mention_ids`. `mention_ids` replaces the mentions; only the people it adds are notified (C-RP-25).
+ */
 export interface ProjectNotePatch {
   subject?: string;
   body?: string;
@@ -280,6 +285,12 @@ export interface ProjectNotePatch {
   priority?: string;
   links?: NoteLinkRef[];
   task_id?: string | null;
+  mention_ids?: string[];
+}
+/** A person a note mentions (C-RP-25). */
+export interface NoteMention {
+  id: string;
+  name: string;
 }
 /** One record a note is about, with its code and name as they are now (C-RP-08). */
 export interface NoteLink {
@@ -320,6 +331,8 @@ export interface ProjectNote {
   task_code: string | null;
   /** Live replies; 0 on a reply. */
   reply_count: number;
+  /** RP-6 (C-RP-25): the people it mentions, in the order written. */
+  mentions: NoteMention[];
 }
 /** One thread with its live replies, oldest first (C-RP-10). */
 export interface ProjectNoteThread extends ProjectNote {
@@ -421,7 +434,8 @@ export const projectScopedApi = {
   /** A thread with its replies; a reply's id answers with its thread. 404 for a deleted note. */
   note: (projectId: string, noteId: string, signal?: AbortSignal) => apiClient.get<ProjectNoteThread>(`${scoped(projectId)}/notes/${noteId}/`, { signal }),
   /** Stored on the thread's root (a reply to a reply goes there too); `body` must not be blank. Needs `note.create`. */
-  replyToNote: (projectId: string, noteId: string, body: string) => apiClient.post<ProjectNote>(`${scoped(projectId)}/notes/${noteId}/replies/`, { body }),
+  replyToNote: (projectId: string, noteId: string, body: string, mentionIds: string[] = []) =>
+    apiClient.post<ProjectNote>(`${scoped(projectId)}/notes/${noteId}/replies/`, mentionIds.length ? { body, mention_ids: mentionIds } : { body }),
   /** The author, or a holder of `note.update` (403 otherwise). */
   updateNote: (projectId: string, noteId: string, patch: ProjectNotePatch) => apiClient.patch<ProjectNote>(`${scoped(projectId)}/notes/${noteId}/`, patch),
   /** The author, the assignee of the note's task, or a holder of `note.update`; a reply has no status (400).

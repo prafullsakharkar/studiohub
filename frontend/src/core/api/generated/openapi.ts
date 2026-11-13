@@ -5402,6 +5402,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_notifications_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{id}/read/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_notifications_read_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{id}/unread/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_notifications_unread_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/read-all/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_notifications_read_all_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/unread-count/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_notifications_unread_count_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/offices/": {
         parameters: {
             query?: never;
@@ -17466,6 +17546,46 @@ export interface components {
             delivery_package_id?: string | null;
             notes?: string;
         };
+        /**
+         * @description One row. ``target`` and ``project`` are read from the live records of the page
+         *     (``context["labels"]``, see ``InboxSelector.page_labels``); a row read alone reads its own.
+         */
+        Notification: {
+            /** Format: uuid */
+            readonly id: string;
+            /**
+             * @description * `note_created` - A note on your work
+             *     * `note_mention` - You were mentioned
+             *     * `note_reply` - A reply in your thread
+             *     * `note_status` - A note changed status
+             *     * `task_assigned` - A task was assigned to you
+             *     * `task_status` - Your task changed status
+             *     * `version_status` - Your version changed status
+             *     * `review_media_ready` - Your review movie is ready
+             *     * `review_media_failed` - Your review movie failed
+             * @enum {string}
+             */
+            readonly kind: "note_created" | "note_mention" | "note_reply" | "note_status" | "task_assigned" | "task_status" | "version_status" | "review_media_ready" | "review_media_failed";
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly read_at: string | null;
+            readonly actor: {
+                [key: string]: string;
+            } | null;
+            readonly project: {
+                [key: string]: string;
+            };
+            readonly target: {
+                [key: string]: string;
+            };
+            readonly record: {
+                [key: string]: string;
+            } | null;
+            readonly data: {
+                [key: string]: unknown;
+            };
+        };
         Office: {
             /**
              * Format: uuid
@@ -17775,6 +17895,21 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["Group"][];
+        };
+        PaginatedNotificationList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Notification"][];
         };
         PaginatedOfficeList: {
             /** @example 123 */
@@ -25311,6 +25446,13 @@ export interface components {
             readonly upstream_count: number;
             readonly downstream_count: number;
         };
+        ReadAll: {
+            /** Format: date-time */
+            before?: string | null;
+        };
+        ReadAllResult: {
+            updated: number;
+        };
         RecoveryCodeVerify: {
             code: string;
         };
@@ -28475,6 +28617,9 @@ export interface components {
         TrustedDeviceRevoke: {
             /** Format: uuid */
             device_id: string;
+        };
+        UnreadCount: {
+            count: number;
         };
         UserChangePassword: {
             old_password: string;
@@ -38539,6 +38684,123 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MediaList"];
+                };
+            };
+        };
+    };
+    v1_notifications_list: {
+        parameters: {
+            query?: {
+                kind?: "note_created" | "note_mention" | "note_reply" | "note_status" | "review_media_failed" | "review_media_ready" | "task_assigned" | "task_status" | "version_status";
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                project_id?: string;
+                /** @description A search term. */
+                search?: string;
+                unread?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedNotificationList"];
+                };
+            };
+        };
+    };
+    v1_notifications_read_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Notification"];
+                };
+            };
+        };
+    };
+    v1_notifications_unread_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Notification"];
+                };
+            };
+        };
+    };
+    v1_notifications_read_all_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReadAll"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReadAll"];
+                "multipart/form-data": components["schemas"]["ReadAll"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReadAllResult"];
+                };
+            };
+        };
+    };
+    v1_notifications_unread_count_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnreadCount"];
                 };
             };
         };

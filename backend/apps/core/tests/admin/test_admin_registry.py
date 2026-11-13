@@ -23,6 +23,7 @@ STUDIOHUB_APP_LABELS = frozenset(
         "deliveries",
         "publishing",
         "scheduling",
+        "notifications",
     }
 )
 

@@ -360,6 +360,151 @@ The same as RP-4, plus `apps/production` in full and the backend suites of every
 - *Upgrading:* one additive migration (`production` `0008`). To turn it on: build the image's `worker` target, run the `celery-media` service with the media volume, set `MEDIA_ACCEL_PREFIX` (needed for seeking behind nginx), take the new nginx location, then set `REVIEW_MEDIA_ENABLED=true`. Off, nothing changes.
 - *New:* upload a review movie or a still to a version; the server makes a web proxy, a thumbnail and a filmstrip, and the player plays it frame by frame.
 
-## RP-6
+## RP-6 Notifications (in-app)
 
-Not planned in detail yet. It is written here before it starts, from [ANALYSIS.md §8](ANALYSIS.md#8-draft-phases-to-be-fixed-after-9-is-answered) and [DECISIONS.md](DECISIONS.md).
+**Status:** planned 2026-11-13; approved the same day with every recommendation (Q-RP-32 to Q-RP-40 = A, [DECISIONS.md](DECISIONS.md#rp-6-answers)). Contracts C-RP-23 to C-RP-25. WP 6.1 to 6.6 built and committed 2026-11-13 on `feature/rp-6-notifications`, not merged ([rp-6-verification.md](rp-6-verification.md)); there is no single `assign/` route (the bulk one is `bulk-assign/`) and the model has no `thread_id` (CONTRACTS, "Details settled while building RP-6"). Branch `feature/rp-6-notifications`, off `develop` at `c0459cfc` (RP-1 to RP-5 merged, v4.6.0 released). It depends on RP-2 (the note events) and uses RP-3's and RP-5's events. Q-RP-7 = A: in-app only, so no e-mail and no new outward channel.
+
+**Goal.** What ShotGrid's and ftrack's inboxes do. A person learns, inside StudioHub, that:
+- someone wrote a note on their work or mentioned them;
+- someone replied to a thread they are in;
+- they were given a task;
+- their version or task changed status;
+- their review movie is ready or failed.
+
+The bell in the header shows the unread ones. A Notifications page lists them all. Each one opens the record it is about.
+
+### Why (what is there today)
+
+- **Events are published, and nothing turns them into notifications.**
+  - `NoteCreated`, `NoteReplied` and `NoteStatusChanged` (`apps/production/events/notes.py`) are published after commit, "for RP-6".
+  - `StatusChanged` (`events/status.py`) is published for every entity. Its only subscriber is the RP-3 roll-up (`events/handlers.py`), which runs synchronously after commit and logs and swallows its own errors.
+  - Payloads carry ids and status names only.
+- **No event for an assignment.** `Task.assignee` (a user) is set by several paths:
+  - task create;
+  - `PATCH tasks/{id}/` (`api/serializers/task/update.py`);
+  - `PUT tasks/{id}/`;
+  - `POST tasks/bulk-assign/` (`TaskService.assign_task`; there is no single `assign/` route);
+  - `POST tasks/bulk-create/` and `bulk-update/` (`ProductionBulkMixin`).
+
+  None of them publishes anything.
+- **No event when a review movie finishes.** RP-5's worker sets `ready` or `failed` and stops. RP-5 left "no notification when a job ends" for RP-6.
+- **Who a notification is for already exists as fields:**
+  - `Version.artist`;
+  - `Task.assignee`;
+  - `ProjectNote.author`, the thread's replies, and its `task`;
+  - `ReviewMedia.created_by`.
+- **No mentions.** RP-2 left `@name` for RP-6. A user's `username` is their e-mail (`USERNAME_FIELD = "email"`), so `@` plus a name typed in a body cannot reliably name a person.
+- **Who reads what is narrowed.**
+  - External (client and vendor) members read only the reviews they take part in and those reviews' versions.
+  - Internal members can be narrowed to a show or a department (`selectors/internal_scope.py`).
+  - A narrowed member sees only the note threads they wrote (Q-RP-13).
+
+  A notification must not tell anyone about a record they cannot open.
+- **Nothing is stored or served.**
+  - The former `platform` app's notifications were removed.
+  - `apps/core/services/notifications.py` is a placeholder that returns its arguments, and nothing calls it.
+  - The settings app's `notification.*` settings and `notification_*` flags are names nothing reads (like the media flags in RP-5).
+  - `config/asgi.py` has no websocket routes and no channel layer is configured. Production runs uvicorn (`start-prod.sh`).
+- **The bell is session-only.** `Header.tsx` shows `useNotificationStore` (zustand, in memory). That list is the history of this tab's toasts (successes and errors from `notify.*`), lost on reload, under the title "Production Alerts".
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 6.1 | **Inbox** (C-RP-23). `Notification(recipient, kind, actor, project, target_type, target_id, data, created_at, read_at)` (a note row's `target_id` is its thread). `kind` is one of `note_created`, `note_reply`, `note_status`, `note_mention`, `task_assigned`, `task_status`, `version_status`, `review_media_ready` and `review_media_failed`. `data` holds ids and status names only (`from_status`, `to_status`, `error_code`), never text a person typed. Index on (recipient, read_at, created_at). Routes, own rows only:<br>- `GET notifications/`: newest first, paginated; filters `unread`, `project_id`, `kind`.<br>- `GET notifications/unread-count/`.<br>- `POST notifications/{id}/read/` and `…/unread/`.<br>- `POST notifications/read-all/`: takes an optional `before`, so a row that arrived after the list was fetched stays unread.<br>Someone else's id is a 404. A row's labels (record code and name, the thread's subject, the actor's name) are read at answer time from the live records (Q-RP-35). A row whose target is gone, or no longer in the reader's reach, is left out of the list and the count. The check is one query per target type, through the same selectors the target's own `GET` uses. Any signed-in user may call these routes; there is no new permission code. Read-only admin. Migration `0001`. | `backend/apps/notifications/` (Q-RP-32): `models/`, `migrations/0001_…`, `selectors/`, `services/`, `api/{serializers,viewsets,urls}.py`, `admin/`; `backend/config/settings/components/apps.py`, `backend/config/v1_urls.py` |
+| 6.2 | **Events and recipients** (C-RP-24). New events:<br>- `TaskAssigned` (`task_id`, `project_id`, `from_assignee_id`, `to_assignee_id`, `actor_id`), published by every path above that changes the assignee;<br>- `ReviewMediaFinished` (`review_media_id`, `version_id`, `project_id`, `status`, `error_code`, `created_by_id`), published by the worker when a row reaches `ready` or `failed`.<br>Handlers in the notifications app subscribe to these two and to the note and status events. Recipients follow the table below. For each recipient:<br>- the target must be in their reach when the row is written;<br>- the actor is never notified of their own action;<br>- one person gets one row per event (`note_mention` wins over the other kinds).<br>One bulk insert per event, synchronous after commit, as the roll-up does. A failure is logged as `notification_fanout_failed` and never fails the action that caused it. | `backend/apps/production/events/{tasks,review_media}.py`, `services/task.py`, the task serializers and bulk path, `tasks/review_media.py`; `backend/apps/notifications/{events,services}/` |
+| 6.3 | **Mentions** (C-RP-25). Note create, reply and edit accept `mention_ids` (Q-RP-34): users who are active members of the project and can read the thread; anyone else is a 400 on `mention_ids`. Mentions are stored as rows (`ProjectNoteMention`), and the note shape gains `mentions` (`[{id, name}]`). An edit notifies only the people it adds. The body text is not parsed. Migration `production` `0009`. | `backend/apps/production/models/project_note.py`, `migrations/0009_…`, `services/project_note.py`, `api/serializers/project_note*.py` |
+| 6.4 | **Retention.** A daily beat task `notifications.purge` deletes rows older than `NOTIFICATIONS_RETENTION_DAYS` (default 90, Q-RP-38), in batches. | `backend/apps/notifications/tasks/`, `backend/config/settings/components/celery.py`, `backend/config/env.py`, `backend/.env.example` |
+| 6.5 | **Frontend.** An API module and row keys from captured responses. The bell shows the server inbox (Q-RP-39):<br>- the unread count, fetched every 60 seconds while the tab is visible and again on focus (Q-RP-36);<br>- the latest 20 rows, each with its actor, what happened, the record, and the time through `studioLocale`;<br>- a click opens the record (note thread, task, version page, Media tab) and marks the row read;<br>- "Mark all read", which sends `before`.<br>A Notifications page (`/notifications`) has unread and kind filters and paging. The note composer gets a member picker for mentions, and threads show who is mentioned. Toasts stay as they are; the session list of toasts leaves the bell. | `frontend/src/api/notifications/`, `layouts/Header.tsx`, a new `modules/notifications/`, `modules/production/notes/*`, `shared/stores/useNotificationStore.ts`, routes |
+| 6.6 | **Docs.** CONTRACTS (C-RP-23 to C-RP-25); `docs/apps/notifications.md`; `CLAUDE.md` installed apps (if Q-RP-32 = A); the pre-deploy checklist; release notes; verification report. | `docs/review-pipeline/`, `docs/apps/`, `docs/07-deployment/`, `CLAUDE.md` |
+
+**Who is notified** (C-RP-24). Every row below also requires that the target is in the recipient's reach, and leaves out the actor.
+
+| Event | Kind | Recipients | Target |
+|---|---|---|---|
+| A thread is started | `note_created` | the assignee of the note's task; the artist of each linked version | the thread |
+| A thread is started, a reply added, or a note edited, naming someone in `mention_ids` | `note_mention` | each person mentioned (on an edit, only the people added) | the thread |
+| A reply is added | `note_reply` | the thread's author; everyone who replied earlier; the assignee of the thread's task | the thread |
+| A thread changes status | `note_status` | the thread's author; the assignee of the thread's task | the thread |
+| A task gets an assignee (or a new one) | `task_assigned` | the new assignee | the task |
+| A task changes status (by hand or by the RP-3 roll-up) | `task_status` | the assignee | the task |
+| A version changes status | `version_status` | the version's artist; the assignee of its task | the version |
+| A review movie is ready or failed | `review_media_ready`, `review_media_failed` | the person who uploaded it | the version |
+
+### Questions before RP-6 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-32 | Where does the inbox live? | A: a new app, `apps/notifications`. It holds the model, the routes and the handlers, and depends on production (events, selectors), which never imports it. B: inside `apps/production`. | **A**. Deliveries and publishing can notify later without making production the owner of everyone's inbox, and the direction of imports stays one way. It adds one entry to `INSTALLED_APPS`. |
+| Q-RP-33 | Which events notify, and whom? | A: the table above. B: the table, plus review comments (`ReviewComment`) to the version's artist and the review's participants. | **A**. Review comments have their own visibility (`is_client_visible`, external participants), and Q-RP-4 kept them apart from notes. They can follow with their own rules. |
+| Q-RP-34 | How is someone mentioned? | A: the composer sends `mention_ids` from a member picker. The server checks them and stores them as rows; the body is not parsed. B: the server parses `@…` in the body. | **A**. A username is an e-mail, so parsing text is unreliable. Explicit ids can be checked against who may read the thread. |
+| Q-RP-35 | What does a row keep? | A: ids, the kind and status names. Labels are read from the live records when the inbox is fetched, so an edited note shows its new subject and a deleted one drops out. B: also an excerpt of the note body, copied at the time. | **A**. Copied bodies would outlive edits, deletes and a loss of access. This is the same concern that keeps notes out of the change log (still open). |
+| Q-RP-36 | How does the browser learn of new rows? | A: it polls `unread-count/` every 60 seconds while the tab is visible, and again on focus. B: a websocket through Channels. | **A**. B needs a Redis channel layer in production, which is what RP-8 was deferred for (Q-RP-9). The count is one indexed query. |
+| Q-RP-37 | Can a person mute kinds? | A: no preferences in RP-6. Every kind goes to people directly involved, and the actor is left out. B: a mute switch per kind, per user. | **A**. Preferences can follow once there is real use to tune against. |
+| Q-RP-38 | How long are rows kept? | A: 90 days, read or not (`NOTIFICATIONS_RETENTION_DAYS`), purged daily. B: for ever. | **A**. The inbox is not a record; the change log and the records themselves are. |
+| Q-RP-39 | What happens to the bell's session list of toasts? | A: the bell shows the server inbox only; toasts still appear and fade as now. B: the bell has two tabs, Inbox and This session. | **A**. The session list is lost on reload and repeats toasts the person already saw. Two lists under one bell would confuse. |
+| Q-RP-40 | Is there a switch? | A: no, always on. It needs no worker, no volume and no outward channel. B: a deployment setting, off by default. | **A**. Unlike RP-5 there is nothing to deploy first. The dead `notification.*` settings and flags stay unread, and removing them is a settings-app change, not part of RP-6. |
+
+Also decided in the plan, without a question:
+- Rows are written in the request (or worker) that caused them, after commit. There is no Celery hop, so the web process needs no broker for this.
+- A reach check happens when the row is written and again when it is read. Removing someone from a project, or narrowing them, hides their old rows at once.
+- No new permission code, no role change, no trust-model change, so no ADR. Nobody learns of a record they cannot open.
+- Notifications are not audited; the actions that cause them already are, where they are audited at all.
+
+### Not in RP-6
+
+- No e-mail, push, Slack or Teams (Q-RP-7 = A).
+- No websocket (Q-RP-36 A).
+- No preferences (Q-RP-37 A).
+- No digests.
+- No notifications for review comments, deliveries, publishing or scheduling.
+- No watching or following a record: recipients come from the fields in the table.
+- No removal of the dead `notification.*` settings and flags, or of `core/services/notifications.py`. That removal goes in its own commit if wanted, listed in the report.
+
+### Tests (targeted, test database)
+
+- **Inbox:**
+  - own rows only (another user's id is a 404 on every route);
+  - unread and kind filters;
+  - `read-all` with `before` leaves a later row unread;
+  - the count matches the list;
+  - labels come from live records (edit a note's subject and the row shows it);
+  - a deleted target drops out;
+  - a recipient removed from the project, narrowed away from the target, or made inactive sees neither the row nor its count;
+  - a bounded query count on the list (one per target type).
+- **Recipients, one test per row of the table:**
+  - who gets it, and that the actor does not;
+  - a narrowed member who cannot read the thread or the version gets nothing;
+  - a person matched twice gets one row;
+  - a mention wins over the other kinds.
+- **Assignment:** `TaskAssigned` from create, PATCH, `bulk-assign/`, bulk create and bulk update; nothing when the assignee does not change; nothing to someone who assigns themselves.
+- **Review media:** `ReviewMediaFinished` on `ready` and on `failed` (with the code). Retry, the sweep's `timeout`, and a removed row behave as the contract says.
+- **Fan-out failure:** a handler that raises leaves the note, status change or assignment saved and the response unchanged, and logs `notification_fanout_failed`.
+- **Mentions:**
+  - members who can read the thread are accepted;
+  - a non-member, an inactive user, or a narrowed member who cannot read the thread is a 400;
+  - an edit notifies only the added people;
+  - `mentions` appears in the note shape.
+- **Retention:** the purge deletes rows older than the setting and keeps the rest.
+- **Unchanged:** the role matrix; `test_bootstrap.py` allows `production` nine migrations and `notifications` one.
+
+Mutation checks. Each change below must make a test fail:
+- notify the actor;
+- skip the reach check when writing;
+- skip it when reading;
+- let a user read another's row;
+- ignore `before`;
+- drop one path's `TaskAssigned`;
+- accept a mention of a non-member;
+- notify every mention on an edit;
+- let a fan-out error fail the request;
+- purge rows younger than the limit.
+
+### Gates
+
+The same as RP-5 without the Docker checks: `ruff check`, `manage.py check`, `basedpyright` (no new findings in the files changed), `apps/notifications` and `apps/production` in full, and the backend suites of every app at the end. Frontend: `pnpm typecheck && pnpm test && pnpm build`, Biome at 0 errors, and the unreachable-code check.
+
+### Release notes (draft)
+
+- *Upgrading:* two additive migrations (`notifications` `0001`, `production` `0009`), and a new app in `INSTALLED_APPS`. Restart beat for the daily purge. There is no setting to turn on.
+- *New:* an inbox behind the bell and on a Notifications page. People are told when a note concerns their work or mentions them, when someone replies in their thread, when they are given a task, when their task or version changes status, and when their review movie is ready or has failed.

@@ -8,6 +8,7 @@ from apps.production.models import (
     ProjectMembership,
     ProjectNote,
     ProjectNoteLink,
+    ProjectNoteMention,
     Show,
 )
 
@@ -98,6 +99,23 @@ class ProjectNoteLinkAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_filter = ("entity_type",)
     search_fields = ("entity_id",)
     readonly_fields = tuple(field.name for field in ProjectNoteLink._meta.fields)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(ProjectNoteMention)
+class ProjectNoteMentionAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
+    """Read-only: mentions are written by ``ProjectNoteService`` only, which checks them (RP-6, C-RP-25)."""
+
+    list_display = ("note", "user", "position", "created_at")
+    readonly_fields = tuple(field.name for field in ProjectNoteMention._meta.fields)
 
     def has_add_permission(self, request):
         return False

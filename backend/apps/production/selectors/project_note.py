@@ -14,7 +14,7 @@ from uuid import UUID
 
 from django.db.models import Count, Prefetch, Q, QuerySet
 
-from apps.production.models import ProjectNote, ProjectNoteLink
+from apps.production.models import ProjectNote, ProjectNoteLink, ProjectNoteMention
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.validators.project_note import link_model, record_code, record_name
 
@@ -23,11 +23,21 @@ def _links() -> Prefetch[Any]:
     return Prefetch("links", queryset=ProjectNoteLink.objects.order_by("position", "id"))
 
 
+def mentions_prefetch() -> Prefetch[Any]:
+    """A note's mentions with their people, in the order written (RP-6, C-RP-25)."""
+    return Prefetch(
+        "mentions",
+        queryset=ProjectNoteMention.objects.select_related("user__profile").order_by(
+            "position", "id"
+        ),
+    )
+
+
 class ProjectNoteSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[ProjectNote]:
         return ProjectNote.objects.select_related("project", "author", "task").prefetch_related(
-            _links()
+            _links(), mentions_prefetch()
         )
 
     @classmethod

@@ -5,6 +5,7 @@ Dependency direction of the delivery pipeline apps (docs/delivery-pipeline/CONTR
     publishing                         imports neither deliveries nor scheduling
     deliveries                         imports no scheduling
     scheduling                         imports neither publishing nor deliveries
+    every other app                    imports no notifications (review-pipeline RP-6, Q-RP-32)
 
 An AST scan of every non-test module, so an import inside a function counts too. The three apps
 read Production and Masterdata through their selectors, not by querying their models (a model may
@@ -88,6 +89,27 @@ def test_the_scan_sees_something():
     """A guard against the scan silently finding no files."""
     assert sum(1 for _ in _modules("scheduling")) > 20
     assert sum(1 for _ in _modules("production")) > 100
+
+
+@pytest.mark.parametrize(
+    "app",
+    ["core", "identity", "settings", "audit", "production", "masterdata", *THREE],
+)
+def test_no_app_imports_notifications(app):
+    """The inbox depends on the domains it reports on, never the other way (RP-6, Q-RP-32 = A)."""
+    assert _offences(app, ("notifications",)) == []
+
+
+def test_notifications_reads_production_through_its_selectors():
+    """Like the delivery pipeline apps: no query of production's models (a foreign key is allowed)."""
+    offences = [
+        f"apps/notifications/{relative}:{line} imports {module}"
+        for relative, path in _modules("notifications", skip=("tests/", "migrations/", "models/"))
+        for line, module in _imported_modules(path)
+        if module.split(".")[:3] == ["apps", "production", "models"]
+    ]
+
+    assert offences == []
 
 
 @pytest.mark.parametrize("app", THREE)

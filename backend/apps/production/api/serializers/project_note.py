@@ -24,6 +24,7 @@ class ProjectNoteSerializer(BaseReadSerializer[Any]):
     task_id = serializers.SerializerMethodField()
     task_code = serializers.SerializerMethodField()
     reply_count = serializers.SerializerMethodField()
+    mentions = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectNote
@@ -56,6 +57,7 @@ class ProjectNoteSerializer(BaseReadSerializer[Any]):
             "task_id",
             "task_code",
             "reply_count",
+            "mentions",
         )
         read_only_fields = (
             "id",
@@ -106,6 +108,15 @@ class ProjectNoteSerializer(BaseReadSerializer[Any]):
             return annotated
         return obj.replies.filter(is_deleted=False).count()
 
+    def get_mentions(self, obj) -> list[dict[str, str]]:
+        """The people the note mentions, in the order written (RP-6, C-RP-25)."""
+        from apps.production.api.serializers.membership import _user_display_name
+
+        return [
+            {"id": str(mention.user_id), "name": _user_display_name(mention.user)}
+            for mention in obj.mentions.all()
+        ]
+
 
 class ProjectNoteDetailSerializer(ProjectNoteSerializer):
     """One thread with its live replies, oldest first (C-RP-10)."""
@@ -116,9 +127,12 @@ class ProjectNoteDetailSerializer(ProjectNoteSerializer):
         fields = (*ProjectNoteSerializer.Meta.fields, "replies")
 
     def get_replies(self, obj) -> list[dict[str, Any]]:
+        from apps.production.selectors.project_note import mentions_prefetch
+
         rows = (
             obj.replies.filter(is_deleted=False)
             .select_related("project", "author")
+            .prefetch_related(mentions_prefetch())
             .order_by("created_at", "id")
         )
         return list(ProjectNoteSerializer(rows, many=True, context=self.context).data)
@@ -129,6 +143,13 @@ class NoteLinkInputSerializer(serializers.Serializer[Any]):
 
     entity_type = serializers.CharField(max_length=20)
     entity_id = serializers.CharField(max_length=64)
+
+
+def _mention_ids_field():
+    """Up to 20 user ids (C-RP-25); ``validators/project_note.resolve_mentions`` checks each one."""
+    return serializers.ListField(
+        child=serializers.CharField(max_length=64), required=False, allow_empty=True
+    )
 
 
 class ProjectNoteCreateSerializer(BaseWriteSerializer[Any]):
@@ -142,6 +163,7 @@ class ProjectNoteCreateSerializer(BaseWriteSerializer[Any]):
     task_id = serializers.CharField(
         required=False, allow_null=True, allow_blank=True, max_length=64
     )
+    mention_ids = _mention_ids_field()
 
     class Meta:
         model = ProjectNote
@@ -163,6 +185,7 @@ class ProjectNoteCreateSerializer(BaseWriteSerializer[Any]):
             "frame_number",
             "links",
             "task_id",
+            "mention_ids",
         )
 
 
@@ -173,6 +196,7 @@ class ProjectNoteUpdateSerializer(BaseWriteSerializer[Any]):
     task_id = serializers.CharField(
         required=False, allow_null=True, allow_blank=True, max_length=64
     )
+    mention_ids = _mention_ids_field()
 
     class Meta:
         model = ProjectNote
@@ -186,11 +210,13 @@ class ProjectNoteUpdateSerializer(BaseWriteSerializer[Any]):
             "frame_number",
             "links",
             "task_id",
+            "mention_ids",
         )
 
 
 class ProjectNoteReplySerializer(serializers.Serializer[Any]):
     body = serializers.CharField(allow_blank=False, trim_whitespace=True)
+    mention_ids = _mention_ids_field()
 
 
 class ProjectNoteStatusSerializer(serializers.Serializer[Any]):

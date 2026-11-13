@@ -20,6 +20,8 @@ LINK_CAP = 20
 LINKS_NOT_IN_PROJECT = "One of these records is not in the project."
 TOO_MANY_LINKS = f"A note links to at most {LINK_CAP} records."
 TASK_NOT_IN_PROJECT = "This task is not in the project."
+MENTION_CAP = 20
+MENTION_REFUSED = "One of these people cannot be mentioned on this note."
 # The value a note without a record keeps in ``entity_type`` (the model's default).
 NO_RECORD = "Project"
 
@@ -101,6 +103,38 @@ def resolve_task(raw: Any, *, project, request):
     if task is None:
         raise ValidationError({"task_id": [TASK_NOT_IN_PROJECT]})
     return task
+
+
+def resolve_mentions(raw: list[Any], *, project) -> list[Any]:
+    """
+    The users ``raw`` names (C-RP-25), in the order written, each once.
+
+    Each must be active and able to read the thread: ``project.view`` and whole-project access.
+    Anyone else, an unknown id or a malformed one, is the same 400, so the answer never tells who
+    exists. More than ``MENTION_CAP`` ids is a 400 too.
+    """
+    from django.contrib.auth import get_user_model
+
+    from apps.production.selectors.notification_sources import NotificationSources
+
+    refused = ValidationError({"mention_ids": [MENTION_REFUSED]})
+    if len(raw) > MENTION_CAP:
+        raise refused
+    ordered: list[UUID] = []
+    for item in raw:
+        pk = _uuid(item)
+        if pk is None:
+            raise refused
+        if pk not in ordered:
+            ordered.append(pk)
+    users = {user.pk: user for user in get_user_model().objects.filter(pk__in=ordered)}
+    resolved = []
+    for pk in ordered:
+        user = users.get(pk)
+        if user is None or not NotificationSources.may_read_thread(user, project):
+            raise refused
+        resolved.append(user)
+    return resolved
 
 
 def record_code(instance: Any) -> str:

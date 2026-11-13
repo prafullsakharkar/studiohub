@@ -1,0 +1,1813 @@
+{
+  "artist_list": {
+    "body": {
+      "count": 8,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": null,
+          "created_at": "2026-11-13T12:54:07.194423Z",
+          "data": {},
+          "id": "f87e600c-ef77-4815-8439-186d779b0b66",
+          "kind": "review_media_ready",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "name": "v001",
+            "type": "version"
+          }
+        },
+        {
+          "actor": null,
+          "created_at": "2026-11-13T12:54:07.172504Z",
+          "data": {
+            "error_code": "transcode_failed"
+          },
+          "id": "ff46ab4c-ea3c-45e6-a1d2-45ab73173df0",
+          "kind": "review_media_failed",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "name": "v001",
+            "type": "version"
+          }
+        },
+        {
+          "actor": {
+            "id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:07.155708Z",
+          "data": {
+            "from_status": "In Progress",
+            "to_status": "Pending Review"
+          },
+          "id": "cfef5f49-4a8a-48e1-b1d9-2af0691413e1",
+          "kind": "task_status",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_T1",
+            "id": "d76f3b3f-d913-41de-89c2-109b73f79139",
+            "name": "Comp",
+            "type": "task"
+          }
+        },
+        {
+          "actor": {
+            "id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:07.080693Z",
+          "data": {
+            "from_status": "Pending Review",
+            "to_status": "Retake"
+          },
+          "id": "41218b9e-742d-4545-b13e-782402a0ebb8",
+          "kind": "version_status",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "name": "v001",
+            "type": "version"
+          }
+        },
+        {
+          "actor": {
+            "id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:06.809885Z",
+          "data": {},
+          "id": "235a25d1-75e7-4b6c-9b06-60a17b2c7fca",
+          "kind": "note_mention",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "type": "Version"
+          },
+          "target": {
+            "code": "",
+            "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+            "name": "Edge is soft",
+            "type": "note"
+          }
+        },
+        {
+          "actor": {
+            "id": "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:06.709489Z",
+          "data": {},
+          "id": "25747b8b-1d60-4ac5-b7eb-96abd445a118",
+          "kind": "note_mention",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "type": "Version"
+          },
+          "target": {
+            "code": "",
+            "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+            "name": "Edge is soft",
+            "type": "note"
+          }
+        },
+        {
+          "actor": {
+            "id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:06.516848Z",
+          "data": {},
+          "id": "857ee913-650b-4a66-907d-3cad81f7e98b",
+          "kind": "note_created",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "type": "Version"
+          },
+          "target": {
+            "code": "",
+            "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+            "name": "Edge is soft",
+            "type": "note"
+          }
+        },
+        {
+          "actor": {
+            "id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:06.357534Z",
+          "data": {},
+          "id": "cea77dae-1c6a-47f9-82b9-6027baa9ca87",
+          "kind": "task_assigned",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_T1",
+            "id": "d76f3b3f-d913-41de-89c2-109b73f79139",
+            "name": "Comp",
+            "type": "task"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "a7c292fb-8d6f-4940-85d0-4f0a020e0798"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/"
+    },
+    "status": 200
+  },
+  "artist_list_kind_version_status": {
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": {
+            "id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:07.080693Z",
+          "data": {
+            "from_status": "Pending Review",
+            "to_status": "Retake"
+          },
+          "id": "41218b9e-742d-4545-b13e-782402a0ebb8",
+          "kind": "version_status",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "name": "v001",
+            "type": "version"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "6bab1574-7079-4a36-b0c6-911323184f33"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/?kind=version_status"
+    },
+    "status": 200
+  },
+  "artist_list_project": {
+    "body": {
+      "count": 8,
+      "next": "http://testserver/api/v1/notifications/?page=2&page_size=2&project_id=7d113bc3-5cae-4190-a358-07297978c63d",
+      "previous": null,
+      "results": [
+        {
+          "actor": null,
+          "created_at": "2026-11-13T12:54:07.194423Z",
+          "data": {},
+          "id": "f87e600c-ef77-4815-8439-186d779b0b66",
+          "kind": "review_media_ready",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "name": "v001",
+            "type": "version"
+          }
+        },
+        {
+          "actor": null,
+          "created_at": "2026-11-13T12:54:07.172504Z",
+          "data": {
+            "error_code": "transcode_failed"
+          },
+          "id": "ff46ab4c-ea3c-45e6-a1d2-45ab73173df0",
+          "kind": "review_media_failed",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "name": "v001",
+            "type": "version"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "e2b28279-b290-4a24-8ce0-334169c95004"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/?project_id=7d113bc3-5cae-4190-a358-07297978c63d&page_size=2"
+    },
+    "status": 200
+  },
+  "artist_list_read": {
+    "body": {
+      "count": 8,
+      "next": "http://testserver/api/v1/notifications/?page=2&page_size=3&unread=false",
+      "previous": null,
+      "results": [
+        {
+          "actor": null,
+          "created_at": "2026-11-13T12:54:07.194423Z",
+          "data": {},
+          "id": "f87e600c-ef77-4815-8439-186d779b0b66",
+          "kind": "review_media_ready",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": "2026-11-13T12:54:07.632296Z",
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "name": "v001",
+            "type": "version"
+          }
+        },
+        {
+          "actor": null,
+          "created_at": "2026-11-13T12:54:07.172504Z",
+          "data": {
+            "error_code": "transcode_failed"
+          },
+          "id": "ff46ab4c-ea3c-45e6-a1d2-45ab73173df0",
+          "kind": "review_media_failed",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": "2026-11-13T12:54:07.632296Z",
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "name": "v001",
+            "type": "version"
+          }
+        },
+        {
+          "actor": {
+            "id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:07.155708Z",
+          "data": {
+            "from_status": "In Progress",
+            "to_status": "Pending Review"
+          },
+          "id": "cfef5f49-4a8a-48e1-b1d9-2af0691413e1",
+          "kind": "task_status",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": "2026-11-13T12:54:07.632296Z",
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_T1",
+            "id": "d76f3b3f-d913-41de-89c2-109b73f79139",
+            "name": "Comp",
+            "type": "task"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "1921242e-66c4-46bb-b4ff-9e64341ec612"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/?unread=false&page_size=3"
+    },
+    "status": 200
+  },
+  "artist_list_unknown_kind": {
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": []
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "33edb43b-01be-42c8-bcb1-0616edab886d"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/?kind=spaceship"
+    },
+    "status": 200
+  },
+  "artist_list_unread": {
+    "body": {
+      "count": 7,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": null,
+          "created_at": "2026-11-13T12:54:07.194423Z",
+          "data": {},
+          "id": "f87e600c-ef77-4815-8439-186d779b0b66",
+          "kind": "review_media_ready",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "name": "v001",
+            "type": "version"
+          }
+        },
+        {
+          "actor": null,
+          "created_at": "2026-11-13T12:54:07.172504Z",
+          "data": {
+            "error_code": "transcode_failed"
+          },
+          "id": "ff46ab4c-ea3c-45e6-a1d2-45ab73173df0",
+          "kind": "review_media_failed",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "name": "v001",
+            "type": "version"
+          }
+        },
+        {
+          "actor": {
+            "id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:07.155708Z",
+          "data": {
+            "from_status": "In Progress",
+            "to_status": "Pending Review"
+          },
+          "id": "cfef5f49-4a8a-48e1-b1d9-2af0691413e1",
+          "kind": "task_status",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_T1",
+            "id": "d76f3b3f-d913-41de-89c2-109b73f79139",
+            "name": "Comp",
+            "type": "task"
+          }
+        },
+        {
+          "actor": {
+            "id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:07.080693Z",
+          "data": {
+            "from_status": "Pending Review",
+            "to_status": "Retake"
+          },
+          "id": "41218b9e-742d-4545-b13e-782402a0ebb8",
+          "kind": "version_status",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010",
+            "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "name": "v001",
+            "type": "version"
+          }
+        },
+        {
+          "actor": {
+            "id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:06.809885Z",
+          "data": {},
+          "id": "235a25d1-75e7-4b6c-9b06-60a17b2c7fca",
+          "kind": "note_mention",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "type": "Version"
+          },
+          "target": {
+            "code": "",
+            "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+            "name": "Edge is soft",
+            "type": "note"
+          }
+        },
+        {
+          "actor": {
+            "id": "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:06.709489Z",
+          "data": {},
+          "id": "25747b8b-1d60-4ac5-b7eb-96abd445a118",
+          "kind": "note_mention",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "type": "Version"
+          },
+          "target": {
+            "code": "",
+            "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+            "name": "Edge is soft",
+            "type": "note"
+          }
+        },
+        {
+          "actor": {
+            "id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:06.516848Z",
+          "data": {},
+          "id": "857ee913-650b-4a66-907d-3cad81f7e98b",
+          "kind": "note_created",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "type": "Version"
+          },
+          "target": {
+            "code": "",
+            "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+            "name": "Edge is soft",
+            "type": "note"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "34c40a6f-5f5a-4419-bed5-461707551907"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/?unread=true"
+    },
+    "status": 200
+  },
+  "artist_read_all": {
+    "body": {
+      "updated": 7
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "f5b77458-6ee8-4a95-9983-8ba3ac803f64"
+    },
+    "request": {
+      "body": {},
+      "method": "POST",
+      "path": "/api/v1/notifications/read-all/"
+    },
+    "status": 200
+  },
+  "artist_read_all_before_oldest": {
+    "body": {
+      "updated": 1
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "9e74890d-e87e-4f71-9f6a-87bdb3943a09"
+    },
+    "request": {
+      "body": {
+        "before": "2026-11-13T12:54:06.357534Z"
+      },
+      "method": "POST",
+      "path": "/api/v1/notifications/read-all/"
+    },
+    "status": 200
+  },
+  "artist_read_one": {
+    "body": {
+      "actor": null,
+      "created_at": "2026-11-13T12:54:07.194423Z",
+      "data": {},
+      "id": "f87e600c-ef77-4815-8439-186d779b0b66",
+      "kind": "review_media_ready",
+      "project": {
+        "code": "RPN",
+        "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+        "name": "Notify"
+      },
+      "read_at": "2026-11-13T12:54:07.464427Z",
+      "record": {
+        "code": "RPN_SH010",
+        "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+        "type": "Shot"
+      },
+      "target": {
+        "code": "RPN_SH010_COMP_V001",
+        "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+        "name": "v001",
+        "type": "version"
+      }
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "8e90a51c-7fa3-45af-ad95-46cccc8c1207"
+    },
+    "request": {
+      "body": null,
+      "method": "POST",
+      "path": "/api/v1/notifications/f87e600c-ef77-4815-8439-186d779b0b66/read/"
+    },
+    "status": 200
+  },
+  "artist_unread_count": {
+    "body": {
+      "count": 8
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "8c10ad55-e019-4f0b-8d95-1f13e30437eb"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/unread-count/"
+    },
+    "status": 200
+  },
+  "artist_unread_count_after": {
+    "body": {
+      "count": 0
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "8b12a8a1-62c4-47a6-8c4a-e1124afd910e"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/unread-count/"
+    },
+    "status": 200
+  },
+  "artist_unread_one": {
+    "body": {
+      "actor": null,
+      "created_at": "2026-11-13T12:54:07.194423Z",
+      "data": {},
+      "id": "f87e600c-ef77-4815-8439-186d779b0b66",
+      "kind": "review_media_ready",
+      "project": {
+        "code": "RPN",
+        "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+        "name": "Notify"
+      },
+      "read_at": null,
+      "record": {
+        "code": "RPN_SH010",
+        "id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+        "type": "Shot"
+      },
+      "target": {
+        "code": "RPN_SH010_COMP_V001",
+        "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+        "name": "v001",
+        "type": "version"
+      }
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "0f340b8e-2146-4357-970c-edba2a17c4b4"
+    },
+    "request": {
+      "body": null,
+      "method": "POST",
+      "path": "/api/v1/notifications/f87e600c-ef77-4815-8439-186d779b0b66/unread/"
+    },
+    "status": 200
+  },
+  "lead_list": {
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": {
+            "id": "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:06.895943Z",
+          "data": {
+            "from_status": "Open",
+            "to_status": "Addressed"
+          },
+          "id": "85e0d1c2-a886-41eb-80a5-7ad64415a703",
+          "kind": "note_status",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "type": "Version"
+          },
+          "target": {
+            "code": "",
+            "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+            "name": "Edge is soft",
+            "type": "note"
+          }
+        },
+        {
+          "actor": {
+            "id": "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:06.718510Z",
+          "data": {},
+          "id": "68add9ed-db47-4b43-876b-77faf7f22ce8",
+          "kind": "note_reply",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "type": "Version"
+          },
+          "target": {
+            "code": "",
+            "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+            "name": "Edge is soft",
+            "type": "note"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "b77d8c41-a71b-41bf-a3de-95bdd0a324e1"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/"
+    },
+    "status": 200
+  },
+  "lead_reads_artists_row_404": {
+    "body": {
+      "detail": "Notification not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "06b9a1a8-0863-44f9-9f82-2cd64c951fef"
+      }
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "06b9a1a8-0863-44f9-9f82-2cd64c951fef"
+    },
+    "request": {
+      "body": null,
+      "method": "POST",
+      "path": "/api/v1/notifications/cea77dae-1c6a-47f9-82b9-6027baa9ca87/read/"
+    },
+    "status": 404
+  },
+  "members_list": {
+    "body": {
+      "count": 5,
+      "results": [
+        {
+          "avatar_url": null,
+          "client_id": "",
+          "created_at": "2026-11-13T12:54:06.180465Z",
+          "department": "",
+          "department_id": "",
+          "email": "user@example.test",
+          "id": "b7b44f46-46fa-46d9-82ce-159af9eeaf6a",
+          "name": "user@example.test",
+          "projectId": "7d113bc3-5cae-4190-a358-07297978c63d",
+          "project_code": "RPN",
+          "project_id": "7d113bc3-5cae-4190-a358-07297978c63d",
+          "project_name": "Notify",
+          "role": "Artist",
+          "role_id": null,
+          "roles": [],
+          "scope": "PROJECT",
+          "show_code": "",
+          "show_id": null,
+          "status": "active",
+          "team_id": "",
+          "updated_at": "2026-11-13T12:54:06.180474Z",
+          "userId": "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101",
+          "user_id": "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101",
+          "vendor_id": ""
+        },
+        {
+          "avatar_url": null,
+          "client_id": "",
+          "created_at": "2026-11-13T12:54:06.185506Z",
+          "department": "Comp",
+          "department_id": "",
+          "email": "user@example.test",
+          "id": "d85d63ce-6c26-4e6b-9867-d59050bb36e0",
+          "name": "user@example.test",
+          "projectId": "7d113bc3-5cae-4190-a358-07297978c63d",
+          "project_code": "RPN",
+          "project_id": "7d113bc3-5cae-4190-a358-07297978c63d",
+          "project_name": "Notify",
+          "role": "Artist",
+          "role_id": null,
+          "roles": [],
+          "scope": "PROJECT",
+          "show_code": "",
+          "show_id": null,
+          "status": "active",
+          "team_id": "",
+          "updated_at": "2026-11-13T12:54:06.185517Z",
+          "userId": "12ef6132-7533-4a79-9e31-25d4257c3780",
+          "user_id": "12ef6132-7533-4a79-9e31-25d4257c3780",
+          "vendor_id": ""
+        },
+        {
+          "avatar_url": null,
+          "client_id": "",
+          "created_at": "2026-11-13T12:54:06.190800Z",
+          "department": "",
+          "department_id": "",
+          "email": "user@example.test",
+          "id": "29e16d42-ac86-4773-87cb-723b36beb0b8",
+          "name": "user@example.test",
+          "projectId": "7d113bc3-5cae-4190-a358-07297978c63d",
+          "project_code": "RPN",
+          "project_id": "7d113bc3-5cae-4190-a358-07297978c63d",
+          "project_name": "Notify",
+          "role": "Artist",
+          "role_id": null,
+          "roles": [],
+          "scope": "PROJECT",
+          "show_code": "",
+          "show_id": null,
+          "status": "inactive",
+          "team_id": "",
+          "updated_at": "2026-11-13T12:54:06.190811Z",
+          "userId": "f9a8b2e5-2903-4c2c-a415-c3c78e00790a",
+          "user_id": "f9a8b2e5-2903-4c2c-a415-c3c78e00790a",
+          "vendor_id": ""
+        },
+        {
+          "avatar_url": null,
+          "client_id": "",
+          "created_at": "2026-11-13T12:54:06.170435Z",
+          "department": "",
+          "department_id": "",
+          "email": "user@example.test",
+          "id": "579de3e2-4c76-425c-bac7-c50f14267473",
+          "name": "user@example.test",
+          "projectId": "7d113bc3-5cae-4190-a358-07297978c63d",
+          "project_code": "RPN",
+          "project_id": "7d113bc3-5cae-4190-a358-07297978c63d",
+          "project_name": "Notify",
+          "role": "Lead",
+          "role_id": null,
+          "roles": [],
+          "scope": "PROJECT",
+          "show_code": "",
+          "show_id": null,
+          "status": "active",
+          "team_id": "",
+          "updated_at": "2026-11-13T12:54:06.170443Z",
+          "userId": "0b403049-b1ab-4677-9478-fc0280b9f152",
+          "user_id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+          "vendor_id": ""
+        },
+        {
+          "avatar_url": null,
+          "client_id": "",
+          "created_at": "2026-11-13T12:54:06.175535Z",
+          "department": "",
+          "department_id": "",
+          "email": "user@example.test",
+          "id": "5a4b7d91-c19c-4cd6-9204-652b67774840",
+          "name": "user@example.test",
+          "projectId": "7d113bc3-5cae-4190-a358-07297978c63d",
+          "project_code": "RPN",
+          "project_id": "7d113bc3-5cae-4190-a358-07297978c63d",
+          "project_name": "Notify",
+          "role": "VFX Supervisor",
+          "role_id": null,
+          "roles": [],
+          "scope": "PROJECT",
+          "show_code": "",
+          "show_id": null,
+          "status": "active",
+          "team_id": "",
+          "updated_at": "2026-11-13T12:54:06.175545Z",
+          "userId": "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+          "user_id": "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+          "vendor_id": ""
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "1a5b71d6-9755-439d-a51c-bcff66baffbb"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/7d113bc3-5cae-4190-a358-07297978c63d/members/"
+    },
+    "status": 200
+  },
+  "note_create_mention_former_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "5de86516-c8cd-4051-bfd1-dba2b178ecc3"
+      },
+      "mention_ids": [
+        "One of these people cannot be mentioned on this note."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "5de86516-c8cd-4051-bfd1-dba2b178ecc3"
+    },
+    "request": {
+      "body": {
+        "mention_ids": [
+          "f9a8b2e5-2903-4c2c-a415-c3c78e00790a"
+        ],
+        "subject": "Nope"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/7d113bc3-5cae-4190-a358-07297978c63d/notes/"
+    },
+    "status": 400
+  },
+  "note_create_mention_narrowed_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "13a577b0-5e56-4d65-bc65-fdae004d6eb2"
+      },
+      "mention_ids": [
+        "One of these people cannot be mentioned on this note."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "13a577b0-5e56-4d65-bc65-fdae004d6eb2"
+    },
+    "request": {
+      "body": {
+        "mention_ids": [
+          "12ef6132-7533-4a79-9e31-25d4257c3780"
+        ],
+        "subject": "Nope"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/7d113bc3-5cae-4190-a358-07297978c63d/notes/"
+    },
+    "status": 400
+  },
+  "note_create_mention_refused_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "764eeb3d-765f-4b68-a924-7a93143c26a7"
+      },
+      "mention_ids": [
+        "One of these people cannot be mentioned on this note."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "764eeb3d-765f-4b68-a924-7a93143c26a7"
+    },
+    "request": {
+      "body": {
+        "mention_ids": [
+          "038343f3-6b74-4673-8d8a-8f5c45986a70"
+        ],
+        "subject": "Nope"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/7d113bc3-5cae-4190-a358-07297978c63d/notes/"
+    },
+    "status": 400
+  },
+  "note_create_with_mention": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+      "author_name": "user@example.test",
+      "author_role": "Lead",
+      "body": "Left side of the frame.",
+      "category": "General",
+      "created_at": "2026-11-13T12:54:06.462706Z",
+      "entity_code": "RPN_SH010_COMP_V001",
+      "entity_id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+      "entity_name": "",
+      "entity_type": "Version",
+      "frame_number": null,
+      "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+      "links": [
+        {
+          "code": "RPN_SH010_COMP_V001",
+          "entity_id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+          "entity_type": "Version",
+          "name": ""
+        }
+      ],
+      "mentions": [
+        {
+          "id": "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+          "name": "user@example.test"
+        }
+      ],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "7d113bc3-5cae-4190-a358-07297978c63d",
+      "reply_count": 0,
+      "status": "Open",
+      "subject": "Edge is soft",
+      "tags": [],
+      "task_code": "RPN_T1",
+      "task_id": "d76f3b3f-d913-41de-89c2-109b73f79139",
+      "timecode_ref": "",
+      "updated_at": "2026-11-13T12:54:06.462717Z"
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "9ebb6983-a844-4ee8-b75e-339069955d45"
+    },
+    "request": {
+      "body": {
+        "body": "Left side of the frame.",
+        "links": [
+          {
+            "entity_id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "entity_type": "Version"
+          }
+        ],
+        "mention_ids": [
+          "d7fe42f2-c456-4ec8-a7e4-433d9428f245"
+        ],
+        "subject": "Edge is soft",
+        "task_id": "d76f3b3f-d913-41de-89c2-109b73f79139"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/7d113bc3-5cae-4190-a358-07297978c63d/notes/"
+    },
+    "status": 201
+  },
+  "note_detail": {
+    "body": {
+      "addressed_at": "2026-11-13T12:54:06.849701Z",
+      "addressed_by": "user@example.test",
+      "author_avatar": "",
+      "author_id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+      "author_name": "user@example.test",
+      "author_role": "Lead",
+      "body": "Left side of the frame.",
+      "category": "General",
+      "created_at": "2026-11-13T12:54:06.462706Z",
+      "entity_code": "RPN_SH010_COMP_V001",
+      "entity_id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+      "entity_name": "",
+      "entity_type": "Version",
+      "frame_number": null,
+      "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+      "links": [
+        {
+          "code": "RPN_SH010_COMP_V001",
+          "entity_id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+          "entity_type": "Version",
+          "name": ""
+        }
+      ],
+      "mentions": [
+        {
+          "id": "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+          "name": "user@example.test"
+        },
+        {
+          "id": "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101",
+          "name": "user@example.test"
+        }
+      ],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "7d113bc3-5cae-4190-a358-07297978c63d",
+      "replies": [
+        {
+          "addressed_at": null,
+          "addressed_by": "",
+          "author_avatar": "",
+          "author_id": "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+          "author_name": "user@example.test",
+          "author_role": "VFX Supervisor",
+          "body": "Agreed, please fix.",
+          "category": "General",
+          "created_at": "2026-11-13T12:54:06.680683Z",
+          "entity_code": "",
+          "entity_id": "",
+          "entity_name": "",
+          "entity_type": "Project",
+          "frame_number": null,
+          "id": "3c49d7eb-b4fc-4fcf-a950-72b4cacc2139",
+          "links": [],
+          "mentions": [
+            {
+              "id": "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101",
+              "name": "user@example.test"
+            }
+          ],
+          "parent_id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "7d113bc3-5cae-4190-a358-07297978c63d",
+          "reply_count": 0,
+          "status": "Open",
+          "subject": "Re: Edge is soft",
+          "tags": [],
+          "task_code": null,
+          "task_id": null,
+          "timecode_ref": "",
+          "updated_at": "2026-11-13T12:54:06.680700Z"
+        }
+      ],
+      "reply_count": 1,
+      "status": "Addressed",
+      "subject": "Edge is soft",
+      "tags": [],
+      "task_code": "RPN_T1",
+      "task_id": "d76f3b3f-d913-41de-89c2-109b73f79139",
+      "timecode_ref": "",
+      "updated_at": "2026-11-13T12:54:06.849912Z"
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "788002c1-958c-43d6-93cd-0881249be43c"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/7d113bc3-5cae-4190-a358-07297978c63d/notes/9acfd577-82a9-490d-8013-7d709cf327e8/"
+    },
+    "status": 200
+  },
+  "note_list": {
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "addressed_at": "2026-11-13T12:54:06.849701Z",
+          "addressed_by": "user@example.test",
+          "author_avatar": "",
+          "author_id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+          "author_name": "user@example.test",
+          "author_role": "Lead",
+          "body": "Left side of the frame.",
+          "category": "General",
+          "created_at": "2026-11-13T12:54:06.462706Z",
+          "entity_code": "RPN_SH010_COMP_V001",
+          "entity_id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+          "entity_name": "",
+          "entity_type": "Version",
+          "frame_number": null,
+          "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+          "links": [
+            {
+              "code": "RPN_SH010_COMP_V001",
+              "entity_id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+              "entity_type": "Version",
+              "name": ""
+            }
+          ],
+          "mentions": [
+            {
+              "id": "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+              "name": "user@example.test"
+            },
+            {
+              "id": "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101",
+              "name": "user@example.test"
+            }
+          ],
+          "parent_id": null,
+          "priority": "Medium",
+          "project_code": "RPN",
+          "project_id": "7d113bc3-5cae-4190-a358-07297978c63d",
+          "reply_count": 1,
+          "status": "Addressed",
+          "subject": "Edge is soft",
+          "tags": [],
+          "task_code": "RPN_T1",
+          "task_id": "d76f3b3f-d913-41de-89c2-109b73f79139",
+          "timecode_ref": "",
+          "updated_at": "2026-11-13T12:54:06.849912Z"
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "47752f01-928a-4efd-9ba8-02f0512b601d"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/organizations/projects/7d113bc3-5cae-4190-a358-07297978c63d/notes/"
+    },
+    "status": 200
+  },
+  "note_patch_adds_mention": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+      "author_name": "user@example.test",
+      "author_role": "Lead",
+      "body": "Left side of the frame.",
+      "category": "General",
+      "created_at": "2026-11-13T12:54:06.462706Z",
+      "entity_code": "RPN_SH010_COMP_V001",
+      "entity_id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+      "entity_name": "",
+      "entity_type": "Version",
+      "frame_number": null,
+      "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+      "links": [
+        {
+          "code": "RPN_SH010_COMP_V001",
+          "entity_id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+          "entity_type": "Version",
+          "name": ""
+        }
+      ],
+      "mentions": [
+        {
+          "id": "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+          "name": "user@example.test"
+        },
+        {
+          "id": "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101",
+          "name": "user@example.test"
+        }
+      ],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "7d113bc3-5cae-4190-a358-07297978c63d",
+      "reply_count": 1,
+      "status": "Open",
+      "subject": "Edge is soft",
+      "tags": [],
+      "task_code": "RPN_T1",
+      "task_id": "d76f3b3f-d913-41de-89c2-109b73f79139",
+      "timecode_ref": "",
+      "updated_at": "2026-11-13T12:54:06.767499Z"
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "1d367616-b114-4828-a699-dd13b1ac4a2d"
+    },
+    "request": {
+      "body": {
+        "mention_ids": [
+          "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+          "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101"
+        ]
+      },
+      "method": "PATCH",
+      "path": "/api/organizations/projects/7d113bc3-5cae-4190-a358-07297978c63d/notes/9acfd577-82a9-490d-8013-7d709cf327e8/"
+    },
+    "status": 200
+  },
+  "note_status_by_assignee": {
+    "body": {
+      "addressed_at": "2026-11-13T12:54:06.849701Z",
+      "addressed_by": "user@example.test",
+      "author_avatar": "",
+      "author_id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+      "author_name": "user@example.test",
+      "author_role": "Lead",
+      "body": "Left side of the frame.",
+      "category": "General",
+      "created_at": "2026-11-13T12:54:06.462706Z",
+      "entity_code": "RPN_SH010_COMP_V001",
+      "entity_id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+      "entity_name": "",
+      "entity_type": "Version",
+      "frame_number": null,
+      "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+      "links": [
+        {
+          "code": "RPN_SH010_COMP_V001",
+          "entity_id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+          "entity_type": "Version",
+          "name": ""
+        }
+      ],
+      "mentions": [
+        {
+          "id": "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+          "name": "user@example.test"
+        },
+        {
+          "id": "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101",
+          "name": "user@example.test"
+        }
+      ],
+      "parent_id": null,
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "7d113bc3-5cae-4190-a358-07297978c63d",
+      "reply_count": 1,
+      "status": "Addressed",
+      "subject": "Edge is soft",
+      "tags": [],
+      "task_code": "RPN_T1",
+      "task_id": "d76f3b3f-d913-41de-89c2-109b73f79139",
+      "timecode_ref": "",
+      "updated_at": "2026-11-13T12:54:06.849912Z"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "52f55a66-e5a7-432c-b693-580d85ab1255"
+    },
+    "request": {
+      "body": {
+        "status": "Addressed"
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/7d113bc3-5cae-4190-a358-07297978c63d/notes/9acfd577-82a9-490d-8013-7d709cf327e8/status/"
+    },
+    "status": 200
+  },
+  "read_all_bad_before_400": {
+    "body": {
+      "before": [
+        "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "e931e01c-fcee-499f-a0f2-1a024b722fe2"
+      }
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "e931e01c-fcee-499f-a0f2-1a024b722fe2"
+    },
+    "request": {
+      "body": {
+        "before": "yesterday"
+      },
+      "method": "POST",
+      "path": "/api/v1/notifications/read-all/"
+    },
+    "status": 400
+  },
+  "reply_with_mention": {
+    "body": {
+      "addressed_at": null,
+      "addressed_by": "",
+      "author_avatar": "",
+      "author_id": "d7fe42f2-c456-4ec8-a7e4-433d9428f245",
+      "author_name": "user@example.test",
+      "author_role": "VFX Supervisor",
+      "body": "Agreed, please fix.",
+      "category": "General",
+      "created_at": "2026-11-13T12:54:06.680683Z",
+      "entity_code": "",
+      "entity_id": "",
+      "entity_name": "",
+      "entity_type": "Project",
+      "frame_number": null,
+      "id": "3c49d7eb-b4fc-4fcf-a950-72b4cacc2139",
+      "links": [],
+      "mentions": [
+        {
+          "id": "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101",
+          "name": "user@example.test"
+        }
+      ],
+      "parent_id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+      "priority": "Medium",
+      "project_code": "RPN",
+      "project_id": "7d113bc3-5cae-4190-a358-07297978c63d",
+      "reply_count": 0,
+      "status": "Open",
+      "subject": "Re: Edge is soft",
+      "tags": [],
+      "task_code": null,
+      "task_id": null,
+      "timecode_ref": "",
+      "updated_at": "2026-11-13T12:54:06.680700Z"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "9b5114fb-4a38-4d1f-b884-0162d8a6ccb1"
+    },
+    "request": {
+      "body": {
+        "body": "Agreed, please fix.",
+        "mention_ids": [
+          "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101"
+        ]
+      },
+      "method": "POST",
+      "path": "/api/organizations/projects/7d113bc3-5cae-4190-a358-07297978c63d/notes/9acfd577-82a9-490d-8013-7d709cf327e8/replies/"
+    },
+    "status": 201
+  },
+  "signed_out_401": {
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "995a37c1-1cc8-4f8d-8952-ce0a97a5961c"
+      }
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "995a37c1-1cc8-4f8d-8952-ce0a97a5961c"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/"
+    },
+    "status": 401
+  },
+  "supervisor_list": {
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": {
+            "id": "0b403049-b1ab-4677-9478-fc0280b9f152",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-13T12:54:06.529892Z",
+          "data": {},
+          "id": "615b39a4-7822-4737-87a5-4d0ffdfce9df",
+          "kind": "note_mention",
+          "project": {
+            "code": "RPN",
+            "id": "7d113bc3-5cae-4190-a358-07297978c63d",
+            "name": "Notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPN_SH010_COMP_V001",
+            "id": "c50d31c2-69f7-4a5a-9cb4-c74476b2c39e",
+            "type": "Version"
+          },
+          "target": {
+            "code": "",
+            "id": "9acfd577-82a9-490d-8013-7d709cf327e8",
+            "name": "Edge is soft",
+            "type": "note"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "b4a316c8-b596-46b5-bb56-f5d30a5075a0"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/"
+    },
+    "status": 200
+  },
+  "task_create_with_assignee": {
+    "body": {
+      "assignee": "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101",
+      "code": "RPN_T1",
+      "department": "Comp",
+      "department_id": "",
+      "dependencies": {},
+      "description": "",
+      "due_date": null,
+      "entity_code": "RPN_SH010",
+      "entity_id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+      "entity_name": "Hero walk",
+      "entity_type": "Shot",
+      "estimated_hours": "0.00",
+      "id": "d76f3b3f-d913-41de-89c2-109b73f79139",
+      "is_archived": false,
+      "logged_hours": "0.00",
+      "pending_hours": "0.00",
+      "priority": "Medium",
+      "project": "7d113bc3-5cae-4190-a358-07297978c63d",
+      "reviewer": null,
+      "schedule": {},
+      "software": "",
+      "status": "In Progress",
+      "tags": [],
+      "team": null,
+      "title": "Comp",
+      "uuid": "d76f3b3f-d913-41de-89c2-109b73f79139",
+      "vendor_code": "",
+      "vendor_id": "",
+      "vendor_name": "",
+      "workflow": {}
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "ca775f45-7672-42d6-9793-8ee8ad39ab5a"
+    },
+    "request": {
+      "body": {
+        "assignee": "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101",
+        "code": "RPN_T1",
+        "department": "Comp",
+        "entity_id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+        "entity_type": "Shot",
+        "project": "7d113bc3-5cae-4190-a358-07297978c63d",
+        "status": "In Progress",
+        "title": "Comp"
+      },
+      "method": "POST",
+      "path": "/api/v1/tasks/"
+    },
+    "status": 201
+  },
+  "task_status_pending_review": {
+    "body": {
+      "assignee": "107e7b8a-ac0a-4bda-8bb5-e7602fbfc101",
+      "code": "RPN_T1",
+      "department": "Comp",
+      "department_id": "",
+      "dependencies": {},
+      "description": "",
+      "due_date": null,
+      "entity_code": "RPN_SH010",
+      "entity_id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+      "entity_name": "Hero walk",
+      "entity_type": "Shot",
+      "estimated_hours": "0.00",
+      "is_archived": false,
+      "logged_hours": "0.00",
+      "pending_hours": "0.00",
+      "priority": "Medium",
+      "reviewer": null,
+      "schedule": {},
+      "software": "",
+      "status": "Pending Review",
+      "tags": [],
+      "team": null,
+      "title": "Comp",
+      "vendor_code": "",
+      "vendor_id": "",
+      "vendor_name": "",
+      "workflow": {}
+    },
+    "headers": {
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "b4323bdb-3364-44f4-bdee-d5c0b3668acd"
+    },
+    "request": {
+      "body": {
+        "status": "Pending Review"
+      },
+      "method": "PATCH",
+      "path": "/api/v1/tasks/d76f3b3f-d913-41de-89c2-109b73f79139/"
+    },
+    "status": 200
+  },
+  "unknown_row_404": {
+    "body": {
+      "detail": "Notification not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "b98a5219-05ae-45c6-86d4-47005d816fbd"
+      }
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "b98a5219-05ae-45c6-86d4-47005d816fbd"
+    },
+    "request": {
+      "body": null,
+      "method": "POST",
+      "path": "/api/v1/notifications/00000000-0000-0000-0000-000000000000/read/"
+    },
+    "status": 404
+  },
+  "version_status_retake": {
+    "body": {
+      "code": "RPN_SH010_COMP_V001",
+      "department": "",
+      "entity_code": "RPN_SH010",
+      "entity_id": "e6c93a5b-b25c-432c-a457-1297e22a795e",
+      "entity_name": "Hero walk",
+      "entity_type": "Shot",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "publishing_info": {},
+      "status": "Retake",
+      "tags": [],
+      "thumbnail_url": "",
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "321b35f8-da00-4e77-ab25-9d95509a4d89"
+    },
+    "request": {
+      "body": {
+        "status": "Retake"
+      },
+      "method": "PATCH",
+      "path": "/api/v1/versions/c50d31c2-69f7-4a5a-9cb4-c74476b2c39e/"
+    },
+    "status": 200
+  }
+}

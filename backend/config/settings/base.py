@@ -66,6 +66,7 @@ from .components.jwt import (
 )
 from .components.logging import LOGGING_CONFIG
 from .components.middleware import MIDDLEWARE
+from .components.notifications import NOTIFICATIONS_RETENTION_DAYS
 from .components.security import (
     API_KEY_ACCEPT_LEGACY_HASH,
     API_KEY_PEPPER,

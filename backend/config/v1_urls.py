@@ -47,6 +47,7 @@ urlpatterns = [
     path("publishing/", include("apps.publishing.api.urls")),
     # Scheduling (resources, events, leaves)
     path("scheduling/", include("apps.scheduling.api.urls")),
+    path("notifications/", include("apps.notifications.api.urls")),
     # Masterdata (catalog, platform, organization config)
     path("", include(("apps.masterdata.api.urls", "masterdata"))),
 ]
