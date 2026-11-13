@@ -32,7 +32,8 @@ const ROLES: Array<{ role: RoleKey; label: string; shown: string[]; refused: str
   { role: 'supervisor', label: 'vfx supervisor', shown: ['/dashboard', '/projects', '/shots', '/deliveries', '/clients', '/vendors', '/scheduling', '/automations', '/audit'], refused: ['/access/roles', '/platform/health', ...SETTINGS_SYSTEM] },
   { role: 'lead', label: 'lead artist', shown: ['/dashboard', '/projects', '/shots', '/deliveries', '/scheduling', '/audit'], refused: ['/access/roles', '/platform/health', '/automations', '/clients', '/vendors', ...SETTINGS_SYSTEM] },
   { role: 'artist', label: 'seeded artist', shown: ['/dashboard', '/projects', '/shots', '/scheduling'], refused: ['/access/roles', '/platform/health', '/automations', '/audit', '/jobs', '/publishing/files/bulk', '/deliveries', '/clients', '/vendors', ...SETTINGS_SYSTEM] },
-  { role: 'selfmfa', label: 'user with no role', shown: ['/dashboard', '/settings/account/profile'], refused: ['/shots', '/assets', '/tasks', '/publishing', '/deliveries', '/clients', '/vendors', '/scheduling', '/scheduling/capacity', '/audit', '/access/roles', ...SETTINGS_SYSTEM] },
+  // A user with no role sees only the "No access yet" page on every route of the app shell (NoRoleGuard, f37003e2).
+  { role: 'selfmfa', label: 'user with no role', shown: [], refused: ROUTES },
 ];
 
 for (const { role, label, shown, refused: mustRefuse } of ROLES) {
@@ -101,9 +102,11 @@ for (const { role, label, shown, refused: mustRefuse } of ROLES) {
       }
       const path = new URL(page.url()).pathname;
       const crashed = await page.getByRole('heading', { name: 'Something went wrong' }).count();
-      const refused = path === '/forbidden' || path === '/unauthorized';
+      // NoRoleGuard answers in place (the address stays) with the "No access yet" page: that is a refusal too.
+      const noRole = path === route && (await page.getByRole('heading', { name: 'No access yet' }).count()) > 0;
+      const refused = path === '/forbidden' || path === '/unauthorized' || noRole;
       const blank = !refused && path === route && (await page.evaluate(() => document.body.innerText.trim().length === 0));
-      outcome[route] = refused ? 'refused' : blank ? 'blank' : path === route ? 'shown' : `-> ${path}`;
+      outcome[route] = noRole ? 'refused (no role)' : refused ? 'refused' : blank ? 'blank' : path === route ? 'shown' : `-> ${path}`;
       if (blank) {
         const waiting = [...pending.values()].map((u) => u.replace(/^https?:\/\/[^/]+/, '')).slice(0, 6);
         problems.push(`${route}: the page stayed blank (the app did not render) | waiting for ${JSON.stringify(waiting)} | console errors ${JSON.stringify(consoleErrors.slice(-3))}`);
@@ -128,7 +131,7 @@ for (const { role, label, shown, refused: mustRefuse } of ROLES) {
     }
 
     for (const route of shown) if (outcome[route] === undefined || !outcome[route].startsWith('shown')) problems.push(`${route}: expected to be shown, was ${outcome[route]}`);
-    for (const route of mustRefuse) if (outcome[route] !== 'refused') problems.push(`${route}: expected to be refused, was ${outcome[route]}${evidence[route] ? ` | ${evidence[route]}` : ''}`);
+    for (const route of mustRefuse) if (!outcome[route]?.startsWith('refused')) problems.push(`${route}: expected to be refused, was ${outcome[route]}${evidence[route] ? ` | ${evidence[route]}` : ''}`);
 
     await testInfo.attach('route outcomes', { body: JSON.stringify(outcome, null, 1), contentType: 'application/json' });
     console.log(`\n[${role}] ${JSON.stringify(outcome)}`);

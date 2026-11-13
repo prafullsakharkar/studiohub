@@ -309,3 +309,67 @@ describe('media compare: the two sides', () => {
     expect(document.querySelector('video')).toBeNull();
   });
 });
+
+describe('media compare: a renewed address (review-pipeline RP-10, Q-RP-44)', () => {
+  const renewed = (side: typeof A) => ({ ...side, src: `${side.src}?token=renewed` });
+  const withIds = { a: { ...A, sourceId: 'media-a' }, b: { ...B, sourceId: 'media-b' } };
+  /** The new props in place; the renewed side's video loads from its start and tells its length again. */
+  async function renew(view: ReturnType<typeof open>, next: { a: typeof withIds.a; b: typeof withIds.b }, video: HTMLVideoElement, duration: number) {
+    view.rerender(<MediaCompare label="Compare" startFrame={1001} fps={24} {...next} />);
+    fakeClock(video, duration);
+    // While the new address loads the clock reads its start; a frame of the playing loop passes before it is ready.
+    await act(() => new Promise<void>((done) => requestAnimationFrame(() => done())));
+    act(() => {
+      fireEvent.loadedMetadata(video);
+    });
+  }
+
+  it('of the same movies keeps the frame on both sides', async () => {
+    const view = open(withIds);
+    const [one, two] = clock();
+    fireEvent.change(screen.getByLabelText('Scrub'), { target: { value: '1011' } });
+    await renew(view, { a: renewed(withIds.a), b: withIds.b }, one, 3);
+    expect(one.getAttribute('src')).toBe(`${A.src}?token=renewed`);
+    expect(frame()).toBe('1011');
+    expect(one.currentTime).toBeCloseTo(10.5 / 24);
+    expect(two.currentTime).toBeCloseTo(10.5 / 24);
+    expect(one.play).not.toHaveBeenCalled();
+  });
+
+  it('goes on playing when side A, which drives the clock, is renewed while playing', async () => {
+    const view = open(withIds);
+    const [one] = clock();
+    fireEvent.change(screen.getByLabelText('Scrub'), { target: { value: '1011' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Play' }));
+    expect(await screen.findByRole('button', { name: 'Pause' })).toBeTruthy();
+    await renew(view, { a: renewed(withIds.a), b: withIds.b }, one, 3);
+    expect(one.play).toHaveBeenCalledTimes(1);
+    expect(one.currentTime).toBeCloseTo(10.5 / 24);
+    expect(frame()).toBe('1011');
+  });
+
+  it('swapped, a renewed B (now in front, driving the clock) keeps the frame and plays on', async () => {
+    const view = open(withIds);
+    clock();
+    fireEvent.change(screen.getByLabelText('Scrub'), { target: { value: '1011' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Swap A and B' }));
+    const [front] = clock([B.label, A.label], [2.5, 3]);
+    expect(frame()).toBe('1011');
+    fireEvent.click(screen.getByRole('button', { name: 'Play' }));
+    expect(await screen.findByRole('button', { name: 'Pause' })).toBeTruthy();
+    await renew(view, { a: withIds.a, b: renewed(withIds.b) }, front, 2.5);
+    expect(front.getAttribute('src')).toBe(`${B.src}?token=renewed`);
+    expect(front.play).toHaveBeenCalledTimes(1);
+    expect(front.currentTime).toBeCloseTo(10.5 / 24);
+    expect(frame()).toBe('1011');
+  });
+
+  it('of another movie starts the pair from its head', async () => {
+    const view = open(withIds);
+    const [one] = clock();
+    fireEvent.change(screen.getByLabelText('Scrub'), { target: { value: '1011' } });
+    await renew(view, { a: { ...renewed(withIds.a), sourceId: 'media-a2' }, b: withIds.b }, one, 3);
+    expect(frame()).toBe('1001');
+  });
+});
+

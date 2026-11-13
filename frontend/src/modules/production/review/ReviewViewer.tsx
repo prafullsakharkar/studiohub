@@ -124,10 +124,10 @@ export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | nul
             <p className="rounded-lg border border-slate-800 p-6 text-xs text-slate-500">Loading {comparing && other ? `${current.code} and ${other.code}` : current.code}…</p>
           ) : comparing && other ? (
             <MediaCompare
-              key={`${current.id}|${other.id}|${compareMode}|${shown.src ?? shown.poster ?? ''}|${otherShown.src ?? otherShown.poster ?? ''}`}
+              key={`${current.id}|${other.id}|${compareMode}`}
               label={`${current.code} against ${other.code}`}
-              a={{ id: current.id, label: current.code, src: shown.src, poster: shown.poster }}
-              b={{ id: other.id, label: other.code, src: otherShown.src, poster: otherShown.poster }}
+              a={{ id: current.id, label: current.code, src: shown.src, poster: shown.poster, sourceId: shown.sourceId }}
+              b={{ id: other.id, label: other.code, src: otherShown.src, poster: otherShown.poster, sourceId: otherShown.sourceId }}
               choices={versions.map((v) => ({ id: v.id, label: v.code }))}
               onPick={(side, id) => (side === 'a' ? setPicked(id) : setOtherId(id))}
               initialMode={compareMode === 'side' ? 'side' : 'wipe'}
@@ -137,11 +137,12 @@ export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | nul
             />
           ) : (
             <MediaPlayer
-              key={`${current.id}|${shown.src ?? shown.poster ?? ''}`}
+              key={current.id}
               ref={player}
               label={`${current.code} in review`}
               src={shown.src}
               poster={shown.poster}
+              sourceId={shown.sourceId}
               fps={fps}
               startFrame={startFrame}
               markers={markers}

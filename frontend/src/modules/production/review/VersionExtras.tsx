@@ -112,13 +112,13 @@ export const VersionCompareTab: React.FC<{ version: Version }> = ({ version }) =
   const b = find(picked?.b, choices[0]);
   const source = (v: Version) => {
     const shown = versionPlayback(v);
-    return { id: v.id, label: v.code, src: shown.src, poster: shown.poster };
+    return { id: v.id, label: v.code, src: shown.src, poster: shown.poster, sourceId: shown.sourceId };
   };
   const sa = source(a);
   const sb = source(b);
   return (
     <MediaCompare
-      key={`${a.id}|${b.id}|${sa.src ?? sa.poster ?? ''}|${sb.src ?? sb.poster ?? ''}`}
+      key={`${a.id}|${b.id}`}
       label={`${a.code} against ${b.code}`}
       a={sa}
       b={sb}

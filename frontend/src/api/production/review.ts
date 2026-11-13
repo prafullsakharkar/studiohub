@@ -154,6 +154,8 @@ export interface VersionPlayback {
   fps: number | string | null;
   /** True when the picture is the server's review copy. */
   generated: boolean;
+  /** The review copy's id: a player keyed on it keeps its place when only the signed link is renewed (RP-10). */
+  sourceId?: string;
 }
 
 /**
@@ -163,8 +165,8 @@ export interface VersionPlayback {
 export function versionPlayback(version: Pick<Version, 'review_media' | 'video_url' | 'thumbnail_url' | 'fps'> | null | undefined): VersionPlayback {
   const media = version?.review_media;
   if (media && media.status === 'ready') {
-    if (media.kind === 'still') return { src: undefined, poster: reviewMediaUrl(media.proxy_url), fps: version?.fps ?? null, generated: true };
-    return { src: reviewMediaUrl(media.proxy_url), poster: reviewMediaUrl(media.thumbnail_url), fps: media.probe?.fps ?? version?.fps ?? null, generated: true };
+    if (media.kind === 'still') return { src: undefined, poster: reviewMediaUrl(media.proxy_url), fps: version?.fps ?? null, generated: true, sourceId: media.id };
+    return { src: reviewMediaUrl(media.proxy_url), poster: reviewMediaUrl(media.thumbnail_url), fps: media.probe?.fps ?? version?.fps ?? null, generated: true, sourceId: media.id };
   }
   return { src: version?.video_url, poster: version?.thumbnail_url, fps: version?.fps ?? null, generated: false };
 }
@@ -183,7 +185,7 @@ export const reviewMediaApi = {
   /** Every row of a version, newest first (a bare array). */
   list: (versionId: string, signal?: AbortSignal) => apiClient.get<ReviewMedia[]>(`${V1}/versions/${versionId}/review-media/`, { signal }),
   /**
-   * Needs `version.update`. 202 with the queued row; 409 `review_media_disabled` when the studio has not switched it on,
+   * Needs `version.update`, or being the version's artist with `version.create` (C-RP-26). 202 with the queued row; 409 `review_media_disabled` when the studio has not switched it on,
    * 409 `review_media_busy` while another upload of the version is processed, 400 on `file` for a refused file.
    */
   upload: (versionId: string, file: File) => {

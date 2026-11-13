@@ -1,6 +1,6 @@
 import { projectsApi } from '@/api/production/structure';
 import { versionCard } from './versionCard';
-import { versionsApi } from '@/api/production/review';
+import { reviewMediaRefetchInterval, versionsApi } from '@/api/production/review';
 import type { Version } from '@/api/production/review';
 import { TASK_STATUSES } from '@/api/production/work';
 import { useCan } from '@/core/permissions/useCan';
@@ -57,6 +57,8 @@ export function useVersionsListConfig(scope?: { projectId: string }): DirectoryL
     searchPlaceholder: 'Search code',
     basePath: '/versions',
     renderCard: versionCard,
+    // Cards show the generated thumbnail and filmstrip through signed links that expire (RP-10).
+    refetchInterval: (rows) => reviewMediaRefetchInterval(rows),
     cardGrid: 'sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4',
     scope: scope ? { project_id: scope.projectId } : undefined,
     createQuery: scope ? `project=${scope.projectId}` : undefined,

@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Maximize, Pause, Play, Repeat, SkipBack, SkipForward, Volume2, VolumeX } from 'lucide-react';
 import type React from 'react';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import { SmartImg } from '@/components/ui/SmartImg';
 import { cn } from '@/shared/utils/cn';
 import { safeWebUrl } from '@/shared/utils/safeUrl';
@@ -23,6 +23,12 @@ interface MediaPlayerProps {
   src?: string | null;
   /** The picture shown before playing, and the picture when there is no video. */
   poster?: string | null;
+  /**
+   * What the video is apart from its address (a review movie's id). A new address for the same source, such as a
+   * renewed signed link, keeps the frame and goes on playing; a new source starts from its head. Without it the
+   * address is the source.
+   */
+  sourceId?: string | null;
   /** The accessible name of the player: usually the version's code. */
   label: string;
   fps?: number;
@@ -59,7 +65,7 @@ const Control: React.FC<{ label: string; onClick: () => void; disabled?: boolean
  * no transport. Keys, with the player focused: Space plays, Left and Right step a frame (Shift: ten), Home and End
  * go to the ends, L loops, M mutes, F goes full screen.
  */
-export const MediaPlayer = forwardRef<MediaPlayerHandle, MediaPlayerProps>(function MediaPlayer({ src, poster, label, fps = DEFAULT_FPS, startFrame = 1, markers = [], onFrameChange, overlay, className }, ref) {
+export const MediaPlayer = forwardRef<MediaPlayerHandle, MediaPlayerProps>(function MediaPlayer({ src, poster, sourceId, label, fps = DEFAULT_FPS, startFrame = 1, markers = [], onFrameChange, overlay, className }, ref) {
   const video = useRef<HTMLVideoElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const url = safeWebUrl(src);
@@ -73,6 +79,10 @@ export const MediaPlayer = forwardRef<MediaPlayerHandle, MediaPlayerProps>(funct
   const [rate, setRate] = useState<number>(1);
   const [failed, setFailed] = useState(false);
   const end = startFrame + Math.max(count - 1, 0);
+  const source = sourceId || url;
+  // Where to go back to once the same source has loaded from its new address.
+  const resume = useRef<{ frame: number; playing: boolean } | null>(null);
+  const last = useRef({ url, source });
 
   const move = useCallback(
     (next: number) => {
@@ -84,14 +94,26 @@ export const MediaPlayer = forwardRef<MediaPlayerHandle, MediaPlayerProps>(funct
   );
   useImperativeHandle(ref, () => ({ seekToFrame: (target) => move(target), getFrame: () => frame, pause: () => video.current?.pause() }), [move, frame]);
 
+  // The same source at a new address (a renewed link): remember the frame and whether it played, before the
+  // browser loads the new address from its start (RP-10, Q-RP-44).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: read the frame and the playing state at the moment the address changes
+  useLayoutEffect(() => {
+    const before = last.current;
+    last.current = { url, source };
+    if (url && before.url !== url && before.source === source) {
+      resume.current = { frame, playing };
+      setFailed(false);
+    }
+  }, [url, source]);
   // A new video starts from its head.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: only the address (and the first frame number) restart the player
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only the source (and the first frame number) restart the player
   useEffect(() => {
+    resume.current = null;
     setCount(0);
     setFrame(startFrame);
     setPlaying(false);
     setFailed(false);
-  }, [url, startFrame]);
+  }, [source, startFrame]);
   useEffect(() => {
     onFrameChange?.(frame);
   }, [frame, onFrameChange]);
@@ -179,8 +201,18 @@ export const MediaPlayer = forwardRef<MediaPlayerHandle, MediaPlayerProps>(funct
             loop={loop}
             muted={muted}
             onLoadedMetadata={(e) => {
-              setCount(frameCount(e.currentTarget.duration, fps));
-              e.currentTarget.playbackRate = rate;
+              const el = e.currentTarget;
+              const frames = frameCount(el.duration, fps);
+              setCount(frames);
+              el.playbackRate = rate;
+              const back = resume.current;
+              resume.current = null;
+              if (!back) return;
+              const target = clampFrame(back.frame, startFrame, frames);
+              setFrame(target);
+              el.currentTime = frameToTime(target, startFrame, fps);
+              if (back.playing) void Promise.resolve(el.play()).catch(() => setPlaying(false));
+              else setPlaying(false);
             }}
             onPlay={() => setPlaying(true)}
             onPause={(e) => {

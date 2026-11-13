@@ -17546,6 +17546,11 @@ export interface components {
             delivery_package_id?: string | null;
             notes?: string;
         };
+        /** @description One record a note names. Checked by ``validators/project_note.py``, so every refusal reads the same. */
+        NoteLinkInput: {
+            entity_type: string;
+            entity_id: string;
+        };
         /**
          * @description One row. ``target`` and ``project`` are read from the live records of the page
          *     (``context["labels"]``, see ``InboxSelector.page_labels``); a row read alone reads its own.
@@ -18015,6 +18020,12 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["ProjectList"][];
+        };
+        PaginatedProjectNoteList: {
+            count: number;
+            next: string | null;
+            previous: string | null;
+            results: components["schemas"]["ProjectNote"][];
         };
         PaginatedPublishListList: {
             /** @example 123 */
@@ -20424,6 +20435,35 @@ export interface components {
              * @description Last update timestamp.
              */
             readonly updated_at?: string;
+        };
+        /** @description What a ``PATCH`` may change (C-RP-12); a reply takes only ``body`` (checked by the service). */
+        PatchedProjectNoteUpdate: {
+            subject?: string;
+            body?: string;
+            /**
+             * @description * `Director Feedback` - Director Feedback
+             *     * `Supervisor Note` - Supervisor Note
+             *     * `Client Note` - Client Note
+             *     * `Pipeline Notice` - Pipeline Notice
+             *     * `Turnover Requirement` - Turnover Requirement
+             *     * `General` - General
+             * @enum {string}
+             */
+            category?: "Director Feedback" | "Supervisor Note" | "Client Note" | "Pipeline Notice" | "Turnover Requirement" | "General";
+            /**
+             * @description * `Critical` - Critical
+             *     * `High` - High
+             *     * `Medium` - Medium
+             *     * `Low` - Low
+             * @enum {string}
+             */
+            priority?: "Critical" | "High" | "Medium" | "Low";
+            tags?: unknown;
+            timecode_ref?: string;
+            frame_number?: number | null;
+            links?: components["schemas"]["NoteLinkInput"][];
+            task_id?: string | null;
+            mention_ids?: string[];
         };
         /** @description Base serializer for write operations. */
         PatchedProjectUpdate: {
@@ -25076,6 +25116,221 @@ export interface components {
              * @description Last update timestamp.
              */
             readonly updated_at: string;
+        };
+        /**
+         * @description Frontend ProjectNote shape (C-RP-08).
+         *
+         *     ``links`` carry each record's code and name as they are now, read in one query per type for the
+         *     whole page (``context["link_labels"]``, see ``ProjectNoteSelector.link_labels``); without it, the
+         *     labels are read per note.
+         */
+        ProjectNote: {
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly id: string;
+            /** Format: uuid */
+            readonly project_id: string;
+            readonly project_code: string;
+            entity_type?: string;
+            entity_id?: string;
+            entity_code?: string;
+            entity_name?: string;
+            readonly author_id: string;
+            author_name?: string;
+            author_avatar?: string;
+            author_role?: string;
+            subject: string;
+            body?: string;
+            /**
+             * @description * `Director Feedback` - Director Feedback
+             *     * `Supervisor Note` - Supervisor Note
+             *     * `Client Note` - Client Note
+             *     * `Pipeline Notice` - Pipeline Notice
+             *     * `Turnover Requirement` - Turnover Requirement
+             *     * `General` - General
+             * @enum {string}
+             */
+            category?: "Director Feedback" | "Supervisor Note" | "Client Note" | "Pipeline Notice" | "Turnover Requirement" | "General";
+            /**
+             * @description * `Critical` - Critical
+             *     * `High` - High
+             *     * `Medium` - Medium
+             *     * `Low` - Low
+             * @enum {string}
+             */
+            priority?: "Critical" | "High" | "Medium" | "Low";
+            tags?: unknown;
+            /**
+             * @description * `Open` - Open
+             *     * `Addressed` - Addressed
+             *     * `Closed` - Closed
+             * @enum {string}
+             */
+            status?: "Open" | "Addressed" | "Closed";
+            addressed_by?: string;
+            /** Format: date-time */
+            addressed_at?: string | null;
+            timecode_ref?: string;
+            frame_number?: number | null;
+            /**
+             * Format: date-time
+             * @description Object creation timestamp.
+             */
+            readonly created_at: string;
+            /**
+             * Format: date-time
+             * @description Last update timestamp.
+             */
+            readonly updated_at: string;
+            readonly parent_id: string | null;
+            readonly links: {
+                [key: string]: string;
+            }[];
+            readonly task_id: string | null;
+            readonly task_code: string | null;
+            readonly reply_count: number;
+            /** @description The people the note mentions, in the order written (RP-6, C-RP-25). */
+            readonly mentions: {
+                [key: string]: string;
+            }[];
+        };
+        /**
+         * @description Accept frontend Partial<ProjectNote> (C-RP-07). Ownership, status and the records' code and name
+         *     are the server's: ``entity_code``, ``entity_name``, ``status`` and the author fields are accepted
+         *     for older clients and ignored.
+         */
+        ProjectNoteCreate: {
+            entity_type?: string;
+            entity_id?: string;
+            entity_code?: string;
+            entity_name?: string;
+            author_name?: string;
+            author_avatar?: string;
+            author_role?: string;
+            subject: string;
+            body?: string;
+            /**
+             * @description * `Director Feedback` - Director Feedback
+             *     * `Supervisor Note` - Supervisor Note
+             *     * `Client Note` - Client Note
+             *     * `Pipeline Notice` - Pipeline Notice
+             *     * `Turnover Requirement` - Turnover Requirement
+             *     * `General` - General
+             * @enum {string}
+             */
+            category?: "Director Feedback" | "Supervisor Note" | "Client Note" | "Pipeline Notice" | "Turnover Requirement" | "General";
+            /**
+             * @description * `Critical` - Critical
+             *     * `High` - High
+             *     * `Medium` - Medium
+             *     * `Low` - Low
+             * @enum {string}
+             */
+            priority?: "Critical" | "High" | "Medium" | "Low";
+            tags?: unknown;
+            /**
+             * @description * `Open` - Open
+             *     * `Addressed` - Addressed
+             *     * `Closed` - Closed
+             * @enum {string}
+             */
+            status?: "Open" | "Addressed" | "Closed";
+            timecode_ref?: string;
+            frame_number?: number | null;
+            links?: components["schemas"]["NoteLinkInput"][];
+            task_id?: string | null;
+            mention_ids?: string[];
+        };
+        /** @description One thread with its live replies, oldest first (C-RP-10). */
+        ProjectNoteDetail: {
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly id: string;
+            /** Format: uuid */
+            readonly project_id: string;
+            readonly project_code: string;
+            entity_type?: string;
+            entity_id?: string;
+            entity_code?: string;
+            entity_name?: string;
+            readonly author_id: string;
+            author_name?: string;
+            author_avatar?: string;
+            author_role?: string;
+            subject: string;
+            body?: string;
+            /**
+             * @description * `Director Feedback` - Director Feedback
+             *     * `Supervisor Note` - Supervisor Note
+             *     * `Client Note` - Client Note
+             *     * `Pipeline Notice` - Pipeline Notice
+             *     * `Turnover Requirement` - Turnover Requirement
+             *     * `General` - General
+             * @enum {string}
+             */
+            category?: "Director Feedback" | "Supervisor Note" | "Client Note" | "Pipeline Notice" | "Turnover Requirement" | "General";
+            /**
+             * @description * `Critical` - Critical
+             *     * `High` - High
+             *     * `Medium` - Medium
+             *     * `Low` - Low
+             * @enum {string}
+             */
+            priority?: "Critical" | "High" | "Medium" | "Low";
+            tags?: unknown;
+            /**
+             * @description * `Open` - Open
+             *     * `Addressed` - Addressed
+             *     * `Closed` - Closed
+             * @enum {string}
+             */
+            status?: "Open" | "Addressed" | "Closed";
+            addressed_by?: string;
+            /** Format: date-time */
+            addressed_at?: string | null;
+            timecode_ref?: string;
+            frame_number?: number | null;
+            /**
+             * Format: date-time
+             * @description Object creation timestamp.
+             */
+            readonly created_at: string;
+            /**
+             * Format: date-time
+             * @description Last update timestamp.
+             */
+            readonly updated_at: string;
+            readonly parent_id: string | null;
+            readonly links: {
+                [key: string]: string;
+            }[];
+            readonly task_id: string | null;
+            readonly task_code: string | null;
+            readonly reply_count: number;
+            /** @description The people the note mentions, in the order written (RP-6, C-RP-25). */
+            readonly mentions: {
+                [key: string]: string;
+            }[];
+            readonly replies: {
+                [key: string]: unknown;
+            }[];
+        };
+        ProjectNoteReply: {
+            body: string;
+            mention_ids?: string[];
+        };
+        ProjectNoteStatus: {
+            /**
+             * @description * `Open` - Open
+             *     * `Addressed` - Addressed
+             *     * `Closed` - Closed
+             * @enum {string}
+             */
+            status: "Open" | "Addressed" | "Closed";
         };
         /** @description Base serializer for write operations. */
         ProjectUpdate: {
@@ -29816,12 +30071,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PaginatedProjectNoteList"];
+                };
             };
         };
     };
@@ -29834,14 +30090,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectNoteCreate"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProjectNoteCreate"];
+                "multipart/form-data": components["schemas"]["ProjectNoteCreate"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ProjectNote"];
+                };
             };
         };
     };
@@ -29856,12 +30119,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PaginatedProjectNoteList"];
+                };
             };
         };
     };
@@ -29874,14 +30138,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectNoteCreate"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProjectNoteCreate"];
+                "multipart/form-data": components["schemas"]["ProjectNoteCreate"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ProjectNote"];
+                };
             };
         };
     };
@@ -29897,12 +30168,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ProjectNoteDetail"];
+                };
             };
         };
     };
@@ -29937,14 +30209,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedProjectNoteUpdate"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedProjectNoteUpdate"];
+                "multipart/form-data": components["schemas"]["PatchedProjectNoteUpdate"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ProjectNote"];
+                };
             };
         };
     };
@@ -29960,12 +30239,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ProjectNoteDetail"];
+                };
             };
         };
     };
@@ -30000,14 +30280,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedProjectNoteUpdate"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedProjectNoteUpdate"];
+                "multipart/form-data": components["schemas"]["PatchedProjectNoteUpdate"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ProjectNote"];
+                };
             };
         };
     };
@@ -30021,14 +30308,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectNoteReply"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProjectNoteReply"];
+                "multipart/form-data": components["schemas"]["ProjectNoteReply"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ProjectNote"];
+                };
             };
         };
     };
@@ -30042,14 +30336,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectNoteReply"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProjectNoteReply"];
+                "multipart/form-data": components["schemas"]["ProjectNoteReply"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ProjectNote"];
+                };
             };
         };
     };
@@ -30063,14 +30364,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectNoteStatus"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProjectNoteStatus"];
+                "multipart/form-data": components["schemas"]["ProjectNoteStatus"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ProjectNote"];
+                };
             };
         };
     };
@@ -30084,14 +30392,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectNoteStatus"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProjectNoteStatus"];
+                "multipart/form-data": components["schemas"]["ProjectNoteStatus"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ProjectNote"];
+                };
             };
         };
     };

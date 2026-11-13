@@ -11,6 +11,8 @@ from __future__ import annotations
 from typing import Any, cast
 
 from django.http import Http404
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers
 from rest_framework import status as http_status
 from rest_framework.response import Response
 
@@ -37,6 +39,18 @@ from apps.production.validators.project_note import (
 
 # What a new thread takes from the request; everything else is the server's (C-RP-07).
 CREATE_FIELDS = ("subject", "body", "category", "priority", "tags", "timecode_ref", "frame_number")
+
+
+# The schema of each route (C-RP-27): the views are plain APIViews, so spectacular cannot guess them.
+_NOTE_PAGE = inline_serializer(
+    name="PaginatedProjectNoteList",
+    fields={
+        "count": serializers.IntegerField(),
+        "next": serializers.CharField(allow_null=True),
+        "previous": serializers.CharField(allow_null=True),
+        "results": ProjectNoteSerializer(many=True),
+    },
+)
 
 
 def _page_labels(rows) -> dict[str, Any]:
@@ -67,6 +81,7 @@ class _NoteRoute(ProjectScopedAPIView):
 class ProjectNotesView(_NoteRoute):
     permission_map = {"get": (ProjectPermissions.VIEW,), "post": (NotePermissions.CREATE,)}
 
+    @extend_schema(responses={200: _NOTE_PAGE})
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=ProjectNoteThreadSelector,
@@ -78,6 +93,7 @@ class ProjectNotesView(_NoteRoute):
             page_context=_page_labels,
         )
 
+    @extend_schema(request=ProjectNoteCreateSerializer, responses={201: ProjectNoteSerializer})
     def post(self, request, *args, **kwargs):
         serializer = ProjectNoteCreateSerializer(data=request.data or {})
         serializer.is_valid(raise_exception=True)
@@ -106,10 +122,12 @@ class ProjectNoteDetailView(_NoteRoute):
         "delete": (NotePermissions.CREATE,),
     }
 
+    @extend_schema(responses={200: ProjectNoteDetailSerializer})
     def get(self, request, *args, note_id=None, **kwargs):
         _note, thread = self._note(note_id)
         return self._answer(thread, detail=True)
 
+    @extend_schema(request=ProjectNoteUpdateSerializer, responses={200: ProjectNoteSerializer})
     def patch(self, request, *args, note_id=None, **kwargs):
         note, _thread = self._note(note_id)
         may_update = has_permission_code(request, NotePermissions.UPDATE)
@@ -139,6 +157,7 @@ class ProjectNoteDetailView(_NoteRoute):
         )
         return self._answer(note)
 
+    @extend_schema(request=None, responses={204: None})
     def delete(self, request, *args, note_id=None, **kwargs):
         note, _thread = self._note(note_id)
         ProjectNoteService.delete_note(
@@ -154,6 +173,7 @@ class ProjectNoteRepliesView(_NoteRoute):
 
     permission_map = {"post": (NotePermissions.CREATE,)}
 
+    @extend_schema(request=ProjectNoteReplySerializer, responses={201: ProjectNoteSerializer})
     def post(self, request, *args, note_id=None, **kwargs):
         _note, thread = self._note(note_id)
         serializer = ProjectNoteReplySerializer(data=request.data or {})
@@ -171,6 +191,7 @@ class ProjectNoteStatusView(_NoteRoute):
 
     permission_map = {"post": (NotePermissions.CREATE,)}
 
+    @extend_schema(request=ProjectNoteStatusSerializer, responses={200: ProjectNoteSerializer})
     def post(self, request, *args, note_id=None, **kwargs):
         note, _thread = self._note(note_id)
         serializer = ProjectNoteStatusSerializer(data=request.data or {})

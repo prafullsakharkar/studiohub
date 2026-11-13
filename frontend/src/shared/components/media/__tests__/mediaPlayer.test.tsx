@@ -208,3 +208,72 @@ describe('media player', () => {
     }
   });
 });
+
+describe('a renewed address (review-pipeline RP-10, Q-RP-44)', () => {
+  const RENEWED = `${VIDEO}?token=renewed`;
+  const props = { label: 'SH0010_V001', startFrame: 1001, fps: 24 };
+
+  function open(sourceId?: string) {
+    const view = render(<MediaPlayer {...props} src={VIDEO} sourceId={sourceId} />);
+    const video = screen.getByLabelText('SH0010_V001 video') as HTMLVideoElement;
+    fakeClock(video, 3);
+    act(() => {
+      fireEvent.loadedMetadata(video);
+    });
+    /** The new address in place; the browser loads it from its start, paused, and tells its length again. */
+    const renew = (next: { src: string; sourceId?: string }) => {
+      view.rerender(<MediaPlayer {...props} {...next} />);
+      fakeClock(video, 3);
+      act(() => {
+        fireEvent.loadedMetadata(video);
+      });
+    };
+    return { video, renew };
+  }
+  const goTo = (target: number) => fireEvent.change(screen.getByLabelText('Scrub'), { target: { value: String(target) } });
+
+  it('of the same movie keeps the frame, paused as it was', () => {
+    const { video, renew } = open('media-1');
+    goTo(1011);
+    renew({ src: RENEWED, sourceId: 'media-1' });
+    expect(video.getAttribute('src')).toBe(RENEWED);
+    expect(frame()).toBe('1011');
+    expect(video.currentTime).toBeCloseTo(10.5 / 24);
+    expect(video.play).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Play' })).toBeTruthy();
+  });
+
+  it('of the same movie goes on playing from the frame it was on', async () => {
+    const { video, renew } = open('media-1');
+    goTo(1011);
+    fireEvent.click(screen.getByRole('button', { name: 'Play' }));
+    expect(await screen.findByRole('button', { name: 'Pause' })).toBeTruthy();
+    renew({ src: RENEWED, sourceId: 'media-1' });
+    expect(video.play).toHaveBeenCalledTimes(1);
+    expect(await screen.findByRole('button', { name: 'Pause' })).toBeTruthy();
+    expect(video.currentTime).toBeCloseTo(10.5 / 24);
+    expect(frame()).toBe('1011');
+  });
+
+  it('clears a failure of the old address', () => {
+    const { video, renew } = open('media-1');
+    fireEvent.error(video);
+    expect(screen.getByText('This video could not be loaded.')).toBeTruthy();
+    renew({ src: RENEWED, sourceId: 'media-1' });
+    expect(screen.queryByText('This video could not be loaded.')).toBeNull();
+  });
+
+  it('of another movie (a replaced review copy) starts from its head', () => {
+    const { renew } = open('media-1');
+    goTo(1011);
+    renew({ src: RENEWED, sourceId: 'media-2' });
+    expect(frame()).toBe('1001');
+  });
+
+  it('without a source id the address is the source: a new one starts from its head', () => {
+    const { renew } = open();
+    goTo(1011);
+    renew({ src: RENEWED });
+    expect(frame()).toBe('1001');
+  });
+});

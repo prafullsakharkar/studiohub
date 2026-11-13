@@ -134,6 +134,11 @@ export interface DirectoryListConfig<T extends { id: string }> {
   bulk?: { actions: ReadonlyArray<BulkAction> };
   /** Lifecycle actions on a row (deactivate, restore, …), each behind a confirmation; shown with the manage permission. */
   rowActions?: (row: T) => ReadonlyArray<RowAction>;
+  /**
+   * Refetch the rows on screen after this many ms (or not, with `false`), decided from them: a version list keeps its
+   * signed review-media links fresh (RP-10).
+   */
+  refetchInterval?: (rows: T[]) => number | false;
   /** The list's own card for Card view. Without it a card is made from the columns. */
   renderCard?: (row: T, ctx: CardContext) => React.ReactNode;
   /** Tailwind grid columns for Card view (default `sm:grid-cols-2 xl:grid-cols-3`). */

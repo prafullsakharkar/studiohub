@@ -65,10 +65,10 @@ class ProjectNoteSerializer(BaseReadSerializer[Any]):
             "updated_at",
         )
 
-    def get_project_code(self, obj):
+    def get_project_code(self, obj) -> str:
         return obj.project.code if obj.project else ""
 
-    def get_author_id(self, obj):
+    def get_author_id(self, obj) -> str:
         return str(obj.author_id) if obj.author_id else ""
 
     def get_parent_id(self, obj) -> str | None:
