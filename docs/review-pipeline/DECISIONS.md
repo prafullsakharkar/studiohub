@@ -64,6 +64,22 @@ The owner took every recommendation of [PLAN.md, RP-5 questions](PLAN.md#questio
 | Q-RP-30 | **A** | Upload, retry and remove need `version.update` with the version in reach. |
 | Q-RP-31 | **A** | At most 2 GiB per upload (`REVIEW_MEDIA_MAX_BYTES`), no quota. |
 
+## RP-6 answers
+
+The owner took every recommendation of [PLAN.md, RP-6 questions](PLAN.md#questions-before-rp-6-starts) on 2026-11-13 ("go ahead").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-32 | **A** | A new app, `apps/notifications`, holds the inbox, its routes and the handlers. It reads production through production's selectors; production never imports it. |
+| Q-RP-33 | **A** | Notes, mentions, replies, note status, task assignment, task status, version status and review movies notify, as in the plan's table. Review comments do not, for now. |
+| Q-RP-34 | **A** | Mentions are `mention_ids` chosen from a member picker, checked and stored as rows. The body is not parsed. |
+| Q-RP-35 | **A** | A row keeps ids, its kind and status names. Labels are read from the live records when the inbox is fetched. |
+| Q-RP-36 | **A** | The browser polls `unread-count/` every 60 seconds while the tab is visible, and on focus. No websocket. |
+| Q-RP-37 | **A** | No preferences in RP-6. |
+| Q-RP-38 | **A** | Rows are kept 90 days (`NOTIFICATIONS_RETENTION_DAYS`) and purged daily. |
+| Q-RP-39 | **A** | The bell shows the server inbox only; toasts are unchanged. |
+| Q-RP-40 | **A** | Always on; no switch. |
+
 ## Phases after the answers
 
 | Phase | Status |
@@ -72,8 +88,8 @@ The owner took every recommendation of [PLAN.md, RP-5 questions](PLAN.md#questio
 | RP-2 Notes (replies, links) | built and merged into `develop` ([rp-2-verification.md](rp-2-verification.md)) |
 | RP-3 Approval roll-up (fixed rule) | built and merged into `develop` ([rp-3-verification.md](rp-3-verification.md)) |
 | RP-4 Publishing depth | built and merged into `develop` ([rp-4-verification.md](rp-4-verification.md)) |
-| RP-5 Media pipeline (ffmpeg worker) | planned in [PLAN.md](PLAN.md#rp-5-media-pipeline-review-movies-thumbnails-filmstrips); answered (Q-RP-24 to Q-RP-31 = A), being built on `feature/rp-5-media-pipeline` |
-| RP-6 Notifications (in-app) | after RP-2 |
+| RP-5 Media pipeline (ffmpeg worker) | planned in [PLAN.md](PLAN.md#rp-5-media-pipeline-review-movies-thumbnails-filmstrips); answered (Q-RP-24 to Q-RP-31 = A); built and merged into `develop`, released in v4.6.0 ([rp-5-verification.md](rp-5-verification.md)) |
+| RP-6 Notifications (in-app) | planned in [PLAN.md](PLAN.md#rp-6-notifications-in-app); answered (Q-RP-32 to Q-RP-40 = A), being built on `feature/rp-6-notifications` |
 | RP-7 Share links | **dropped** (Q-RP-8 = B) |
 | RP-8 Live review | not planned (Q-RP-9 = B) |
 | RP-9 DCC integrations | separate repository (Q-RP-10 = B) |
