@@ -44,9 +44,6 @@ interface NotificationState {
   addNotification: (notification: AddNotificationOptions) => void;
   dismissToast: (id: string) => void;
   clearAllToasts: () => void;
-  markAsRead: (id: string) => void;
-  markAllAsRead: () => void;
-  clearNotification: (id: string) => void;
 }
 
 const DEDUP_WINDOW_MS = 3000;
@@ -123,21 +120,5 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   clearAllToasts: () =>
     set(() => ({
       toasts: [],
-    })),
-
-  markAsRead: (id) =>
-    set((state) => ({
-      notifications: state.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    })),
-
-  markAllAsRead: () =>
-    set((state) => ({
-      notifications: state.notifications.map((n) => ({ ...n, read: true })),
-    })),
-
-  clearNotification: (id) =>
-    set((state) => ({
-      notifications: state.notifications.filter((n) => n.id !== id),
-      toasts: state.toasts.filter((t) => t.id !== id),
     })),
 }));
