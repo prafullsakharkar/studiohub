@@ -279,6 +279,22 @@ class Settings(BaseSettings):
     media_accel_prefix: str = Field(default="", alias="MEDIA_ACCEL_PREFIX")
 
     ####################################################################
+    # Review media (review-pipeline RP-5): uploaded review movies and stills
+    ####################################################################
+
+    # Off by default: uploads need the `celery-media` worker (the image's `worker` target, with ffmpeg)
+    # and the media volume mounted on it (docs/review-pipeline/DECISIONS.md Q-RP-27).
+    review_media_enabled: bool = Field(default=False, alias="REVIEW_MEDIA_ENABLED")
+
+    # Largest accepted upload, in bytes (Q-RP-31). nginx's review-media location must allow it.
+    review_media_max_bytes: int = Field(default=2 * 1024**3, alias="REVIEW_MEDIA_MAX_BYTES", gt=0)
+
+    # How long a playback link stays valid; every request re-checks the user's access (Q-RP-28).
+    review_media_link_ttl_seconds: int = Field(
+        default=3600, alias="REVIEW_MEDIA_LINK_TTL_SECONDS", gt=0
+    )
+
+    ####################################################################
     # Operator surfaces (off unless switched on)
     ####################################################################
 

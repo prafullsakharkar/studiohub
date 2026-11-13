@@ -19,8 +19,9 @@ const keys = (o: object) => Object.keys(o).sort();
 const review = flow.reviews_detail_after_approve.body;
 
 describe('review row types match the captured responses', () => {
+  // Version is pinned to _review_media_flow.json (reviewMediaContracts.test.ts): this capture predates RP-5 and its
+  // versions lack `review_media` and `review_media_job`.
   it.each([
-    ['Version', firstRow('versions_list'), K.VERSION_KEYS],
     ['Review', firstRow('reviews_list'), K.REVIEW_KEYS],
     ['ReviewVersion', review.versions[0], K.REVIEWVERSION_KEYS],
     ['ReviewParticipant', review.reviewers[0], K.REVIEWPARTICIPANT_KEYS],

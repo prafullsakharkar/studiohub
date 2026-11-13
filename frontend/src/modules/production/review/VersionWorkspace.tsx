@@ -3,7 +3,7 @@ import type React from 'react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { auditKeys } from '@/api/audit/audit';
-import { reviewsApi, versionsApi } from '@/api/production/review';
+import { reviewMediaRefetchInterval, reviewsApi, versionsApi } from '@/api/production/review';
 import { tasksApi } from '@/api/production/work';
 import type { Version } from '@/api/production/review';
 import { EntityHistory } from '@/components/history/EntityHistory';
@@ -142,7 +142,8 @@ export const VersionWorkspace: React.FC = () => {
   const canPublish = useCan('version.publish');
   const [tab, setTab] = useState<TabId>('overview');
   const [action, setAction] = useState<ReturnType<typeof versionActions>[number] | null>(null);
-  const query = useQuery({ queryKey: versionsApi.keys.detail(versionId), queryFn: ({ signal }) => versionsApi.get(versionId, signal), enabled: Boolean(versionId) });
+  // While the media worker runs a job the version is refetched every 5 seconds; its signed links are fetched again before they expire (RP-5).
+  const query = useQuery({ queryKey: versionsApi.keys.detail(versionId), queryFn: ({ signal }) => versionsApi.get(versionId, signal), enabled: Boolean(versionId), refetchInterval: (q) => reviewMediaRefetchInterval([q.state.data]) });
   const v = query.data;
   // Approving a version may approve its task on the server (RP-3, C-RP-15), so the task queries are refetched too.
   const refresh = () => Promise.all([versionsApi.keys.all, tasksApi.keys.all, auditKeys.all].map((queryKey) => queryClient.invalidateQueries({ queryKey })));

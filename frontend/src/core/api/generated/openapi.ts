@@ -7707,6 +7707,54 @@ export interface paths {
         patch: operations["v1_publishing_storage_roots_partial_update"];
         trace?: never;
     };
+    "/api/v1/review-media/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["v1_review_media_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review-media/{id}/{output}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_review_media_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review-media/{id}/retry/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_review_media_retry_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reviews/": {
         parameters: {
             query?: never;
@@ -12989,6 +13037,24 @@ export interface paths {
         put?: never;
         /** @description Restore a soft-deleted record within the caller's project scope. */
         post: operations["v1_versions_restore_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/versions/{uuid}/review-media/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Every review media row of the version, newest first. */
+        get: operations["v1_versions_review_media_list"];
+        put?: never;
+        /** @description Upload a review movie or still; the media worker processes it (202). */
+        post: operations["v1_versions_review_media_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -25796,6 +25862,74 @@ export interface components {
              */
             readonly updated_at: string;
         };
+        ReviewMedia: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly version_id: string;
+            /**
+             * @description * `movie` - Movie
+             *     * `still` - Still
+             * @enum {string}
+             */
+            readonly kind: "movie" | "still";
+            /**
+             * @description * `queued` - Queued
+             *     * `processing` - Processing
+             *     * `ready` - Ready
+             *     * `failed` - Failed
+             *     * `superseded` - Superseded
+             *     * `removed` - Removed
+             * @enum {string}
+             */
+            readonly status: "queued" | "processing" | "ready" | "failed" | "superseded" | "removed";
+            readonly source_name: string;
+            readonly source_size: number;
+            readonly probe: components["schemas"]["ReviewMediaProbe"] | null;
+            /**
+             * @description * `probe_failed` - The file could not be read.
+             *     * `unsupported_stream` - The file has no picture the server can use.
+             *     * `transcode_failed` - The review copy could not be made.
+             *     * `timeout` - Processing took too long and was stopped.
+             *     * `source_missing` - The uploaded file is no longer on the server.
+             * @enum {string}
+             */
+            readonly error_code: "probe_failed" | "unsupported_stream" | "transcode_failed" | "timeout" | "source_missing";
+            readonly error_message: string;
+            readonly attempts: number;
+            /** Format: date-time */
+            readonly queued_at: string;
+            /** Format: date-time */
+            readonly started_at: string | null;
+            /** Format: date-time */
+            readonly finished_at: string | null;
+            readonly created_by: components["schemas"]["ReviewMediaUser"] | null;
+            readonly proxy_url: string | null;
+            readonly thumbnail_url: string | null;
+            readonly filmstrip_url: string | null;
+            readonly filmstrip_tiles: number;
+            /** Format: date-time */
+            readonly links_expire_at: string | null;
+        };
+        ReviewMediaProbe: {
+            width: number;
+            height: number;
+            /** Format: double */
+            fps: number;
+            frames: number;
+            /** Format: double */
+            duration_seconds: number;
+            video_codec: string;
+            has_audio: boolean;
+        };
+        ReviewMediaUpload: {
+            file: string;
+        };
+        ReviewMediaUser: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
         /** @description Rejects keys the serializer does not declare. */
         ReviewNote: {
             /** @default General */
@@ -28803,6 +28937,8 @@ export interface components {
             changelog?: string;
             tags?: unknown;
             publishing_info?: unknown;
+            readonly review_media: components["schemas"]["ReviewMedia"] | null;
+            readonly review_media_job: components["schemas"]["ReviewMedia"] | null;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -28880,6 +29016,8 @@ export interface components {
             changelog?: string;
             tags?: unknown;
             publishing_info?: unknown;
+            readonly review_media: components["schemas"]["ReviewMedia"] | null;
+            readonly review_media_job: components["schemas"]["ReviewMedia"] | null;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -46194,6 +46332,71 @@ export interface operations {
             };
         };
     };
+    v1_review_media_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v1_review_media_retrieve: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+                output: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+        };
+    };
+    v1_review_media_retry_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewMedia"];
+                };
+            };
+        };
+    };
     v1_reviews_list: {
         parameters: {
             query?: {
@@ -54827,6 +55030,65 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VersionList"];
+                };
+            };
+        };
+    };
+    v1_versions_review_media_list: {
+        parameters: {
+            query?: {
+                department?: string;
+                entity_id?: string;
+                entity_type?: string;
+                is_archived?: boolean;
+                is_published?: boolean;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                project?: string;
+                project_id?: string;
+                /** @description A search term. */
+                search?: string;
+                status?: string;
+            };
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewMedia"][];
+                };
+            };
+        };
+    };
+    v1_versions_review_media_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["ReviewMediaUpload"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewMedia"];
                 };
             };
         };

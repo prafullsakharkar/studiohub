@@ -96,7 +96,7 @@ from apps.production.selectors.schedule_milestones import project_milestones
 from apps.production.selectors.sequence import SequenceSelector
 from apps.production.selectors.shot import ShotSelector
 from apps.production.selectors.task import TaskSelector
-from apps.production.selectors.version import VersionSelector
+from apps.production.selectors.version import VersionReadSelector
 from apps.production.services.project_scoped import (
     UNSET,
     ProjectMembershipService,
@@ -500,7 +500,7 @@ class _VersionListView(ProjectScopedAPIView):
 
     def get(self, request, *args, **kwargs):
         return self._entity_list(
-            selector_cls=VersionSelector,
+            selector_cls=VersionReadSelector,
             serializer_cls=VersionListSerializer,
             filterset_cls=getattr(VersionViewSet, "filterset_class", None),
             search_fields=getattr(VersionViewSet, "search_fields", ()),
