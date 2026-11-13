@@ -104,3 +104,36 @@ Details settled while building RP-5 (the owner is told in [rp-5-verification.md]
   - The job is queued by name through `core.celery` (`send_task`, no result). A `shared_task.delay()` from a request would use Celery's default app, which has no broker and no routes: the web process loads `core.celery` nowhere else.
   - The command code lives in `apps/production/transcode/`, not `media/`: `.dockerignore` drops every directory named `media`. The same pattern had dropped `apps/production/api/serializers/media/` from every image since v4.1.0. `.dockerignore` now names the media and static folders by path, and `apps/core/tests/test_image_contents.py` fails if any package sits under a dropped folder.
 - **Frontend:** the review media statuses `processing`, `superseded` and `removed` have StatusBadge tones (the badge test requires a tone for every status in the schema).
+
+## RP-6 Notifications
+
+Approved 2026-11-13 with every recommendation of Q-RP-32 to Q-RP-40 ([DECISIONS.md](DECISIONS.md#rp-6-answers)). Paths are under `/api/v1/`.
+
+"In reach" means what the target's own `GET` would answer for that person:
+- **a note thread:** `project.view` and whole-project access (C-RP-10);
+- **a task:** `task.view` and the project-membership narrowing of `GET tasks/{id}/`;
+- **a version:** `version.view` and the narrowing of `GET versions/{id}/`.
+
+The person must be active. On a request, the codes also respect the scopes of an API key or token.
+
+| ID | Where | Before | After |
+|---|---|---|---|
+| C-RP-23 | New `GET notifications/`, `GET notifications/unread-count/`, `POST notifications/{id}/read/`, `POST notifications/{id}/unread/`, `POST notifications/read-all/` | No routes. The bell lists the toasts of the open tab. | Any signed-in caller, on their own rows only. Another person's id, or a row that is hidden, is a 404.<br>**The list:** newest first, paginated as every list (`page`, `page_size`). Filters: `unread` (`true` or `false`), `project_id` and `kind`; an unknown value gives an empty list.<br>**A row:**<br>- `id`;<br>- `kind`: `note_created`, `note_mention`, `note_reply`, `note_status`, `task_assigned`, `task_status`, `version_status`, `review_media_ready` or `review_media_failed`;<br>- `created_at`, and `read_at` (`null` while unread);<br>- `actor` (`{id, name}`, or `null` for the system);<br>- `project` (`{id, code, name}`);<br>- `target` (`{type, id, code, name}`), where `type` is `note` (the thread; `code` is `""`, `name` is its subject), `task` or `version`;<br>- `record` (`{type, id, code}`, or `null`): what the target is about, for links. For a note, its first link. For a task, its shot, asset or sequence. For a version, its shot or asset;<br>- `data`: `from_status` and `to_status` for the status kinds, `error_code` for `review_media_failed`, otherwise `{}`.<br>Labels are read from the live records when the list is answered. A row is hidden, from the list and from the count, while its target is deleted or not in the caller's reach.<br>**`unread-count/`** answers `{"count": n}`.<br>**`read/` and `unread/`** answer 200 with the row.<br>**`read-all/`** takes an optional `before` (a date-time; default now), marks the caller's unread rows created at or before it as read, and answers `{"updated": n}`. |
+| C-RP-24 | Who is notified | Nothing is written. | Rows are written after the action commits, in the same process. A failure is logged as `notification_fanout_failed` and never changes the action's answer. The recipients are listed in [PLAN.md](PLAN.md#rp-6-notifications-in-app), "Who is notified". For each recipient: the target must be in their reach when the row is written; the actor gets nothing; one event gives a person at most one row (`note_mention` wins over the other kinds). New internal events: `TaskAssigned` (from every route that changes a task's assignee: create, `PATCH`/`PUT`, `bulk-assign/`, `bulk-create/` and `bulk-update/`) and `ReviewMediaFinished` (when a row becomes `ready` or `failed`). Rows older than `NOTIFICATIONS_RETENTION_DAYS` (default 90) are deleted daily. |
+| C-RP-25 | `POST notes/`, `POST notes/{note_id}/replies/`, `PATCH notes/{note_id}/` (project-scoped, as C-RP-07 to C-RP-12) and the note shape (C-RP-08) | No mentions. | Each route also takes `mention_ids`: a list of up to 20 user ids. A repeat is kept once. On `PATCH` the list replaces the note's mentions; a reply's `PATCH` takes `body` and `mention_ids`. Each person must be active and able to read the thread (`project.view` and whole-project access), or the answer is **400** `{"mention_ids": ["One of these people cannot be mentioned on this note."]}`, the same for an unknown id. A thread or reply that mentions people notifies them with `note_mention`. A `PATCH` notifies only the people it adds. The note shape gains `mentions`: a list of `{id, name}`, in the order written. |
+
+Details settled while building RP-6 (the owner is told in [rp-6-verification.md](rp-6-verification.md)):
+- **Routes the plan named wrongly.** There is no single `POST tasks/{id}/assign/`. The assignee is set by create, `PATCH`/`PUT`, `bulk-assign/`, `bulk-create/` and `bulk-update/`, all through `TaskService` (`create`, `update`, `assign_task`), which is the one place `TaskAssigned` is published. The model has no `thread_id`: a note row's `target_id` is its thread.
+- **The row shape:**
+  - A note row's `target` has `code` `""` and the thread's subject as `name`. Its `record` is the thread's first record (the note's `entity_*`), or `null` for a note on the project.
+  - A task's or version's `record` is the shot, asset or sequence its `entity_*` names, or `null`.
+  - A review movie row has no `actor` (the worker did it); it goes to the person who uploaded the movie.
+  - An unknown `unread`, `kind` or `project_id` value gives an empty list (200), not a 400. A `before` that is not a date and time is a 400 on `before`.
+- **Reach:**
+  - When reading, the check uses the request, so an API key's or token's scopes count. When writing, it uses the plain user.
+  - Narrowed members (show, department, client or vendor) see their own notes in the general scoping, but every notes route needs whole-project access (C-RP-10), so the inbox needs it too: such a member gets no note rows, even for a thread they wrote.
+  - The fan-out keeps active users only. The reach check also refuses inactive users, so the fan-out's own filter is a second guard (its mutation is equivalent).
+- **Mentions:**
+  - A reply that mentions someone and an edit that adds them to the thread are two actions, so the same person can get two `note_mention` rows on one thread.
+  - The frontend offers active members of the whole project only (no show, department, client or vendor). The server checks again.
+- **Frontend:** the header bell no longer lists this tab's toasts. Toasts are unchanged. The toast store's `markAsRead`, `markAllAsRead` and `clearNotification` had no other caller and were removed.

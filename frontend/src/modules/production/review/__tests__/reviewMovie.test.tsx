@@ -206,6 +206,26 @@ describe('the version page follows the job', () => {
     await waitFor(() => expect(screen.getByText('1280×720 · 24 fps · 48 frames · h264 · no sound')).toBeTruthy(), { timeout: 8000 });
     expect(within(panel()).queryByRole('status')).toBeNull();
   }, 12000);
+
+  it.each([
+    ['media', 'Media'],
+    ['spaceship', 'Overview'],
+  ])('`?tab=%s` opens the %s tab (a notification’s link, RP-6)', async (asked, label) => {
+    mockFetch(() => ({ status: 200, body: ready }));
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}>
+        <AuthContext.Provider value={{ user: admin, refreshUser: vi.fn() } as unknown as AuthContextValue}>
+          <MemoryRouter initialEntries={[`/versions/${ready.id}?tab=${asked}`]}>
+            <Routes>
+              <Route path="/versions/:versionId" element={<VersionWorkspace />} />
+            </Routes>
+          </MemoryRouter>
+        </AuthContext.Provider>
+      </QueryClientProvider>,
+    );
+    const tab = await screen.findByRole('tab', { name: label });
+    await waitFor(() => expect(tab.getAttribute('aria-selected')).toBe('true'));
+  });
 });
 
 describe('the review viewer plays the review copy', () => {

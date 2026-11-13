@@ -1,6 +1,6 @@
 # RP-5 Media pipeline: verification
 
-Branch `feature/rp-5-media-pipeline`, off `develop` at `8629ac83` (RP-4 merged and pushed). The plan and contracts are commit `cb1e5df3` (Q-RP-24 to Q-RP-31 answered as recommended). **Backend (WP 5.1 to 5.4), frontend (WP 5.5) and docs (WP 5.6) built, uncommitted.** Not pushed, not merged.
+Branch `feature/rp-5-media-pipeline`, off `develop` at `8629ac83` (RP-4 merged and pushed). The plan and contracts are commit `cb1e5df3` (Q-RP-24 to Q-RP-31 answered as recommended). **Backend (WP 5.1 to 5.4), frontend (WP 5.5) and docs (WP 5.6) built and committed** as `8e077684` (the `.dockerignore` fix) and `66827941` (RP-5). Merged into `develop` as `a946f666`, into `main` as `da717166`, and released as v4.6.0 (the fix alone as v4.5.1).
 
 ## 0. Read first
 

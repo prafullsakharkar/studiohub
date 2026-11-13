@@ -28,7 +28,12 @@ from apps.production.constants.permissions import NotePermissions, ProjectPermis
 from apps.production.permissions.checks import has_permission_code
 from apps.production.selectors.project_note import ProjectNoteSelector, ProjectNoteThreadSelector
 from apps.production.services.project_note import UNSET, ProjectNoteService
-from apps.production.validators.project_note import legacy_link, resolve_links, resolve_task
+from apps.production.validators.project_note import (
+    legacy_link,
+    resolve_links,
+    resolve_mentions,
+    resolve_task,
+)
 
 # What a new thread takes from the request; everything else is the server's (C-RP-07).
 CREATE_FIELDS = ("subject", "body", "category", "priority", "tags", "timecode_ref", "frame_number")
@@ -80,11 +85,13 @@ class ProjectNotesView(_NoteRoute):
         raw_links = legacy_link(data) + list(data.get("links") or [])
         links = resolve_links(raw_links, project=self.project, request=request)
         task = resolve_task(data.get("task_id"), project=self.project, request=request)
+        mentions = resolve_mentions(list(data.get("mention_ids") or []), project=self.project)
         note = ProjectNoteService.create_note(
             user=request.user,
             project=self.project,
             links=links,
             task=task,
+            mentions=mentions,
             **{name: data[name] for name in CREATE_FIELDS if name in data},
         )
         return self._answer(note, status=http_status.HTTP_201_CREATED)
@@ -118,8 +125,17 @@ class ProjectNoteDetailView(_NoteRoute):
         task = UNSET
         if "task_id" in data:
             task = resolve_task(data.pop("task_id"), project=self.project, request=request)
+        mentions = None
+        if "mention_ids" in data:
+            mentions = resolve_mentions(list(data.pop("mention_ids") or []), project=self.project)
         note = ProjectNoteService.update_note(
-            user=request.user, note=note, fields=data, links=links, task=task, may_update=may_update
+            user=request.user,
+            note=note,
+            fields=data,
+            links=links,
+            task=task,
+            mentions=mentions,
+            may_update=may_update,
         )
         return self._answer(note)
 
@@ -142,8 +158,11 @@ class ProjectNoteRepliesView(_NoteRoute):
         _note, thread = self._note(note_id)
         serializer = ProjectNoteReplySerializer(data=request.data or {})
         serializer.is_valid(raise_exception=True)
-        body = cast(dict[str, Any], serializer.validated_data)["body"]
-        reply = ProjectNoteService.reply(user=request.user, thread=thread, body=body)
+        data = cast(dict[str, Any], serializer.validated_data)
+        mentions = resolve_mentions(list(data.get("mention_ids") or []), project=self.project)
+        reply = ProjectNoteService.reply(
+            user=request.user, thread=thread, body=data["body"], mentions=mentions
+        )
         return self._answer(reply, status=http_status.HTTP_201_CREATED)
 
 

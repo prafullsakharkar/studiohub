@@ -182,6 +182,7 @@ export const PERMISSION_MAP: Readonly<Record<string, PermissionRule>> = {
   'page.dashboard': open('Dashboard data is scoped by the API.'),
   'page.account': open('My account acts on the caller\'s own record (profile, sessions, MFA, own credentials); anything wider is gated by the API.'),
   'page.workspace': open('Shell page.'),
+  'page.notifications': open('The inbox answers the caller\'s own rows only, each while its record is one they may open (C-RP-23).'),
   'page.projects': codes('ProjectViewSet.list', 'project.view'),
   'page.people': open(DIRECTORY_READ),
   'page.clients': codes(PARTNER_READ, 'masterdata.partner.view'),
@@ -197,7 +198,6 @@ export const PERMISSION_MAP: Readonly<Record<string, PermissionRule>> = {
   // --- Removed features ---
   'reports.view': unbacked(REMOVED),
   'page.reports': unbacked(REMOVED),
-  'page.notifications': unbacked(REMOVED),
   'page.data_platform': unbacked(REMOVED),
   'testing.view': unbacked('In-app QA runner removed in Phase 1.'),
 

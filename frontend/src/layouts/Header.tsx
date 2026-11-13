@@ -2,14 +2,10 @@ import { useAuth } from '@/modules/auth';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Menu,
-  Bell,
   Sun,
   Moon,
   LogOut,
-  CheckCircle2,
-  AlertCircle,
   Activity,
-  Layers,
   Search,
   Command,
   Film,
@@ -22,10 +18,9 @@ import {
   UserCircle,
 } from 'lucide-react';
 import { useCoachMarkStore } from '@/shared/stores/useCoachMarkStore';
-;
 import { useSidebarStore } from '@/shared/stores/useSidebarStore';
 import { useThemeMode } from '@/providers/ThemeProvider';
-import { useNotificationStore } from '@/shared/stores/useNotificationStore';
+import { NotificationBell } from '@/modules/notifications';
 import { KeyboardShortcutsModal } from '@/shared/components/KeyboardShortcutsModal';
 import { useKeyboardNavigation } from '@/shared/hooks/useKeyboardNavigation';
 import { evaluateRouteAccess } from '@/core/permissions/routePermissionsRegistry';
@@ -40,7 +35,6 @@ export const Header: React.FC = () => {
   const { user, can, logout } = useAuth();
   const { toggleMobile } = useSidebarStore();
   const { mode, resolvedMode, toggleTheme } = useThemeMode();
-  const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
   const { startTour } = useCoachMarkStore();
 
   // Strict superuser-only (spec §1): a `Platform Admin` role label alone
@@ -60,29 +54,21 @@ export const Header: React.FC = () => {
     can('platform.admin.view')
   );
 
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
-  const notificationsRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Handle click outside for dropdowns
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
-        setShowNotifications(false);
-      }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false);
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setShowNotifications(false);
         setShowUserMenu(false);
       }
     };
@@ -184,73 +170,8 @@ export const Header: React.FC = () => {
             {resolvedMode === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-500" />}
           </button>
 
-          {/* Notifications Dropdown */}
-          <div ref={notificationsRef} className="relative shrink-0">
-            <button
-              id="notifications-btn"
-              onClick={() => {
-                setShowNotifications(!showNotifications);
-                setShowUserMenu(false);
-              }}
-              className="relative p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
-              aria-label="Notifications"
-            >
-              <Bell className="w-4 h-4" />
-              {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-cyan-500 ring-2 ring-slate-900" />
-              )}
-            </button>
-
-            {showNotifications && (
-              <div className="absolute right-0 top-full mt-1.5 w-[calc(100vw-1.5rem)] max-w-sm sm:w-96 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95">
-                <div className="p-3 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">Production Alerts</span>
-                    {unreadCount > 0 && (
-                      <span className="px-1.5 py-0.2 text-[10px] font-bold bg-cyan-500/20 text-cyan-300 rounded-full border border-cyan-500/30">
-                        {unreadCount} new
-                      </span>
-                    )}
-                  </div>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllAsRead}
-                      className="text-[11px] text-cyan-400 hover:text-cyan-300 font-medium cursor-pointer"
-                    >
-                      Mark all read
-                    </button>
-                  )}
-                </div>
-
-                <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/60 custom-scrollbar">
-                  {notifications.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-slate-400">No notifications</div>
-                  ) : (
-                    notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        onClick={() => markAsRead(n.id)}
-                        className={`p-3 text-left transition-colors cursor-pointer hover:bg-slate-800/50 ${
-                          !n.read ? 'bg-cyan-950/20' : ''
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-xs font-semibold text-white flex items-center gap-1.5">
-                            {n.type === 'success' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
-                            {n.type === 'warning' && <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
-                            {n.type === 'info' && <Layers className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
-                            {n.title}
-                          </p>
-                          <span className="text-[10px] text-slate-500 whitespace-nowrap">{n.timestamp}</span>
-                        </div>
-                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">{n.message}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Notifications: the server's inbox (review pipeline RP-6) */}
+          <NotificationBell />
 
           {/* User Account Persona Menu */}
           <div ref={userMenuRef} className="relative shrink-0">
@@ -258,7 +179,6 @@ export const Header: React.FC = () => {
               id="user-menu-btn"
               onClick={() => {
                 setShowUserMenu(!showUserMenu);
-                setShowNotifications(false);
               }}
               className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-xl text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-colors cursor-pointer shrink-0"
               aria-label="User account menu"

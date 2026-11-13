@@ -7,7 +7,7 @@ from .playlist import Playlist
 from .playlist_entry import PlaylistEntry
 from .project import Project
 from .project_membership import ProjectMembership
-from .project_note import ProjectNote, ProjectNoteLink, ProjectNoteLinkType
+from .project_note import ProjectNote, ProjectNoteLink, ProjectNoteLinkType, ProjectNoteMention
 from .review import Review
 from .review_media import ReviewMedia
 from .review_parts import (
@@ -61,6 +61,7 @@ __all__ = [
     "ProjectNote",
     "ProjectNoteLink",
     "ProjectNoteLinkType",
+    "ProjectNoteMention",
     "Show",
     "StatusHistory",
 ]

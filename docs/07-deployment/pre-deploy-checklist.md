@@ -71,6 +71,11 @@ The compose template `infrastructure/compose/.env.example` carries every variabl
   5. Set `REVIEW_MEDIA_ENABLED=true` on the web, worker and `celery-media` containers. `REVIEW_MEDIA_LINK_TTL_SECONDS` (3600) and `REVIEW_MEDIA_CONCURRENCY` (1) are optional.
   6. Beat runs `production.sweep_review_media` every 10 minutes (already in `CELERY_BEAT_SCHEDULE`).
   7. Upload a short movie to a test version, and check it reaches `ready` and plays.
+- **Next release, review-pipeline RP-6 (in-app notifications; not yet released):** **two migrations**, both additive with no data step: `production` `0009_rp6_note_mentions` (creates `production_project_note_mention`) and `notifications` `0001_initial` (a new app; creates `notifications_notification`). Reversing either drops its table and its rows.
+  1. Deploy the backend and the frontend together: the header bell asks `GET /api/v1/notifications/unread-count/` every minute, and a backend without the app answers 404.
+  2. Run `manage.py migrate`. No new permission code, so `init_platform` is not needed for this entry.
+  3. Restart the general worker and beat: beat gains `notifications.purge` (daily at 04:10), which runs on the default queue. `NOTIFICATIONS_RETENTION_DAYS` (default 90) is optional.
+  4. Nothing is sent outside StudioHub (no e-mail). Rows are written after each action commits; a failure is logged as `notification_fanout_failed` and never fails the action.
 - **From 4.4.4 to 4.5.0, frontend only:** frontend phases 29 to 33 (workflow chart board, card view, media player, annotations and the review Overview tab, the compare screen) and the dashboard for members limited to a show, a department or a partner side need no backend step beyond the two entries above.
 - `manage.py makemigrations --check` must report no changes.
 

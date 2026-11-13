@@ -14,6 +14,7 @@ import { TaskPicker } from '@/modules/production/work/pickers';
 import { Badge } from '@/shared/components/Badge';
 import { FormDialog } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
+import { MentionPicker } from './MentionPicker';
 
 /** The record a Notes tab is on. It is always the note's first link and cannot be taken off here. */
 export interface NoteTarget {
@@ -78,6 +79,9 @@ export const NoteFormDialog: React.FC<NoteFormDialogProps> = ({ projectId, targe
   // An edit sends links and the task only when changed: a record archived since would otherwise refuse the save.
   const [linksTouched, setLinksTouched] = useState(false);
   const [taskTouched, setTaskTouched] = useState(false);
+  // RP-6 (C-RP-25): an edit sends the mentions only when changed; the server notifies only the people added.
+  const [mentions, setMentions] = useState<string[]>((note?.mentions ?? []).map((m) => m.id));
+  const [mentionsTouched, setMentionsTouched] = useState(false);
   const {
     register,
     submit,
@@ -98,9 +102,9 @@ export const NoteFormDialog: React.FC<NoteFormDialogProps> = ({ projectId, targe
     const links = linksToSend(target, picked, initial.others);
     const text = { subject: values.subject, body: values.body, category: values.category };
     if (note) {
-      await onSave({ ...text, ...(linksTouched ? { links } : {}), ...(taskTouched ? { task_id: taskId } : {}) });
+      await onSave({ ...text, ...(linksTouched ? { links } : {}), ...(taskTouched ? { task_id: taskId } : {}), ...(mentionsTouched ? { mention_ids: mentions } : {}) });
     } else {
-      await onSave({ ...text, links, ...(taskId ? { task_id: taskId } : {}) });
+      await onSave({ ...text, links, ...(taskId ? { task_id: taskId } : {}), ...(mentions.length ? { mention_ids: mentions } : {}) });
     }
     onClose();
   });
@@ -111,7 +115,7 @@ export const NoteFormDialog: React.FC<NoteFormDialogProps> = ({ projectId, targe
       onClose={onClose}
       onSubmit={onSubmit}
       isSubmitting={isSubmitting}
-      isDirty={isDirty || linksTouched || taskTouched}
+      isDirty={isDirty || linksTouched || taskTouched || mentionsTouched}
       serverError={serverError}
       submitLabel={note ? 'Save' : 'Add note'}
     >
@@ -176,6 +180,15 @@ export const NoteFormDialog: React.FC<NoteFormDialogProps> = ({ projectId, targe
           setTaskId(id);
         }}
         filters={projectFilter}
+      />
+      <MentionPicker
+        projectId={projectId}
+        value={mentions}
+        known={note?.mentions}
+        onChange={(ids) => {
+          setMentionsTouched(true);
+          setMentions(ids);
+        }}
       />
     </FormDialog>
   );
