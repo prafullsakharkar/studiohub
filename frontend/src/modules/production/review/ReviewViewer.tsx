@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Layers, SplitSquareVertical } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { reviewsApi, versionsApi } from '@/api/production/review';
+import { reviewMediaRefetchInterval, reviewsApi, versionPlayback, versionsApi } from '@/api/production/review';
 import type { Review } from '@/api/production/review';
 import { useCan } from '@/core/permissions/useCan';
 import { Button } from '@/shared/components/Button';
@@ -57,12 +57,15 @@ export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | nul
   const others = versions.filter((v) => v.id !== current?.id);
   const other = others.find((v) => v.id === otherId) ?? others[0];
   const comparing = compareMode !== null && Boolean(other);
-  const query = useQuery({ queryKey: [...versionsApi.keys.detail(current?.id ?? ''), 'for-viewer'], queryFn: ({ signal }) => versionsApi.get((current as { id: string }).id, signal), enabled: Boolean(current) });
+  // The server's review copy plays when there is one (RP-5); its signed links are fetched again before they expire.
+  const query = useQuery({ queryKey: [...versionsApi.keys.detail(current?.id ?? ''), 'for-viewer'], queryFn: ({ signal }) => versionsApi.get((current as { id: string }).id, signal), enabled: Boolean(current), refetchInterval: (q) => reviewMediaRefetchInterval([q.state.data]) });
   const version = query.data;
-  const otherQuery = useQuery({ queryKey: [...versionsApi.keys.detail(other?.id ?? ''), 'for-viewer'], queryFn: ({ signal }) => versionsApi.get((other as { id: string }).id, signal), enabled: comparing });
+  const otherQuery = useQuery({ queryKey: [...versionsApi.keys.detail(other?.id ?? ''), 'for-viewer'], queryFn: ({ signal }) => versionsApi.get((other as { id: string }).id, signal), enabled: comparing, refetchInterval: (q) => reviewMediaRefetchInterval([q.state.data]) });
   const otherVersion = otherQuery.data;
+  const shown = versionPlayback(version);
+  const otherShown = versionPlayback(otherVersion);
   const startFrame = version?.start_frame ?? 1;
-  const fps = toFps(version?.fps);
+  const fps = toFps(shown.fps);
   const closed = review.status === 'Closed';
 
   // A comment or annotation on another version of the review is not this picture's; one on the whole review is everyone's.
@@ -121,10 +124,10 @@ export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | nul
             <p className="rounded-lg border border-slate-800 p-6 text-xs text-slate-500">Loading {comparing && other ? `${current.code} and ${other.code}` : current.code}…</p>
           ) : comparing && other ? (
             <MediaCompare
-              key={`${current.id}|${other.id}|${compareMode}`}
+              key={`${current.id}|${other.id}|${compareMode}|${shown.src ?? shown.poster ?? ''}|${otherShown.src ?? otherShown.poster ?? ''}`}
               label={`${current.code} against ${other.code}`}
-              a={{ id: current.id, label: current.code, src: version?.video_url, poster: version?.thumbnail_url }}
-              b={{ id: other.id, label: other.code, src: otherVersion?.video_url, poster: otherVersion?.thumbnail_url }}
+              a={{ id: current.id, label: current.code, src: shown.src, poster: shown.poster }}
+              b={{ id: other.id, label: other.code, src: otherShown.src, poster: otherShown.poster }}
               choices={versions.map((v) => ({ id: v.id, label: v.code }))}
               onPick={(side, id) => (side === 'a' ? setPicked(id) : setOtherId(id))}
               initialMode={compareMode === 'side' ? 'side' : 'wipe'}
@@ -134,11 +137,11 @@ export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | nul
             />
           ) : (
             <MediaPlayer
-              key={current.id}
+              key={`${current.id}|${shown.src ?? shown.poster ?? ''}`}
               ref={player}
               label={`${current.code} in review`}
-              src={version?.video_url}
-              poster={version?.thumbnail_url}
+              src={shown.src}
+              poster={shown.poster}
               fps={fps}
               startFrame={startFrame}
               markers={markers}

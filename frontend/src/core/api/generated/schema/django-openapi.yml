@@ -20403,6 +20403,80 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/review-media/{id}/:
+    delete:
+      operationId: v1_review_media_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/review-media/{id}/{output}/:
+    get:
+      operationId: v1_review_media_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: output
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/review-media/{id}/retry/:
+    post:
+      operationId: v1_review_media_retry_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewMedia'
+          description: ''
   /api/v1/reviews/:
     get:
       operationId: v1_reviews_list
@@ -32894,6 +32968,103 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VersionList'
+          description: ''
+  /api/v1/versions/{uuid}/review-media/:
+    get:
+      operationId: v1_versions_review_media_list
+      description: Every review media row of the version, newest first.
+      parameters:
+      - in: query
+        name: department
+        schema:
+          type: string
+      - in: query
+        name: entity_id
+        schema:
+          type: string
+      - in: query
+        name: entity_type
+        schema:
+          type: string
+      - in: query
+        name: is_archived
+        schema:
+          type: boolean
+      - in: query
+        name: is_published
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: query
+        name: project
+        schema:
+          type: string
+      - in: query
+        name: project_id
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: path
+        name: uuid
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewMedia'
+          description: ''
+    post:
+      operationId: v1_versions_review_media_create
+      description: Upload a review movie or still; the media worker processes it (202).
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewMediaUpload'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewMedia'
           description: ''
   /api/v1/versions/{uuid}/status-history/:
     get:
@@ -56300,6 +56471,182 @@ components:
       - updated_at
       - uuid
       - versions
+    ReviewMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        version_id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          enum:
+          - movie
+          - still
+          type: string
+          description: |-
+            * `movie` - Movie
+            * `still` - Still
+          x-spec-enum-id: de35a18994dece15
+          readOnly: true
+        status:
+          enum:
+          - queued
+          - processing
+          - ready
+          - failed
+          - superseded
+          - removed
+          type: string
+          description: |-
+            * `queued` - Queued
+            * `processing` - Processing
+            * `ready` - Ready
+            * `failed` - Failed
+            * `superseded` - Superseded
+            * `removed` - Removed
+          x-spec-enum-id: 3a403a610bd905b8
+          readOnly: true
+        source_name:
+          type: string
+          readOnly: true
+        source_size:
+          type: integer
+          readOnly: true
+        probe:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMediaProbe'
+          nullable: true
+          readOnly: true
+        error_code:
+          enum:
+          - probe_failed
+          - unsupported_stream
+          - transcode_failed
+          - timeout
+          - source_missing
+          type: string
+          description: |-
+            * `probe_failed` - The file could not be read.
+            * `unsupported_stream` - The file has no picture the server can use.
+            * `transcode_failed` - The review copy could not be made.
+            * `timeout` - Processing took too long and was stopped.
+            * `source_missing` - The uploaded file is no longer on the server.
+          x-spec-enum-id: 6f788d7c97d53878
+          readOnly: true
+        error_message:
+          type: string
+          readOnly: true
+        attempts:
+          type: integer
+          readOnly: true
+        queued_at:
+          type: string
+          format: date-time
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_by:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMediaUser'
+          nullable: true
+          readOnly: true
+        proxy_url:
+          type: string
+          nullable: true
+          readOnly: true
+        thumbnail_url:
+          type: string
+          nullable: true
+          readOnly: true
+        filmstrip_url:
+          type: string
+          nullable: true
+          readOnly: true
+        filmstrip_tiles:
+          type: integer
+          readOnly: true
+        links_expire_at:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+      required:
+      - attempts
+      - created_by
+      - error_code
+      - error_message
+      - filmstrip_tiles
+      - filmstrip_url
+      - finished_at
+      - id
+      - kind
+      - links_expire_at
+      - probe
+      - proxy_url
+      - queued_at
+      - source_name
+      - source_size
+      - started_at
+      - status
+      - thumbnail_url
+      - version_id
+    ReviewMediaProbe:
+      type: object
+      properties:
+        width:
+          type: integer
+        height:
+          type: integer
+        fps:
+          type: number
+          format: double
+        frames:
+          type: integer
+        duration_seconds:
+          type: number
+          format: double
+        video_codec:
+          type: string
+        has_audio:
+          type: boolean
+      required:
+      - duration_seconds
+      - fps
+      - frames
+      - has_audio
+      - height
+      - video_codec
+      - width
+    ReviewMediaUpload:
+      type: object
+      properties:
+        file:
+          type: string
+      required:
+      - file
+    ReviewMediaUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+      - id
+      - name
     ReviewNote:
       type: object
       description: Rejects keys the serializer does not declare.
@@ -62060,6 +62407,16 @@ components:
           type: string
         tags: {}
         publishing_info: {}
+        review_media:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMedia'
+          nullable: true
+          readOnly: true
+        review_media_job:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMedia'
+          nullable: true
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -62081,6 +62438,8 @@ components:
       - project_code
       - project_id
       - published_by_id
+      - review_media
+      - review_media_job
       - shot_id
       - task_id
       - updated_at
@@ -62241,6 +62600,16 @@ components:
           type: string
         tags: {}
         publishing_info: {}
+        review_media:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMedia'
+          nullable: true
+          readOnly: true
+        review_media_job:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMedia'
+          nullable: true
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -62262,6 +62631,8 @@ components:
       - project_code
       - project_id
       - published_by_id
+      - review_media
+      - review_media_job
       - shot_id
       - task_id
       - updated_at

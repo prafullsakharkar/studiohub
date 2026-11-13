@@ -1,5 +1,6 @@
 import { Image as ImageIcon } from 'lucide-react';
 import type React from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SmartImg } from '@/components/ui/SmartImg';
 import type { CardContext } from './types';
@@ -18,8 +19,11 @@ interface ListCardProps {
   ctx: CardContext;
   title: React.ReactNode;
   subtitle?: React.ReactNode;
-  /** A picture; without it the top is an information band (a delivery or an export job has no picture). */
-  image?: { src?: string | null; alt: string };
+  /**
+   * A picture; without it the top is an information band (a delivery or an export job has no picture). `strip` is a
+   * filmstrip (one image of `tiles` frames side by side): moving the pointer across the picture scrubs it.
+   */
+  image?: { src?: string | null; alt: string; strip?: { src: string; tiles: number } };
   band?: React.ReactNode;
   topLeft?: React.ReactNode;
   topRight?: React.ReactNode;
@@ -31,6 +35,32 @@ interface ListCardProps {
   footerLeft?: React.ReactNode;
 }
 
+/** The filmstrip frame under the pointer, laid over the picture while the pointer is on it. */
+const FilmstripScrub: React.FC<{ src: string; tiles: number }> = ({ src, tiles }) => {
+  const [at, setAt] = useState<number | null>(null);
+  const count = Math.max(1, Math.floor(tiles));
+  return (
+    <div
+      data-testid="filmstrip-scrub"
+      className="absolute inset-0"
+      onPointerMove={(e) => {
+        const box = e.currentTarget.getBoundingClientRect();
+        const share = box.width > 0 ? (e.clientX - box.left) / box.width : 0;
+        setAt(Math.min(count - 1, Math.max(0, Math.floor(share * count))));
+      }}
+      onPointerLeave={() => setAt(null)}
+    >
+      {at !== null && (
+        <div
+          aria-hidden
+          className="h-full w-full bg-no-repeat"
+          style={{ backgroundImage: `url("${src}")`, backgroundSize: `${count * 100}% 100%`, backgroundPosition: count > 1 ? `${(at / (count - 1)) * 100}% 0` : '0 0' }}
+        />
+      )}
+    </div>
+  );
+};
+
 /**
  * The card the list screens share (the former Version, Review, Media, Delivery and Publish cards): a picture or
  * band with badges laid over it, a title and facts, and a footer with the same Edit / Delete / actions as the
@@ -40,7 +70,10 @@ export const ListCard: React.FC<ListCardProps> = ({ ctx, title, subtitle, image,
   const top = (
     <div className="relative aspect-video w-full overflow-hidden border-b border-slate-800/80 bg-slate-950">
       {image ? (
-        <SmartImg src={image.src} alt={image.alt} className="h-full w-full object-cover opacity-90 transition duration-300 group-hover:scale-105 group-hover:opacity-100" />
+        <>
+          <SmartImg src={image.src} alt={image.alt} className="h-full w-full object-cover opacity-90 transition duration-300 group-hover:scale-105 group-hover:opacity-100" />
+          {image.strip && <FilmstripScrub src={image.strip.src} tiles={image.strip.tiles} />}
+        </>
       ) : (
         <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-slate-700">{band ?? <ImageIcon className="h-10 w-10" aria-hidden />}</div>
       )}

@@ -1,4 +1,6 @@
+from django.conf import settings
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -10,6 +12,10 @@ from apps.production.api.serializers.actions import (
     PublishVersionSerializer,
     validated,
 )
+from apps.production.api.serializers.review_media import (
+    ReviewMediaSerializer,
+    ReviewMediaUploadSerializer,
+)
 from apps.production.api.serializers.version.create import VersionCreateSerializer
 from apps.production.api.serializers.version.detail import VersionDetailSerializer
 from apps.production.api.serializers.version.list import VersionListSerializer
@@ -17,15 +23,18 @@ from apps.production.api.serializers.version.update import VersionUpdateSerializ
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.api.viewsets.status_history import StatusHistoryMixin
 from apps.production.constants.permissions import PlaylistPermissions, VersionPermissions
+from apps.production.exceptions import ReviewMediaDisabled
 from apps.production.models import Asset, Playlist, Shot, Task
-from apps.production.selectors.version import VersionSelector
+from apps.production.selectors.review_media import ReviewMediaSelector
+from apps.production.selectors.version import VersionReadSelector
 from apps.production.services.playlist import PlaylistService
+from apps.production.services.review_media import ReviewMediaService
 from apps.production.services.version import VersionService
 from apps.production.validators.references import require_project_member, resolve_in_project
 
 
 class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
-    selector_class = VersionSelector
+    selector_class = VersionReadSelector
     service_class = VersionService
     pagination_class = StandardPagination
     filterset_class = VersionFilterSet
@@ -52,6 +61,8 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
         "add_to_playlist": (VersionPermissions.UPDATE, PlaylistPermissions.UPDATE),
         "archived": (VersionPermissions.VIEW,),
         "restore": (VersionPermissions.UPDATE,),
+        "review_media": (VersionPermissions.VIEW,),
+        "upload_review_media": (VersionPermissions.UPDATE,),
     }
 
     search_fields = ("code", "version_number", "entity_code")
@@ -120,13 +131,17 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
         instance = self.get_object()
         info = validated(PublishVersionSerializer, request.data)["publishing_info"]
         instance = VersionService.publish_version(actor=request.user, version=instance, info=info)
-        return Response(VersionDetailSerializer(instance).data)
+        return Response(
+            VersionDetailSerializer(instance, context=self.get_serializer_context()).data
+        )
 
     @action(detail=True, methods=["post"], url_path="unpublish")
     def unpublish(self, request, *args, **kwargs):
         instance = self.get_object()
         instance = VersionService.unpublish_version(actor=request.user, version=instance)
-        return Response(VersionDetailSerializer(instance).data)
+        return Response(
+            VersionDetailSerializer(instance, context=self.get_serializer_context()).data
+        )
 
     @extend_schema(request=PromoteVersionSerializer)
     @action(detail=True, methods=["post"], url_path="promote")
@@ -138,7 +153,9 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
             version=instance,
             **self.status_kwargs(body.get("override_reason")),
         )
-        return Response(VersionDetailSerializer(instance).data)
+        return Response(
+            VersionDetailSerializer(instance, context=self.get_serializer_context()).data
+        )
 
     @extend_schema(request=AddToPlaylistSerializer)
     @action(detail=True, methods=["post"], url_path="add-to-playlist")
@@ -156,4 +173,34 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
         # The playlist entry is the only record (C-RP-02); the version's ``playlists`` JSON is no longer written.
         if playlist is not None:
             PlaylistService.add_entry(user=request.user, playlist=playlist, version_ref=instance.id)
-        return Response(VersionDetailSerializer(instance).data)
+        return Response(
+            VersionDetailSerializer(instance, context=self.get_serializer_context()).data
+        )
+
+    # ------------------------------------------------------------------ review media (C-RP-19)
+
+    @extend_schema(responses=ReviewMediaSerializer(many=True))
+    @action(detail=True, methods=["get"], url_path="review-media", pagination_class=None)
+    def review_media(self, request, *args, **kwargs):
+        """Every review media row of the version, newest first."""
+        version = self.get_object()
+        rows = ReviewMediaSelector.for_version(version)
+        return Response(ReviewMediaSerializer(rows, many=True, context={"request": request}).data)
+
+    @extend_schema(
+        request={"multipart/form-data": ReviewMediaUploadSerializer},
+        responses={202: ReviewMediaSerializer},
+    )
+    @review_media.mapping.post
+    def upload_review_media(self, request, *args, **kwargs):
+        """Upload a review movie or still; the media worker processes it (202)."""
+        if not settings.REVIEW_MEDIA_ENABLED:
+            raise ReviewMediaDisabled()  # before the body is read
+        version = self.get_object()
+        body = ReviewMediaUploadSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        row = ReviewMediaService.upload(
+            actor=request.user, version=version, upload=body.validated_data["file"]
+        )
+        data = ReviewMediaSerializer(row, context={"request": request}).data
+        return Response(data, status=status.HTTP_202_ACCEPTED)

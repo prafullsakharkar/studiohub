@@ -35,3 +35,17 @@ class StatusConflict(ConflictException):
 
     default_detail = "The record already has this status."
     default_code = "status_conflict"
+
+
+class ReviewMediaDisabled(ConflictException):
+    """Review media is switched off on this deployment (409, review-pipeline RP-5)."""
+
+    default_detail = "Review media uploads are not switched on for this studio."
+    default_code = "review_media_disabled"
+
+
+class ReviewMediaBusy(ConflictException):
+    """The version already has an upload being processed (409, review-pipeline RP-5)."""
+
+    default_detail = "This version already has an upload being processed. Wait for it to finish."
+    default_code = "review_media_busy"

@@ -65,6 +65,7 @@ const STATUS_TONE: Record<string, Tone> = {
   // being worked on now
   'in progress': 'running', progress: 'running', started: 'running', validating: 'running', exporting: 'running',
   'in review': 'running', running: 'running', wip: 'running', booked: 'running', scheduled: 'running',
+  processing: 'running',
   // prepared, waiting for the next step
   ready: 'ready', validated: 'ready',
   // a note answered and waiting for its author to close it (review-pipeline RP-2)
@@ -81,6 +82,8 @@ const STATUS_TONE: Record<string, Tone> = {
   'not started': 'idle', draft: 'idle', archived: 'idle', closed: 'idle', inactive: 'idle', disabled: 'idle',
   blocked: 'idle', cancelled: 'idle', expired: 'idle', terminated: 'idle', unavailable: 'idle', muted: 'idle',
   paused: 'idle', declared: 'idle', 'not checked': 'idle',
+  // a review movie replaced by a newer one, or taken off its version (review-pipeline RP-5)
+  superseded: 'idle', removed: 'idle',
   omitted: 'omitted',
   // production stages with a colour of their own
   bidding: 'bidding',

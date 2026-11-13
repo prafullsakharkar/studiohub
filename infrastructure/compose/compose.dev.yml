@@ -68,6 +68,31 @@ services:
     networks:
       - backend
 
+  # Review media worker (review-pipeline RP-5): ffmpeg is in the `worker` target. The source mount
+  # holds MEDIA_ROOT (backend/media), so it sees the uploads the django service stores.
+  celery-media:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/django/Dockerfile
+      target: worker
+
+    command: /start-celery-media.sh
+
+    env_file:
+      - ../../backend/.env.local
+
+    volumes:
+      - ../../backend:/app
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - backend
+
   celery-beat:
     build:
       context: ../..

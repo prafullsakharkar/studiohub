@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import type React from 'react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { playlistsApi, versionsApi } from '@/api/production/review';
+import { playlistsApi, reviewMediaRefetchInterval, versionPlayback, versionsApi } from '@/api/production/review';
 import type { Version } from '@/api/production/review';
 import { publishApi } from '@/api/publishing/publishing';
 import { formatDateTime } from '@/core/locale/studioLocale';
@@ -101,6 +101,7 @@ export const VersionCompareTab: React.FC<{ version: Version }> = ({ version }) =
     queryKey: [...versionsApi.keys.all, 'to-compare', version.id],
     queryFn: ({ signal }) => fetchAllRows(versionsApi.list, { project_id: version.project_id, entity_type: version.entity_type }, { signal }),
     select: (rows) => rows.filter((v) => v.entity_id === version.entity_id && v.id !== version.id).sort((a, b) => b.created_at.localeCompare(a.created_at)),
+    refetchInterval: (q) => reviewMediaRefetchInterval((q.state.data ?? []).filter((v) => v.entity_id === version.entity_id)),
   });
   if (others.isLoading) return <p className="text-xs text-slate-500">Loading…</p>;
   const choices = others.data ?? [];
@@ -109,16 +110,21 @@ export const VersionCompareTab: React.FC<{ version: Version }> = ({ version }) =
   const find = (id: string | undefined, fallback: Version) => all.find((v) => v.id === id) ?? fallback;
   const a = find(picked?.a, version);
   const b = find(picked?.b, choices[0]);
-  const source = (v: Version) => ({ id: v.id, label: v.code, src: v.video_url, poster: v.thumbnail_url });
+  const source = (v: Version) => {
+    const shown = versionPlayback(v);
+    return { id: v.id, label: v.code, src: shown.src, poster: shown.poster };
+  };
+  const sa = source(a);
+  const sb = source(b);
   return (
     <MediaCompare
-      key={`${a.id}|${b.id}`}
+      key={`${a.id}|${b.id}|${sa.src ?? sa.poster ?? ''}|${sb.src ?? sb.poster ?? ''}`}
       label={`${a.code} against ${b.code}`}
-      a={source(a)}
-      b={source(b)}
+      a={sa}
+      b={sb}
       choices={all.map((v) => ({ id: v.id, label: `${v.version_number ? `${v.version_number} · ` : ''}${v.code} · ${v.status}` }))}
       onPick={(side, id) => setPicked({ a: side === 'a' ? id : a.id, b: side === 'b' ? id : b.id })}
-      fps={toFps(a.fps)}
+      fps={toFps(versionPlayback(a).fps)}
       startFrame={a.start_frame ?? 1}
     />
   );
