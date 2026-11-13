@@ -44,7 +44,7 @@ export const VersionMediaTab: React.FC<{ version: Version }> = ({ version }) => 
   return (
     <div className="space-y-4">
       <ReviewMoviePanel version={version} />
-      <MediaPlayer key={`${chosen ?? 'own'}|${own ? (src ?? poster ?? '') : ''}`} label={label} src={src} poster={poster} fps={fps} startFrame={own ? (version.start_frame ?? 1) : 1} />
+      <MediaPlayer key={chosen ?? 'own'} label={label} src={src} poster={poster} sourceId={own ? playback.sourceId : undefined} fps={fps} startFrame={own ? (version.start_frame ?? 1) : 1} />
       <dl aria-label="Preview details" className="grid gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-6">
         <Fact label="Resolution">{own ? version.resolution || (probe ? `${probe.width}×${probe.height}` : '') : item.resolution}</Fact>
         <Fact label="Frame rate">{String(fps)}</Fact>

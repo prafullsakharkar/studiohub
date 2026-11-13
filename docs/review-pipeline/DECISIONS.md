@@ -87,7 +87,7 @@ The owner took every recommendation of [PLAN.md, RP-10 questions](PLAN.md#questi
 | ID | Answer | What it means |
 |---|---|---|
 | Q-RP-41 | **A** | Upload, retry and remove of a review movie: holders of `version.update`, plus the version's artist when they hold `version.create`. No new code (C-RP-26). |
-| Q-RP-42 | **A** | Notes stay out of the change log. The RP-2 follow-up is closed. |
+| Q-RP-42 | **A** | Notes stay out of the change log. The RP-2 follow-up is closed. Why: the change log is read with `audit.view`, which members narrowed to a show, a department, a client or a vendor can hold, while every notes route needs whole-project access (C-RP-10); a note's subject in the log would reach readers the notes routes refuse. A note's history stays its own fields (`addressed_by`, `addressed_at`, edits in place). |
 | Q-RP-43 | **A** | The live harness processes queued review media itself, in-process, with the host's ffmpeg. |
 | Q-RP-44 | **A** | A renewed link keeps the player's place: players are keyed by the review-media row, and the source is swapped. |
 | Q-RP-45 | **A** | The notes views name their serializers for the OpenAPI schema (C-RP-27). |
@@ -105,6 +105,6 @@ The owner took every recommendation of [PLAN.md, RP-10 questions](PLAN.md#questi
 | RP-7 Share links | **dropped** (Q-RP-8 = B) |
 | RP-8 Live review | not planned (Q-RP-9 = B) |
 | RP-9 DCC integrations | separate repository (Q-RP-10 = B) |
-| RP-10 Loose ends of RP-5 and RP-6 | planned in [PLAN.md](PLAN.md#rp-10-loose-ends-of-rp-5-and-rp-6); answered (Q-RP-41 to Q-RP-45 = A), being built on `feature/rp-10-loose-ends` |
+| RP-10 Loose ends of RP-5 and RP-6 | planned in [PLAN.md](PLAN.md#rp-10-loose-ends-of-rp-5-and-rp-6); answered (Q-RP-41 to Q-RP-45 = A), built on `feature/rp-10-loose-ends` ([rp-10-verification.md](rp-10-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.

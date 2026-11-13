@@ -71,6 +71,9 @@ The compose template `infrastructure/compose/.env.example` carries every variabl
   5. Set `REVIEW_MEDIA_ENABLED=true` on the web, worker and `celery-media` containers. `REVIEW_MEDIA_LINK_TTL_SECONDS` (3600) and `REVIEW_MEDIA_CONCURRENCY` (1) are optional.
   6. Beat runs `production.sweep_review_media` every 10 minutes (already in `CELERY_BEAT_SCHEDULE`).
   7. Upload a short movie to a test version, and check it reaches `ready` and plays.
+- **Next release (not yet released), review-pipeline RP-10 (loose ends of RP-5 and RP-6):** no migration, no new permission code, no new setting.
+  1. Deploy the backend and the frontend together. **Who may upload changes** (C-RP-26): besides holders of `version.update`, a version's artist who holds `version.create` (the seeded `artist` role does) may now upload, retry and remove the review movie of their own version. Tell artists; nothing to grant.
+  2. Version lists now refresh while a review movie is being made and a minute before its links expire, so expect a version-list request every few seconds per open list while a job runs.
 - **From 4.6.0 to 4.7.0, review-pipeline RP-6 (in-app notifications):** **two migrations**, both additive with no data step: `production` `0009_rp6_note_mentions` (creates `production_project_note_mention`) and `notifications` `0001_initial` (a new app; creates `notifications_notification`). Reversing either drops its table and its rows.
   1. Deploy the backend and the frontend together: the header bell asks `GET /api/v1/notifications/unread-count/` every minute, and a backend without the app answers 404.
   2. Run `manage.py migrate`. No new permission code, so `init_platform` is not needed for this entry.

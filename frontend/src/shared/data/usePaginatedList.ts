@@ -15,6 +15,8 @@ export interface UsePaginatedListOptions<T> {
   searchDebounceMs?: number;
   enabled?: boolean;
   staleTime?: number;
+  /** Refetch the page after this many ms (or not, with `false`), decided from the rows on screen. */
+  refetchInterval?: (rows: T[]) => number | false;
 }
 
 export type SortDirection = 'asc' | 'desc';
@@ -36,6 +38,7 @@ export function usePaginatedList<T>({
   searchDebounceMs = 300,
   enabled = true,
   staleTime = 30_000,
+  refetchInterval,
 }: UsePaginatedListOptions<T>) {
   const [pageSize, setPageSizeState] = useState(initialPageSize);
   const [search, setSearchState] = useState('');
@@ -68,6 +71,7 @@ export function usePaginatedList<T>({
     placeholderData: keepPreviousData,
     enabled,
     staleTime,
+    refetchInterval: refetchInterval ? (q) => refetchInterval(q.state.data?.results ?? []) : undefined,
     // A 404 is "page out of range", handled below; do not retry it.
     retry: (failureCount, error) => mapHttpError(error).status >= 500 && failureCount < 2,
   });

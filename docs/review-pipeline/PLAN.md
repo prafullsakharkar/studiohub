@@ -511,7 +511,7 @@ The same as RP-5 without the Docker checks: `ruff check`, `manage.py check`, `ba
 
 ## RP-10 Loose ends of RP-5 and RP-6
 
-**Status:** planned 2026-11-13; approved the same day with every recommendation (Q-RP-41 to Q-RP-45 = A, [DECISIONS.md](DECISIONS.md#rp-10-answers)). Contracts C-RP-26 and C-RP-27; WP 10.1 to 10.3 and 10.6 change no API. Branch `feature/rp-10-loose-ends`, off `develop` at `e5346727` (RP-1 to RP-6 merged and pushed). The owner chose this over RP-8 (live review), media depth and notification depth. Phase numbers are not reused, so RP-7 to RP-9 stay as decided.
+**Status:** planned 2026-11-13; approved the same day with every recommendation (Q-RP-41 to Q-RP-45 = A, [DECISIONS.md](DECISIONS.md#rp-10-answers)). Contracts C-RP-26 and C-RP-27; WP 10.1 to 10.3 and 10.6 change no API. Branch `feature/rp-10-loose-ends`, off `develop` at `e5346727` (RP-1 to RP-6 merged and pushed). **Built** (WP 10.1 to 10.8), not yet committed: [rp-10-verification.md](rp-10-verification.md). WP 10.1 leaves out `EntityVersionsTab`, which shows no pictures (CONTRACTS, "Details settled while building RP-10"). The owner chose this over RP-8 (live review), media depth and notification depth. Phase numbers are not reused, so RP-7 to RP-9 stay as decided.
 
 **Goal.** Close what the RP-2, RP-5 and RP-6 reports left open, without reversing a decision. Each item is small. None adds a model, a migration, a setting or a permission code (unless Q-RP-41 = B).
 

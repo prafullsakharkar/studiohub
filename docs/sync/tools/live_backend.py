@@ -20,6 +20,11 @@ It seeds (each exercises a different backend rule):
   supervisor holds the seeded `vfx-supervisor` role, no MFA (Phase 7: decides reviews)
   audit    a queued and a failed background job and an open error log (Phase 4)
   roles    `live-escalation` (grants project.delete, held by nobody), `live-viewer` (grants shot.view) and `live-delegate` (grants identity.role.update/view + identity.user.view)
+
+With SYNC_LIVE_MEDIA=1 (review-pipeline RP-10, WP 10.6) review movies work too: REVIEW_MEDIA_ENABLED is on, files go to
+a temporary MEDIA_ROOT, and instead of a Celery worker a thread here processes each queued row by calling the worker's
+own function (ReviewMediaService.process) with the host's ffmpeg. live.json then names a two-second test movie
+("media": {"movie": path}). The harness only: nothing else runs review media without a worker.
 Writes the connection details to $SYNC_LIVE_INFO, then keeps serving
 until $SYNC_LIVE_STOP exists (or 20 minutes pass; $SYNC_LIVE_MINUTES changes that).
 
@@ -33,6 +38,9 @@ from __future__ import annotations
 
 import json
 import os
+import queue
+import subprocess
+import threading
 import time
 from pathlib import Path
 
@@ -56,12 +64,47 @@ PASSWORDS = {
 }
 
 
+def _media_worker(settings, monkeypatch, tmp_path) -> dict:
+    """SYNC_LIVE_MEDIA=1: review media on, and a thread in place of the media worker. Returns what live.json shows."""
+    from django.db import connection as thread_connection
+
+    from apps.production.services import review_media as service_module
+    from apps.production.services.review_media import ReviewMediaService
+
+    settings.MEDIA_ROOT = str(tmp_path / "media")
+    settings.MEDIA_ACCEL_PREFIX = ""
+    settings.REVIEW_MEDIA_ENABLED = True
+    jobs: queue.Queue[str] = queue.Queue()
+    # The upload's on_commit hook hands the row to the thread instead of Celery.
+    monkeypatch.setattr(service_module, "enqueue", lambda media_id: jobs.put(str(media_id)))
+
+    def work() -> None:
+        while True:
+            media_id = jobs.get()
+            try:
+                ReviewMediaService.process(media_id)
+            except Exception as exc:  # the worker logs and marks the row; the harness keeps serving
+                print(f"LIVE_MEDIA_ERROR {media_id}: {exc!r}", flush=True)
+            finally:
+                thread_connection.close()
+
+    threading.Thread(target=work, name="live-media-worker", daemon=True).start()
+    movie = tmp_path / "live_movie.mov"
+    subprocess.run(
+        ["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=640x360:rate=24", "-frames:v", "48",
+         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-y", str(movie)],
+        check=True,
+    )  # fmt: skip
+    return {"movie": str(movie)}
+
+
 @pytest.mark.django_db(transaction=True)
-def test_serve(live_server, django_user_model):
+def test_serve(live_server, django_user_model, settings, monkeypatch, tmp_path):
     from django.core.management import call_command
     from django.db import connection
 
     assert connection.settings_dict["NAME"].startswith("test_"), "refusing: not a test database"
+    media = _media_worker(settings, monkeypatch, tmp_path) if os.environ.get("SYNC_LIVE_MEDIA") == "1" else None
 
     call_command("init_platform", stdout=open(os.devnull, "w"), stderr=open(os.devnull, "w"))
 
@@ -157,6 +200,7 @@ def test_serve(live_server, django_user_model):
                 "mfa": {"secret": pending_secret(mfa), "recovery_codes": list(recovery_codes)},
                 "manager": {"secret": pending_secret(manager)},
                 "dlv": {"project": str(dlv_project.pk), "versions": dlv_versions},
+                "media": media,
             },
             indent=1,
         )
