@@ -1,7 +1,8 @@
 /**
- * In-app notifications (docs/review-pipeline RP-6, CONTRACTS.md C-RP-23; RP-11, C-RP-28 and C-RP-30), pinned to the
- * responses captured in docs/sync/samples/notifications/_notifications_flow.json and _review_notifications_flow.json
- * (docs/sync/tools/test_capture_notifications.py, test_capture_review_notifications.py).
+ * In-app notifications (docs/review-pipeline RP-6, CONTRACTS.md C-RP-23; RP-11, C-RP-28 and C-RP-30; RP-13, C-RP-34 to
+ * C-RP-36), pinned to the responses captured in docs/sync/samples/notifications/_notifications_flow.json,
+ * _review_notifications_flow.json and _pipeline_notifications_flow.json (docs/sync/tools/test_capture_notifications.py,
+ * test_capture_review_notifications.py, test_capture_pipeline_notifications.py).
  *
  * Every route answers the caller's own rows only, and only while the record a row is about is one they may open
  * now: another person's row, or one whose record they lost, is a 404. No permission code gates the inbox.
@@ -27,11 +28,18 @@ export const NOTIFICATION_KINDS = [
   'review_invited',
   'review_verdict',
   'review_comment',
+  // RP-13 (C-RP-35): deliveries, publishing, milestones
+  'delivery_status',
+  'delivery_client_answer',
+  'publish_finished',
+  'published_file_revoked',
+  'milestone_due',
+  'milestone_completed',
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
-/** The record a row opens: a note thread, a task, a version or a review. */
-export const NOTIFICATION_TARGET_TYPES = ['note', 'task', 'version', 'review'] as const;
+/** The record a row opens: a note thread, a task, a version, a review, a delivery, a publish job, a published file or a milestone. */
+export const NOTIFICATION_TARGET_TYPES = ['note', 'task', 'version', 'review', 'delivery', 'publish_job', 'published_file', 'milestone'] as const;
 export type NotificationTargetType = (typeof NOTIFICATION_TARGET_TYPES)[number];
 
 export interface NotificationActor {
@@ -43,7 +51,11 @@ export interface NotificationProject {
   code: string;
   name: string;
 }
-/** Read from the live record when the inbox is answered: a note's `code` is "" and its `name` is its subject; a review's `name` is its title. */
+/**
+ * Read from the live record when the inbox is answered: a note's `code` is "" and its `name` is its subject; a review's
+ * `name` is its title; a published file's `code` is its version's code and its `name` the last part of its path; a
+ * milestone's `code` is "" and its `name` its name (C-RP-34).
+ */
 export interface NotificationTarget {
   type: NotificationTargetType;
   id: string;
@@ -57,8 +69,10 @@ export interface NotificationRecord {
   code: string;
 }
 /**
- * `from_status`/`to_status` for the status kinds, `error_code` for `review_media_failed`, `to_status` for
- * `review_decision`, `verdict` for `review_verdict`, `version_id` for `review_comment`, otherwise empty.
+ * `from_status`/`to_status` for the status kinds (and `delivery_status`), `error_code` for `review_media_failed`,
+ * `to_status` for `review_decision`, `verdict` for `review_verdict`, `version_id` for `review_comment`, `client_status`
+ * for `delivery_client_answer`, `status` for `publish_finished`, `stage` and `due_date` for `milestone_due`,
+ * otherwise empty.
  */
 export interface NotificationData {
   from_status?: string | null;
@@ -66,6 +80,11 @@ export interface NotificationData {
   error_code?: string;
   verdict?: string | null;
   version_id?: string | null;
+  client_status?: string | null;
+  status?: string | null;
+  stage?: 'due' | 'overdue' | null;
+  /** An ISO date (`YYYY-MM-DD`), the milestone's due date when the reminder was written. */
+  due_date?: string | null;
 }
 export interface Notification {
   id: string;
@@ -73,7 +92,7 @@ export interface Notification {
   created_at: string;
   /** null while unread. */
   read_at: string | null;
-  /** null when the system did it (a review movie finished). */
+  /** null when the system did it (a review movie finished, a revoked file reopened a delivery, a milestone reminder). */
   actor: NotificationActor | null;
   project: NotificationProject;
   target: NotificationTarget;

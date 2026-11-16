@@ -1,6 +1,6 @@
 """
-Who is told what (docs/review-pipeline RP-6, C-RP-24; RP-11, C-RP-28; the tables in PLAN.md,
-"Who is notified").
+Who is told what (docs/review-pipeline RP-6, C-RP-24; RP-11, C-RP-28; RP-13, C-RP-35; the tables
+in PLAN.md, "Who is notified").
 
 The bus dispatches these synchronously once the action has committed, before the request's answer
 is sent (or in the worker, for review media). A notification must never turn a saved action into a
@@ -13,9 +13,13 @@ from typing import Any
 
 from apps.core.events.handlers import DomainEventHandler
 from apps.core.logging.logger import get_logger
+from apps.deliveries.constants import workflow as delivery_flow
+from apps.deliveries.selectors.notification_sources import DeliveryNotificationSources
 from apps.notifications.constants import REVIEW_DECISIONS, Kind, TargetType
 from apps.notifications.services.fanout import FanoutService, merge
 from apps.production.selectors.notification_sources import NotificationSources
+from apps.publishing.selectors.notification_sources import PublishingNotificationSources
+from apps.scheduling.selectors.notification_sources import ScheduleNotificationSources
 
 logger = get_logger("notifications")
 
@@ -266,4 +270,111 @@ class ReviewCommentAddedHandler(_Handler):
             target_type=TargetType.REVIEW,
             target_id=payload["review_id"],
             data={"version_id": payload.get("version_id")},
+        )
+
+
+# ---------------------------------------------------------------------- RP-13 (C-RP-35)
+
+#: a delivery arriving here is a step someone waits for (Q-RP-59)
+DELIVERY_ARRIVALS = frozenset(
+    {
+        delivery_flow.SIGNED_OFF,
+        delivery_flow.SUBMITTED,
+        delivery_flow.APPROVED,
+        delivery_flow.REJECTED,
+        delivery_flow.COMPLETE,
+        delivery_flow.CANCELLED,
+    }
+)
+#: leaving these (a reopen, a correction) is the surprise worth telling (Q-RP-59)
+DELIVERY_DEPARTURES = frozenset({delivery_flow.SIGNED_OFF}) | delivery_flow.SENT_STATES
+
+
+class DeliveryStatusChangedHandler(_Handler):
+    """
+    A delivery moved: its people (creator, whoever signed it off, whoever sent it), when it arrived
+    at a step someone waits for or left Signed Off or a sent status. Recording the client's answer
+    is told as ``delivery_client_answer`` instead. A move in the working states tells nobody.
+    """
+
+    def notify(self, payload):
+        source, target = payload.get("from_status"), payload.get("to_status")
+        client_status = payload.get("client_status") or ""
+        if client_status and source == delivery_flow.SUBMITTED:
+            kind, data = Kind.DELIVERY_CLIENT_ANSWER, {"client_status": client_status}
+        elif target in DELIVERY_ARRIVALS or source in DELIVERY_DEPARTURES:
+            kind, data = Kind.DELIVERY_STATUS, {"from_status": source, "to_status": target}
+        else:
+            return
+        delivery = DeliveryNotificationSources.delivery(payload["delivery_id"])
+        if delivery is None:
+            return
+        FanoutService.notify(
+            kinds=merge((delivery["people"], kind)),
+            actor_id=None if payload.get("system") else payload.get("actor_id"),
+            project_id=delivery["project_id"],
+            target_type=TargetType.DELIVERY,
+            target_id=payload["delivery_id"],
+            data=data,
+        )
+
+
+class PublishJobFinishedHandler(_Handler):
+    """A publish job ended Exported or Failed: its creator, the version's artist and the assignee of its task."""
+
+    def notify(self, payload):
+        job = PublishingNotificationSources.job(payload["job_id"])
+        if job is None:
+            return
+        involved = [job["created_by_id"]]
+        version = NotificationSources.version(job["version_id"]) if job["version_id"] else None
+        if version is not None:
+            involved += [version["artist_id"], version["task_assignee_id"]]
+        FanoutService.notify(
+            kinds=merge((involved, Kind.PUBLISH_FINISHED)),
+            actor_id=payload.get("actor_id"),
+            project_id=job["project_id"],
+            target_type=TargetType.PUBLISH_JOB,
+            target_id=payload["job_id"],
+            data={"status": payload.get("status")},
+        )
+
+
+class PublishedFileRevokedHandler(_Handler):
+    """
+    A published file was revoked: its creator, the creators of the files built from it, and the
+    people (creator, whoever signed it off) of every unsent delivery holding its version.
+    """
+
+    def notify(self, payload):
+        found = PublishingNotificationSources.file(payload["file_id"])
+        if found is None:
+            return
+        involved = [
+            found["created_by_id"],
+            *found["downstream_creator_ids"],
+            *DeliveryNotificationSources.unsent_people(found["version_id"]),
+        ]
+        FanoutService.notify(
+            kinds=merge((involved, Kind.PUBLISHED_FILE_REVOKED)),
+            actor_id=payload.get("actor_id"),
+            project_id=found["project_id"],
+            target_type=TargetType.PUBLISHED_FILE,
+            target_id=payload["file_id"],
+        )
+
+
+class MilestoneCompletedHandler(_Handler):
+    """A milestone was completed by someone other than its creator: its creator."""
+
+    def notify(self, payload):
+        milestone = ScheduleNotificationSources.milestone(payload["milestone_id"])
+        if milestone is None:
+            return
+        FanoutService.notify(
+            kinds=merge(([milestone["created_by_id"]], Kind.MILESTONE_COMPLETED)),
+            actor_id=payload.get("actor_id"),
+            project_id=milestone["project_id"],
+            target_type=TargetType.MILESTONE,
+            target_id=payload["milestone_id"],
         )

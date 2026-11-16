@@ -620,6 +620,13 @@ MUTABLE = [
     "review_decision",
     "review_verdict",
     "review_comment",
+    # RP-13 (C-RP-35): every new kind can be muted
+    "delivery_status",
+    "delivery_client_answer",
+    "publish_finished",
+    "published_file_revoked",
+    "milestone_due",
+    "milestone_completed",
 ]
 
 

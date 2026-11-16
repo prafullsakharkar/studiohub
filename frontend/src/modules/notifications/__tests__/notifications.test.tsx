@@ -27,6 +27,12 @@ const BASE = '/api/v1/notifications/';
 /** RP-11 (C-RP-28, C-RP-30): docs/sync/samples/notifications/_review_notifications_flow.json. */
 const reviewFlow = loadSample<Record<string, Captured>>('notifications/_review_notifications_flow.json');
 const reviewList = [...reviewFlow.artist_list.body.results, ...reviewFlow.lead_list.body.results, ...reviewFlow.supervisor_list.body.results] as Notification[];
+/** RP-13 (C-RP-34, C-RP-35): docs/sync/samples/notifications/_pipeline_notifications_flow.json. */
+const pipelineFlow = loadSample<Record<string, Captured>>('notifications/_pipeline_notifications_flow.json');
+const producerList = pipelineFlow.producer_list.body.results as Notification[];
+const supervisorList = pipelineFlow.supervisor_list.body.results as Notification[];
+const tdList = pipelineFlow.td_list.body.results as Notification[];
+const coordinatorList = pipelineFlow.coordinator_list.body.results as Notification[];
 
 function server(c: MockCall): MockReply {
   const p = path(c);
@@ -108,6 +114,50 @@ describe('what a row says and where it leads', () => {
     expect(describeNotification(of('review_verdict', reviewList))).toMatch(/ gave a verdict on RPR_DAILIES: Approved$/);
     expect(describeNotification(of('review_comment', reviewList))).toMatch(/ commented on your work in RPR_DAILIES$/);
     for (const n of reviewList) expect(notificationPath(n)).toBe(`/reviews/${n.target.id}`);
+  });
+
+  it('a delivery row says who moved it, or that a revoked file did, and the client’s answer; it opens the delivery (C-RP-35)', () => {
+    const signed = producerList.find((n) => n.kind === 'delivery_status' && n.data.to_status === 'Signed Off' && n.target.code === 'RPP_DEL_001') as Notification;
+    expect(describeNotification(signed)).toBe(`${signed.actor?.name} moved the delivery RPP_DEL_001 Prepared → Signed Off`);
+    const reopened = supervisorList.find((n) => n.kind === 'delivery_status' && n.actor === null) as Notification;
+    expect(describeNotification(reopened)).toBe('The delivery RPP_DEL_002 moved Signed Off → Prepared: a file in it was revoked');
+    const answer = of('delivery_client_answer', coordinatorList);
+    expect(describeNotification(answer)).toBe("The client's answer on RPP_DEL_001 was recorded: Approved");
+    for (const n of [signed, reopened, answer]) expect(notificationPath(n)).toBe(`/deliveries/${n.target.id}`);
+  });
+
+  it('a publish job says exported or failed and opens the job; a revoked file names it and opens it', () => {
+    const [failed, exported] = tdList;
+    expect(describeNotification(failed)).toBe('The publish job RPP_PUB_002 failed');
+    expect(describeNotification(exported)).toBe('The publish job RPP_PUB_001 was exported');
+    expect(notificationPath(exported)).toBe(`/publishing/${exported.target.id}`);
+    const revoked = of('published_file_revoked', producerList);
+    expect(describeNotification(revoked)).toBe(`${revoked.actor?.name} revoked plate_main.exr of RPP_SH020_V001`);
+    expect(notificationPath(revoked)).toBe(`/publishing/files/${revoked.target.id}`);
+  });
+
+  it('a milestone says due, overdue or completed and opens its project’s schedule', () => {
+    const [due, overdue] = pipelineFlow.producer_list_kind_milestone_due.body.results as Notification[];
+    const [y, m, d] = (due.data.due_date as string).split('-').map(Number);
+    expect(describeNotification(due)).toBe(`The milestone “Final turnover” is due ${new Date(y, m - 1, d).toLocaleDateString()}`);
+    expect(describeNotification(overdue)).toMatch(/^The milestone “Temp mix” is overdue \(due .+\)$/);
+    const completed = of('milestone_completed', producerList);
+    expect(describeNotification(completed)).toBe(`${completed.actor?.name} completed the milestone “Picture lock”`);
+    for (const n of [due, overdue, completed]) expect(notificationPath(n)).toBe(`/projects/${n.project.id}/schedule`);
+  });
+
+  it('a due date is that calendar day west of UTC too, not the evening before', () => {
+    const due = (pipelineFlow.producer_list_kind_milestone_due.body.results as Notification[])[0];
+    const zone = process.env.TZ;
+    process.env.TZ = 'America/Los_Angeles';
+    try {
+      const [y, m, d] = (due.data.due_date as string).split('-').map(Number);
+      expect(new Date(Date.UTC(y, m - 1, d)).getDate()).toBe(d - 1); // UTC midnight is the evening before here
+      expect(describeNotification(due)).toBe(`The milestone “Final turnover” is due ${new Date(y, m - 1, d).toLocaleDateString()}`);
+    } finally {
+      if (zone === undefined) delete process.env.TZ;
+      else process.env.TZ = zone;
+    }
   });
 
   it('read-all stops at the newest row seen, whatever the order given', () => {
@@ -237,6 +287,14 @@ describe('preferences on the notifications page (C-RP-30)', () => {
     mount(<NotificationsPage />, '/notifications');
     fireEvent.click(await box('Task status'));
     await waitFor(() => expect(calls.filter((c) => c.method === 'PUT').map((c) => c.body)).toEqual([{ muted_kinds: ['review_comment'] }]));
+  });
+
+  it('the new kinds have their own switches (RP-13)', async () => {
+    mockFetch((c) => (path(c) === `${BASE}preferences/` ? { body: pipelineFlow.producer_preferences.body } : server(c)));
+    mount(<NotificationsPage />, '/notifications');
+    for (const name of ['Delivery steps', 'Client answers on deliveries', 'Publish jobs ended', 'Revoked files', 'Milestones due', 'My milestones completed']) {
+      expect((await box(name)).checked).toBe(true);
+    }
   });
 
   it('a refused save says so', async () => {

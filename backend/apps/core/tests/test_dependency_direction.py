@@ -6,6 +6,7 @@ Dependency direction of the delivery pipeline apps (docs/delivery-pipeline/CONTR
     deliveries                         imports no scheduling
     scheduling                         imports neither publishing nor deliveries
     every other app                    imports no notifications (review-pipeline RP-6, Q-RP-32)
+    notifications                      reads the three apps through their selectors (RP-13)
 
 An AST scan of every non-test module, so an import inside a function counts too. The three apps
 read Production and Masterdata through their selectors, not by querying their models (a model may
@@ -107,6 +108,19 @@ def test_notifications_reads_production_through_its_selectors():
         for relative, path in _modules("notifications", skip=("tests/", "migrations/", "models/"))
         for line, module in _imported_modules(path)
         if module.split(".")[:3] == ["apps", "production", "models"]
+    ]
+
+    assert offences == []
+
+
+@pytest.mark.parametrize("app", THREE)
+def test_notifications_reads_the_three_apps_through_their_selectors(app):
+    """RP-13 (C-RP-34): each app decides reach and labels for its own records; no query of their models."""
+    offences = [
+        f"apps/notifications/{relative}:{line} imports {module}"
+        for relative, path in _modules("notifications", skip=("tests/", "migrations/"))
+        for line, module in _imported_modules(path)
+        if module.split(".")[:3] == ["apps", app, "models"]
     ]
 
     assert offences == []

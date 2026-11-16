@@ -1,3 +1,3 @@
-from apps.publishing.events.files import PublishedFileRevoked
+from apps.publishing.events.files import PublishedFileRevoked, PublishJobFinished
 
-__all__ = ["PublishedFileRevoked"]
+__all__ = ["PublishJobFinished", "PublishedFileRevoked"]

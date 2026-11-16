@@ -1,4 +1,4 @@
-"""The inbox shapes (docs/review-pipeline RP-6, C-RP-23; RP-11, C-RP-28 and C-RP-30)."""
+"""The inbox shapes (docs/review-pipeline RP-6, C-RP-23; RP-11, C-RP-28 and C-RP-30; RP-13, C-RP-35)."""
 
 from __future__ import annotations
 
@@ -83,7 +83,12 @@ class NotificationSerializer(serializers.ModelSerializer[Notification]):
 
     def get_data(self, obj) -> dict[str, Any]:
         stored = obj.data or {}
-        if obj.kind in (Kind.NOTE_STATUS, Kind.TASK_STATUS, Kind.VERSION_STATUS):
+        if obj.kind in (
+            Kind.NOTE_STATUS,
+            Kind.TASK_STATUS,
+            Kind.VERSION_STATUS,
+            Kind.DELIVERY_STATUS,
+        ):
             return {"from_status": stored.get("from_status"), "to_status": stored.get("to_status")}
         if obj.kind == Kind.REVIEW_MEDIA_FAILED:
             return {"error_code": stored.get("error_code") or ""}
@@ -93,6 +98,13 @@ class NotificationSerializer(serializers.ModelSerializer[Notification]):
             return {"verdict": stored.get("verdict")}
         if obj.kind == Kind.REVIEW_COMMENT:
             return {"version_id": stored.get("version_id")}
+        # RP-13 (C-RP-35)
+        if obj.kind == Kind.DELIVERY_CLIENT_ANSWER:
+            return {"client_status": stored.get("client_status")}
+        if obj.kind == Kind.PUBLISH_FINISHED:
+            return {"status": stored.get("status")}
+        if obj.kind == Kind.MILESTONE_DUE:
+            return {"stage": stored.get("stage"), "due_date": stored.get("due_date")}
         return {}
 
 
