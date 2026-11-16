@@ -20,13 +20,16 @@ from apps.core.api.pagination import StandardPagination
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.notifications.api.serializers import (
     NotificationSerializer,
+    PreferencesSerializer,
+    PreferencesWriteSerializer,
     ReadAllResultSerializer,
     ReadAllSerializer,
     UnreadCountSerializer,
 )
-from apps.notifications.constants import Kind
+from apps.notifications.constants import MUTABLE_KINDS, Kind
 from apps.notifications.selectors.inbox import InboxSelector
 from apps.notifications.services.inbox import InboxService
+from apps.notifications.services.preferences import PreferenceService
 
 
 class NotificationViewSet(viewsets.GenericViewSet):  # pyright: ignore[reportMissingTypeArgument]
@@ -84,3 +87,19 @@ class NotificationViewSet(viewsets.GenericViewSet):  # pyright: ignore[reportMis
         body.is_valid(raise_exception=True)
         before = cast(dict[str, Any], body.validated_data).get("before")
         return Response({"updated": InboxService.mark_all_read(self.get_queryset(), before=before)})
+
+    @extend_schema(methods=["GET"], responses={200: PreferencesSerializer})
+    @extend_schema(
+        methods=["PUT"], request=PreferencesWriteSerializer, responses={200: PreferencesSerializer}
+    )
+    @action(detail=False, methods=["get", "put"], url_path="preferences")
+    def preferences(self, request, *args, **kwargs):
+        """The caller's muted kinds (C-RP-30): read, or replaced by ``PUT``."""
+        if request.method == "PUT":
+            body = PreferencesWriteSerializer(data=request.data or {})
+            body.is_valid(raise_exception=True)
+            kinds = cast(dict[str, Any], body.validated_data)["muted_kinds"]
+            muted = PreferenceService.save(request.user, kinds)
+        else:
+            muted = PreferenceService.muted(request.user)
+        return Response({"muted_kinds": muted, "mutable_kinds": list(MUTABLE_KINDS)})

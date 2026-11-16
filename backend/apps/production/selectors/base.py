@@ -161,6 +161,28 @@ class ProductionBaseSelector(BaseSelector):
         return project_id in cached
 
     @classmethod
+    def client_project_ids(cls, user) -> set[Any]:
+        """
+        The projects on which ``user`` is a client member: an active membership that names a client,
+        and not a platform administrator (review-pipeline RP-11, C-RP-29).
+        """
+        if user is None or not getattr(user, "is_authenticated", False):
+            return set()
+        if cls.is_platform_admin(user):
+            return set()
+        return {grant.project_id for grant in cls.external_grants(user) if grant.client_id}
+
+    @classmethod
+    def is_client_on(cls, request, project_id) -> bool:
+        """Whether the caller is a client member of ``project_id`` (C-RP-29). Cached on the request."""
+        cached = getattr(request, "_client_project_ids", None)
+        if cached is None:
+            cached = cls.client_project_ids(getattr(request, "user", None))
+            if request is not None:
+                request._client_project_ids = cached
+        return project_id in cached
+
+    @classmethod
     def visible_project_ids(cls, request) -> list[Any] | None:
         """
         Ids of the projects in which the caller has full (internal) access, or ``None`` when

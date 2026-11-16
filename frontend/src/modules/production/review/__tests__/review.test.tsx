@@ -211,7 +211,7 @@ describe('review workspace', () => {
     fireEvent.change(screen.getByLabelText('Frame'), { target: { value: '1040' } });
     fireEvent.click(add);
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
-    expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ text: 'Edge flicker', frame_number: 1040 });
+    expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ text: 'Edge flicker', frame_number: 1040, is_client_visible: true });
     cleanup();
 
     await open(lead, flow.reviews_close.body);
@@ -237,7 +237,7 @@ describe('review workspace', () => {
     fireEvent.change(screen.getByLabelText('Comment on version'), { target: { value: second.id } });
     fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
-    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ text: 'Softer than v1', frame_number: null, version_id: second.id });
+    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ text: 'Softer than v1', frame_number: null, version_id: second.id, is_client_visible: true });
 
     fireEvent.click(screen.getByRole('tab', { name: 'Annotations' }));
     const annotations = within(await screen.findByRole('list', { name: 'Annotations' }));
@@ -259,8 +259,72 @@ describe('review workspace', () => {
     fireEvent.change(screen.getByLabelText('Reply'), { target: { value: 'done' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send reply' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
-    expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ text: 'done', parent_id: parent.id });
+    expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ text: 'done', parent_id: parent.id, is_client_visible: true });
     expect(screen.queryAllByRole('button', { name: 'Reply' }).length).toBeLessThan(body.comments.length + 3); // replies themselves cannot be replied to
+  });
+
+  describe('internal comments (RP-11, C-RP-29)', () => {
+    /** The review as the lead saw it in the RP-11 capture: one internal reply and one internal thread. */
+    const rp11 = loadSample<Record<string, Captured>>('notifications/_review_notifications_flow.json');
+    const seen = rp11.review_detail_as_lead.body as Review;
+    const asClient = { ...lead, project_memberships: [{ id: 'm1', project_id: seen.project_id, client_id: 'client-1', status: 'active', role: 'Client' }] } as unknown as User;
+
+    it('a studio member sees which comments are internal and can write one', async () => {
+      const { calls } = await open(lead, seen, (c) => (c.method === 'POST' ? { status: 201, body: rp11.lead_comment_internal.body } : undefined));
+      fireEvent.click(await screen.findByRole('tab', { name: 'Comments' }));
+      const list = within(await screen.findByRole('list', { name: 'Comments' }));
+      expect(list.getAllByText('Internal')).toHaveLength(2);
+      const item = (text: string) => list.getByText(text).closest('li') as HTMLElement;
+      expect(within(item('Studio only: check the edge.')).getByText('Internal')).toBeTruthy();
+      expect(within(item('Budget is tight for this.')).getByText('Internal')).toBeTruthy();
+      expect(within(item('Yes, in v002.')).queryByText('Internal')).toBeNull();
+      // the open thread holds only its internal reply's badge
+      expect(within(item('Can the walk be slower?')).getAllByText('Internal')).toHaveLength(1);
+
+      fireEvent.change(screen.getByLabelText('Comment'), { target: { value: 'Check the edge' } });
+      fireEvent.click(screen.getByRole('checkbox', { name: 'Internal (hidden from the client)' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
+      await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+      expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ text: 'Check the edge', frame_number: null, is_client_visible: false });
+    });
+
+    it('a studio member can reply internally', async () => {
+      const { calls } = await open(lead, seen, (c) => (c.method === 'POST' ? { status: 201, body: rp11.lead_reply_internal.body } : undefined));
+      fireEvent.click(await screen.findByRole('tab', { name: 'Comments' }));
+      await screen.findByRole('list', { name: 'Comments' });
+      fireEvent.click(screen.getAllByRole('button', { name: 'Reply' })[0]);
+      fireEvent.change(screen.getByLabelText('Reply'), { target: { value: 'Budget is tight' } });
+      fireEvent.click(screen.getByRole('checkbox', { name: 'Internal' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Send reply' }));
+      await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+      expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ text: 'Budget is tight', parent_id: seen.comments[0].id, is_client_visible: false });
+    });
+
+    it('a client member of the project is not offered the switch and sends no flag', async () => {
+      const client = rp11.review_detail_as_client.body as Review;
+      const { calls } = await open(asClient, client, (c) => (c.method === 'POST' ? { status: 201, body: rp11.client_comment_forced_visible.body } : undefined));
+      fireEvent.click(await screen.findByRole('tab', { name: 'Comments' }));
+      await screen.findByRole('list', { name: 'Comments' });
+      expect(screen.queryByRole('checkbox', { name: 'Internal (hidden from the client)' })).toBeNull();
+      fireEvent.click(screen.getAllByRole('button', { name: 'Reply' })[0]);
+      expect(screen.queryByRole('checkbox', { name: 'Internal' })).toBeNull();
+      fireEvent.change(screen.getByLabelText('Comment'), { target: { value: 'Slower please' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
+      await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+      expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ text: 'Slower please', frame_number: null });
+    });
+
+    it('a client membership elsewhere, an inactive one, or a superuser still gets the switch', async () => {
+      const elsewhere = { ...lead, project_memberships: [{ id: 'm2', project_id: 'another-project', client_id: 'client-1', status: 'active' }] } as unknown as User;
+      const inactive = { ...lead, project_memberships: [{ id: 'm3', project_id: seen.project_id, client_id: 'client-1', status: 'inactive' }] } as unknown as User;
+      const superuser = { ...asClient, is_superuser: true } as User;
+      for (const user of [elsewhere, inactive, superuser]) {
+        await open(user, seen);
+        fireEvent.click(await screen.findByRole('tab', { name: 'Comments' }));
+        expect(await screen.findByRole('checkbox', { name: 'Internal (hidden from the client)' })).toBeTruthy();
+        cleanup();
+      }
+    });
   });
 });
 

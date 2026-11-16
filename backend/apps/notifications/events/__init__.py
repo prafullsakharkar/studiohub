@@ -16,6 +16,12 @@ def register_events() -> None:
         NoteStatusChanged,
     )
     from apps.production.events.review_media import ReviewMediaFinished
+    from apps.production.events.reviews import (
+        ReviewCommentAdded,
+        ReviewDecided,
+        ReviewParticipantAdded,
+        ReviewParticipantVerdict,
+    )
     from apps.production.events.status import StatusChanged
     from apps.production.events.tasks import TaskAssigned
 
@@ -26,3 +32,8 @@ def register_events() -> None:
     default_event_bus.subscribe(TaskAssigned, handlers.TaskAssignedHandler)
     default_event_bus.subscribe(StatusChanged, handlers.StatusChangedHandler)
     default_event_bus.subscribe(ReviewMediaFinished, handlers.ReviewMediaFinishedHandler)
+    # RP-11 (C-RP-28): review decisions told through a verdict, invitations, verdicts, comments
+    default_event_bus.subscribe(ReviewDecided, handlers.ReviewDecidedHandler)
+    default_event_bus.subscribe(ReviewParticipantAdded, handlers.ReviewParticipantAddedHandler)
+    default_event_bus.subscribe(ReviewParticipantVerdict, handlers.ReviewParticipantVerdictHandler)
+    default_event_bus.subscribe(ReviewCommentAdded, handlers.ReviewCommentAddedHandler)

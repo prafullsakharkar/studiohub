@@ -7,7 +7,9 @@ whether a person may open it ("in reach"), and what to call it. Reach is what th
 
 - a note thread: ``project.view`` and whole-project access (C-RP-10);
 - a task: ``task.view`` and the narrowing of ``GET tasks/{id}/``;
-- a version: ``version.view`` and the narrowing of ``GET versions/{id}/``.
+- a version: ``version.view`` and the narrowing of ``GET versions/{id}/``;
+- a review: ``review.view`` and the narrowing of ``GET reviews/{id}/`` (RP-11, C-RP-28), which
+  already limits an external member to the reviews they reach.
 
 The person must be active. ``request`` is the caller's request when the inbox is read (so an API
 key's or token's scopes count), or a stand-in holding only the recipient when a row is written.
@@ -24,17 +26,28 @@ from django.db.models import QuerySet
 
 from apps.production.constants.permissions import (
     ProjectPermissions,
+    ReviewPermissions,
     TaskPermissions,
     VersionPermissions,
 )
-from apps.production.models import Project, ProjectNote, Task, Version
+from apps.production.models import (
+    Project,
+    ProjectNote,
+    Review,
+    ReviewComment,
+    ReviewItem,
+    ReviewParticipant,
+    Task,
+    Version,
+)
 from apps.production.permissions.checks import has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
 
 NOTE = "note"
 TASK = "task"
 VERSION = "version"
-TARGET_TYPES = (NOTE, TASK, VERSION)
+REVIEW = "review"
+TARGET_TYPES = (NOTE, TASK, VERSION, REVIEW)
 
 #: the stored first link / denormalized entity that means "no record"
 _NO_RECORD = {"", "project"}
@@ -57,6 +70,20 @@ def _uuids(values: Iterable[Any]) -> list[UUID]:
 
 def _sid(value: Any) -> str | None:
     return str(value) if value else None
+
+
+def _version_people(versions: Any) -> list[str]:
+    """
+    Whose work the live ``versions`` are: each one's artist and the assignee of its live task, each
+    once (RP-11). A version made on the Versions screen names no artist, so the task's assignee is
+    the artist in practice, as for ``version_status`` (RP-6).
+    """
+    live = versions.filter(is_deleted=False)
+    artists = live.filter(artist__isnull=False).values_list("artist_id", flat=True)
+    assignees = live.filter(task__is_deleted=False, task__assignee__isnull=False).values_list(
+        "task__assignee_id", flat=True
+    )
+    return list(dict.fromkeys(str(pk) for pk in [*artists, *assignees]))
 
 
 class NotificationSources:
@@ -131,6 +158,100 @@ class NotificationSources:
             "task_assignee_id": _sid(task.assignee_id) if task else None,  # pyright: ignore[reportAttributeAccessIssue]
         }
 
+    @staticmethod
+    def review(review_id: Any) -> dict[str, Any] | None:
+        """
+        The live review ``review_id`` (RP-11, C-RP-28): ``project_id``, ``lead_reviewer_id``,
+        ``created_by_id``, the users of its live participants, and the artists of its live versions
+        with the assignees of their live tasks (``version_artist_ids``); ``None`` if it is gone.
+        """
+        ids = _uuids([review_id])
+        row = (
+            Review.objects.filter(pk=ids[0])
+            .values("project_id", "lead_reviewer_id", "created_by_id")
+            .first()
+            if ids
+            else None
+        )
+        if row is None or row["project_id"] is None:
+            return None
+        participants = ReviewParticipant.objects.filter(
+            review_id=ids[0], user__isnull=False
+        ).values_list("user_id", flat=True)
+        artists = _version_people(
+            Version.objects.filter(
+                pk__in=ReviewItem.objects.filter(review_id=ids[0]).values("version_id")
+            )
+        )
+        return {
+            "project_id": str(row["project_id"]),
+            "lead_reviewer_id": _sid(row["lead_reviewer_id"]),
+            "created_by_id": _sid(row["created_by_id"]),
+            "participant_ids": [str(pk) for pk in participants],
+            "version_artist_ids": artists,
+        }
+
+    @staticmethod
+    def review_thread(comment_id: Any) -> dict[str, Any] | None:
+        """
+        The thread of the review comment ``comment_id``: its first comment's author, the authors of
+        its replies written before ``comment_id`` (oldest first), and the artist of its version and the
+        assignee of that version's task; ``None`` if the comment is gone.
+        """
+        ids = _uuids([comment_id])
+        comment = ReviewComment.objects.filter(pk=ids[0]).first() if ids else None
+        if comment is None:
+            return None
+        thread_id = comment.parent_id or comment.pk  # pyright: ignore[reportAttributeAccessIssue]
+        thread = ReviewComment.objects.filter(pk=thread_id).select_related("version").first()
+        if thread is None:
+            return None
+        earlier = (
+            ReviewComment.objects.filter(parent_id=thread_id, created_at__lte=comment.created_at)
+            .exclude(pk=comment.pk)
+            .order_by("created_at", "id")
+            .values_list("author_id", flat=True)
+        )
+        artists = (
+            _version_people(Version.objects.filter(pk=thread.version_id))  # pyright: ignore[reportAttributeAccessIssue]
+            if thread.version_id  # pyright: ignore[reportAttributeAccessIssue]
+            else []
+        )
+        return {
+            "author_id": _sid(thread.author_id),  # pyright: ignore[reportAttributeAccessIssue]
+            "reply_author_ids": [str(pk) for pk in earlier if pk],
+            "version_artist_ids": artists,
+        }
+
+    @staticmethod
+    def client_members(project_id: Any, user_ids: Iterable[Any]) -> set[str]:
+        """
+        The ids among ``user_ids`` of client members of ``project_id`` (C-RP-29): an active
+        membership naming a client, and not a platform administrator.
+        """
+        from django.contrib.auth import get_user_model
+
+        from apps.production.models import ProjectMembership
+
+        wanted = _uuids(user_ids)
+        project = _uuids([project_id])
+        if not wanted or not project:
+            return set()
+        candidates = (
+            ProjectMembership.objects.filter(
+                project_id=project[0],
+                user_id__in=wanted,
+                is_deleted=False,
+                status__iexact="active",
+            )
+            .exclude(client_id="")
+            .values_list("user_id", flat=True)
+        )
+        users = get_user_model().objects.filter(pk__in=list(candidates))
+        return {
+            str(user.pk) for user in users if not ProductionBaseSelector.is_platform_admin(user)
+        }
+
     # ------------------------------------------------------------------ reach
 
     @classmethod
@@ -140,7 +261,7 @@ class NotificationSources:
         queryset (used as a subquery, so the inbox pages and counts after the check).
         """
         user = getattr(request, "user", None)
-        model = {NOTE: ProjectNote, TASK: Task, VERSION: Version}.get(target_type)
+        model = {NOTE: ProjectNote, TASK: Task, VERSION: Version, REVIEW: Review}.get(target_type)
         if (
             model is None
             or user is None
@@ -152,6 +273,7 @@ class NotificationSources:
             NOTE: ProjectPermissions.VIEW,
             TASK: TaskPermissions.VIEW,
             VERSION: VersionPermissions.VIEW,
+            REVIEW: ReviewPermissions.VIEW,
         }[target_type]
         if not has_permission_code(request, code):
             return model.objects.none().values_list("pk", flat=True)
@@ -224,6 +346,12 @@ class NotificationSources:
             return {
                 str(pk): {"code": code, "name": number, "record": cls._record(et, eid, ec)}
                 for pk, et, eid, ec, code, number in rows
+            }
+        if target_type == REVIEW:
+            rows = Review.objects.filter(pk__in=wanted).values_list(*fields, "code", "title")
+            return {
+                str(pk): {"code": code, "name": title, "record": cls._record(et, eid, ec)}
+                for pk, et, eid, ec, code, title in rows
             }
         return {}
 

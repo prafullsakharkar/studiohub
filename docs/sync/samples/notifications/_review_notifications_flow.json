@@ -1,0 +1,1613 @@
+{
+  "artist_list": {
+    "body": {
+      "count": 5,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": {
+            "id": "8519fb64-27ed-431e-9ab5-b3cf587d6c9f",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-14T10:57:02.006080Z",
+          "data": {
+            "to_status": "Approved"
+          },
+          "id": "77acc70d-b178-4b7d-8c5c-b9b38064bc95",
+          "kind": "review_decision",
+          "project": {
+            "code": "RPR",
+            "id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+            "name": "Review notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPR_SH010",
+            "id": "368fd42b-6513-445d-888b-411aeb181fb6",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPR_DAILIES",
+            "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+            "name": "Dailies",
+            "type": "review"
+          }
+        },
+        {
+          "actor": {
+            "id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-14T10:57:01.716252Z",
+          "data": {
+            "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+          },
+          "id": "015319a1-03f8-43ac-9713-e44a82d50ebb",
+          "kind": "review_comment",
+          "project": {
+            "code": "RPR",
+            "id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+            "name": "Review notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPR_SH010",
+            "id": "368fd42b-6513-445d-888b-411aeb181fb6",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPR_DAILIES",
+            "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+            "name": "Dailies",
+            "type": "review"
+          }
+        },
+        {
+          "actor": {
+            "id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-14T10:57:01.661322Z",
+          "data": {
+            "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+          },
+          "id": "eb7b9f70-c10f-486b-bc21-69bac1e4fb1f",
+          "kind": "review_comment",
+          "project": {
+            "code": "RPR",
+            "id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+            "name": "Review notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPR_SH010",
+            "id": "368fd42b-6513-445d-888b-411aeb181fb6",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPR_DAILIES",
+            "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+            "name": "Dailies",
+            "type": "review"
+          }
+        },
+        {
+          "actor": {
+            "id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-14T10:57:01.586075Z",
+          "data": {
+            "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+          },
+          "id": "bcb82658-a49d-4796-9de5-925f8c7cd259",
+          "kind": "review_comment",
+          "project": {
+            "code": "RPR",
+            "id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+            "name": "Review notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPR_SH010",
+            "id": "368fd42b-6513-445d-888b-411aeb181fb6",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPR_DAILIES",
+            "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+            "name": "Dailies",
+            "type": "review"
+          }
+        },
+        {
+          "actor": {
+            "id": "d6060b7d-e72f-4e1a-9098-bb8b05b5c5fe",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-14T10:57:01.521832Z",
+          "data": {
+            "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+          },
+          "id": "f069a76a-f491-401f-8743-b6796499f26f",
+          "kind": "review_comment",
+          "project": {
+            "code": "RPR",
+            "id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+            "name": "Review notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPR_SH010",
+            "id": "368fd42b-6513-445d-888b-411aeb181fb6",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPR_DAILIES",
+            "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+            "name": "Dailies",
+            "type": "review"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "7e59ca70-cba9-43a7-8e37-7841b4bf7673"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/"
+    },
+    "status": 200
+  },
+  "artist_list_kind_review_decision": {
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": {
+            "id": "8519fb64-27ed-431e-9ab5-b3cf587d6c9f",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-14T10:57:02.006080Z",
+          "data": {
+            "to_status": "Approved"
+          },
+          "id": "77acc70d-b178-4b7d-8c5c-b9b38064bc95",
+          "kind": "review_decision",
+          "project": {
+            "code": "RPR",
+            "id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+            "name": "Review notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPR_SH010",
+            "id": "368fd42b-6513-445d-888b-411aeb181fb6",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPR_DAILIES",
+            "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+            "name": "Dailies",
+            "type": "review"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "dd8cc493-582b-4b96-a6f6-32899908e191"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/?kind=review_decision"
+    },
+    "status": 200
+  },
+  "artist_unread_count_while_muted": {
+    "body": {
+      "count": 5
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "e3c4748b-2477-4b20-8316-e990e186a372"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/unread-count/"
+    },
+    "status": 200
+  },
+  "client_comment_forced_visible": {
+    "body": {
+      "author": "user@example.test",
+      "author_id": "d6060b7d-e72f-4e1a-9098-bb8b05b5c5fe",
+      "created_at": "2026-11-14T10:57:01.486942+00:00",
+      "frame_number": null,
+      "id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+      "is_client_visible": true,
+      "is_resolved": false,
+      "parent_id": null,
+      "replies": [],
+      "resolved_at": null,
+      "resolved_by_id": null,
+      "tags": [],
+      "text": "Can the walk be slower?",
+      "timecode": null,
+      "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "c3ae66ef-6393-4965-b006-d647315a7b35"
+    },
+    "request": {
+      "body": {
+        "is_client_visible": false,
+        "text": "Can the walk be slower?",
+        "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+      },
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/comments/"
+    },
+    "status": 201
+  },
+  "client_list": {
+    "body": {
+      "count": 3,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": {
+            "id": "8519fb64-27ed-431e-9ab5-b3cf587d6c9f",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-14T10:57:02.015499Z",
+          "data": {
+            "to_status": "Approved"
+          },
+          "id": "2b41b4e7-2f18-40c0-a1f5-74ffec4e7a96",
+          "kind": "review_decision",
+          "project": {
+            "code": "RPR",
+            "id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+            "name": "Review notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPR_SH010",
+            "id": "368fd42b-6513-445d-888b-411aeb181fb6",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPR_DAILIES",
+            "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+            "name": "Dailies",
+            "type": "review"
+          }
+        },
+        {
+          "actor": {
+            "id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-14T10:57:01.596132Z",
+          "data": {
+            "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+          },
+          "id": "998c3ff0-77f2-4eb1-8ba7-dee2d7f95a90",
+          "kind": "review_comment",
+          "project": {
+            "code": "RPR",
+            "id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+            "name": "Review notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPR_SH010",
+            "id": "368fd42b-6513-445d-888b-411aeb181fb6",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPR_DAILIES",
+            "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+            "name": "Dailies",
+            "type": "review"
+          }
+        },
+        {
+          "actor": {
+            "id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-14T10:57:01.450951Z",
+          "data": {},
+          "id": "ba87260c-0ce0-4d90-aa73-b858119d8efe",
+          "kind": "review_invited",
+          "project": {
+            "code": "RPR",
+            "id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+            "name": "Review notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPR_SH010",
+            "id": "368fd42b-6513-445d-888b-411aeb181fb6",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPR_DAILIES",
+            "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+            "name": "Dailies",
+            "type": "review"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "7b142ec3-de0a-4d09-94bd-42566cba0cc3"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/"
+    },
+    "status": 200
+  },
+  "client_replies_internal_404": {
+    "body": {
+      "detail": "Comment not found on this review.",
+      "error": {
+        "code": "not_found",
+        "request_id": "96be5624-1726-4d97-a33c-4a8b1560e705"
+      }
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "96be5624-1726-4d97-a33c-4a8b1560e705"
+    },
+    "request": {
+      "body": {
+        "parent_id": "50e78f16-3af6-4589-ad50-400503d60c61",
+        "text": "?"
+      },
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/comments/"
+    },
+    "status": 404
+  },
+  "client_resolves_internal_404": {
+    "body": {
+      "detail": "Comment not found on this review.",
+      "error": {
+        "code": "not_found",
+        "request_id": "ef195305-9f9a-45de-ab39-170adae3409b"
+      }
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "ef195305-9f9a-45de-ab39-170adae3409b"
+    },
+    "request": {
+      "body": null,
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/comments/50e78f16-3af6-4589-ad50-400503d60c61/resolve/"
+    },
+    "status": 404
+  },
+  "lead_comment_internal": {
+    "body": {
+      "author": "user@example.test",
+      "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+      "created_at": "2026-11-14T10:57:01.694259+00:00",
+      "frame_number": null,
+      "id": "50e78f16-3af6-4589-ad50-400503d60c61",
+      "is_client_visible": false,
+      "is_resolved": false,
+      "parent_id": null,
+      "replies": [],
+      "resolved_at": null,
+      "resolved_by_id": null,
+      "tags": [],
+      "text": "Studio only: check the edge.",
+      "timecode": null,
+      "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "d57d77d6-d885-43f5-ac0d-c99c4dcda18e"
+    },
+    "request": {
+      "body": {
+        "is_client_visible": false,
+        "text": "Studio only: check the edge.",
+        "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+      },
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/comments/"
+    },
+    "status": 201
+  },
+  "lead_comment_while_muted": {
+    "body": {
+      "author": "user@example.test",
+      "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+      "created_at": "2026-11-14T10:57:02.367837+00:00",
+      "frame_number": null,
+      "id": "ac2eb616-e409-404e-829b-b4c6dded8a46",
+      "is_client_visible": true,
+      "is_resolved": false,
+      "parent_id": null,
+      "replies": [],
+      "resolved_at": null,
+      "resolved_by_id": null,
+      "tags": [],
+      "text": "One more pass on the edge.",
+      "timecode": null,
+      "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "0b5550a7-658c-4013-82e4-0ac7d50f3204"
+    },
+    "request": {
+      "body": {
+        "text": "One more pass on the edge.",
+        "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+      },
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/comments/"
+    },
+    "status": 201
+  },
+  "lead_list": {
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": {
+            "id": "8519fb64-27ed-431e-9ab5-b3cf587d6c9f",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-14T10:57:01.930474Z",
+          "data": {
+            "verdict": "Approved"
+          },
+          "id": "4290be6e-8e8e-4ba2-8508-e9d275c82601",
+          "kind": "review_verdict",
+          "project": {
+            "code": "RPR",
+            "id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+            "name": "Review notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPR_SH010",
+            "id": "368fd42b-6513-445d-888b-411aeb181fb6",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPR_DAILIES",
+            "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+            "name": "Dailies",
+            "type": "review"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "63b90c99-8e4d-4932-b11f-d81cbeef418b"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/"
+    },
+    "status": 200
+  },
+  "lead_reply_internal": {
+    "body": {
+      "author": "user@example.test",
+      "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+      "created_at": "2026-11-14T10:57:01.633367+00:00",
+      "frame_number": null,
+      "id": "73ebfe31-23ea-471a-a46b-214d6bd1a6cc",
+      "is_client_visible": false,
+      "is_resolved": false,
+      "parent_id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+      "replies": [],
+      "resolved_at": null,
+      "resolved_by_id": null,
+      "tags": [],
+      "text": "Budget is tight for this.",
+      "timecode": null,
+      "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "488022e6-f89d-4a90-b2be-f3071351fc4b"
+    },
+    "request": {
+      "body": {
+        "is_client_visible": false,
+        "parent_id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+        "text": "Budget is tight for this."
+      },
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/comments/"
+    },
+    "status": 201
+  },
+  "lead_reply_visible": {
+    "body": {
+      "author": "user@example.test",
+      "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+      "created_at": "2026-11-14T10:57:01.564027+00:00",
+      "frame_number": null,
+      "id": "9edfdbfc-2fd9-4a60-95d5-f93d7d269164",
+      "is_client_visible": true,
+      "is_resolved": false,
+      "parent_id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+      "replies": [],
+      "resolved_at": null,
+      "resolved_by_id": null,
+      "tags": [],
+      "text": "Yes, in v002.",
+      "timecode": null,
+      "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "13cac954-b413-486e-8e49-d6103d66edf5"
+    },
+    "request": {
+      "body": {
+        "parent_id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+        "text": "Yes, in v002."
+      },
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/comments/"
+    },
+    "status": 201
+  },
+  "preferences_after_save": {
+    "body": {
+      "mutable_kinds": [
+        "note_created",
+        "note_reply",
+        "note_status",
+        "task_assigned",
+        "task_status",
+        "version_status",
+        "review_media_ready",
+        "review_media_failed",
+        "review_decision",
+        "review_verdict",
+        "review_comment"
+      ],
+      "muted_kinds": [
+        "task_status",
+        "review_comment"
+      ]
+    },
+    "headers": {
+      "Allow": "GET, PUT, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "9b46f367-78d6-4f5a-9ef8-6aaae17767d9"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/preferences/"
+    },
+    "status": 200
+  },
+  "preferences_default": {
+    "body": {
+      "mutable_kinds": [
+        "note_created",
+        "note_reply",
+        "note_status",
+        "task_assigned",
+        "task_status",
+        "version_status",
+        "review_media_ready",
+        "review_media_failed",
+        "review_decision",
+        "review_verdict",
+        "review_comment"
+      ],
+      "muted_kinds": []
+    },
+    "headers": {
+      "Allow": "GET, PUT, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "de13fa79-42e2-430d-8ccb-1e231b3e2b40"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/preferences/"
+    },
+    "status": 200
+  },
+  "preferences_save": {
+    "body": {
+      "mutable_kinds": [
+        "note_created",
+        "note_reply",
+        "note_status",
+        "task_assigned",
+        "task_status",
+        "version_status",
+        "review_media_ready",
+        "review_media_failed",
+        "review_decision",
+        "review_verdict",
+        "review_comment"
+      ],
+      "muted_kinds": [
+        "task_status",
+        "review_comment"
+      ]
+    },
+    "headers": {
+      "Allow": "GET, PUT, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "08bdd733-410e-4998-836b-781c4e0b4db3"
+    },
+    "request": {
+      "body": {
+        "muted_kinds": [
+          "review_comment",
+          "task_status",
+          "review_comment"
+        ]
+      },
+      "method": "PUT",
+      "path": "/api/v1/notifications/preferences/"
+    },
+    "status": 200
+  },
+  "preferences_signed_out_401": {
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "cd324060-8544-4ef0-b0b9-8413deb71e38"
+      }
+    },
+    "headers": {
+      "Allow": "GET, PUT, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "cd324060-8544-4ef0-b0b9-8413deb71e38"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/preferences/"
+    },
+    "status": 401
+  },
+  "preferences_unknown_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "8f09402c-84ae-449a-9ecb-687a33b28ae6"
+      },
+      "muted_kinds": [
+        "Unknown kind: spaceship."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, PUT, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "8f09402c-84ae-449a-9ecb-687a33b28ae6"
+    },
+    "request": {
+      "body": {
+        "muted_kinds": [
+          "spaceship"
+        ]
+      },
+      "method": "PUT",
+      "path": "/api/v1/notifications/preferences/"
+    },
+    "status": 400
+  },
+  "preferences_unmutable_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "87cd610e-a239-41e5-bbb9-e127372c9462"
+      },
+      "muted_kinds": [
+        "note_mention cannot be muted."
+      ]
+    },
+    "headers": {
+      "Allow": "GET, PUT, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "87cd610e-a239-41e5-bbb9-e127372c9462"
+    },
+    "request": {
+      "body": {
+        "muted_kinds": [
+          "note_mention"
+        ]
+      },
+      "method": "PUT",
+      "path": "/api/v1/notifications/preferences/"
+    },
+    "status": 400
+  },
+  "review_add_participant_client": {
+    "body": {
+      "activity": [],
+      "annotations": [],
+      "client": {},
+      "code": "RPR_DAILIES",
+      "comments": [],
+      "created_at": "2026-11-14T10:57:01.144730Z",
+      "description": "",
+      "entity_code": "RPR_SH010",
+      "entity_id": "368fd42b-6513-445d-888b-411aeb181fb6",
+      "entity_type": "Shot",
+      "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "lead_reviewer_name": "",
+      "notes": [],
+      "project_id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+      "reviewers": [
+        {
+          "id": "c7a1c7da-cd26-41f6-8e4a-023a6bce9e8c",
+          "legacy_id": "",
+          "name": "user@example.test",
+          "role": "VFX Supervisor",
+          "user_id": "8519fb64-27ed-431e-9ab5-b3cf587d6c9f",
+          "verdict": "Pending Review",
+          "verdict_date": null,
+          "verdict_notes": ""
+        },
+        {
+          "id": "b2125503-6928-4b6d-a101-095623b2c54a",
+          "legacy_id": "",
+          "name": "user@example.test",
+          "role": "Client",
+          "user_id": "d6060b7d-e72f-4e1a-9098-bb8b05b5c5fe",
+          "verdict": "Pending Review",
+          "verdict_date": null,
+          "verdict_notes": ""
+        }
+      ],
+      "status": "In Review",
+      "supervisor_verdict": "Pending Review",
+      "thumbnail_url": "",
+      "title": "Dailies",
+      "updated_at": "2026-11-14T10:57:01.253165Z",
+      "uuid": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "vendor": {},
+      "versions": [
+        {
+          "code": "RPR_SH010_COMP_V001",
+          "id": "ce39dfcb-7d00-4447-880e-3ca8e2444034",
+          "item_id": "55be4bba-35cd-4411-9afd-16ab27e046b0",
+          "order": 0,
+          "status": "Pending Review",
+          "version_number": "v001"
+        }
+      ],
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "593cf770-867a-41eb-9966-ab7dba533406"
+    },
+    "request": {
+      "body": {
+        "role": "Client",
+        "user_id": "d6060b7d-e72f-4e1a-9098-bb8b05b5c5fe"
+      },
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/participants/"
+    },
+    "status": 201
+  },
+  "review_add_participant_supervisor": {
+    "body": {
+      "activity": [],
+      "annotations": [],
+      "client": {},
+      "code": "RPR_DAILIES",
+      "comments": [],
+      "created_at": "2026-11-14T10:57:01.144730Z",
+      "description": "",
+      "entity_code": "RPR_SH010",
+      "entity_id": "368fd42b-6513-445d-888b-411aeb181fb6",
+      "entity_type": "Shot",
+      "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "lead_reviewer_name": "",
+      "notes": [],
+      "project_id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+      "reviewers": [
+        {
+          "id": "c7a1c7da-cd26-41f6-8e4a-023a6bce9e8c",
+          "legacy_id": "",
+          "name": "user@example.test",
+          "role": "VFX Supervisor",
+          "user_id": "8519fb64-27ed-431e-9ab5-b3cf587d6c9f",
+          "verdict": "Pending Review",
+          "verdict_date": null,
+          "verdict_notes": ""
+        }
+      ],
+      "status": "In Review",
+      "supervisor_verdict": "Pending Review",
+      "thumbnail_url": "",
+      "title": "Dailies",
+      "updated_at": "2026-11-14T10:57:01.253165Z",
+      "uuid": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "vendor": {},
+      "versions": [
+        {
+          "code": "RPR_SH010_COMP_V001",
+          "id": "ce39dfcb-7d00-4447-880e-3ca8e2444034",
+          "item_id": "55be4bba-35cd-4411-9afd-16ab27e046b0",
+          "order": 0,
+          "status": "Pending Review",
+          "version_number": "v001"
+        }
+      ],
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "610d0be9-9766-4908-819c-dd120a94e50e"
+    },
+    "request": {
+      "body": {
+        "role": "VFX Supervisor",
+        "user_id": "8519fb64-27ed-431e-9ab5-b3cf587d6c9f"
+      },
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/participants/"
+    },
+    "status": 201
+  },
+  "review_add_version": {
+    "body": {
+      "activity": [],
+      "annotations": [],
+      "client": {},
+      "code": "RPR_DAILIES",
+      "comments": [],
+      "created_at": "2026-11-14T10:57:01.144730Z",
+      "description": "",
+      "entity_code": "RPR_SH010",
+      "entity_id": "368fd42b-6513-445d-888b-411aeb181fb6",
+      "entity_type": "Shot",
+      "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "lead_reviewer_name": "",
+      "notes": [],
+      "project_id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+      "reviewers": [],
+      "status": "In Review",
+      "supervisor_verdict": "Pending Review",
+      "thumbnail_url": "",
+      "title": "Dailies",
+      "updated_at": "2026-11-14T10:57:01.253165Z",
+      "uuid": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "vendor": {},
+      "versions": [
+        {
+          "code": "RPR_SH010_COMP_V001",
+          "id": "ce39dfcb-7d00-4447-880e-3ca8e2444034",
+          "item_id": "55be4bba-35cd-4411-9afd-16ab27e046b0",
+          "order": 0,
+          "status": "Pending Review",
+          "version_number": "v001"
+        }
+      ],
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "c88b5349-cac8-4d98-9974-516336201699"
+    },
+    "request": {
+      "body": {
+        "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+      },
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/versions/"
+    },
+    "status": 201
+  },
+  "review_detail_as_client": {
+    "body": {
+      "activity": [],
+      "annotations": [],
+      "client": {},
+      "code": "RPR_DAILIES",
+      "comments": [
+        {
+          "author": "user@example.test",
+          "author_id": "d6060b7d-e72f-4e1a-9098-bb8b05b5c5fe",
+          "created_at": "2026-11-14T10:57:01.486942+00:00",
+          "frame_number": null,
+          "id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+          "is_client_visible": true,
+          "is_resolved": false,
+          "parent_id": null,
+          "replies": [
+            {
+              "author": "user@example.test",
+              "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+              "created_at": "2026-11-14T10:57:01.564027+00:00",
+              "frame_number": null,
+              "id": "9edfdbfc-2fd9-4a60-95d5-f93d7d269164",
+              "is_client_visible": true,
+              "is_resolved": false,
+              "parent_id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+              "resolved_at": null,
+              "resolved_by_id": null,
+              "tags": [],
+              "text": "Yes, in v002.",
+              "timecode": null,
+              "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+            }
+          ],
+          "resolved_at": null,
+          "resolved_by_id": null,
+          "tags": [],
+          "text": "Can the walk be slower?",
+          "timecode": null,
+          "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+        }
+      ],
+      "created_at": "2026-11-14T10:57:01.144730Z",
+      "description": "",
+      "entity_code": "RPR_SH010",
+      "entity_id": "368fd42b-6513-445d-888b-411aeb181fb6",
+      "entity_type": "Shot",
+      "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "lead_reviewer_name": "",
+      "notes": [],
+      "project_id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+      "reviewers": [
+        {
+          "id": "c7a1c7da-cd26-41f6-8e4a-023a6bce9e8c",
+          "legacy_id": "",
+          "name": "user@example.test",
+          "role": "VFX Supervisor",
+          "user_id": "8519fb64-27ed-431e-9ab5-b3cf587d6c9f",
+          "verdict": "Pending Review",
+          "verdict_date": null,
+          "verdict_notes": ""
+        },
+        {
+          "id": "b2125503-6928-4b6d-a101-095623b2c54a",
+          "legacy_id": "",
+          "name": "user@example.test",
+          "role": "Client",
+          "user_id": "d6060b7d-e72f-4e1a-9098-bb8b05b5c5fe",
+          "verdict": "Pending Review",
+          "verdict_date": null,
+          "verdict_notes": ""
+        }
+      ],
+      "status": "In Review",
+      "supervisor_verdict": "Pending Review",
+      "thumbnail_url": "",
+      "title": "Dailies",
+      "updated_at": "2026-11-14T10:57:01.253165Z",
+      "uuid": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "vendor": {},
+      "versions": [
+        {
+          "code": "RPR_SH010_COMP_V001",
+          "id": "ce39dfcb-7d00-4447-880e-3ca8e2444034",
+          "item_id": "55be4bba-35cd-4411-9afd-16ab27e046b0",
+          "order": 0,
+          "status": "Pending Review",
+          "version_number": "v001"
+        }
+      ],
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "5b2a0107-e1bc-44f3-8b81-55509457d4a5"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/"
+    },
+    "status": 200
+  },
+  "review_detail_as_lead": {
+    "body": {
+      "activity": [],
+      "annotations": [],
+      "client": {},
+      "code": "RPR_DAILIES",
+      "comments": [
+        {
+          "author": "user@example.test",
+          "author_id": "d6060b7d-e72f-4e1a-9098-bb8b05b5c5fe",
+          "created_at": "2026-11-14T10:57:01.486942+00:00",
+          "frame_number": null,
+          "id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+          "is_client_visible": true,
+          "is_resolved": false,
+          "parent_id": null,
+          "replies": [
+            {
+              "author": "user@example.test",
+              "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+              "created_at": "2026-11-14T10:57:01.564027+00:00",
+              "frame_number": null,
+              "id": "9edfdbfc-2fd9-4a60-95d5-f93d7d269164",
+              "is_client_visible": true,
+              "is_resolved": false,
+              "parent_id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+              "resolved_at": null,
+              "resolved_by_id": null,
+              "tags": [],
+              "text": "Yes, in v002.",
+              "timecode": null,
+              "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+            },
+            {
+              "author": "user@example.test",
+              "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+              "created_at": "2026-11-14T10:57:01.633367+00:00",
+              "frame_number": null,
+              "id": "73ebfe31-23ea-471a-a46b-214d6bd1a6cc",
+              "is_client_visible": false,
+              "is_resolved": false,
+              "parent_id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+              "resolved_at": null,
+              "resolved_by_id": null,
+              "tags": [],
+              "text": "Budget is tight for this.",
+              "timecode": null,
+              "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+            }
+          ],
+          "resolved_at": null,
+          "resolved_by_id": null,
+          "tags": [],
+          "text": "Can the walk be slower?",
+          "timecode": null,
+          "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+        },
+        {
+          "author": "user@example.test",
+          "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+          "created_at": "2026-11-14T10:57:01.694259+00:00",
+          "frame_number": null,
+          "id": "50e78f16-3af6-4589-ad50-400503d60c61",
+          "is_client_visible": false,
+          "is_resolved": false,
+          "parent_id": null,
+          "replies": [],
+          "resolved_at": null,
+          "resolved_by_id": null,
+          "tags": [],
+          "text": "Studio only: check the edge.",
+          "timecode": null,
+          "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+        }
+      ],
+      "created_at": "2026-11-14T10:57:01.144730Z",
+      "description": "",
+      "entity_code": "RPR_SH010",
+      "entity_id": "368fd42b-6513-445d-888b-411aeb181fb6",
+      "entity_type": "Shot",
+      "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "lead_reviewer_name": "",
+      "notes": [],
+      "project_id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+      "reviewers": [
+        {
+          "id": "c7a1c7da-cd26-41f6-8e4a-023a6bce9e8c",
+          "legacy_id": "",
+          "name": "user@example.test",
+          "role": "VFX Supervisor",
+          "user_id": "8519fb64-27ed-431e-9ab5-b3cf587d6c9f",
+          "verdict": "Pending Review",
+          "verdict_date": null,
+          "verdict_notes": ""
+        },
+        {
+          "id": "b2125503-6928-4b6d-a101-095623b2c54a",
+          "legacy_id": "",
+          "name": "user@example.test",
+          "role": "Client",
+          "user_id": "d6060b7d-e72f-4e1a-9098-bb8b05b5c5fe",
+          "verdict": "Pending Review",
+          "verdict_date": null,
+          "verdict_notes": ""
+        }
+      ],
+      "status": "In Review",
+      "supervisor_verdict": "Pending Review",
+      "thumbnail_url": "",
+      "title": "Dailies",
+      "updated_at": "2026-11-14T10:57:01.253165Z",
+      "uuid": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "vendor": {},
+      "versions": [
+        {
+          "code": "RPR_SH010_COMP_V001",
+          "id": "ce39dfcb-7d00-4447-880e-3ca8e2444034",
+          "item_id": "55be4bba-35cd-4411-9afd-16ab27e046b0",
+          "order": 0,
+          "status": "Pending Review",
+          "version_number": "v001"
+        }
+      ],
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "a16fc14b-c5f4-4317-ac31-75084f277dcb"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/"
+    },
+    "status": 200
+  },
+  "review_start": {
+    "body": {
+      "activity": [],
+      "annotations": [],
+      "client": {},
+      "code": "RPR_DAILIES",
+      "comments": [],
+      "created_at": "2026-11-14T10:57:01.144730Z",
+      "description": "",
+      "entity_code": "RPR_SH010",
+      "entity_id": "368fd42b-6513-445d-888b-411aeb181fb6",
+      "entity_type": "Shot",
+      "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "lead_reviewer_name": "",
+      "notes": [],
+      "project_id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+      "reviewers": [],
+      "status": "In Review",
+      "supervisor_verdict": "Pending Review",
+      "thumbnail_url": "",
+      "title": "Dailies",
+      "updated_at": "2026-11-14T10:57:01.253165Z",
+      "uuid": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "vendor": {},
+      "versions": [],
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "38b0714e-9ace-4f9d-8ed9-9ce52b3cc1f4"
+    },
+    "request": {
+      "body": {},
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/start-review/"
+    },
+    "status": 200
+  },
+  "review_submit": {
+    "body": {
+      "activity": [],
+      "annotations": [],
+      "client": {},
+      "code": "RPR_DAILIES",
+      "comments": [],
+      "created_at": "2026-11-14T10:57:01.144730Z",
+      "description": "",
+      "entity_code": "RPR_SH010",
+      "entity_id": "368fd42b-6513-445d-888b-411aeb181fb6",
+      "entity_type": "Shot",
+      "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "lead_reviewer_name": "",
+      "notes": [],
+      "project_id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+      "reviewers": [],
+      "status": "Submitted",
+      "supervisor_verdict": "Pending Review",
+      "thumbnail_url": "",
+      "title": "Dailies",
+      "updated_at": "2026-11-14T10:57:01.199638Z",
+      "uuid": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "vendor": {},
+      "versions": [],
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "9a39ef1a-eab2-4525-aae9-3dd54544daad"
+    },
+    "request": {
+      "body": {},
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/submit/"
+    },
+    "status": 200
+  },
+  "supervisor_approves": {
+    "body": {
+      "activity": [
+        {
+          "action": "PARTICIPANT_VERDICT",
+          "id": "0522b51f-1c48-4fc1-a6d4-1e3b74cad9c6",
+          "notes": "",
+          "timestamp": "2026-11-14T10:57:01.892696+00:00",
+          "user": "user@example.test",
+          "verdict": "Approved"
+        }
+      ],
+      "annotations": [],
+      "client": {},
+      "code": "RPR_DAILIES",
+      "comments": [
+        {
+          "author": "user@example.test",
+          "author_id": "d6060b7d-e72f-4e1a-9098-bb8b05b5c5fe",
+          "created_at": "2026-11-14T10:57:01.486942+00:00",
+          "frame_number": null,
+          "id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+          "is_client_visible": true,
+          "is_resolved": false,
+          "parent_id": null,
+          "replies": [
+            {
+              "author": "user@example.test",
+              "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+              "created_at": "2026-11-14T10:57:01.564027+00:00",
+              "frame_number": null,
+              "id": "9edfdbfc-2fd9-4a60-95d5-f93d7d269164",
+              "is_client_visible": true,
+              "is_resolved": false,
+              "parent_id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+              "resolved_at": null,
+              "resolved_by_id": null,
+              "tags": [],
+              "text": "Yes, in v002.",
+              "timecode": null,
+              "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+            },
+            {
+              "author": "user@example.test",
+              "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+              "created_at": "2026-11-14T10:57:01.633367+00:00",
+              "frame_number": null,
+              "id": "73ebfe31-23ea-471a-a46b-214d6bd1a6cc",
+              "is_client_visible": false,
+              "is_resolved": false,
+              "parent_id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+              "resolved_at": null,
+              "resolved_by_id": null,
+              "tags": [],
+              "text": "Budget is tight for this.",
+              "timecode": null,
+              "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+            }
+          ],
+          "resolved_at": null,
+          "resolved_by_id": null,
+          "tags": [],
+          "text": "Can the walk be slower?",
+          "timecode": null,
+          "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+        },
+        {
+          "author": "user@example.test",
+          "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+          "created_at": "2026-11-14T10:57:01.694259+00:00",
+          "frame_number": null,
+          "id": "50e78f16-3af6-4589-ad50-400503d60c61",
+          "is_client_visible": false,
+          "is_resolved": false,
+          "parent_id": null,
+          "replies": [],
+          "resolved_at": null,
+          "resolved_by_id": null,
+          "tags": [],
+          "text": "Studio only: check the edge.",
+          "timecode": null,
+          "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+        }
+      ],
+      "created_at": "2026-11-14T10:57:01.144730Z",
+      "description": "",
+      "entity_code": "RPR_SH010",
+      "entity_id": "368fd42b-6513-445d-888b-411aeb181fb6",
+      "entity_type": "Shot",
+      "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "lead_reviewer_name": "",
+      "notes": [],
+      "project_id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+      "reviewers": [
+        {
+          "id": "c7a1c7da-cd26-41f6-8e4a-023a6bce9e8c",
+          "legacy_id": "",
+          "name": "user@example.test",
+          "role": "VFX Supervisor",
+          "user_id": "8519fb64-27ed-431e-9ab5-b3cf587d6c9f",
+          "verdict": "Approved",
+          "verdict_date": "2026-11-14T10:57:01.891065+00:00",
+          "verdict_notes": ""
+        },
+        {
+          "id": "b2125503-6928-4b6d-a101-095623b2c54a",
+          "legacy_id": "",
+          "name": "user@example.test",
+          "role": "Client",
+          "user_id": "d6060b7d-e72f-4e1a-9098-bb8b05b5c5fe",
+          "verdict": "Pending Review",
+          "verdict_date": null,
+          "verdict_notes": ""
+        }
+      ],
+      "status": "Approved",
+      "supervisor_verdict": "Approved",
+      "thumbnail_url": "",
+      "title": "Dailies",
+      "updated_at": "2026-11-14T10:57:01.967655Z",
+      "uuid": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "vendor": {},
+      "versions": [
+        {
+          "code": "RPR_SH010_COMP_V001",
+          "id": "ce39dfcb-7d00-4447-880e-3ca8e2444034",
+          "item_id": "55be4bba-35cd-4411-9afd-16ab27e046b0",
+          "order": 0,
+          "status": "Pending Review",
+          "version_number": "v001"
+        }
+      ],
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "8b0c5d4f-2a11-42b2-8f29-447fe78048ae"
+    },
+    "request": {
+      "body": {},
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/approve/"
+    },
+    "status": 200
+  },
+  "supervisor_list": {
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": {
+            "id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-14T10:57:01.377426Z",
+          "data": {},
+          "id": "85620024-251e-4289-92b7-643b883f0ded",
+          "kind": "review_invited",
+          "project": {
+            "code": "RPR",
+            "id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+            "name": "Review notify"
+          },
+          "read_at": null,
+          "record": {
+            "code": "RPR_SH010",
+            "id": "368fd42b-6513-445d-888b-411aeb181fb6",
+            "type": "Shot"
+          },
+          "target": {
+            "code": "RPR_DAILIES",
+            "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+            "name": "Dailies",
+            "type": "review"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "5a2c3601-3ea7-492d-be4f-1eec56704281"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/"
+    },
+    "status": 200
+  },
+  "supervisor_participant_verdict": {
+    "body": {
+      "activity": [
+        {
+          "action": "PARTICIPANT_VERDICT",
+          "id": "0522b51f-1c48-4fc1-a6d4-1e3b74cad9c6",
+          "notes": "",
+          "timestamp": "2026-11-14T10:57:01.892696+00:00",
+          "user": "user@example.test",
+          "verdict": "Approved"
+        }
+      ],
+      "annotations": [],
+      "client": {},
+      "code": "RPR_DAILIES",
+      "comments": [
+        {
+          "author": "user@example.test",
+          "author_id": "d6060b7d-e72f-4e1a-9098-bb8b05b5c5fe",
+          "created_at": "2026-11-14T10:57:01.486942+00:00",
+          "frame_number": null,
+          "id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+          "is_client_visible": true,
+          "is_resolved": false,
+          "parent_id": null,
+          "replies": [
+            {
+              "author": "user@example.test",
+              "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+              "created_at": "2026-11-14T10:57:01.564027+00:00",
+              "frame_number": null,
+              "id": "9edfdbfc-2fd9-4a60-95d5-f93d7d269164",
+              "is_client_visible": true,
+              "is_resolved": false,
+              "parent_id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+              "resolved_at": null,
+              "resolved_by_id": null,
+              "tags": [],
+              "text": "Yes, in v002.",
+              "timecode": null,
+              "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+            },
+            {
+              "author": "user@example.test",
+              "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+              "created_at": "2026-11-14T10:57:01.633367+00:00",
+              "frame_number": null,
+              "id": "73ebfe31-23ea-471a-a46b-214d6bd1a6cc",
+              "is_client_visible": false,
+              "is_resolved": false,
+              "parent_id": "c69ef130-b9d6-41f4-bd02-2167f07d9b82",
+              "resolved_at": null,
+              "resolved_by_id": null,
+              "tags": [],
+              "text": "Budget is tight for this.",
+              "timecode": null,
+              "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+            }
+          ],
+          "resolved_at": null,
+          "resolved_by_id": null,
+          "tags": [],
+          "text": "Can the walk be slower?",
+          "timecode": null,
+          "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+        },
+        {
+          "author": "user@example.test",
+          "author_id": "2014c99a-0021-40d2-8b4b-18dfd69a60c6",
+          "created_at": "2026-11-14T10:57:01.694259+00:00",
+          "frame_number": null,
+          "id": "50e78f16-3af6-4589-ad50-400503d60c61",
+          "is_client_visible": false,
+          "is_resolved": false,
+          "parent_id": null,
+          "replies": [],
+          "resolved_at": null,
+          "resolved_by_id": null,
+          "tags": [],
+          "text": "Studio only: check the edge.",
+          "timecode": null,
+          "version_id": "ce39dfcb-7d00-4447-880e-3ca8e2444034"
+        }
+      ],
+      "created_at": "2026-11-14T10:57:01.144730Z",
+      "description": "",
+      "entity_code": "RPR_SH010",
+      "entity_id": "368fd42b-6513-445d-888b-411aeb181fb6",
+      "entity_type": "Shot",
+      "id": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "lead_reviewer_name": "",
+      "notes": [],
+      "project_id": "81d88536-e7fb-443f-bdd9-cc7861ecc99d",
+      "reviewers": [
+        {
+          "id": "c7a1c7da-cd26-41f6-8e4a-023a6bce9e8c",
+          "legacy_id": "",
+          "name": "user@example.test",
+          "role": "VFX Supervisor",
+          "user_id": "8519fb64-27ed-431e-9ab5-b3cf587d6c9f",
+          "verdict": "Approved",
+          "verdict_date": "2026-11-14T10:57:01.891065+00:00",
+          "verdict_notes": ""
+        },
+        {
+          "id": "b2125503-6928-4b6d-a101-095623b2c54a",
+          "legacy_id": "",
+          "name": "user@example.test",
+          "role": "Client",
+          "user_id": "d6060b7d-e72f-4e1a-9098-bb8b05b5c5fe",
+          "verdict": "Pending Review",
+          "verdict_date": null,
+          "verdict_notes": ""
+        }
+      ],
+      "status": "In Review",
+      "supervisor_verdict": "Pending Review",
+      "thumbnail_url": "",
+      "title": "Dailies",
+      "updated_at": "2026-11-14T10:57:01.253165Z",
+      "uuid": "93e98ffa-0e3b-4867-9193-7ebbc381b5f9",
+      "vendor": {},
+      "versions": [
+        {
+          "code": "RPR_SH010_COMP_V001",
+          "id": "ce39dfcb-7d00-4447-880e-3ca8e2444034",
+          "item_id": "55be4bba-35cd-4411-9afd-16ab27e046b0",
+          "order": 0,
+          "status": "Pending Review",
+          "version_number": "v001"
+        }
+      ],
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "9b1e7cd8-a103-4196-ac25-69f8a849a44a"
+    },
+    "request": {
+      "body": {
+        "participant_id": "c7a1c7da-cd26-41f6-8e4a-023a6bce9e8c",
+        "verdict": "Approved"
+      },
+      "method": "POST",
+      "path": "/api/v1/reviews/93e98ffa-0e3b-4867-9193-7ebbc381b5f9/participant-verdict/"
+    },
+    "status": 200
+  }
+}

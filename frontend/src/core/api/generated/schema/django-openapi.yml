@@ -12118,8 +12118,12 @@ paths:
           - note_mention
           - note_reply
           - note_status
+          - review_comment
+          - review_decision
+          - review_invited
           - review_media_failed
           - review_media_ready
+          - review_verdict
           - task_assigned
           - task_status
           - version_status
@@ -12213,6 +12217,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/notifications/preferences/:
+    get:
+      operationId: v1_notifications_preferences_retrieve
+      description: 'The caller''s muted kinds (C-RP-30): read, or replaced by ``PUT``.'
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preferences'
+          description: ''
+    put:
+      operationId: v1_notifications_preferences_update
+      description: 'The caller''s muted kinds (C-RP-30): read, or replaced by ``PUT``.'
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreferencesWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PreferencesWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PreferencesWrite'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preferences'
           description: ''
   /api/v1/notifications/read-all/:
     post:
@@ -41451,6 +41500,10 @@ components:
           - version_status
           - review_media_ready
           - review_media_failed
+          - review_decision
+          - review_invited
+          - review_verdict
+          - review_comment
           type: string
           description: |-
             * `note_created` - A note on your work
@@ -41462,7 +41515,11 @@ components:
             * `version_status` - Your version changed status
             * `review_media_ready` - Your review movie is ready
             * `review_media_failed` - Your review movie failed
-          x-spec-enum-id: ff125619eb60f538
+            * `review_decision` - A review with your work was decided
+            * `review_invited` - You were asked for a verdict
+            * `review_verdict` - A participant gave a verdict
+            * `review_comment` - A comment on your work in a review
+          x-spec-enum-id: 43a163f8d561249e
           readOnly: true
         created_at:
           type: string
@@ -49629,6 +49686,84 @@ components:
       - id
       - name
       - updated_at
+    Preferences:
+      type: object
+      description: What the caller muted, and every kind that can be muted (C-RP-30).
+      properties:
+        muted_kinds:
+          type: array
+          items:
+            enum:
+            - note_created
+            - note_reply
+            - note_status
+            - task_assigned
+            - task_status
+            - version_status
+            - review_media_ready
+            - review_media_failed
+            - review_decision
+            - review_verdict
+            - review_comment
+            type: string
+            description: |-
+              * `note_created` - note_created
+              * `note_reply` - note_reply
+              * `note_status` - note_status
+              * `task_assigned` - task_assigned
+              * `task_status` - task_status
+              * `version_status` - version_status
+              * `review_media_ready` - review_media_ready
+              * `review_media_failed` - review_media_failed
+              * `review_decision` - review_decision
+              * `review_verdict` - review_verdict
+              * `review_comment` - review_comment
+            x-spec-enum-id: 6c8d3b41d59cd3e0
+        mutable_kinds:
+          type: array
+          items:
+            enum:
+            - note_created
+            - note_reply
+            - note_status
+            - task_assigned
+            - task_status
+            - version_status
+            - review_media_ready
+            - review_media_failed
+            - review_decision
+            - review_verdict
+            - review_comment
+            type: string
+            description: |-
+              * `note_created` - note_created
+              * `note_reply` - note_reply
+              * `note_status` - note_status
+              * `task_assigned` - task_assigned
+              * `task_status` - task_status
+              * `version_status` - version_status
+              * `review_media_ready` - review_media_ready
+              * `review_media_failed` - review_media_failed
+              * `review_decision` - review_decision
+              * `review_verdict` - review_verdict
+              * `review_comment` - review_comment
+            x-spec-enum-id: 6c8d3b41d59cd3e0
+      required:
+      - mutable_kinds
+      - muted_kinds
+    PreferencesWrite:
+      type: object
+      description: The kinds to mute; the service refuses an unknown kind or one that
+        cannot be muted.
+      properties:
+        muted_kinds:
+          type: array
+          items:
+            type: string
+            maxLength: 32
+          maxItems: 50
+      required:
+      - muted_kinds
     ProfileCreate:
       type: object
       description: |-

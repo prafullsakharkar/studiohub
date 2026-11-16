@@ -118,6 +118,6 @@ The owner took every recommendation of [PLAN.md, RP-11 questions](PLAN.md#questi
 | RP-8 Live review | not planned (Q-RP-9 = B) |
 | RP-9 DCC integrations | separate repository (Q-RP-10 = B) |
 | RP-10 Loose ends of RP-5 and RP-6 | planned in [PLAN.md](PLAN.md#rp-10-loose-ends-of-rp-5-and-rp-6); answered (Q-RP-41 to Q-RP-45 = A), built and merged into `develop`, released in v4.8.0 ([rp-10-verification.md](rp-10-verification.md)) |
-| RP-11 Notification depth (reviews and preferences) | planned in [PLAN.md](PLAN.md#rp-11-notification-depth-reviews-and-preferences); answered (Q-RP-46 to Q-RP-50 = A), being built on `feature/rp-11-notification-depth` |
+| RP-11 Notification depth (reviews and preferences) | planned in [PLAN.md](PLAN.md#rp-11-notification-depth-reviews-and-preferences); answered (Q-RP-46 to Q-RP-50 = A); built on `feature/rp-11-notification-depth`, not committed ([rp-11-verification.md](rp-11-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.

@@ -5,6 +5,7 @@ from rest_framework import serializers
 from apps.core.api.serializers.base import BaseReadSerializer
 from apps.production.api.serializers.review import parts
 from apps.production.models import Review
+from apps.production.selectors.base import ProductionBaseSelector
 
 
 class ReviewSerializer(BaseReadSerializer[Any]):
@@ -33,8 +34,23 @@ class ReviewSerializer(BaseReadSerializer[Any]):
     def get_reviewers(self, obj):
         return [parts.participant_dict(p) for p in obj.participants.all()]
 
+    def _for_client(self, obj) -> bool:
+        """
+        Whether the reader is a client member of the review's project (C-RP-29). Without a request
+        nobody can be told apart, so only client-visible comments are served (fail closed).
+        """
+        request = self.context.get("request")
+        if request is None:
+            return True
+        return ProductionBaseSelector.is_client_on(request, obj.project_id)
+
     def get_comments(self, obj):
-        return [parts.comment_dict(c) for c in obj.comment_rows.all() if c.parent_id is None]
+        client = self._for_client(obj)
+        return [
+            parts.comment_dict(c, client=client)
+            for c in obj.comment_rows.all()
+            if c.parent_id is None and (c.is_client_visible or not client)
+        ]
 
     def get_notes(self, obj):
         return [parts.note_dict(n) for n in obj.note_rows.all()]

@@ -102,7 +102,7 @@ describe('review viewer', () => {
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
     const post = calls.find((c) => c.method === 'POST') as MockCall;
     expect(path(post)).toBe(`/api/v1/reviews/${review.id}/comments/`);
-    expect(post.body).toEqual({ text: 'Grain is too heavy here', frame_number: 1040, timecode: '00:00:01:15', version_id: review.versions[0].id }); // 39 frames in at 24 fps, on the version on show
+    expect(post.body).toEqual({ text: 'Grain is too heavy here', frame_number: 1040, timecode: '00:00:01:15', version_id: review.versions[0].id, is_client_visible: true }); // 39 frames in at 24 fps, on the version on show
   });
 
   it('offers no comment box to someone who cannot update reviews, or on a closed review', async () => {

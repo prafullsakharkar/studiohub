@@ -7,6 +7,7 @@ import { usePaginatedList } from '@/shared/data/usePaginatedList';
 import { describeNotification, notificationPath } from './describe';
 import { newestSeen, useNotificationActions, useUnreadCount } from './hooks';
 import { NotificationRow } from './NotificationBell';
+import { NotificationPreferencesPanel } from './NotificationPreferencesPanel';
 
 const KIND_LABELS: Record<NotificationKind, string> = {
   note_created: 'Notes on my work',
@@ -18,12 +19,16 @@ const KIND_LABELS: Record<NotificationKind, string> = {
   version_status: 'Version status',
   review_media_ready: 'Review movie ready',
   review_media_failed: 'Review movie failed',
+  review_decision: 'Review decisions',
+  review_invited: 'Verdicts asked of me',
+  review_verdict: 'Verdicts given',
+  review_comment: 'Review comments on my work',
 };
 
 /**
  * Every notification of the signed-in person (review pipeline RP-6, C-RP-23), newest first, with the unread and kind
  * filters. Rows the server no longer shows (the record was deleted, or the person lost access to it) are simply
- * not in the list. Kept 90 days.
+ * not in the list. Kept 90 days. Below the list, which kinds to be told about (RP-11, C-RP-30).
  */
 export const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -117,6 +122,8 @@ export const NotificationsPage: React.FC = () => {
       </div>
 
       <Pagination currentPage={list.page} totalCount={list.count} pageSize={list.pageSize} onPageChange={list.setPage} onPageSizeChange={list.setPageSize} itemLabel="notifications" />
+
+      <NotificationPreferencesPanel labels={KIND_LABELS} />
     </div>
   );
 };
