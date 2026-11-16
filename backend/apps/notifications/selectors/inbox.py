@@ -2,8 +2,8 @@
 Reading a person's inbox (docs/review-pipeline RP-6, C-RP-23).
 
 Own rows only, and only while their target is live and in the reader's reach: the check is one
-subquery per target type, through production's selectors, so paging and the unread count both
-come after it. Labels are read from the live records for one page at a time.
+subquery per target type, through the owning app's selectors (``apps.notifications.sources``), so
+paging and the unread count both come after it. Labels are read from the live records for one page at a time.
 """
 
 from __future__ import annotations
@@ -13,6 +13,7 @@ from typing import Any
 
 from django.db.models import Q, QuerySet
 
+from apps.notifications import sources
 from apps.notifications.constants import Kind, TargetType
 from apps.notifications.models import Notification
 from apps.production.selectors.notification_sources import NotificationSources
@@ -29,7 +30,7 @@ class InboxSelector:
         for target_type in TargetType.values:
             reach |= Q(
                 target_type=target_type,
-                target_id__in=NotificationSources.readable_query(request, target_type),
+                target_id__in=sources.readable_query(request, target_type),
             )
         return (
             Notification.objects.filter(recipient=user)
@@ -73,7 +74,7 @@ class InboxSelector:
             by_type[row.target_type].add(str(row.target_id))
         return {
             "targets": {
-                target_type: NotificationSources.labels(target_type, ids)
+                target_type: sources.labels(target_type, ids)
                 for target_type, ids in by_type.items()
             },
             "projects": NotificationSources.projects({row.project_id for row in rows}),  # pyright: ignore[reportAttributeAccessIssue]

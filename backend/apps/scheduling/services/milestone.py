@@ -5,7 +5,8 @@ A milestone belongs to one project the caller may use; its name is unique within
 case; a delivery milestone names a delivery of the same project, checked through the
 ``deliveries.project_figures`` provider (Scheduling does not import Deliveries; with the provider
 absent a delivery cannot be verified and is refused). Completed is reached only through ``complete``
-and left only through ``reopen``, so who completed it and when is always recorded.
+and left only through ``reopen``, so who completed it and when is always recorded. Completing publishes
+``MilestoneCompleted`` once the transaction commits (review-pipeline RP-13, C-RP-35).
 """
 
 from __future__ import annotations
@@ -20,6 +21,8 @@ from rest_framework.exceptions import ValidationError
 from apps.audit.models import AuditLog
 from apps.core import providers
 from apps.core.api.exceptions.api import NotFoundException
+from apps.core.events.bus import default_event_bus
+from apps.scheduling.events import MilestoneCompleted
 from apps.scheduling.models import Milestone
 from apps.scheduling.services import audit
 
@@ -151,6 +154,14 @@ class MilestoneService:
             update_fields=["status", "completed_at", "completed_by", "updated_by", "updated_at"]
         )
         cls._audit(actor, locked, "completed")
+        who = _actor_or_none(actor)
+        default_event_bus.publish(
+            MilestoneCompleted(
+                milestone_id=str(locked.pk),
+                project_id=str(locked.project_id),  # pyright: ignore[reportAttributeAccessIssue]
+                actor_id=str(who.pk) if who is not None else None,
+            )
+        )
         return locked
 
     @staticmethod

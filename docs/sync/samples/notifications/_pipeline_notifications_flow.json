@@ -1,0 +1,847 @@
+{
+  "artist_list": {
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": {
+            "id": "d7df3d53-bbf7-4308-aece-d32445d42e30",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:31.118367Z",
+          "data": {
+            "status": "Failed"
+          },
+          "id": "8b0f8a99-2944-412d-a32b-a8b1864dc3b3",
+          "kind": "publish_finished",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_PUB_002",
+            "id": "319c93e3-8b1e-4fe7-846c-0e934797d125",
+            "name": "Comp export",
+            "type": "publish_job"
+          }
+        },
+        {
+          "actor": {
+            "id": "d7df3d53-bbf7-4308-aece-d32445d42e30",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:31.069935Z",
+          "data": {
+            "status": "Exported"
+          },
+          "id": "7d0d2520-06e2-4bc3-bd57-364068a8d9d3",
+          "kind": "publish_finished",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_PUB_001",
+            "id": "806bafcd-a6f9-40e3-b9e9-3f07b52ba19f",
+            "name": "Comp export",
+            "type": "publish_job"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "a1241e16-a669-41fb-b40e-40efdd135fba"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/?page_size=50"
+    },
+    "status": 200
+  },
+  "complete_export": {
+    "body": {
+      "code": "RPP_PUB_001",
+      "created_at": "2026-11-16T16:52:30.992287Z",
+      "dcc_tool": "Nuke",
+      "dcc_tool_display": "Nuke",
+      "dcc_version": "",
+      "entity_code": "",
+      "entity_id": "",
+      "entity_name": "",
+      "entity_type": "",
+      "entity_type_display": "",
+      "error_message": "",
+      "export_format": "",
+      "export_options": {},
+      "export_path": "",
+      "id": "806bafcd-a6f9-40e3-b9e9-3f07b52ba19f",
+      "is_archived": false,
+      "job_status": "Exported",
+      "name": "Comp export",
+      "project": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+      "project_name": "Pipeline notify",
+      "retry_count": 0,
+      "source_file": "",
+      "source_version": "",
+      "status": "Published",
+      "updated_at": "2026-11-16T16:52:31.039169Z",
+      "validation_results": {},
+      "validation_rules": {},
+      "version_id": "f1d79bba-3e8b-45ad-bd1e-599456d76ce9"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "8a18a7dd-b612-4b02-8e66-af9a7bb42c47"
+    },
+    "request": {
+      "body": {},
+      "method": "POST",
+      "path": "/api/v1/publishing/806bafcd-a6f9-40e3-b9e9-3f07b52ba19f/complete-export/"
+    },
+    "status": 200
+  },
+  "complete_milestone": {
+    "body": {
+      "completed_at": "2026-11-16T16:52:31.153670Z",
+      "completed_by": "07005448-e7ee-486e-9a28-b38bef560c48",
+      "created_at": "2026-11-16T16:52:31.134958Z",
+      "delivery_package_id": null,
+      "due_date": "2026-11-26",
+      "id": "c9c91ad6-52d5-4ec6-b01c-fd31147b690e",
+      "kind": "general",
+      "name": "Picture lock",
+      "notes": "",
+      "order": 0,
+      "project": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+      "project_code": "RPP",
+      "project_name": "Pipeline notify",
+      "status": "Completed",
+      "updated_at": "2026-11-16T16:52:31.156084Z"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "164222ca-5986-4122-9629-7c9d3cf8c05b"
+    },
+    "request": {
+      "body": {},
+      "method": "POST",
+      "path": "/api/v1/scheduling/milestones/c9c91ad6-52d5-4ec6-b01c-fd31147b690e/complete/"
+    },
+    "status": 200
+  },
+  "coordinator_list": {
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": {
+            "id": "d7df3d53-bbf7-4308-aece-d32445d42e30",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:30.722359Z",
+          "data": {
+            "from_status": "Approved",
+            "to_status": "Complete"
+          },
+          "id": "08a767f5-0422-48f4-ba75-ea81e16393bb",
+          "kind": "delivery_status",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_DEL_001",
+            "id": "fa9fecbf-2e52-47f8-8418-477c181a2d7d",
+            "name": "Turnover 1",
+            "type": "delivery"
+          }
+        },
+        {
+          "actor": {
+            "id": "d7df3d53-bbf7-4308-aece-d32445d42e30",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:30.686148Z",
+          "data": {
+            "client_status": "Approved"
+          },
+          "id": "b2600d2e-23e6-479e-9626-bdcf8d138e53",
+          "kind": "delivery_client_answer",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_DEL_001",
+            "id": "fa9fecbf-2e52-47f8-8418-477c181a2d7d",
+            "name": "Turnover 1",
+            "type": "delivery"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "05d8be83-2cf2-4421-bda0-e115e3171d2f"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/?page_size=50"
+    },
+    "status": 200
+  },
+  "fail_export": {
+    "body": {
+      "code": "RPP_PUB_002",
+      "created_at": "2026-11-16T16:52:30.998258Z",
+      "dcc_tool": "Nuke",
+      "dcc_tool_display": "Nuke",
+      "dcc_version": "",
+      "entity_code": "",
+      "entity_id": "",
+      "entity_name": "",
+      "entity_type": "",
+      "entity_type_display": "",
+      "error_message": "Render node ran out of disk",
+      "export_format": "",
+      "export_options": {},
+      "export_path": "",
+      "id": "319c93e3-8b1e-4fe7-846c-0e934797d125",
+      "is_archived": false,
+      "job_status": "Failed",
+      "name": "Comp export",
+      "project": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+      "project_name": "Pipeline notify",
+      "retry_count": 0,
+      "source_file": "",
+      "source_version": "",
+      "status": "Failed",
+      "updated_at": "2026-11-16T16:52:31.096304Z",
+      "validation_results": {},
+      "validation_rules": {},
+      "version_id": "f1d79bba-3e8b-45ad-bd1e-599456d76ce9"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "4c038508-1844-43f7-a1d6-46484224b46b"
+    },
+    "request": {
+      "body": {
+        "reason": "Render node ran out of disk"
+      },
+      "method": "POST",
+      "path": "/api/v1/publishing/319c93e3-8b1e-4fe7-846c-0e934797d125/fail/"
+    },
+    "status": 200
+  },
+  "producer_list": {
+    "body": {
+      "count": 8,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": null,
+          "created_at": "2026-11-16T16:52:31.209866Z",
+          "data": {
+            "due_date": "2026-11-17",
+            "stage": "due"
+          },
+          "id": "bc0c28c5-7442-4847-829d-eb293b31007c",
+          "kind": "milestone_due",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "",
+            "id": "b2019dbf-1b48-4765-911c-d275a48e6fed",
+            "name": "Final turnover",
+            "type": "milestone"
+          }
+        },
+        {
+          "actor": null,
+          "created_at": "2026-11-16T16:52:31.199518Z",
+          "data": {
+            "due_date": "2026-11-15",
+            "stage": "overdue"
+          },
+          "id": "8102df9d-6bd8-4fb0-a95d-a0a09ae56e3d",
+          "kind": "milestone_due",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "",
+            "id": "b7b46520-b021-4743-88b8-f4fd571f3bd1",
+            "name": "Temp mix",
+            "type": "milestone"
+          }
+        },
+        {
+          "actor": {
+            "id": "07005448-e7ee-486e-9a28-b38bef560c48",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:31.173141Z",
+          "data": {},
+          "id": "bf70fd43-28ef-43b4-b6aa-d96eddc73b8f",
+          "kind": "milestone_completed",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "",
+            "id": "c9c91ad6-52d5-4ec6-b01c-fd31147b690e",
+            "name": "Picture lock",
+            "type": "milestone"
+          }
+        },
+        {
+          "actor": null,
+          "created_at": "2026-11-16T16:52:30.977257Z",
+          "data": {
+            "from_status": "Signed Off",
+            "to_status": "Prepared"
+          },
+          "id": "05aa521c-a07b-4056-9e86-77d9a34a06ed",
+          "kind": "delivery_status",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_DEL_002",
+            "id": "6041fc00-22d6-446d-878f-606fd306a854",
+            "name": "Turnover 2",
+            "type": "delivery"
+          }
+        },
+        {
+          "actor": {
+            "id": "90bc1429-a89c-4a6a-a670-3ea4d18e172c",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:30.953643Z",
+          "data": {},
+          "id": "c186526e-ffc7-4cc1-9673-0f984d734ff2",
+          "kind": "published_file_revoked",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_SH020_V001",
+            "id": "d79ef410-dee5-4106-9573-bb29fc8728ce",
+            "name": "plate_main.exr",
+            "type": "published_file"
+          }
+        },
+        {
+          "actor": {
+            "id": "07005448-e7ee-486e-9a28-b38bef560c48",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:30.895187Z",
+          "data": {
+            "from_status": "Prepared",
+            "to_status": "Signed Off"
+          },
+          "id": "49cb7f33-554a-4dcb-83fc-c9c8c9b53d43",
+          "kind": "delivery_status",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_DEL_002",
+            "id": "6041fc00-22d6-446d-878f-606fd306a854",
+            "name": "Turnover 2",
+            "type": "delivery"
+          }
+        },
+        {
+          "actor": {
+            "id": "57e3f7fd-51a7-47c1-9d7f-6381eb670006",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:30.622835Z",
+          "data": {
+            "from_status": "Signed Off",
+            "to_status": "Submitted"
+          },
+          "id": "8b649bb5-34a0-4fef-96a9-98d12e10c010",
+          "kind": "delivery_status",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_DEL_001",
+            "id": "fa9fecbf-2e52-47f8-8418-477c181a2d7d",
+            "name": "Turnover 1",
+            "type": "delivery"
+          }
+        },
+        {
+          "actor": {
+            "id": "07005448-e7ee-486e-9a28-b38bef560c48",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:30.565153Z",
+          "data": {
+            "from_status": "Prepared",
+            "to_status": "Signed Off"
+          },
+          "id": "e11ff921-6325-4944-93e5-66588fbdf5f4",
+          "kind": "delivery_status",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_DEL_001",
+            "id": "fa9fecbf-2e52-47f8-8418-477c181a2d7d",
+            "name": "Turnover 1",
+            "type": "delivery"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "3fe43f51-2032-4599-b6b1-6f4e908d0315"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/?page_size=50"
+    },
+    "status": 200
+  },
+  "producer_list_kind_milestone_due": {
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": null,
+          "created_at": "2026-11-16T16:52:31.209866Z",
+          "data": {
+            "due_date": "2026-11-17",
+            "stage": "due"
+          },
+          "id": "bc0c28c5-7442-4847-829d-eb293b31007c",
+          "kind": "milestone_due",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "",
+            "id": "b2019dbf-1b48-4765-911c-d275a48e6fed",
+            "name": "Final turnover",
+            "type": "milestone"
+          }
+        },
+        {
+          "actor": null,
+          "created_at": "2026-11-16T16:52:31.199518Z",
+          "data": {
+            "due_date": "2026-11-15",
+            "stage": "overdue"
+          },
+          "id": "8102df9d-6bd8-4fb0-a95d-a0a09ae56e3d",
+          "kind": "milestone_due",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "",
+            "id": "b7b46520-b021-4743-88b8-f4fd571f3bd1",
+            "name": "Temp mix",
+            "type": "milestone"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "87474adb-011c-4bb0-85cc-a5a886a85046"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/?kind=milestone_due"
+    },
+    "status": 200
+  },
+  "producer_mute_delivery_status": {
+    "body": {
+      "mutable_kinds": [
+        "note_created",
+        "note_reply",
+        "note_status",
+        "task_assigned",
+        "task_status",
+        "version_status",
+        "review_media_ready",
+        "review_media_failed",
+        "review_decision",
+        "review_verdict",
+        "review_comment",
+        "delivery_status",
+        "delivery_client_answer",
+        "publish_finished",
+        "published_file_revoked",
+        "milestone_due",
+        "milestone_completed"
+      ],
+      "muted_kinds": [
+        "delivery_status",
+        "milestone_due"
+      ]
+    },
+    "headers": {
+      "Allow": "GET, PUT, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "a37ebbb8-5f4b-41ca-92e0-64b0f59ba327"
+    },
+    "request": {
+      "body": {
+        "muted_kinds": [
+          "delivery_status",
+          "milestone_due"
+        ]
+      },
+      "method": "PUT",
+      "path": "/api/v1/notifications/preferences/"
+    },
+    "status": 200
+  },
+  "producer_preferences": {
+    "body": {
+      "mutable_kinds": [
+        "note_created",
+        "note_reply",
+        "note_status",
+        "task_assigned",
+        "task_status",
+        "version_status",
+        "review_media_ready",
+        "review_media_failed",
+        "review_decision",
+        "review_verdict",
+        "review_comment",
+        "delivery_status",
+        "delivery_client_answer",
+        "publish_finished",
+        "published_file_revoked",
+        "milestone_due",
+        "milestone_completed"
+      ],
+      "muted_kinds": []
+    },
+    "headers": {
+      "Allow": "GET, PUT, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "b9175d49-7c89-4894-973b-ffb8ed4aee29"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/preferences/"
+    },
+    "status": 200
+  },
+  "producer_unread_count": {
+    "body": {
+      "count": 8
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "f38dd0f9-9185-4619-be9d-202444655efb"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/unread-count/"
+    },
+    "status": 200
+  },
+  "supervisor_list": {
+    "body": {
+      "count": 5,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": null,
+          "created_at": "2026-11-16T16:52:30.985169Z",
+          "data": {
+            "from_status": "Signed Off",
+            "to_status": "Prepared"
+          },
+          "id": "b330d57e-78de-4c04-aa06-4faeb30811d7",
+          "kind": "delivery_status",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_DEL_002",
+            "id": "6041fc00-22d6-446d-878f-606fd306a854",
+            "name": "Turnover 2",
+            "type": "delivery"
+          }
+        },
+        {
+          "actor": {
+            "id": "90bc1429-a89c-4a6a-a670-3ea4d18e172c",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:30.960995Z",
+          "data": {},
+          "id": "acc31306-e141-4363-b5cd-2fa5cbd9e4dc",
+          "kind": "published_file_revoked",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_SH020_V001",
+            "id": "d79ef410-dee5-4106-9573-bb29fc8728ce",
+            "name": "plate_main.exr",
+            "type": "published_file"
+          }
+        },
+        {
+          "actor": {
+            "id": "d7df3d53-bbf7-4308-aece-d32445d42e30",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:30.729571Z",
+          "data": {
+            "from_status": "Approved",
+            "to_status": "Complete"
+          },
+          "id": "02926fe1-3ff6-4242-a5eb-8162f6ef502a",
+          "kind": "delivery_status",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_DEL_001",
+            "id": "fa9fecbf-2e52-47f8-8418-477c181a2d7d",
+            "name": "Turnover 1",
+            "type": "delivery"
+          }
+        },
+        {
+          "actor": {
+            "id": "d7df3d53-bbf7-4308-aece-d32445d42e30",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:30.695103Z",
+          "data": {
+            "client_status": "Approved"
+          },
+          "id": "2937bb7d-c951-4fad-82c8-c7d4914ddc80",
+          "kind": "delivery_client_answer",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_DEL_001",
+            "id": "fa9fecbf-2e52-47f8-8418-477c181a2d7d",
+            "name": "Turnover 1",
+            "type": "delivery"
+          }
+        },
+        {
+          "actor": {
+            "id": "57e3f7fd-51a7-47c1-9d7f-6381eb670006",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:30.643063Z",
+          "data": {
+            "from_status": "Signed Off",
+            "to_status": "Submitted"
+          },
+          "id": "29a326a2-b341-4bfc-a4c3-ff029720ee29",
+          "kind": "delivery_status",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_DEL_001",
+            "id": "fa9fecbf-2e52-47f8-8418-477c181a2d7d",
+            "name": "Turnover 1",
+            "type": "delivery"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "268d2575-ebc2-4541-8bfd-7a271ada5c6f"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/?page_size=50"
+    },
+    "status": 200
+  },
+  "td_list": {
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "actor": {
+            "id": "d7df3d53-bbf7-4308-aece-d32445d42e30",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:31.123388Z",
+          "data": {
+            "status": "Failed"
+          },
+          "id": "396a4044-a3c0-491f-8427-923a60855684",
+          "kind": "publish_finished",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_PUB_002",
+            "id": "319c93e3-8b1e-4fe7-846c-0e934797d125",
+            "name": "Comp export",
+            "type": "publish_job"
+          }
+        },
+        {
+          "actor": {
+            "id": "d7df3d53-bbf7-4308-aece-d32445d42e30",
+            "name": "user@example.test"
+          },
+          "created_at": "2026-11-16T16:52:31.075964Z",
+          "data": {
+            "status": "Exported"
+          },
+          "id": "890588a7-d103-45ae-8790-ed2687f7cdee",
+          "kind": "publish_finished",
+          "project": {
+            "code": "RPP",
+            "id": "6b66c2bf-95e4-4eed-ba20-5a8f556d9eb7",
+            "name": "Pipeline notify"
+          },
+          "read_at": null,
+          "record": null,
+          "target": {
+            "code": "RPP_PUB_001",
+            "id": "806bafcd-a6f9-40e3-b9e9-3f07b52ba19f",
+            "name": "Comp export",
+            "type": "publish_job"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "X-Request-ID": "2fce5c6b-bce9-48a6-b140-7f831915ef8c"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "path": "/api/v1/notifications/?page_size=50"
+    },
+    "status": 200
+  }
+}

@@ -1,6 +1,7 @@
 """
-Notification wiring (docs/review-pipeline RP-6, C-RP-24). ``register_events`` is called by core
-event autodiscovery; production publishes the events and never imports this app.
+Notification wiring (docs/review-pipeline RP-6, C-RP-24; RP-13, C-RP-35). ``register_events`` is
+called by core event autodiscovery; production, deliveries, publishing and scheduling publish the
+events and never import this app.
 """
 
 from __future__ import annotations
@@ -8,6 +9,7 @@ from __future__ import annotations
 
 def register_events() -> None:
     from apps.core.events.bus import default_event_bus
+    from apps.deliveries.events import DeliveryStatusChanged
     from apps.notifications.events import handlers
     from apps.production.events.notes import (
         NoteCreated,
@@ -24,6 +26,8 @@ def register_events() -> None:
     )
     from apps.production.events.status import StatusChanged
     from apps.production.events.tasks import TaskAssigned
+    from apps.publishing.events import PublishedFileRevoked, PublishJobFinished
+    from apps.scheduling.events import MilestoneCompleted
 
     default_event_bus.subscribe(NoteCreated, handlers.NoteCreatedHandler)
     default_event_bus.subscribe(NoteReplied, handlers.NoteRepliedHandler)
@@ -37,3 +41,8 @@ def register_events() -> None:
     default_event_bus.subscribe(ReviewParticipantAdded, handlers.ReviewParticipantAddedHandler)
     default_event_bus.subscribe(ReviewParticipantVerdict, handlers.ReviewParticipantVerdictHandler)
     default_event_bus.subscribe(ReviewCommentAdded, handlers.ReviewCommentAddedHandler)
+    # RP-13 (C-RP-35): deliveries, publishing, milestones
+    default_event_bus.subscribe(DeliveryStatusChanged, handlers.DeliveryStatusChangedHandler)
+    default_event_bus.subscribe(PublishJobFinished, handlers.PublishJobFinishedHandler)
+    default_event_bus.subscribe(PublishedFileRevoked, handlers.PublishedFileRevokedHandler)
+    default_event_bus.subscribe(MilestoneCompleted, handlers.MilestoneCompletedHandler)

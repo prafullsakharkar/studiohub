@@ -12114,10 +12114,16 @@ paths:
         schema:
           type: string
           enum:
+          - delivery_client_answer
+          - delivery_status
+          - milestone_completed
+          - milestone_due
           - note_created
           - note_mention
           - note_reply
           - note_status
+          - publish_finished
+          - published_file_revoked
           - review_comment
           - review_decision
           - review_invited
@@ -41595,6 +41601,12 @@ components:
           - review_invited
           - review_verdict
           - review_comment
+          - delivery_status
+          - delivery_client_answer
+          - publish_finished
+          - published_file_revoked
+          - milestone_due
+          - milestone_completed
           type: string
           description: |-
             * `note_created` - A note on your work
@@ -41610,7 +41622,13 @@ components:
             * `review_invited` - You were asked for a verdict
             * `review_verdict` - A participant gave a verdict
             * `review_comment` - A comment on your work in a review
-          x-spec-enum-id: 43a163f8d561249e
+            * `delivery_status` - A delivery you work on moved
+            * `delivery_client_answer` - The client answered a delivery
+            * `publish_finished` - A publish job ended or failed
+            * `published_file_revoked` - A file you depend on was revoked
+            * `milestone_due` - A milestone is due or overdue
+            * `milestone_completed` - Your milestone was completed
+          x-spec-enum-id: e14a9bc75db694bc
           readOnly: true
         created_at:
           type: string
@@ -49801,6 +49819,12 @@ components:
             - review_decision
             - review_verdict
             - review_comment
+            - delivery_status
+            - delivery_client_answer
+            - publish_finished
+            - published_file_revoked
+            - milestone_due
+            - milestone_completed
             type: string
             description: |-
               * `note_created` - note_created
@@ -49814,7 +49838,13 @@ components:
               * `review_decision` - review_decision
               * `review_verdict` - review_verdict
               * `review_comment` - review_comment
-            x-spec-enum-id: 6c8d3b41d59cd3e0
+              * `delivery_status` - delivery_status
+              * `delivery_client_answer` - delivery_client_answer
+              * `publish_finished` - publish_finished
+              * `published_file_revoked` - published_file_revoked
+              * `milestone_due` - milestone_due
+              * `milestone_completed` - milestone_completed
+            x-spec-enum-id: fc52128799f7e44b
         mutable_kinds:
           type: array
           items:
@@ -49830,6 +49860,12 @@ components:
             - review_decision
             - review_verdict
             - review_comment
+            - delivery_status
+            - delivery_client_answer
+            - publish_finished
+            - published_file_revoked
+            - milestone_due
+            - milestone_completed
             type: string
             description: |-
               * `note_created` - note_created
@@ -49843,7 +49879,13 @@ components:
               * `review_decision` - review_decision
               * `review_verdict` - review_verdict
               * `review_comment` - review_comment
-            x-spec-enum-id: 6c8d3b41d59cd3e0
+              * `delivery_status` - delivery_status
+              * `delivery_client_answer` - delivery_client_answer
+              * `publish_finished` - publish_finished
+              * `published_file_revoked` - published_file_revoked
+              * `milestone_due` - milestone_due
+              * `milestone_completed` - milestone_completed
+            x-spec-enum-id: fc52128799f7e44b
       required:
       - mutable_kinds
       - muted_kinds

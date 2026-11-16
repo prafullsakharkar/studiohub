@@ -8,6 +8,10 @@ The map is ``constants.workflow.JOB_TRANSITIONS``.
 
 Authorization by project membership is Phase 5; the viewset gates these calls with
 ``publishing.update`` for now.
+
+A job that ends Exported or Failed publishes ``PublishJobFinished`` (review-pipeline RP-13,
+C-RP-35), from ``_step``, so every route there (an export report, a validation result, a move)
+tells the same people; it is dispatched after the transaction commits.
 """
 
 from __future__ import annotations
@@ -20,12 +24,17 @@ from rest_framework.exceptions import ValidationError
 
 from apps.audit.models import AuditLog
 from apps.core.api.exceptions.api import NotFoundException
+from apps.core.events.bus import default_event_bus
 from apps.production.permissions.checks import has_explicit_permission_code
 from apps.publishing.constants import workflow as wf
 from apps.publishing.constants.permissions import PublishPermissions
+from apps.publishing.events import PublishJobFinished
 from apps.publishing.exceptions import InvalidTransition, JobNotEditable, TransitionNotPermitted
 from apps.publishing.models import PublishItem
 from apps.publishing.services import audit, validation
+
+#: the statuses that end a job and are told (RP-13, C-RP-35); Cancelled is someone's own decision
+FINISHED = frozenset({wf.JOB_EXPORTED, wf.JOB_FAILED})
 
 #: Details an export job lets people edit, and only while it is Pending or Failed.
 EDITABLE_FIELDS = (
@@ -68,8 +77,12 @@ class JobService:
         extra: dict[str, Any] | None = None,
         request: Any = None,
         override_reason: str | None = None,
+        actor: Any = None,
     ) -> str:
-        """Move a locked job along the map and save it. Returns the override kind ('' for a working move)."""
+        """
+        Move a locked job along the map and save it. Returns the override kind ('' for a working
+        move). Ending Exported or Failed publishes ``PublishJobFinished`` with ``actor``.
+        """
         source = job.status
         override_kind = ""
         if wf.job_move_needs_override(source, target):
@@ -89,6 +102,17 @@ class JobService:
             setattr(job, name, value)
             fields.append(name)
         job.save(update_fields=fields)
+        if target in FINISHED and source != target:
+            who = _actor_or_none(actor)
+            default_event_bus.publish(
+                PublishJobFinished(
+                    job_id=str(job.pk),
+                    project_id=str(job.project_id) if job.project_id else None,  # pyright: ignore[reportAttributeAccessIssue]
+                    version_id=str(job.version_id) if job.version_id else None,  # pyright: ignore[reportAttributeAccessIssue]
+                    status=target,
+                    actor_id=str(who.pk) if who is not None else None,
+                )
+            )
         return override_kind
 
     @classmethod
@@ -121,7 +145,9 @@ class JobService:
         """Move a job along the map. Leaving Exported or Cancelled needs the override and a reason."""
         locked = cls._lock(job)
         source = locked.status
-        kind = cls._step(locked, target, request=request, override_reason=override_reason)
+        kind = cls._step(
+            locked, target, request=request, override_reason=override_reason, actor=actor
+        )
         cls._audit(
             actor,
             locked,
@@ -154,6 +180,7 @@ class JobService:
                 "validation_results": summary,
                 "error_message": "" if passed else "Validation failed",
             },
+            actor=actor,
         )
         cls._audit(
             actor,
@@ -207,7 +234,7 @@ class JobService:
         """The export finished: Exporting to Exported (final). No file is required; validation reports a missing one."""
         locked = cls._lock(job)
         source = locked.status
-        cls._step(locked, wf.JOB_EXPORTED)
+        cls._step(locked, wf.JOB_EXPORTED, actor=actor)
         cls._audit(
             actor,
             locked,
@@ -229,7 +256,7 @@ class JobService:
         if source != wf.JOB_EXPORTING:
             # The map also allows Validating to Failed, but that is a validation result, not an export report.
             raise cls._refuse(source, wf.JOB_FAILED)
-        cls._step(locked, wf.JOB_FAILED, extra={"error_message": reason})
+        cls._step(locked, wf.JOB_FAILED, extra={"error_message": reason}, actor=actor)
         cls._audit(
             actor,
             locked,

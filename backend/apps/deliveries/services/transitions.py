@@ -13,6 +13,9 @@ Every move writes one ``DeliveryStatusChange`` row in the same transaction.
   the history row says ``override_kind="status"``.
 * ``system=True`` is for moves the platform makes itself (a revoked file); only map moves, with
   ``override_kind="system"`` and no actor.
+
+Every move publishes ``DeliveryStatusChanged`` (review-pipeline RP-13, C-RP-35), dispatched once
+the caller's transaction commits; a rolled-back move publishes nothing.
 """
 
 from __future__ import annotations
@@ -21,8 +24,10 @@ from typing import Any
 
 from rest_framework.exceptions import ValidationError
 
+from apps.core.events.bus import default_event_bus
 from apps.deliveries.constants import workflow as wf
 from apps.deliveries.constants.permissions import DeliveryPermissions
+from apps.deliveries.events.status import DeliveryStatusChanged
 from apps.deliveries.exceptions import InvalidTransition, TransitionNotPermitted
 from apps.deliveries.models import DeliveryPackage, DeliveryStatusChange
 from apps.production.permissions.checks import has_explicit_permission_code, has_permission_code
@@ -106,5 +111,18 @@ def move(
         actor=None if system else _actor_or_none(actor),
         reason=reason[:500],
         override_kind=kind,
+    )
+    recorded_by = None if system else _actor_or_none(actor)
+    default_event_bus.publish(
+        DeliveryStatusChanged(
+            delivery_id=str(package.pk),
+            project_id=str(package.project_id) if package.project_id else None,  # pyright: ignore[reportAttributeAccessIssue]
+            from_status=source,
+            to_status=target,
+            actor_id=str(recorded_by.pk) if recorded_by is not None else None,
+            system=system,
+            override_kind=kind,
+            client_status=str((extra or {}).get("client_status") or ""),
+        )
     )
     return kind

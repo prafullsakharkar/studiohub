@@ -135,7 +135,7 @@ def test_capture_notifications(django_user_model, django_capture_on_commit_callb
     (tmp_path / ready.directory).mkdir(parents=True)
     probe = commands.parse_probe(json.dumps({"streams": [{"codec_type": "video", "codec_name": "h264", "width": 1920, "height": 1080, "avg_frame_rate": "24/1", "r_frame_rate": "24/1", "duration": "1", "nb_read_packets": "24"}], "format": {"duration": "1"}}), kind="movie")
     with django_capture_on_commit_callbacks(execute=True):
-        ReviewMediaService._finish(ready, probe, {"proxy": "proxy.mp4", "thumbnail": "thumbnail.jpg", "filmstrip": "filmstrip.jpg"})
+        ReviewMediaService._finish(ready, probe, {"proxy": "proxy.mp4", "thumbnail": "thumbnail.jpg", "filmstrip": "filmstrip.jpg"}, {"first_frame": None, "last_frame": None, "colour": "as_stored", "burn_ins": False})
 
     # C-RP-23: the artist's inbox.
     base = "/api/v1/notifications/"

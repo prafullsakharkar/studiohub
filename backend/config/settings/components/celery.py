@@ -65,6 +65,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "notifications.purge",
         "schedule": crontab(hour=4, minute=10),
     },
+    # Milestones due or overdue, reminded once per person and stage (review-pipeline RP-13).
+    "notifications-milestone-reminders": {
+        "task": "notifications.milestone_reminders",
+        "schedule": crontab(minute=20),
+    },
 }
 
 # Review media runs on its own queue, consumed only by the `celery-media` worker, which has ffmpeg.
