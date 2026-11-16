@@ -1,6 +1,6 @@
 # RP-12 Media depth (image sequences and burn-ins): verification
 
-Branch `feature/rp-12-media-depth`, off `develop` at `0fe2dbf5` (RP-11 merged). The plan and contracts are commit `d38af8e9` (Q-RP-51 to Q-RP-56 answered as recommended). **WP 12.1 to 12.8 are committed as `f2b84225`, not merged.**
+Branch `feature/rp-12-media-depth`, off `develop` at `0fe2dbf5` (RP-11 merged). The plan and contracts are commit `d38af8e9` (Q-RP-51 to Q-RP-56 answered as recommended). **WP 12.1 to 12.8 are committed as `f2b84225`, merged into `develop` (`292b5060`) and released in v4.9.0.** develop's first CI run failed on an RP-6 notifications test that still called `_finish` the old way (fixed in `46b163c3`); the image scan and the dependency audit flagged `dnspython` and `tornado` (bumped in `dd89ac3d` and `0a1c1ee9`).
 
 ## 0. Read first
 
