@@ -132,6 +132,6 @@ The owner took every recommendation of [PLAN.md, RP-12 questions](PLAN.md#questi
 | RP-9 DCC integrations | separate repository (Q-RP-10 = B) |
 | RP-10 Loose ends of RP-5 and RP-6 | planned in [PLAN.md](PLAN.md#rp-10-loose-ends-of-rp-5-and-rp-6); answered (Q-RP-41 to Q-RP-45 = A), built and merged into `develop`, released in v4.8.0 ([rp-10-verification.md](rp-10-verification.md)) |
 | RP-11 Notification depth (reviews and preferences) | planned in [PLAN.md](PLAN.md#rp-11-notification-depth-reviews-and-preferences); answered (Q-RP-46 to Q-RP-50 = A); committed `a7443900`, merged into `develop` (`0fe2dbf5`) and `main` (`32da0d68`), not released ([rp-11-verification.md](rp-11-verification.md)) |
-| RP-12 Media depth (image sequences and burn-ins) | planned in [PLAN.md](PLAN.md#rp-12-media-depth-image-sequences-and-burn-ins); answered (Q-RP-51 to Q-RP-56 = A); built on `feature/rp-12-media-depth`, not committed yet ([rp-12-verification.md](rp-12-verification.md)) |
+| RP-12 Media depth (image sequences and burn-ins) | planned in [PLAN.md](PLAN.md#rp-12-media-depth-image-sequences-and-burn-ins); answered (Q-RP-51 to Q-RP-56 = A); built and committed as `f2b84225` on `feature/rp-12-media-depth`, not merged ([rp-12-verification.md](rp-12-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.

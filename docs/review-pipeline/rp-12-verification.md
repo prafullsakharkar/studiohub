@@ -1,6 +1,6 @@
 # RP-12 Media depth (image sequences and burn-ins): verification
 
-Branch `feature/rp-12-media-depth`, off `develop` at `0fe2dbf5` (RP-11 merged). The plan and contracts are commit `d38af8e9` (Q-RP-51 to Q-RP-56 answered as recommended). **WP 12.1 to 12.8 are built and verified, and not committed.**
+Branch `feature/rp-12-media-depth`, off `develop` at `0fe2dbf5` (RP-11 merged). The plan and contracts are commit `d38af8e9` (Q-RP-51 to Q-RP-56 answered as recommended). **WP 12.1 to 12.8 are committed as `f2b84225`, not merged.**
 
 ## 0. Read first
 
