@@ -41,6 +41,7 @@ export const CloneProjectDialog: React.FC<{ project: Project; onClose: () => voi
       aspect_ratio: project.aspect_ratio,
       color_space: project.color_space,
       approve_task_on_version_approval: project.approve_task_on_version_approval,
+      review_burn_ins: project.review_burn_ins,
       ...(project.client_id ? { client_id: project.client_id } : {}),
     };
     const cloned = await projectsApi.create(settings);

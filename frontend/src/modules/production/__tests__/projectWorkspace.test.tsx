@@ -165,5 +165,27 @@ describe('project workspace', () => {
     mount();
     await screen.findByRole('heading', { name: project.name });
     expect(screen.queryByText('Tasks approved with their versions')).toBeNull();
+    expect(screen.queryByText('Burn-ins on review copies')).toBeNull();
+  });
+
+  it('the header says when review copies carry burn-ins, and a duplicate keeps the switch (RP-12, C-RP-33)', async () => {
+    const sequences = loadSample<Record<string, { status: number; body: any }>>('production/_review_sequence_flow.json');
+    const burnt = sequences.project_with_burn_ins.body as { id: string; code: string; name: string; review_burn_ins: boolean };
+    expect(burnt.review_burn_ins).toBe(true);
+    const { calls: sent } = mockFetch((c) => {
+      const p = path(c);
+      if (p === `/api/v1/projects/${burnt.id}/`) return { body: burnt };
+      if (p === '/api/v1/projects/' && c.method === 'POST') return { status: 201, body: rollup.create_project_on.body };
+      return { body: page([]) };
+    });
+    mount(burnt.id);
+    await screen.findByRole('heading', { name: burnt.name });
+    expect(screen.getByText('Burn-ins on review copies')).toBeTruthy();
+    fireEvent.click(await screen.findByRole('button', { name: /Duplicate/ }));
+    fireEvent.change(await screen.findByDisplayValue(`${burnt.name} (Copy)`), { target: { value: 'Sequences 2' } });
+    fireEvent.change(screen.getByDisplayValue(`${burnt.code}_CLONE`), { target: { value: 'RPS2' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Duplicate project' }));
+    await waitFor(() => expect(sent.some((c) => c.method === 'POST')).toBe(true));
+    expect(sent.find((c) => c.method === 'POST')?.body).toMatchObject({ review_burn_ins: true });
   });
 });

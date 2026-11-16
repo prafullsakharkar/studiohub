@@ -13,6 +13,7 @@ from apps.production.api.serializers.actions import (
     validated,
 )
 from apps.production.api.serializers.review_media import (
+    ReviewMediaSequenceOpenSerializer,
     ReviewMediaSerializer,
     ReviewMediaUploadSerializer,
 )
@@ -65,6 +66,7 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
         "review_media": (VersionPermissions.VIEW,),
         # C-RP-26: reach decides the 404; require_manage_review_media the 403
         "upload_review_media": (VersionPermissions.VIEW,),
+        "open_review_sequence": (VersionPermissions.VIEW,),
     }
 
     search_fields = ("code", "version_number", "entity_code")
@@ -207,3 +209,22 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
         )
         data = ReviewMediaSerializer(row, context={"request": request}).data
         return Response(data, status=status.HTTP_202_ACCEPTED)
+
+    @extend_schema(
+        request=ReviewMediaSequenceOpenSerializer,
+        responses={201: ReviewMediaSerializer},
+    )
+    @action(detail=True, methods=["post"], url_path="review-media/sequence")
+    def open_review_sequence(self, request, *args, **kwargs):
+        """Open an image sequence upload; its frames follow in parts (C-RP-31, 201)."""
+        version = self.get_object()
+        require_manage_review_media(request, version)  # C-RP-26
+        if not settings.REVIEW_MEDIA_ENABLED:
+            raise ReviewMediaDisabled()
+        body = ReviewMediaSequenceOpenSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        row = ReviewMediaService.open_sequence(
+            actor=request.user, version=version, **body.validated_data
+        )
+        data = ReviewMediaSerializer(row, context={"request": request}).data
+        return Response(data, status=status.HTTP_201_CREATED)

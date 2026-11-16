@@ -71,4 +71,5 @@ CELERY_BEAT_SCHEDULE = {
 # The general worker consumes the default queue and never takes these (review-pipeline RP-5).
 CELERY_TASK_ROUTES = {
     "production.process_review_media": {"queue": "media"},
+    "production.discard_review_media": {"queue": "media"},
 }

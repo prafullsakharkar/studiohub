@@ -7837,6 +7837,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/review-media/{id}/complete/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Queue a sequence whose every frame is in (C-RP-31). */
+        post: operations["v1_review_media_complete_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review-media/{id}/frames/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description One part of a sequence's frames, up to 50 files under ``frames`` (C-RP-31). */
+        post: operations["v1_review_media_frames_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/review-media/{id}/retry/": {
         parameters: {
             query?: never;
@@ -13153,6 +13187,23 @@ export interface paths {
         put?: never;
         /** @description Upload a review movie or still; the media worker processes it (202). */
         post: operations["v1_versions_review_media_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/versions/{uuid}/review-media/sequence/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Open an image sequence upload; its frames follow in parts (C-RP-31, 201). */
+        post: operations["v1_versions_review_media_sequence_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -20516,6 +20567,8 @@ export interface components {
             color_space?: string;
             /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
             approve_task_on_version_approval?: boolean;
+            /** @description When on, review copies made from movies and sequences carry burn-ins: the project and record codes, the version, the date and the frame number (review pipeline RP-12, C-RP-33). */
+            review_burn_ins?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -24957,6 +25010,8 @@ export interface components {
             color_space?: string;
             /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
             approve_task_on_version_approval?: boolean;
+            /** @description When on, review copies made from movies and sequences carry burn-ins: the project and record codes, the version, the date and the frame number (review pipeline RP-12, C-RP-33). */
+            review_burn_ins?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25030,6 +25085,8 @@ export interface components {
             color_space?: string;
             /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
             approve_task_on_version_approval?: boolean;
+            /** @description When on, review copies made from movies and sequences carry burn-ins: the project and record codes, the version, the date and the frame number (review pipeline RP-12, C-RP-33). */
+            review_burn_ins?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25113,6 +25170,8 @@ export interface components {
             color_space?: string;
             /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
             approve_task_on_version_approval?: boolean;
+            /** @description When on, review copies made from movies and sequences carry burn-ins: the project and record codes, the version, the date and the frame number (review pipeline RP-12, C-RP-33). */
+            review_burn_ins?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25392,6 +25451,8 @@ export interface components {
             color_space?: string;
             /** @description When on, approving a version also approves its task (review pipeline RP-3, C-RP-15). Off by default. */
             approve_task_on_version_approval?: boolean;
+            /** @description When on, review copies made from movies and sequences carry burn-ins: the project and record codes, the version, the date and the frame number (review pipeline RP-12, C-RP-33). */
+            review_burn_ins?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -26298,11 +26359,13 @@ export interface components {
             /**
              * @description * `movie` - Movie
              *     * `still` - Still
+             *     * `sequence` - Sequence
              * @enum {string}
              */
-            readonly kind: "movie" | "still";
+            readonly kind: "movie" | "still" | "sequence";
             /**
-             * @description * `queued` - Queued
+             * @description * `uploading` - Uploading
+             *     * `queued` - Queued
              *     * `processing` - Processing
              *     * `ready` - Ready
              *     * `failed` - Failed
@@ -26310,10 +26373,11 @@ export interface components {
              *     * `removed` - Removed
              * @enum {string}
              */
-            readonly status: "queued" | "processing" | "ready" | "failed" | "superseded" | "removed";
+            readonly status: "uploading" | "queued" | "processing" | "ready" | "failed" | "superseded" | "removed";
             readonly source_name: string;
             readonly source_size: number;
             readonly probe: components["schemas"]["ReviewMediaProbe"] | null;
+            readonly sequence: components["schemas"]["ReviewMediaSequence"] | null;
             /**
              * @description * `probe_failed` - The file could not be read.
              *     * `unsupported_stream` - The file has no picture the server can use.
@@ -26339,6 +26403,15 @@ export interface components {
             /** Format: date-time */
             readonly links_expire_at: string | null;
         };
+        /** @description ``POST review-media/{id}/frames/``: up to 50 files under ``frames`` (C-RP-31). */
+        ReviewMediaFrames: {
+            frames: string[];
+        };
+        ReviewMediaFramesResult: {
+            frames_received: number;
+            frames_expected: number;
+            missing_frames: number[];
+        };
         ReviewMediaProbe: {
             width: number;
             height: number;
@@ -26349,6 +26422,29 @@ export interface components {
             duration_seconds: number;
             video_codec: string;
             has_audio: boolean;
+            first_frame: number | null;
+            last_frame: number | null;
+            /**
+             * @description * `srgb_from_linear` - srgb_from_linear
+             *     * `as_stored` - as_stored
+             * @enum {string}
+             */
+            colour: "srgb_from_linear" | "as_stored";
+            burn_ins: boolean;
+        };
+        ReviewMediaSequence: {
+            name: string;
+            extension: string;
+            first_frame: number;
+            last_frame: number;
+            frames_received: number;
+        };
+        /** @description ``POST versions/{id}/review-media/sequence/`` (C-RP-31); the rules are the service's. */
+        ReviewMediaSequenceOpen: {
+            name: string;
+            extension: string;
+            first_frame: number;
+            last_frame: number;
         };
         ReviewMediaUpload: {
             file: string;
@@ -47028,6 +47124,52 @@ export interface operations {
             };
         };
     };
+    v1_review_media_complete_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewMedia"];
+                };
+            };
+        };
+    };
+    v1_review_media_frames_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["ReviewMediaFrames"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewMediaFramesResult"];
+                };
+            };
+        };
+    };
     v1_review_media_retry_create: {
         parameters: {
             query?: never;
@@ -55736,6 +55878,33 @@ export interface operations {
         };
         responses: {
             202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewMedia"];
+                };
+            };
+        };
+    };
+    v1_versions_review_media_sequence_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewMediaSequenceOpen"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReviewMediaSequenceOpen"];
+                "multipart/form-data": components["schemas"]["ReviewMediaSequenceOpen"];
+            };
+        };
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

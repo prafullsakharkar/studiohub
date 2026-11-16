@@ -331,6 +331,11 @@ class TestProcessing:
             "duration_seconds": 4.004,
             "video_codec": "prores",
             "has_audio": True,
+            # RP-12 (C-RP-32): a movie has no range, is shown as stored, and has no burn-ins by default
+            "first_frame": None,
+            "last_frame": None,
+            "colour": "as_stored",
+            "burn_ins": False,
         }
         folder = media.directory
         assert (media.proxy_path, media.thumbnail_path, media.filmstrip_path) == (
@@ -538,8 +543,8 @@ class TestProcessing:
         media = _uploaded(_api(editor), version, django_capture_on_commit_callbacks, queued)
         real_make = ReviewMediaService._make
 
-        def make_then_swept(m, container, source, work):
-            made = real_make(m, container, source, work)
+        def make_then_swept(m, source, work):
+            made = real_make(m, source, work)
             ReviewMedia.objects.filter(pk=m.pk).update(status=Status.FAILED, error_code="timeout")
             return made
 
@@ -762,6 +767,10 @@ class TestServing:
                 "duration_seconds",
                 "video_codec",
                 "has_audio",
+                "first_frame",
+                "last_frame",
+                "colour",
+                "burn_ins",
             }
             assert current["filmstrip_tiles"] == 48
 

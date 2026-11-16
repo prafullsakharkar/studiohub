@@ -202,6 +202,31 @@ describe('project form: approval roll-up (RP-3, C-RP-14)', () => {
   });
 });
 
+describe('project form: burn-ins on review copies (RP-12, C-RP-33)', () => {
+  const sequences = loadSample<Record<string, Captured>>('production/_review_sequence_flow.json');
+  const off = sequences.project_default.body;
+  const burnLabel = 'Burn the shot, version and frame number into review copies';
+
+  it('shows the switch as the server has it and sends only that change when it is turned on', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'PATCH' ? reply(sequences.project_switch_on) : { body: off }));
+    renderAt(
+      `/projects/${off.id}/edit`,
+      superuser,
+      <>
+        <Route path="/projects/:id/edit" element={<DirectoryFormPage config={projectsFormConfig} />} />
+        <Route path="/projects/:id" element={<Opened />} />
+      </>
+    );
+    const box = (await screen.findByLabelText(burnLabel)) as HTMLInputElement;
+    await waitFor(() => expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe(off.name));
+    expect(box.checked).toBe(false);
+    fireEvent.click(box);
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    expect(await screen.findByText(`opened ${off.id}`)).toBeTruthy();
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ review_burn_ins: true });
+  });
+});
+
 describe('project form: budget (CR-55)', () => {
   // Captured after CR-55: the supervisor's project has no budget_usd, the producer's has it.
   const cr55 = loadSample<Record<string, Captured>>('production/_budget_counts_cr54_55_after.json');

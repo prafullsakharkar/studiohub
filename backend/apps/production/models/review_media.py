@@ -1,11 +1,12 @@
 """
-Review media: a movie or still uploaded to a version, and what the media worker made from it
-(docs/review-pipeline/CONTRACTS.md C-RP-19 to C-RP-22, review-pipeline RP-5).
+Review media: a movie, a still or an image sequence uploaded to a version, and what the media worker
+made from it (docs/review-pipeline/CONTRACTS.md C-RP-19 to C-RP-22, RP-5; C-RP-31, C-RP-32, RP-12).
 
 The upload and the results live under ``MEDIA_ROOT/review_media/`` and leave only through signed,
 per-user links (``services/review_media_links.py``). The paths are ours, never the uploader's.
-A version has at most one row in flight (queued or processing) and one ``ready`` row; older rows
-stay as ``superseded`` or ``removed``, without files, for the audit trail.
+A version has at most one row in flight (uploading, queued or processing) and one ``ready`` row;
+older rows stay as ``superseded`` or ``removed``, without files, for the audit trail. A sequence's
+frames arrive in parts while the row is ``uploading`` and are stored as ``source/frame.<n>.<ext>``.
 """
 
 from __future__ import annotations
@@ -20,8 +21,10 @@ class ReviewMedia(models.Model):
     class Kind(models.TextChoices):
         MOVIE = "movie", "Movie"
         STILL = "still", "Still"
+        SEQUENCE = "sequence", "Sequence"
 
     class Status(models.TextChoices):
+        UPLOADING = "uploading", "Uploading"
         QUEUED = "queued", "Queued"
         PROCESSING = "processing", "Processing"
         READY = "ready", "Ready"
@@ -36,8 +39,8 @@ class ReviewMedia(models.Model):
         TIMEOUT = "timeout", "Processing took too long and was stopped."
         SOURCE_MISSING = "source_missing", "The uploaded file is no longer on the server."
 
-    #: statuses of a job that has not finished
-    IN_FLIGHT = (Status.QUEUED, Status.PROCESSING)
+    #: statuses of a job that has not finished (a sequence still arriving counts)
+    IN_FLIGHT = (Status.UPLOADING, Status.QUEUED, Status.PROCESSING)
 
     #: at most this many processing attempts per upload (the first one and two retries)
     MAX_ATTEMPTS = 3
@@ -61,6 +64,14 @@ class ReviewMedia(models.Model):
     source_sha256 = models.CharField(max_length=64, blank=True, default="")
     #: the container the first bytes showed (``transcode/detect.py``); it chooses ffmpeg's demuxer
     source_container = models.CharField(max_length=20, blank=True, default="")
+
+    # A sequence (RP-12): its name and range as opened, and how many frames have arrived.
+    sequence_name = models.CharField(max_length=200, blank=True, default="")
+    #: the extension the frames carry, as opened (``exr``, ``dpx``, ``tif``, ``tiff``, ``png``, ``jpg``, ``jpeg``)
+    sequence_extension = models.CharField(max_length=10, blank=True, default="")
+    first_frame = models.IntegerField(null=True, blank=True)
+    last_frame = models.IntegerField(null=True, blank=True)
+    frames_received = models.PositiveIntegerField(default=0)
 
     # What ffprobe read: width, height, fps, frames, duration_seconds, video_codec, has_audio.
     probe = models.JSONField(null=True, blank=True)
@@ -91,7 +102,7 @@ class ReviewMedia(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["version"],
-                condition=models.Q(status__in=["queued", "processing"]),
+                condition=models.Q(status__in=["uploading", "queued", "processing"]),
                 name="production_review_media_one_in_flight_uniq",
             ),
             models.UniqueConstraint(
@@ -111,6 +122,13 @@ class ReviewMedia(models.Model):
     def error_message(self) -> str:
         """A fixed sentence per code; ffmpeg's own output never leaves the log."""
         return str(self.ErrorCode(self.error_code).label) if self.error_code else ""
+
+    @property
+    def frames_expected(self) -> int:
+        """How many frames a sequence's range holds (0 for a movie or still)."""
+        if self.first_frame is None or self.last_frame is None:
+            return 0
+        return self.last_frame - self.first_frame + 1
 
     @property
     def directory(self) -> str:

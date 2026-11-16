@@ -101,8 +101,9 @@ CMD ["/start-prod.sh"]
 # ---------------------------------------------------------------------------
 #
 # worker -> the review media worker (review-pipeline RP-5, ADR-0040): the application image plus
-#           Debian's ffmpeg. Only the `celery-media` service runs it (`--target worker`); it
-#           consumes the `media` queue alone. The web and general worker images carry no ffmpeg.
+#           Debian's ffmpeg, and the DejaVu font burn-ins are drawn in (RP-12,
+#           REVIEW_MEDIA_BURN_IN_FONT). Only the `celery-media` service runs it (`--target worker`);
+#           it consumes the `media` queue alone. The web and general worker images carry no ffmpeg.
 
 FROM runtime AS worker
 
@@ -110,6 +111,7 @@ USER root
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ffmpeg \
+        fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
 USER app
