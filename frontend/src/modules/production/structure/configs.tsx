@@ -78,6 +78,8 @@ export const projectsFormConfig: DirectoryFormConfig<Project> = {
     { kind: 'text', name: 'color_space', label: 'Color space' },
     // RP-3 (C-RP-14, C-RP-15): the server approves the task once the version's approval has committed.
     { kind: 'checkbox', name: 'approve_task_on_version_approval', label: 'Approve the task when one of its versions is approved' },
+    // RP-12 (C-RP-33): review copies made afterwards carry the codes, the version, the date and the frame number.
+    { kind: 'checkbox', name: 'review_burn_ins', label: 'Burn the shot, version and frame number into review copies' },
     // Read and written only with project.view_budget (CR-55): hidden, it is never sent.
     { kind: 'number', name: 'budget_usd', label: 'Budget (USD)', permission: 'project.view_budget' },
   ],

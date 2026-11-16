@@ -1,4 +1,4 @@
-"""Review media shapes (docs/review-pipeline/CONTRACTS.md C-RP-19 to C-RP-21)."""
+"""Review media shapes (docs/review-pipeline/CONTRACTS.md C-RP-19 to C-RP-21; C-RP-31, C-RP-32)."""
 
 from __future__ import annotations
 
@@ -9,9 +9,12 @@ from rest_framework import serializers
 
 from apps.production.models import ReviewMedia
 from apps.production.services import review_media_links
+from apps.production.transcode import sequence as frames
 
 #: what the probe shows (``frame_rate``, the exact rational, stays internal)
 PROBE_KEYS = ("width", "height", "fps", "frames", "duration_seconds", "video_codec", "has_audio")
+#: added by RP-12 (C-RP-32), with what a row made before it answers
+PROBE_DEFAULTS = {"first_frame": None, "last_frame": None, "colour": "as_stored", "burn_ins": False}
 
 
 class ReviewMediaProbeSerializer(serializers.Serializer[Any]):
@@ -22,6 +25,18 @@ class ReviewMediaProbeSerializer(serializers.Serializer[Any]):
     duration_seconds = serializers.FloatField()
     video_codec = serializers.CharField()
     has_audio = serializers.BooleanField()
+    first_frame = serializers.IntegerField(allow_null=True)
+    last_frame = serializers.IntegerField(allow_null=True)
+    colour = serializers.ChoiceField(choices=("srgb_from_linear", "as_stored"))
+    burn_ins = serializers.BooleanField()
+
+
+class ReviewMediaSequenceSerializer(serializers.Serializer[Any]):
+    name = serializers.CharField()
+    extension = serializers.CharField()
+    first_frame = serializers.IntegerField()
+    last_frame = serializers.IntegerField()
+    frames_received = serializers.IntegerField()
 
 
 class ReviewMediaUserSerializer(serializers.Serializer[Any]):
@@ -37,6 +52,7 @@ def _user_name(user: Any) -> str:
 class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
     version_id = serializers.UUIDField(read_only=True)
     probe = serializers.SerializerMethodField()
+    sequence = serializers.SerializerMethodField()
     error_message = serializers.CharField(read_only=True)
     created_by = serializers.SerializerMethodField()
     proxy_url = serializers.SerializerMethodField()
@@ -48,7 +64,7 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
         model = ReviewMedia
         fields = (
             "id", "version_id", "kind", "status",
-            "source_name", "source_size", "probe",
+            "source_name", "source_size", "probe", "sequence",
             "error_code", "error_message", "attempts",
             "queued_at", "started_at", "finished_at", "created_by",
             "proxy_url", "thumbnail_url", "filmstrip_url", "filmstrip_tiles", "links_expire_at",
@@ -59,7 +75,20 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
     def get_probe(self, obj: ReviewMedia) -> dict[str, Any] | None:
         if not obj.probe:
             return None
-        return {key: obj.probe.get(key) for key in PROBE_KEYS}
+        shown = {key: obj.probe.get(key) for key in PROBE_KEYS}
+        return shown | {key: obj.probe.get(key, default) for key, default in PROBE_DEFAULTS.items()}
+
+    @extend_schema_field(ReviewMediaSequenceSerializer(allow_null=True))
+    def get_sequence(self, obj: ReviewMedia) -> dict[str, Any] | None:
+        if obj.kind != ReviewMedia.Kind.SEQUENCE:
+            return None
+        return {
+            "name": obj.sequence_name,
+            "extension": obj.sequence_extension,
+            "first_frame": obj.first_frame,
+            "last_frame": obj.last_frame,
+            "frames_received": obj.frames_received,
+        }
 
     @extend_schema_field(ReviewMediaUserSerializer(allow_null=True))
     def get_created_by(self, obj: ReviewMedia) -> dict[str, Any] | None:
@@ -99,3 +128,27 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
 class ReviewMediaUploadSerializer(serializers.Serializer[Any]):
     #: size, extension and content are checked by the service (one message each)
     file = serializers.FileField(allow_empty_file=True, use_url=False)
+
+
+class ReviewMediaSequenceOpenSerializer(serializers.Serializer[Any]):
+    """``POST versions/{id}/review-media/sequence/`` (C-RP-31); the rules are the service's."""
+
+    name = serializers.CharField(max_length=frames.NAME_MAX_LENGTH, trim_whitespace=False)
+    extension = serializers.CharField(max_length=10)
+    first_frame = serializers.IntegerField()
+    last_frame = serializers.IntegerField()
+
+
+class ReviewMediaFramesSerializer(serializers.Serializer[Any]):
+    """``POST review-media/{id}/frames/``: up to 50 files under ``frames`` (C-RP-31)."""
+
+    frames = serializers.ListField(
+        child=serializers.FileField(allow_empty_file=True, use_url=False),
+        allow_empty=False,
+    )
+
+
+class ReviewMediaFramesResultSerializer(serializers.Serializer[Any]):
+    frames_received = serializers.IntegerField()
+    frames_expected = serializers.IntegerField()
+    missing_frames = serializers.ListField(child=serializers.IntegerField())

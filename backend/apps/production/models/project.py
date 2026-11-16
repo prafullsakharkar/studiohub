@@ -62,6 +62,13 @@ class Project(EntityModel):
             "C-RP-15). Off by default."
         ),
     )
+    review_burn_ins = models.BooleanField(
+        default=False,
+        help_text=(
+            "When on, review copies made from movies and sequences carry burn-ins: the project and "
+            "record codes, the version, the date and the frame number (review pipeline RP-12, C-RP-33)."
+        ),
+    )
 
     start_date = models.DateField(null=True, blank=True)
     delivery_date = models.DateField(null=True, blank=True)

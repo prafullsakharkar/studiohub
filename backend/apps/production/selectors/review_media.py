@@ -18,6 +18,7 @@ from apps.production.selectors.base import ProductionBaseSelector
 
 #: rows a version's shape can show (``review_media`` and ``review_media_job``)
 _SHOWN = (
+    ReviewMedia.Status.UPLOADING,
     ReviewMedia.Status.QUEUED,
     ReviewMedia.Status.PROCESSING,
     ReviewMedia.Status.READY,
@@ -56,7 +57,7 @@ class ReviewMediaSelector(ProductionBaseSelector):
 
     @classmethod
     def job(cls, version: Version) -> ReviewMedia | None:
-        """The newest row when it is not ready yet (queued, processing or failed), or ``None``."""
+        """The newest row when it is not ready yet (uploading, queued, processing or failed), or ``None``."""
         rows = cls._rows(version)
         newest = rows[0] if rows else None
         return newest if newest is not None and newest.status != ReviewMedia.Status.READY else None

@@ -294,6 +294,18 @@ class Settings(BaseSettings):
         default=3600, alias="REVIEW_MEDIA_LINK_TTL_SECONDS", gt=0
     )
 
+    # Image sequences (review-pipeline RP-12, Q-RP-52): the most frames, and the most bytes in all.
+    review_media_max_frames: int = Field(default=2000, alias="REVIEW_MEDIA_MAX_FRAMES", gt=0)
+    review_media_sequence_max_bytes: int = Field(
+        default=20 * 1024**3, alias="REVIEW_MEDIA_SEQUENCE_MAX_BYTES", gt=0
+    )
+
+    # The font burn-ins are drawn in (Q-RP-54); the default is in the image's `worker` target.
+    review_media_burn_in_font: str = Field(
+        default="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        alias="REVIEW_MEDIA_BURN_IN_FONT",
+    )
+
     ####################################################################
     # In-app notifications (review-pipeline RP-6)
     ####################################################################

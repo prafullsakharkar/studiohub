@@ -104,6 +104,19 @@ The owner took every recommendation of [PLAN.md, RP-11 questions](PLAN.md#questi
 | Q-RP-49 | **A** | A muted kind is not written for that person; unmuting brings nothing back. |
 | Q-RP-50 | **A** | Only review decisions notify (`Approved`, `Rejected`, `Changes Requested`, `Retake`). |
 
+## RP-12 answers
+
+The owner took every recommendation of [PLAN.md, RP-12 questions](PLAN.md#questions-before-rp-12-starts) on 2026-11-16 ("go ahead", after choosing media depth as the next phase).
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-51 | **A** | A sequence is uploaded in parts: open, up to 50 frames per request, complete (C-RP-31). |
+| Q-RP-52 | **A** | EXR, DPX, TIFF, PNG or JPEG frames; one name, one extension; no gap; at most `REVIEW_MEDIA_MAX_FRAMES` (2,000) frames and `REVIEW_MEDIA_SEQUENCE_MAX_BYTES` (20 GiB). |
+| Q-RP-53 | **A** | A fixed colour rule: EXR from linear to sRGB, the rest as stored; not for colour approval (C-RP-32). |
+| Q-RP-54 | **A** | Burn-ins in a fixed layout, switched per project (`review_burn_ins`, off by default), on movies and sequences (C-RP-33). |
+| Q-RP-55 | **A** | A ready sequence sets the version's frame range only when neither end is set (C-RP-32). |
+| Q-RP-56 | **A** | A sequence's frames are deleted when its copy is ready; a failed job keeps them for a retry. |
+
 ## Phases after the answers
 
 | Phase | Status |
@@ -118,6 +131,7 @@ The owner took every recommendation of [PLAN.md, RP-11 questions](PLAN.md#questi
 | RP-8 Live review | not planned (Q-RP-9 = B) |
 | RP-9 DCC integrations | separate repository (Q-RP-10 = B) |
 | RP-10 Loose ends of RP-5 and RP-6 | planned in [PLAN.md](PLAN.md#rp-10-loose-ends-of-rp-5-and-rp-6); answered (Q-RP-41 to Q-RP-45 = A), built and merged into `develop`, released in v4.8.0 ([rp-10-verification.md](rp-10-verification.md)) |
-| RP-11 Notification depth (reviews and preferences) | planned in [PLAN.md](PLAN.md#rp-11-notification-depth-reviews-and-preferences); answered (Q-RP-46 to Q-RP-50 = A); committed `a7443900` on `feature/rp-11-notification-depth`, not merged ([rp-11-verification.md](rp-11-verification.md)) |
+| RP-11 Notification depth (reviews and preferences) | planned in [PLAN.md](PLAN.md#rp-11-notification-depth-reviews-and-preferences); answered (Q-RP-46 to Q-RP-50 = A); committed `a7443900`, merged into `develop` and `main`, released in v4.9.0 ([rp-11-verification.md](rp-11-verification.md)) |
+| RP-12 Media depth (image sequences and burn-ins) | planned in [PLAN.md](PLAN.md#rp-12-media-depth-image-sequences-and-burn-ins); answered (Q-RP-51 to Q-RP-56 = A); committed `f2b84225`, merged into `develop` and `main`, released in v4.9.0 ([rp-12-verification.md](rp-12-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.

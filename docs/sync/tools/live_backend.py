@@ -24,7 +24,7 @@ It seeds (each exercises a different backend rule):
 With SYNC_LIVE_MEDIA=1 (review-pipeline RP-10, WP 10.6) review movies work too: REVIEW_MEDIA_ENABLED is on, files go to
 a temporary MEDIA_ROOT, and instead of a Celery worker a thread here processes each queued row by calling the worker's
 own function (ReviewMediaService.process) with the host's ffmpeg. live.json then names a two-second test movie
-("media": {"movie": path}). The harness only: nothing else runs review media without a worker.
+and a folder of eight EXR frames ("media": {"movie": path, "sequence": folder}; RP-12). The harness only: nothing else runs review media without a worker.
 Writes the connection details to $SYNC_LIVE_INFO, then keeps serving
 until $SYNC_LIVE_STOP exists (or 20 minutes pass; $SYNC_LIVE_MINUTES changes that).
 
@@ -95,7 +95,15 @@ def _media_worker(settings, monkeypatch, tmp_path) -> dict:
          "-c:v", "libx264", "-pix_fmt", "yuv420p", "-y", str(movie)],
         check=True,
     )  # fmt: skip
-    return {"movie": str(movie)}
+    # RP-12 (WP 12.7): eight EXR frames, 1001 to 1008, for a sequence upload (needs ffmpeg's EXR encoder).
+    frames = tmp_path / "live_sequence"
+    frames.mkdir()
+    subprocess.run(
+        ["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc2=size=640x360:rate=24", "-frames:v", "8",
+         "-pix_fmt", "gbrpf32le", "-start_number", "1001", str(frames / "live_comp.%04d.exr")],
+        check=True,
+    )  # fmt: skip
+    return {"movie": str(movie), "sequence": str(frames)}
 
 
 @pytest.mark.django_db(transaction=True)

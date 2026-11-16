@@ -20797,6 +20797,61 @@ paths:
                 type: string
                 format: binary
           description: ''
+  /api/v1/review-media/{id}/complete/:
+    post:
+      operationId: v1_review_media_complete_create
+      description: Queue a sequence whose every frame is in (C-RP-31).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewMedia'
+          description: ''
+  /api/v1/review-media/{id}/frames/:
+    post:
+      operationId: v1_review_media_frames_create
+      description: One part of a sequence's frames, up to 50 files under ``frames``
+        (C-RP-31).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewMediaFrames'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewMediaFramesResult'
+          description: ''
   /api/v1/review-media/{id}/retry/:
     post:
       operationId: v1_review_media_retry_create
@@ -33404,6 +33459,42 @@ paths:
       - apiKey: []
       responses:
         '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewMedia'
+          description: ''
+  /api/v1/versions/{uuid}/review-media/sequence/:
+    post:
+      operationId: v1_versions_review_media_sequence_create
+      description: Open an image sequence upload; its frames follow in parts (C-RP-31,
+        201).
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewMediaSequenceOpen'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReviewMediaSequenceOpen'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewMediaSequenceOpen'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '201':
           content:
             application/json:
               schema:
@@ -46568,6 +46659,11 @@ components:
           type: boolean
           description: When on, approving a version also approves its task (review
             pipeline RP-3, C-RP-15). Off by default.
+        review_burn_ins:
+          type: boolean
+          description: 'When on, review copies made from movies and sequences carry
+            burn-ins: the project and record codes, the version, the date and the
+            frame number (review pipeline RP-12, C-RP-33).'
         start_date:
           type: string
           format: date
@@ -54903,6 +54999,11 @@ components:
           type: boolean
           description: When on, approving a version also approves its task (review
             pipeline RP-3, C-RP-15). Off by default.
+        review_burn_ins:
+          type: boolean
+          description: 'When on, review copies made from movies and sequences carry
+            burn-ins: the project and record codes, the version, the date and the
+            frame number (review pipeline RP-12, C-RP-33).'
         start_date:
           type: string
           format: date
@@ -55042,6 +55143,11 @@ components:
           type: boolean
           description: When on, approving a version also approves its task (review
             pipeline RP-3, C-RP-15). Off by default.
+        review_burn_ins:
+          type: boolean
+          description: 'When on, review copies made from movies and sequences carry
+            burn-ins: the project and record codes, the version, the date and the
+            frame number (review pipeline RP-12, C-RP-33).'
         start_date:
           type: string
           format: date
@@ -55217,6 +55323,11 @@ components:
           type: boolean
           description: When on, approving a version also approves its task (review
             pipeline RP-3, C-RP-15). Off by default.
+        review_burn_ins:
+          type: boolean
+          description: 'When on, review copies made from movies and sequences carry
+            burn-ins: the project and record codes, the version, the date and the
+            frame number (review pipeline RP-12, C-RP-33).'
         start_date:
           type: string
           format: date
@@ -55830,6 +55941,11 @@ components:
           type: boolean
           description: When on, approving a version also approves its task (review
             pipeline RP-3, C-RP-15). Off by default.
+        review_burn_ins:
+          type: boolean
+          description: 'When on, review copies made from movies and sequences carry
+            burn-ins: the project and record codes, the version, the date and the
+            frame number (review pipeline RP-12, C-RP-33).'
         start_date:
           type: string
           format: date
@@ -57589,14 +57705,17 @@ components:
           enum:
           - movie
           - still
+          - sequence
           type: string
           description: |-
             * `movie` - Movie
             * `still` - Still
-          x-spec-enum-id: de35a18994dece15
+            * `sequence` - Sequence
+          x-spec-enum-id: d14480ac0544b0b1
           readOnly: true
         status:
           enum:
+          - uploading
           - queued
           - processing
           - ready
@@ -57605,13 +57724,14 @@ components:
           - removed
           type: string
           description: |-
+            * `uploading` - Uploading
             * `queued` - Queued
             * `processing` - Processing
             * `ready` - Ready
             * `failed` - Failed
             * `superseded` - Superseded
             * `removed` - Removed
-          x-spec-enum-id: 3a403a610bd905b8
+          x-spec-enum-id: e052de5bd6a61567
           readOnly: true
         source_name:
           type: string
@@ -57622,6 +57742,11 @@ components:
         probe:
           allOf:
           - $ref: '#/components/schemas/ReviewMediaProbe'
+          nullable: true
+          readOnly: true
+        sequence:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMediaSequence'
           nullable: true
           readOnly: true
         error_code:
@@ -57699,12 +57824,39 @@ components:
       - probe
       - proxy_url
       - queued_at
+      - sequence
       - source_name
       - source_size
       - started_at
       - status
       - thumbnail_url
       - version_id
+    ReviewMediaFrames:
+      type: object
+      description: '``POST review-media/{id}/frames/``: up to 50 files under ``frames``
+        (C-RP-31).'
+      properties:
+        frames:
+          type: array
+          items:
+            type: string
+      required:
+      - frames
+    ReviewMediaFramesResult:
+      type: object
+      properties:
+        frames_received:
+          type: integer
+        frames_expected:
+          type: integer
+        missing_frames:
+          type: array
+          items:
+            type: integer
+      required:
+      - frames_expected
+      - frames_received
+      - missing_frames
     ReviewMediaProbe:
       type: object
       properties:
@@ -57724,14 +57876,74 @@ components:
           type: string
         has_audio:
           type: boolean
+        first_frame:
+          type: integer
+          nullable: true
+        last_frame:
+          type: integer
+          nullable: true
+        colour:
+          enum:
+          - srgb_from_linear
+          - as_stored
+          type: string
+          description: |-
+            * `srgb_from_linear` - srgb_from_linear
+            * `as_stored` - as_stored
+          x-spec-enum-id: 4f326bff0d876c14
+        burn_ins:
+          type: boolean
       required:
+      - burn_ins
+      - colour
       - duration_seconds
+      - first_frame
       - fps
       - frames
       - has_audio
       - height
+      - last_frame
       - video_codec
       - width
+    ReviewMediaSequence:
+      type: object
+      properties:
+        name:
+          type: string
+        extension:
+          type: string
+        first_frame:
+          type: integer
+        last_frame:
+          type: integer
+        frames_received:
+          type: integer
+      required:
+      - extension
+      - first_frame
+      - frames_received
+      - last_frame
+      - name
+    ReviewMediaSequenceOpen:
+      type: object
+      description: '``POST versions/{id}/review-media/sequence/`` (C-RP-31); the rules
+        are the service''s.'
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        extension:
+          type: string
+          maxLength: 10
+        first_frame:
+          type: integer
+        last_frame:
+          type: integer
+      required:
+      - extension
+      - first_frame
+      - last_frame
+      - name
     ReviewMediaUpload:
       type: object
       properties:
