@@ -271,7 +271,15 @@ class TestFreshInitialMigrations:
             # its 0007 adds the approval roll-up switch to the projects table (RP-3, WP 3.1); its 0008
             # adds review media (RP-5, WP 5.1) and its 0009 note mentions (RP-6, WP 6.3); its 0010
             # image sequences on review media and the burn-in switch on projects (RP-12, WP 12.1).
-            limit = {"audit": 3, "deliveries": 3, "identity": 4, "production": 10}.get(app, 2)
+            # notifications' 0002 adds the review kinds and preferences (RP-11), its 0003 the delivery,
+            # publishing and milestone kinds (RP-13, WP 13.3), on a table deployed databases already hold.
+            limit = {
+                "audit": 3,
+                "deliveries": 3,
+                "identity": 4,
+                "notifications": 3,
+                "production": 10,
+            }.get(app, 2)
             assert len(names) <= limit, (app, names)
 
     @pytest.mark.skipif(connection.vendor != "postgresql", reason="the extension is PostgreSQL's")

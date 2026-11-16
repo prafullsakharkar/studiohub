@@ -23,6 +23,12 @@ const KIND_LABELS: Record<NotificationKind, string> = {
   review_invited: 'Verdicts asked of me',
   review_verdict: 'Verdicts given',
   review_comment: 'Review comments on my work',
+  delivery_status: 'Delivery steps',
+  delivery_client_answer: 'Client answers on deliveries',
+  publish_finished: 'Publish jobs ended',
+  published_file_revoked: 'Revoked files',
+  milestone_due: 'Milestones due',
+  milestone_completed: 'My milestones completed',
 };
 
 /**

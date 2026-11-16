@@ -18,6 +18,10 @@ const rows = (key: string): Notification[] => flow[key].body.results;
 /** RP-11 (C-RP-28 to C-RP-30): docs/sync/samples/notifications/_review_notifications_flow.json (test_capture_review_notifications.py). */
 const reviewFlow = loadSample<Record<string, Captured>>('notifications/_review_notifications_flow.json');
 const reviewRows = (key: string): Notification[] => reviewFlow[key].body.results;
+/** RP-13 (C-RP-34 to C-RP-36): docs/sync/samples/notifications/_pipeline_notifications_flow.json (test_capture_pipeline_notifications.py). */
+const pipelineFlow = loadSample<Record<string, Captured>>('notifications/_pipeline_notifications_flow.json');
+const pipelineRows = (key: string): Notification[] => pipelineFlow[key].body.results;
+const PIPELINE_LISTS = ['producer_list', 'supervisor_list', 'coordinator_list', 'td_list', 'artist_list'];
 const sorted = (o: object) => Object.keys(o).sort();
 
 beforeEach(() => tokenStorage.setTokens({ access: 'a', refresh: 'r' }));
@@ -41,7 +45,7 @@ describe('C-RP-23: the row shape', () => {
   });
 
   it('the kinds and target types the frontend lists are the server’s, and every kind was captured', () => {
-    const all = [...rows('artist_list'), ...rows('lead_list'), ...rows('supervisor_list'), ...reviewRows('artist_list'), ...reviewRows('lead_list'), ...reviewRows('supervisor_list'), ...reviewRows('client_list')];
+    const all = [...rows('artist_list'), ...rows('lead_list'), ...rows('supervisor_list'), ...reviewRows('artist_list'), ...reviewRows('lead_list'), ...reviewRows('supervisor_list'), ...reviewRows('client_list'), ...PIPELINE_LISTS.flatMap(pipelineRows)];
     for (const n of all) {
       expect(NOTIFICATION_KINDS).toContain(n.kind);
       expect(NOTIFICATION_TARGET_TYPES).toContain(n.target.type);
@@ -230,5 +234,59 @@ describe('C-RP-30: preferences', () => {
       ['PUT', reviewFlow.preferences_save.request.path, { muted_kinds: ['task_status', 'review_comment'] }],
     ]);
     expect(saved).toEqual(reviewFlow.preferences_save.body);
+  });
+});
+
+describe('C-RP-34 and C-RP-35: delivery, publishing and milestone rows', () => {
+  const all = PIPELINE_LISTS.flatMap(pipelineRows);
+  const find = (key: string, kind: Notification['kind'], pick: (n: Notification) => boolean = () => true) => pipelineRows(key).find((n) => n.kind === kind && pick(n)) as Notification;
+
+  it('every row has the pinned keys, one of the new target types, and no record', () => {
+    expect(all.length).toBeGreaterThan(0);
+    for (const n of all) {
+      expect(sorted(n)).toEqual(sorted(NOTIFICATION_KEYS));
+      expect(sorted(n.target)).toEqual(sorted(NOTIFICATIONTARGET_KEYS));
+      expect(['delivery', 'publish_job', 'published_file', 'milestone']).toContain(n.target.type);
+      expect(n.record).toBeNull();
+    }
+  });
+
+  it('labels: a delivery and a job by code and name, a file by its version and file name, a milestone by name', () => {
+    const delivery = find('producer_list', 'delivery_status');
+    expect([delivery.target.code, delivery.target.name]).toEqual(['RPP_DEL_002', 'Turnover 2']);
+    const job = find('td_list', 'publish_finished');
+    expect([job.target.type, job.target.code, job.target.name]).toEqual(['publish_job', 'RPP_PUB_002', 'Comp export']);
+    const file = find('producer_list', 'published_file_revoked');
+    expect([file.target.type, file.target.code, file.target.name]).toEqual(['published_file', 'RPP_SH020_V001', 'plate_main.exr']);
+    const milestone = find('producer_list', 'milestone_completed');
+    expect([milestone.target.type, milestone.target.code, milestone.target.name]).toEqual(['milestone', '', 'Picture lock']);
+  });
+
+  it('each kind carries its data and nothing typed by a person', () => {
+    expect(find('producer_list', 'delivery_status', (n) => n.data.to_status === 'Submitted').data).toEqual({ from_status: 'Signed Off', to_status: 'Submitted' });
+    expect(find('coordinator_list', 'delivery_client_answer').data).toEqual({ client_status: 'Approved' });
+    expect(pipelineRows('td_list').map((n) => n.data.status)).toEqual(['Failed', 'Exported']);
+    expect(find('producer_list', 'published_file_revoked').data).toEqual({});
+    expect(find('producer_list', 'milestone_completed').data).toEqual({});
+    expect(pipelineRows('producer_list_kind_milestone_due').map((n) => n.data.stage)).toEqual(['due', 'overdue']);
+    for (const n of pipelineRows('producer_list_kind_milestone_due')) expect(n.data.due_date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(JSON.stringify(all)).not.toMatch(/Wrong grade|ran out of disk|rpp\//);
+  });
+
+  it('the platform’s reopen and a reminder have no actor; the client’s answer is told once, not also as a move', () => {
+    const reopen = find('supervisor_list', 'delivery_status', (n) => n.data.to_status === 'Prepared');
+    expect([reopen.actor, reopen.data.from_status]).toEqual([null, 'Signed Off']);
+    for (const n of pipelineRows('producer_list_kind_milestone_due')) expect(n.actor).toBeNull();
+    expect(pipelineRows('coordinator_list').filter((n) => n.data.to_status === 'Approved')).toEqual([]);
+  });
+
+  it('an artist without delivery.view hears of publish jobs but of no delivery (CR-53)', () => {
+    expect(pipelineRows('artist_list').map((n) => n.target.type)).toEqual(['publish_job', 'publish_job']);
+  });
+
+  it('every new kind can be muted (C-RP-30)', () => {
+    const { mutable_kinds } = pipelineFlow.producer_preferences.body;
+    for (const kind of ['delivery_status', 'delivery_client_answer', 'publish_finished', 'published_file_revoked', 'milestone_due', 'milestone_completed']) expect(mutable_kinds).toContain(kind);
+    expect(pipelineFlow.producer_mute_delivery_status.body.muted_kinds).toEqual(['delivery_status', 'milestone_due']);
   });
 });

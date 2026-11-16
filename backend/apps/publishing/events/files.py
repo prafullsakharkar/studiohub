@@ -16,3 +16,13 @@ class PublishedFileRevoked(DomainEvent):
 
     Payload: ``file_id``, ``version_id``, ``project_id``, ``actor_id``, ``reason_present``.
     """
+
+
+class PublishJobFinished(DomainEvent):
+    """
+    A publish job ended Exported or Failed (review-pipeline RP-13, C-RP-35).
+
+    Payload: ``job_id``, ``project_id`` (``None`` for an old job that names no project),
+    ``version_id`` (``None`` for a job not linked to a version), ``status`` (``Exported`` or
+    ``Failed``) and ``actor_id``. Never the error message.
+    """

@@ -15,10 +15,11 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 
+from apps.notifications import sources
 from apps.notifications.constants import KIND_PRIORITY
 from apps.notifications.models import Notification
 from apps.notifications.services.preferences import PreferenceService
-from apps.production.selectors.notification_sources import NotificationSources, as_request
+from apps.production.selectors.notification_sources import as_request
 
 
 def merge(*groups: tuple[Iterable[Any], str]) -> dict[str, str]:
@@ -69,6 +70,6 @@ class FanoutService:
                 data=dict(data or {}),
             )
             for user in users
-            if NotificationSources.readable(as_request(user), target_type, [target_id])
+            if sources.readable(as_request(user), target_type, [target_id])
         ]
         return Notification.objects.bulk_create(rows)

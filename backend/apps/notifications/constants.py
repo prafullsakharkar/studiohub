@@ -1,4 +1,7 @@
-"""Kinds and target types of an in-app notification (docs/review-pipeline RP-6, C-RP-23; RP-11, C-RP-28)."""
+"""
+Kinds and target types of an in-app notification (docs/review-pipeline RP-6, C-RP-23; RP-11, C-RP-28;
+RP-13, C-RP-34 and C-RP-35).
+"""
 
 from __future__ import annotations
 
@@ -19,6 +22,13 @@ class Kind(models.TextChoices):
     REVIEW_INVITED = "review_invited", "You were asked for a verdict"
     REVIEW_VERDICT = "review_verdict", "A participant gave a verdict"
     REVIEW_COMMENT = "review_comment", "A comment on your work in a review"
+    # RP-13 (C-RP-35): deliveries, publishing, milestones
+    DELIVERY_STATUS = "delivery_status", "A delivery you work on moved"
+    DELIVERY_CLIENT_ANSWER = "delivery_client_answer", "The client answered a delivery"
+    PUBLISH_FINISHED = "publish_finished", "A publish job ended or failed"
+    PUBLISHED_FILE_REVOKED = "published_file_revoked", "A file you depend on was revoked"
+    MILESTONE_DUE = "milestone_due", "A milestone is due or overdue"
+    MILESTONE_COMPLETED = "milestone_completed", "Your milestone was completed"
 
 
 class TargetType(models.TextChoices):
@@ -26,6 +36,10 @@ class TargetType(models.TextChoices):
     TASK = "task", "Task"
     VERSION = "version", "Version"
     REVIEW = "review", "Review"
+    DELIVERY = "delivery", "Delivery"
+    PUBLISH_JOB = "publish_job", "Publish job"
+    PUBLISHED_FILE = "published_file", "Published file"
+    MILESTONE = "milestone", "Milestone"
 
 
 #: when one event matches a person in several ways, the kind kept (C-RP-24): a mention wins

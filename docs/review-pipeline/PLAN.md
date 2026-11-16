@@ -802,3 +802,95 @@ The same as RP-11: `ruff check`, `manage.py check`, `makemigrations --check`, `b
 
 - *Upgrading:* one migration in `production`. New settings `REVIEW_MEDIA_MAX_FRAMES`, `REVIEW_MEDIA_SEQUENCE_MAX_BYTES` and `REVIEW_MEDIA_BURN_IN_FONT` (defaults work with the `worker` image). Rebuild the `worker` image and reload nginx (a new upload route).
 - *Changed:* a review copy can be made from an EXR or DPX image sequence, uploaded in parts from a folder. A project can burn the shot, the version and the frame number into its review copies.
+
+## RP-13 Notifications beyond reviews (deliveries, publishing, milestones)
+
+**Status:** planned 2026-11-16; answered the same day (Q-RP-57 to Q-RP-62 = A, [DECISIONS.md](DECISIONS.md#rp-13-answers)); contracts C-RP-34 to C-RP-36; built, report in [rp-13-verification.md](rp-13-verification.md). Not committed. Branch `feature/rp-13-notifications-beyond-reviews`, off `develop` at `987d6839` (v4.9.0). The owner chose this over colour (LUT/OCIO), media depth part 2, object storage and the cleanup phase.
+
+**Goal.** The inbox that RP-6 and RP-11 built for notes, tasks, versions and reviews also tells people about the records that production waits on: a delivery moving (signed off, sent, answered by the client, reopened), a publish job finishing or failing, a published file being revoked, and a milestone coming due. Still in-app only (Q-RP-7 = A), still polled, with the same rules: only people in reach, never the actor, one row per person per event, muted kinds skipped (C-RP-24, C-RP-30).
+
+### Why (what is there today)
+
+- **Deliveries publish no events.** `deliveries/services/transitions.move` is the only writer of `DeliveryPackage.status` and records each move in `DeliveryStatusChange` (with its actor), but tells nobody. Signing off, sending and recording the client's answer (`services/package.py`: `sign_off`, `send`, `record_client_answer`) set `signed_off_by`, `sent_by` and `client_answered_by`. The record also has `created_by`. Whoever is waiting on a delivery has to open it to find out.
+- **A revoked file changes deliveries silently.** `PublishedFileRevoked` is the one event of these apps. Deliveries subscribes (`RevokedFileHandler`): unsent deliveries holding the file's version lose their QC, and a signed-off one is moved back to Prepared. Nobody is told that their delivery reopened.
+- **Publish jobs end silently.** `publishing/services/workflow.py` moves a job (`PublishItem`) through Pending, Validating, Validated, Exporting, then Exported or Failed (or Cancelled), with an audit entry each time. Its creator (`created_by`) and the version's artist see the result only on the page.
+- **Milestones have due dates and nobody is reminded.** `scheduling.Milestone` has `due_date`, a status (Pending, In Progress, Completed), `completed_by`, `created_by`, and for a delivery milestone a `delivery_package_id` (no foreign key: scheduling does not import deliveries). Nothing runs on a due date.
+- **The inbox knows four target types**, all production records, with reach and labels from `production/selectors/notification_sources.py`. `Notification.project` is required, which every record here has (a delivery, a job, a published file and a milestone each belong to a project). Leave requests do not (Q-RP-62).
+- **Reading these records** needs `delivery.view`, `publishing.view` and `schedule.view` respectively, plus each app's own narrowing (CR-46, CR-53: artists lose `delivery.view`; external members see only what their membership reaches). The dependency rules allow `notifications` to read the three apps; none of them may import `notifications` (`apps/core/tests/test_dependency_direction.py`).
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 13.1 | **Events** (Q-RP-57, Q-RP-59). Published after commit, each in its app's `events/`:<ul><li>`DeliveryStatusChanged` (`delivery_id`, `project_id`, `from_status`, `to_status`, `actor_id`, `system`), from `transitions.move`;</li><li>`DeliveryClientAnswered` (`delivery_id`, `project_id`, `client_status`, `actor_id`), from `record_client_answer`;</li><li>`PublishJobFinished` (`job_id`, `project_id`, `version_id`, `status`, `actor_id`) for Exported and Failed;</li><li>`MilestoneCompleted` (`milestone_id`, `project_id`, `actor_id`).</li></ul>`PublishedFileRevoked` is reused. | `backend/apps/{deliveries,publishing,scheduling}/events/`, their services |
+| 13.2 | **Reach and labels.** A `selectors/notification_sources.py` in each of deliveries, publishing and scheduling, in the shape of production's: the people involved in a record, a `readable_query(request)` that answers what the record's own `GET` would (permission code and narrowing), and a label (`code`, `name`, `record`). The notifications app looks a target type up in one registry instead of production's four-way switch. | `backend/apps/{deliveries,publishing,scheduling}/selectors/notification_sources.py` (new), `backend/apps/notifications/{sources.py (new),services/fanout.py,selectors/,api/serializers.py}` |
+| 13.3 | **Kinds and handlers** (the table below). Target types `delivery`, `publish_job`, `published_file`, `milestone`. The milestone reminders (Q-RP-61) are a beat task, `notifications.milestone_reminders` (hourly as built, C-RP-36), that writes each reminder once (a row of the same kind, target and stage is never written twice). Migration `notifications` `0003` (choices only). The new kinds can be muted. | `backend/apps/notifications/{constants.py,events/,tasks/,migrations/}`, `backend/config/settings/components/celery.py` |
+| 13.4 | **Frontend.** The typed API and row keys from captured responses. The bell and the Notifications page describe and open the new kinds: a delivery row opens `/deliveries/{id}`, a job `/publishing/{id}`, a file `/publishing/files/{id}`, a milestone the project's milestones. "What to tell me" gains the new kinds (labels only; the server lists them). | `frontend/src/api/notifications/`, `frontend/src/modules/notifications/` |
+| 13.5 | **Capture and live.** A capture tool and sample for the whole flow. A live file: the producer creates a delivery, a supervisor signs it off and sends it, the producer is told each time; a publish job fails and its creator is told; a revoked file reopens a signed-off delivery and its people are told. | `docs/sync/tools/`, `docs/sync/samples/notifications/`, `frontend/src/test/live/` |
+| 13.6 | **Docs.** CONTRACTS (C-RP-34 onwards), `docs/apps/notifications.md`, the pre-deploy checklist (one migration, a new beat entry), DECISIONS, release notes, `rp-13-verification.md`. | `docs/review-pipeline/`, `docs/apps/`, `docs/07-deployment/` |
+
+**Who is notified** (proposed, Q-RP-57 to Q-RP-61 = A). Every row also requires that the record is in the recipient's reach, leaves out the actor, and skips a recipient who muted the kind.
+
+| Event | Kind | Recipients | Target |
+|---|---|---|---|
+| A delivery reaches Signed Off, Submitted, Approved, Rejected, Complete or Cancelled, or leaves Signed Off or a sent status (reopened by a revoked file, or corrected with the override) | `delivery_status` | the delivery's creator; whoever signed it off; whoever sent it | the delivery |
+| The client's answer is recorded | `delivery_client_answer` | the delivery's creator; whoever signed it off; whoever sent it | the delivery |
+| A publish job ends Exported or Failed | `publish_finished` | the job's creator; the version's artist and the assignee of its task | the job |
+| A published file is revoked | `published_file_revoked` | the file's creator; the creators of the files built from it (RP-4 dependencies); the people of each unsent delivery it changed (creator, signer) | the file |
+| A milestone is due tomorrow, or was due yesterday and is not completed | `milestone_due` | the milestone's creator; for a delivery milestone, the delivery's creator | the milestone |
+| A milestone is completed by someone else | `milestone_completed` | the milestone's creator | the milestone |
+
+A row keeps the statuses (`data.from_status`, `data.to_status`, `data.client_status`, `data.status`) and, for a reminder, `data.stage` (`due` or `overdue`) and `data.due_date`; never a reason, a comment or a file path. A move made by the system (a revoked file reopening a delivery) has no actor, so nobody is left out as the actor.
+
+### Questions before RP-13 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-57 | Which records notify? | A: deliveries, publish jobs, published files and milestones (the table). B: A without milestones (no timed reminders). C: deliveries only. | **A**. These are the records production waits on. Milestones are the only timed kind and need a beat task, but a due date nobody is reminded of is the gap people notice. |
+| Q-RP-58 | Who is told about a delivery? | A: the people on the record: its creator, whoever signed it off, whoever sent it. B: A, plus the project's members who hold the right for the next step (Prepared: `delivery.approve`; Signed Off: `delivery.send`). C: everyone on the project with `delivery.view`. | **A**. Those are the people waiting on it, and they are named on the record. B is a request-for-action feature: with flat roles it tells every holder of the code on the project, which on a large show is many people for every delivery. It can follow as "following a record" if A proves too narrow. |
+| Q-RP-59 | Which delivery moves notify? | A: arriving at Signed Off, Submitted, Approved, Rejected, Complete or Cancelled, and leaving Signed Off or a sent status. B: every move, including Draft, Validating and Prepared. | **A**. The working states change often while a delivery is assembled; the others are the steps someone waits for, and leaving them (a reopen, a correction) is the surprise worth telling. |
+| Q-RP-60 | Publishing: what notifies? | A: a job ending Exported or Failed, and a revoked file (the table). B: jobs only. C: A, plus every file registered on a version (to its artist). | **A**. A failed export and a revoked file are what someone has to act on; a revoked file also reopens deliveries silently today. Registering a file is the artist's own action, so C mostly tells people what they just did. |
+| Q-RP-61 | Milestones: when and whom? | A: a daily task tells the creator (and a delivery milestone's delivery creator) once the day before it is due and once the day after if it is not completed; completion tells the creator when someone else completes it. B: reminders for delivery milestones only. C: no milestone notifications. | **A**. Two reminders per milestone at most, to people named on it. Dates are the studio's calendar dates (the default work calendar's time zone). |
+| Q-RP-62 | Leave requests? | A: not in RP-13. B: include them: a request tells the people who may approve leave, and the answer tells the requester. | **A**. A leave request belongs to no project, so it needs `Notification.project` to become optional, a reach rule for people who approve leave across the studio, and a page to open. That is a phase of its own. |
+
+Also decided in the plan, without a question:
+- No e-mail, push or websocket (Q-RP-7, Q-RP-36). No digests. No following or watching a record.
+- No new permission code, and no ADR: nobody learns of a record they cannot open, and every recipient is named on the record.
+- Reach is decided by each app's own selector (the record's `GET`), so CR-46 and CR-53's narrowing hold: an artist without `delivery.view` is told nothing about deliveries.
+- Events are published after commit; a notification never fails the action (handlers log `notification_fanout_failed` and swallow the error).
+- One migration (`notifications` `0003`): the new kinds and target types, no data step.
+
+### Not in RP-13
+
+- Leave requests and anything else without a project (Q-RP-62).
+- Requests for action to everyone who holds a right (Q-RP-58 B), and following a record.
+- QC results, bookings and calendar events.
+- A reason, comment or path in the notification.
+- The cleanup of the dead `notification.*` settings and `core/services/notifications.py`.
+
+### Tests (targeted, test database)
+
+- **13.1:** each event is published once, after commit, with its payload; a rolled-back action publishes nothing; the revocation's system move publishes with `system: true`.
+- **13.2:** reach per target type matches the record's `GET` (permission code, CR-46/CR-53 narrowing, external members); labels; a deleted record answers nothing.
+- **13.3:** every row of the table, including the actor left out, people counted once, muted kinds skipped, reach checked when written and when read; moves that do not notify (working states); the reminder written once per stage, not for a completed milestone, and on the right dates; the beat entry.
+- **13.4:** rows, links and preference labels for each new kind.
+- **13.5:** the capture passes; the live file passes against the harness.
+
+Mutation checks. Each change below must make a test fail:
+- a working-state move notifies;
+- the actor is told;
+- reach not checked for one new target type;
+- an artist without `delivery.view` is told about a delivery;
+- the system move leaves out a person as its actor;
+- a reminder written twice, or for a completed milestone;
+- a muted new kind still written;
+- the revocation forgets the people of a reopened delivery.
+
+### Gates
+
+The same as RP-12: `ruff check`, `manage.py check`, `makemigrations --check`, `basedpyright` (no new findings in the files changed), targeted `apps/notifications`, `apps/deliveries`, `apps/publishing`, `apps/scheduling` and `apps/core/tests` (dependency direction, admin registry, bootstrap). Frontend: `pnpm typecheck && pnpm test && pnpm build`, Biome at 0 errors, and the unreachable-code check. The live file runs once.
+
+### Release notes (draft)
+
+- *Upgrading:* one migration in `notifications`. Beat gains `notifications.milestone_reminders` (hourly). No new setting, no new permission code.
+- *Changed:* the inbox also tells people when a delivery they work on is signed off, sent, answered by the client or reopened; when a publish job they started ends or fails; when a file they built on is revoked; and when a milestone they set is due or overdue. Each kind can be muted.

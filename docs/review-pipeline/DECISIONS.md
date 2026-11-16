@@ -117,6 +117,19 @@ The owner took every recommendation of [PLAN.md, RP-12 questions](PLAN.md#questi
 | Q-RP-55 | **A** | A ready sequence sets the version's frame range only when neither end is set (C-RP-32). |
 | Q-RP-56 | **A** | A sequence's frames are deleted when its copy is ready; a failed job keeps them for a retry. |
 
+## RP-13 answers
+
+The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questions-before-rp-13-starts) on 2026-11-16 ("go ahead", after choosing notifications beyond reviews as the next phase).
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-57 | **A** | Deliveries, publish jobs, published files and milestones notify (C-RP-34, C-RP-35). |
+| Q-RP-58 | **A** | A delivery tells the people named on it: its creator, whoever signed it off, whoever sent it. No request for action to every holder of a right. |
+| Q-RP-59 | **A** | Only the steps people wait for: arriving at Signed Off, Submitted, Approved, Rejected, Complete or Cancelled, and leaving Signed Off or a sent status. |
+| Q-RP-60 | **A** | A publish job ending Exported or Failed, and a revoked file. Registering a file tells nobody. |
+| Q-RP-61 | **A** | A milestone is reminded at most twice (due, overdue) to the people named on it; completing it tells its creator (C-RP-36). |
+| Q-RP-62 | **A** | Leave requests are not in RP-13. |
+
 ## Phases after the answers
 
 | Phase | Status |
@@ -133,5 +146,6 @@ The owner took every recommendation of [PLAN.md, RP-12 questions](PLAN.md#questi
 | RP-10 Loose ends of RP-5 and RP-6 | planned in [PLAN.md](PLAN.md#rp-10-loose-ends-of-rp-5-and-rp-6); answered (Q-RP-41 to Q-RP-45 = A), built and merged into `develop`, released in v4.8.0 ([rp-10-verification.md](rp-10-verification.md)) |
 | RP-11 Notification depth (reviews and preferences) | planned in [PLAN.md](PLAN.md#rp-11-notification-depth-reviews-and-preferences); answered (Q-RP-46 to Q-RP-50 = A); committed `a7443900`, merged into `develop` and `main`, released in v4.9.0 ([rp-11-verification.md](rp-11-verification.md)) |
 | RP-12 Media depth (image sequences and burn-ins) | planned in [PLAN.md](PLAN.md#rp-12-media-depth-image-sequences-and-burn-ins); answered (Q-RP-51 to Q-RP-56 = A); committed `f2b84225`, merged into `develop` and `main`, released in v4.9.0 ([rp-12-verification.md](rp-12-verification.md)) |
+| RP-13 Notifications beyond reviews (deliveries, publishing, milestones) | planned in [PLAN.md](PLAN.md#rp-13-notifications-beyond-reviews-deliveries-publishing-milestones); answered (Q-RP-57 to Q-RP-62 = A); being built |
 
 Phase numbers are not reused, so RP-7 stays empty.
