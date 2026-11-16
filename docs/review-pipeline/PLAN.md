@@ -595,7 +595,7 @@ The same as RP-6: `ruff check`, `manage.py check`, `basedpyright` (no new findin
 
 ## RP-11 Notification depth (reviews and preferences)
 
-**Status:** planned 2026-11-14; approved the same day with every recommendation (Q-RP-46 to Q-RP-50 = A, [DECISIONS.md](DECISIONS.md#rp-11-answers)). Contracts C-RP-28 to C-RP-30. Branch `feature/rp-11-notification-depth`, off `develop` at `81db4182` (v4.8.0). The owner chose this over media depth and a cleanup phase. **Built** (WP 11.1 to 11.7) and committed as `a7443900` on that branch, not merged yet ([rp-11-verification.md](rp-11-verification.md)). Three points turned out differently: one migration instead of two, a new live file instead of extending `notifications.live.test.tsx`, and "the artist of a version" includes the assignee of its task (CONTRACTS, "Details settled while building RP-11").
+**Status:** planned 2026-11-14; approved the same day with every recommendation (Q-RP-46 to Q-RP-50 = A, [DECISIONS.md](DECISIONS.md#rp-11-answers)). Contracts C-RP-28 to C-RP-30. Branch `feature/rp-11-notification-depth`, off `develop` at `81db4182` (v4.8.0). The owner chose this over media depth and a cleanup phase. **Built** (WP 11.1 to 11.7) and committed as `a7443900`, merged into `develop` (`0fe2dbf5`) and `main` (`32da0d68`), not released yet ([rp-11-verification.md](rp-11-verification.md)). Three points turned out differently: one migration instead of two, a new live file instead of extending `notifications.live.test.tsx`, and "the artist of a version" includes the assignee of its task (CONTRACTS, "Details settled while building RP-11").
 
 **Goal.** People are told about the review work that concerns them: a decision on a review their version is in, being asked for a verdict, a participant's answer, a comment on their version. And each person can mute the kinds they do not want. Still in-app only (Q-RP-7 = A), still polled (Q-RP-36 = A).
 
@@ -701,3 +701,104 @@ The same as RP-10: `ruff check`, `manage.py check`, `makemigrations --check`, `b
 - *Upgrading:* two migrations in `notifications` (new choices, and the preferences table), both additive. No setting, nothing to grant.
 - *Changed:* people are told when a review with their version reaches a decision, when they are asked for a verdict, when a participant answers their review, and when someone comments on their version. Each person can mute the kinds they do not want, except mentions and verdict requests.
 - *Security:* client members no longer see review comments the studio marked internal.
+
+## RP-12 Media depth (image sequences and burn-ins)
+
+**Status:** planned 2026-11-16; approved the same day with every recommendation (Q-RP-51 to Q-RP-56 = A, [DECISIONS.md](DECISIONS.md#rp-12-answers)). Contracts C-RP-31 to C-RP-33. Branch `feature/rp-12-media-depth`, off `develop` at `0fe2dbf5` (RP-11 merged; `main` is `32da0d68`). The owner chose this over a cleanup phase, notifications beyond reviews, and object storage. It amends ADR-0040 ("Not decided here": sequences and burn-ins).
+
+**Goal.** A version's review copy can be made from a rendered image sequence (EXR or DPX, as VFX work is mostly delivered), not only from a movie. A project can choose to burn the shot, the version and the frame number into its review copies. The worker, the signed links, the player and the reach rules of RP-5 and RP-10 stay as they are.
+
+### Why (what is there today)
+
+- **Only one file per upload** (ADR-0040, decision 1). `POST versions/{id}/review-media/` takes one movie or still; EXR and DPX are refused by extension (`transcode/detect.py`, `ALLOWED_EXTENSIONS`). An artist with a render has to make a movie elsewhere first.
+- **The worker can already read sequences.** A spike in the `worker` image (`studiohub-worker:rp5`, ffmpeg 7.1.5) turned ten EXR frames (`shot.1001.exr` to `shot.1010.exr`) and ten DPX frames into an H.264 proxy with RP-5's lockdown: `-protocol_whitelist file -format_whitelist image2 -codec_whitelist exr -f image2 -start_number 1001 -framerate 24 -i file:<folder>/frame.%04d.exr`. ffprobe counted the ten frames. The first bytes tell the formats apart: EXR `76 2f 31 01`, DPX `SDPX` or `XPDS`.
+- **ffmpeg stops silently at a gap.** With `1001, 1002, 1004` on disk it read two frames and ended without an error. The server has to check that a sequence is whole before ffmpeg sees it.
+- **Burn-ins can be drawn safely.** The image has `drawtext` (libfreetype) and the DejaVu fonts (`/usr/share/fonts/truetype/dejavu/`). Text from the database put in a file and drawn with `textfile=<file>:expansion=none` came out literally, including `%{pts}`, quotes, `:` and `\`, so it cannot reach the filter graph. The frame counter is a template we write (`%{eif\:n+1001\:d}`) and showed the source's frame number (1004 on the fourth frame).
+- **EXR is scene-linear; DPX is often log.** Shown as stored, an EXR looks dark and flat. ffmpeg's EXR decoder has `apply_trc` (for example `iec61966_2_1`, sRGB), and the image has `lut3d`; it has no OpenColorIO.
+- **The player already counts from `Version.start_frame`** (`ReviewViewer.tsx`, `VersionMedia.tsx`; `start_frame ?? 1`). Comments and annotations keep the frame number shown when they were written.
+- **Limits that matter for sequences.** Django refuses more than 100 files in one request (`DATA_UPLOAD_MAX_NUMBER_FILES`, a global setting). nginx's upload location takes 2,100 MB. A job has one 25-minute budget (27 and 30 minutes in Celery). A 2K EXR frame is a few to tens of MB, so a 100-frame shot can pass 2 GiB.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 12.1 | **Sequence upload** (Q-RP-51, Q-RP-52). A row of kind `sequence` and a new status `uploading`. The client opens the upload, sends the frames in parts, then completes it; the service checks every frame's name and first bytes, stores it under our own name (`source/frame.<number>.<ext>`), and on completion checks the sequence is whole and queues the job. Abandoned uploads expire (the sweep). New settings for the frame cap and the sequence's total size. Migration `production` `0010` (choices, the in-flight constraint covers `uploading`, the frame fields). | `backend/apps/production/{models/review_media.py,services/review_media.py,transcode/detect.py,transcode/sequence.py (new),api/viewsets/{version,review_media}.py,api/serializers/review_media.py}`, `backend/config/{env.py,settings/components/storage.py}`, migration |
+| 12.2 | **Sequence processing** (Q-RP-53). The worker reads the stored frames through `image2` with the forced codec (`-codec_whitelist`), the colour rule below, and the same proxy, thumbnail and filmstrip as a movie. The probe gains `first_frame`, `last_frame` and `colour`. Frames are deleted when the copy is ready (Q-RP-56). | `transcode/ffmpeg.py`, `services/review_media.py` |
+| 12.3 | **Burn-ins** (Q-RP-54). `Project.review_burn_ins` (off by default). When on, the worker draws the fixed layout on movie and sequence proxies (not stills), from a text file with `expansion=none`, in a fixed font (`REVIEW_MEDIA_BURN_IN_FONT`). Project create, update and detail carry the field. Migration in `0010`. | `models/project.py`, `api/serializers/project*.py`, `transcode/ffmpeg.py`, `services/review_media.py` |
+| 12.4 | **Frame range** (Q-RP-55). When a sequence becomes ready and the version has neither `start_frame` nor `end_frame`, they are set from the frames. | `services/review_media.py` |
+| 12.5 | **Image and deploy.** The `worker` stage installs `fonts-dejavu-core` explicitly (it is only there as a dependency today). nginx gains the part route (same body limit as uploads). `.env.example` entries. ADR-0040 amended. | `infrastructure/docker/django/Dockerfile`, `infrastructure/docker/nginx/default.conf`, `.env.example`, `backend/.env.example`, `docs/adr/ADR-0040-review-media-processing.md` |
+| 12.6 | **Frontend.** The review movie panel offers "Upload a sequence": pick a folder or several files; the frames are checked in the browser first (one name, one extension, no gap; the same rules, for a quick message), sent in parts with progress, then completed. A ready sequence shows its range, frame count and colour rule. The project form gains "Burn-ins on review copies" (for those who may edit the project). Typed API and row keys from captured responses; schema regenerated. | `frontend/src/api/production/`, `frontend/src/modules/production/review/ReviewMoviePanel.tsx`, the project form, `frontend/src/core/api/generated/*` |
+| 12.7 | **Capture and live.** The review-media capture tool gains the sequence flow (made with the host's ffmpeg: a few small EXR frames) and a burn-in project. `reviewMedia.live.test.tsx` uploads a sequence in two parts and plays it; the frame shown counts from the sequence's first frame. | `docs/sync/tools/test_capture_review_media.py`, `docs/sync/samples/production/`, `docs/sync/tools/live_backend.py`, `frontend/src/test/live/reviewMedia.live.test.tsx` |
+| 12.8 | **Docs.** CONTRACTS (C-RP-31 onwards), `docs/apps/` for production media, the pre-deploy checklist (migration, new settings, font, nginx route), DECISIONS, release notes, `rp-12-verification.md`. | `docs/review-pipeline/`, `docs/apps/`, `docs/07-deployment/` |
+
+**The sequence upload** (proposed, Q-RP-51 = A). Every route needs what an upload needs today (C-RP-26: `version.update`, or the version's artist with `version.create`), on a version the caller reads (else 404), with review media on (else 409).
+
+| Route | Does |
+|---|---|
+| `POST versions/{id}/review-media/sequence/` | Opens an upload: `{"name": "shot_010_comp", "extension": "exr", "first_frame": 1001, "last_frame": 1100}`. Checks the range against the frame cap. A 409 when the version already has one in flight (as now). Answers 201 with the row (`status: uploading`). |
+| `POST review-media/{id}/frames/` | Multipart, up to 50 files. Each file's name must be `<name>.<frame>.<extension>` (`.`, `_` or `-` before the number) inside the declared range, not sent before; its first bytes must match the extension. Stored as it arrives. Answers 200 with how many frames are in and which are still missing (the first 50). A bad file refuses the whole part (400 naming it); the frames already in stay. |
+| `POST review-media/{id}/complete/` | Every frame of the range must be in (else 400 with the missing ones). Queues the job: 202 with the row (`status: queued`). |
+| `DELETE review-media/{id}/` | Also cancels an upload in progress (today it removes a ready copy). |
+
+### Questions before RP-12 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-51 | How does a sequence reach the server? | A: an upload in parts (the table above): open, send up to 50 frames per request, complete. B: one zip of the frames through today's route; the server unpacks it. C: all frames in one request, raising Django's 100-file limit for every route. | **A**. No request is larger than a part, so it fits nginx's and the network's limits, shows progress, and a failure loses one part. There is no archive to unpack (zip bombs, names inside the archive) and no global limit raised. The cost is three routes and an `uploading` state that expires. |
+| Q-RP-52 | What is a valid sequence? | A: EXR or DPX frames (also TIFF, PNG or JPEG frames), one name and one extension, frame numbers 0 to 99,999,999, no gap, at most 2,000 frames (`REVIEW_MEDIA_MAX_FRAMES`) and 20 GiB (`REVIEW_MEDIA_SEQUENCE_MAX_BYTES`). B: A, but a gap is filled by holding the frame before it, and the missing numbers are shown. | **A**. A review copy with held frames looks finished when it is not. Refusing a gap is honest and simple, and the message names the missing frames; B can follow. 2,000 frames is 83 seconds at 24 fps; WP 12.2 measures a 2K job of that length against the 25-minute budget, and the cap is lowered if it does not fit. |
+| Q-RP-53 | How is colour handled? | A: a fixed display rule with what ffmpeg has: EXR from linear to sRGB (`apply_trc`), DPX and the rest as stored; the panel names the rule, and says the copy is not for colour approval. B: A, plus a 3D LUT (`.cube`) per project, uploaded by a production admin and applied to sequences. C: OpenColorIO with a studio config, through OpenImageIO in the worker (a new decoder, a config to manage). | **A**. Real colour management is a studio decision with its own config files, and C is a phase of its own (and a second decoder to secure). A gives a usable picture for checking shape, motion and continuity. B or C can follow without changing what is stored. |
+| Q-RP-54 | Burn-ins: what, and when? | A: a fixed layout, switched per project (`review_burn_ins`, off by default): top left the project code and the shot or asset code; top right the version code; bottom left the date it was made; bottom right the frame number (the sequence's own, or `start_frame` + n for a movie). Movies and sequences, not stills. Existing copies are not remade. B: A, always on. C: a template per project (which fields, where). D: none: the player already shows the frame and the version. | **A**. Burn-ins matter when a copy is shown outside the player (a screen share, a recording, a saved link), and studios differ on whether they want them, so a switch. A fixed layout covers the usual fields; C is a design tool of its own. |
+| Q-RP-55 | Does a sequence set the version's frame range? | A: only when the version has neither `start_frame` nor `end_frame`; otherwise nothing changes. B: always. C: never. | **A**. The player counts from `start_frame`, so a sequence from 1001 should show 1001. Overwriting a range someone typed (B) would shift the frame numbers of comments already written. |
+| Q-RP-56 | What happens to the frames once the copy is ready? | A: they are deleted (a failed job keeps them for a retry; an upload that expires loses them). B: they are kept until the copy is superseded or removed, as a movie's source is. | **A**. A sequence is many times a movie's size, the frames are already on the studio's storage, and nothing serves them or remakes the copy from them. |
+
+Also decided in the plan, without a question:
+- Frame names are never used as paths: a frame is stored as `source/frame.<number, 8 digits>.<extension>` from the number parsed out of its name.
+- Every frame is checked by its first bytes as a movie is now; the worker forces the decoder (`-codec_whitelist exr`, `dpx`, ...) as well as the demuxer, and keeps `-protocol_whitelist file`.
+- Text from the database reaches ffmpeg only through a file read with `expansion=none`; the only expanded text is the frame counter, which the code writes.
+- The 25-minute job budget stays; a longer job fails with `timeout` as now.
+- No new permission code: the upload rights are C-RP-26's.
+- One migration (`production` `0010`): the new kind and status, the constraint, the frame fields, and `Project.review_burn_ins`.
+
+### Not in RP-12
+
+- OpenColorIO, per-project LUTs, HDR, audio-only files (Q-RP-53; ADR-0040).
+- Reading frames from studio storage by path (the worker mounts only the media volume).
+- Remaking existing copies when the burn-in switch changes.
+- Slates (a title card before the first frame).
+- Object storage for review media.
+
+### Tests (targeted, test database)
+
+- **12.1:**
+  - open, parts and complete answer as the table says; the rights and the 404/409 of today's upload;
+  - a frame outside the range, sent twice, with another name or extension, or whose first bytes do not match is a 400 and the part is refused;
+  - complete with a gap is a 400 naming the missing frames;
+  - the frame cap and the total size are enforced; a part over 50 files is a 400;
+  - an upload left `uploading` expires in the sweep and loses its folder; a cancel removes it;
+  - stored names are ours (a name with `../` or a path is refused or ignored, never used).
+- **12.2:** the command builders (image2, the forced codec, `apply_trc` for EXR only, the start number); a whole sequence becomes `ready` with the proxy, thumbnail and filmstrip and a probe with the range; a frame that will not decode fails as `transcode_failed`; the frames are deleted when ready and kept when failed.
+- **12.3:** the burn-in file holds the codes; hostile text (`%{pts}`, `'`, `:`, `\`, a newline) is drawn literally (a real ffmpeg run, checked in the probe and by the command's arguments); off by default; stills get none.
+- **12.4:** the range is set only when both are empty.
+- **12.6:** the panel's checks (gap, mixed names), the parts sent in order with progress, the completed state; the project switch.
+- **12.7:** the capture passes; the live file passes against the harness.
+
+Mutation checks. Each change below must make a test fail:
+- a gap accepted;
+- a frame's own name used as its path;
+- a frame not sniffed;
+- the codec not forced;
+- `apply_trc` applied to DPX, or dropped for EXR;
+- burn-in text drawn with expansion on;
+- burn-ins drawn when the switch is off;
+- the range overwritten when one is set;
+- the frames kept when ready, or deleted when failed;
+- an expired upload not swept.
+
+### Gates
+
+The same as RP-11: `ruff check`, `manage.py check`, `makemigrations --check`, `basedpyright` (no new findings in the files changed), `apps/production` in full. Frontend: `pnpm typecheck && pnpm test && pnpm build`, Biome at 0 errors, and the unreachable-code check. The worker image is built and a sequence is run through it once. The live file runs once.
+
+### Release notes (draft)
+
+- *Upgrading:* one migration in `production`. New settings `REVIEW_MEDIA_MAX_FRAMES`, `REVIEW_MEDIA_SEQUENCE_MAX_BYTES` and `REVIEW_MEDIA_BURN_IN_FONT` (defaults work with the `worker` image). Rebuild the `worker` image and reload nginx (a new upload route).
+- *Changed:* a review copy can be made from an EXR or DPX image sequence, uploaded in parts from a folder. A project can burn the shot, the version and the frame number into its review copies.
