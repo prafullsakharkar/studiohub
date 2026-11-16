@@ -632,6 +632,7 @@ class TestReviewMedia:
             row,
             probe,
             {"proxy": "proxy.mp4", "thumbnail": "thumbnail.jpg", "filmstrip": "filmstrip.jpg"},
+            {"first_frame": None, "last_frame": None, "colour": "as_stored", "burn_ins": False},
         )
 
         assert _kinds(work["artist"]) == ["review_media_ready"]
