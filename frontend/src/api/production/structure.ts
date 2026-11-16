@@ -30,6 +30,8 @@ export interface Project {
   color_space: string;
   /** RP-3 (C-RP-14): approving a version also approves its task. Off by default. */
   approve_task_on_version_approval: boolean;
+  /** RP-12 (C-RP-33): review copies made from movies and sequences carry burn-ins. Off by default. */
+  review_burn_ins: boolean;
   start_date: string | null;
   delivery_date: string | null;
   /** Only for holders of project.view_budget; left out otherwise (CR-55). */
@@ -67,6 +69,7 @@ export interface ProjectInput {
   aspect_ratio?: string;
   color_space?: string;
   approve_task_on_version_approval?: boolean;
+  review_burn_ins?: boolean;
   start_date?: string | null;
   delivery_date?: string | null;
   budget_usd?: number;

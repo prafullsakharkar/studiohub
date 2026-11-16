@@ -269,8 +269,9 @@ class TestFreshInitialMigrations:
             # databases already hold; its 0005 adds note replies, links and a task to the notes table,
             # and its 0006 back-fills those links from the notes already there (RP-2, WP 2.1, WP 2.6);
             # its 0007 adds the approval roll-up switch to the projects table (RP-3, WP 3.1); its 0008
-            # adds review media (RP-5, WP 5.1) and its 0009 note mentions (RP-6, WP 6.3).
-            limit = {"audit": 3, "deliveries": 3, "identity": 4, "production": 9}.get(app, 2)
+            # adds review media (RP-5, WP 5.1) and its 0009 note mentions (RP-6, WP 6.3); its 0010
+            # image sequences on review media and the burn-in switch on projects (RP-12, WP 12.1).
+            limit = {"audit": 3, "deliveries": 3, "identity": 4, "production": 10}.get(app, 2)
             assert len(names) <= limit, (app, names)
 
     @pytest.mark.skipif(connection.vendor != "postgresql", reason="the extension is PostgreSQL's")

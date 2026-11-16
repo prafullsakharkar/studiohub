@@ -4,7 +4,7 @@
       "code": "RPQ_SH0010_COMP_V001",
       "department": "",
       "entity_code": "RPQ_SH0010",
-      "entity_id": "639e88e7-a0da-427f-8673-f1837e499294",
+      "entity_id": "b242297b-2fdb-4e07-9c01-b59787f239ad",
       "entity_name": "Hero walk",
       "entity_type": "Shot",
       "is_archived": false,
@@ -21,14 +21,14 @@
     "headers": {
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "a83d9e41-52a1-44c5-a5ce-ae449836cac9"
+      "X-Request-ID": "96197187-860a-4db8-91f6-e4b76549cff5"
     },
     "request": {
       "body": {
         "status": "Approved"
       },
       "method": "PATCH",
-      "path": "/api/v1/versions/56fb0671-6835-438c-b635-18a96ea6698a/"
+      "path": "/api/v1/versions/e8219509-50c5-4235-ba0b-448c9c216298/"
     },
     "status": 200
   },
@@ -37,7 +37,7 @@
       "code": "RPR_SH0010_COMP_V001",
       "department": "",
       "entity_code": "RPR_SH0010",
-      "entity_id": "d00494f9-13ee-45d8-ad13-b4404895642f",
+      "entity_id": "750a6cf5-b7fc-43d7-a9aa-4e4812418b7b",
       "entity_name": "Hero walk",
       "entity_type": "Shot",
       "is_archived": false,
@@ -54,14 +54,14 @@
     "headers": {
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "d62fa293-cc8e-4f1d-8f95-e2e4994c0069"
+      "X-Request-ID": "dd11b924-2d43-4ba9-a5f8-9e0cfcfdfa37"
     },
     "request": {
       "body": {
         "status": "Approved"
       },
       "method": "PATCH",
-      "path": "/api/v1/versions/e1c66eb9-edb4-4500-af6f-c35f9c105c75/"
+      "path": "/api/v1/versions/24dbc03f-a130-4bb8-8a0f-2e07796c0c2b/"
     },
     "status": 200
   },
@@ -80,15 +80,16 @@
       "delivery_date": null,
       "description": "",
       "fps": "24.000",
-      "id": "4decc2e4-2acd-4462-9743-6ebb88ce037f",
+      "id": "67bd2597-e793-44e7-99f5-63cfdc6ec12c",
       "name": "By hand",
       "resolution": "4096x2160 (4K DCI)",
+      "review_burn_ins": false,
       "start_date": null,
       "status": "In Progress",
       "supervisor": null,
       "thumbnail_url": "",
       "type": "Feature Film",
-      "uuid": "4decc2e4-2acd-4462-9743-6ebb88ce037f",
+      "uuid": "67bd2597-e793-44e7-99f5-63cfdc6ec12c",
       "vendor_ids": [],
       "vendor_names": [],
       "vendor_team_ids": [],
@@ -97,7 +98,7 @@
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "0eb16937-71e2-4e37-8ae7-451f9f8b8993"
+      "X-Request-ID": "c9bae576-6566-4222-8267-3ca01ee303a6"
     },
     "request": {
       "body": {
@@ -126,15 +127,16 @@
       "delivery_date": null,
       "description": "",
       "fps": "24.000",
-      "id": "12903dcb-461e-491b-8330-b271f10a2968",
+      "id": "34449611-b1b8-4e96-bfab-19401e0fac40",
       "name": "Roll-up",
       "resolution": "4096x2160 (4K DCI)",
+      "review_burn_ins": false,
       "start_date": null,
       "status": "In Progress",
       "supervisor": null,
       "thumbnail_url": "",
       "type": "Feature Film",
-      "uuid": "12903dcb-461e-491b-8330-b271f10a2968",
+      "uuid": "34449611-b1b8-4e96-bfab-19401e0fac40",
       "vendor_ids": [],
       "vendor_names": [],
       "vendor_team_ids": [],
@@ -143,7 +145,7 @@
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "114a8d55-7e25-4ec2-b4d6-56f48f956269"
+      "X-Request-ID": "b6a8f9be-9b7a-49fd-9696-b8ca42b69b8a"
     },
     "request": {
       "body": {
@@ -159,14 +161,14 @@
     "status": 201
   },
   "ids": {
-    "artist": "2e38741b-9fe9-4a54-9fe3-c2a62a442db1",
-    "project_off": "4decc2e4-2acd-4462-9743-6ebb88ce037f",
-    "project_on": "12903dcb-461e-491b-8330-b271f10a2968",
-    "supervisor": "026a8ca0-67df-468a-b5d4-15e3fefb2c8c",
-    "task_off": "a80b8122-cff7-47ef-ac46-32e4b1e35531",
-    "task_on": "39ee131d-28bc-4007-8daf-f60aaf0df14c",
-    "version_off": "56fb0671-6835-438c-b635-18a96ea6698a",
-    "version_on": "e1c66eb9-edb4-4500-af6f-c35f9c105c75"
+    "artist": "8b1348f5-dc15-48e6-aa35-4b2ce4291e19",
+    "project_off": "67bd2597-e793-44e7-99f5-63cfdc6ec12c",
+    "project_on": "34449611-b1b8-4e96-bfab-19401e0fac40",
+    "supervisor": "dba3b840-2fb6-4176-801b-68724eb4a508",
+    "task_off": "a7b94944-68a4-4dbb-a393-44748a270630",
+    "task_on": "b6581b71-b5d0-41a2-ab42-1c11149643ef",
+    "version_off": "e8219509-50c5-4235-ba0b-448c9c216298",
+    "version_on": "24dbc03f-a130-4bb8-8a0f-2e07796c0c2b"
   },
   "patch_switch_bad_400": {
     "body": {
@@ -175,20 +177,20 @@
       ],
       "error": {
         "code": "validation_error",
-        "request_id": "993f115a-bf15-4538-ae89-082fae90c0dd"
+        "request_id": "f822a733-b90c-4592-afaf-cfd977cd7bde"
       }
     },
     "headers": {
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "993f115a-bf15-4538-ae89-082fae90c0dd"
+      "X-Request-ID": "f822a733-b90c-4592-afaf-cfd977cd7bde"
     },
     "request": {
       "body": {
         "approve_task_on_version_approval": "sometimes"
       },
       "method": "PATCH",
-      "path": "/api/v1/projects/12903dcb-461e-491b-8330-b271f10a2968/"
+      "path": "/api/v1/projects/34449611-b1b8-4e96-bfab-19401e0fac40/"
     },
     "status": 400
   },
@@ -197,20 +199,20 @@
       "detail": "You do not have permission to perform this action.",
       "error": {
         "code": "permission_denied",
-        "request_id": "bee68cae-aaf6-4fdd-bc91-16d82abc49df"
+        "request_id": "f8db6f9a-e5fd-4e4d-b192-57120bb22818"
       }
     },
     "headers": {
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "bee68cae-aaf6-4fdd-bc91-16d82abc49df"
+      "X-Request-ID": "f8db6f9a-e5fd-4e4d-b192-57120bb22818"
     },
     "request": {
       "body": {
         "approve_task_on_version_approval": false
       },
       "method": "PATCH",
-      "path": "/api/v1/projects/12903dcb-461e-491b-8330-b271f10a2968/"
+      "path": "/api/v1/projects/34449611-b1b8-4e96-bfab-19401e0fac40/"
     },
     "status": 403
   },
@@ -231,6 +233,7 @@
       "fps": "24.000",
       "name": "By hand",
       "resolution": "4096x2160 (4K DCI)",
+      "review_burn_ins": false,
       "start_date": null,
       "status": "In Progress",
       "supervisor": null,
@@ -243,14 +246,14 @@
     "headers": {
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "5b19fd82-1503-4955-bee4-4bec15068d64"
+      "X-Request-ID": "5982e86c-dcb9-4398-90f9-0b41e776991d"
     },
     "request": {
       "body": {
         "approve_task_on_version_approval": false
       },
       "method": "PATCH",
-      "path": "/api/v1/projects/4decc2e4-2acd-4462-9743-6ebb88ce037f/"
+      "path": "/api/v1/projects/67bd2597-e793-44e7-99f5-63cfdc6ec12c/"
     },
     "status": 200
   },
@@ -268,15 +271,16 @@
       "color_space": "ACEScg",
       "coordinator_id": null,
       "coordinator_name": "",
-      "created_at": "2026-11-12T13:04:53.371080Z",
+      "created_at": "2026-11-16T12:10:43.821275Z",
       "delivery_date": null,
       "description": "",
       "fps": "24.000",
-      "id": "12903dcb-461e-491b-8330-b271f10a2968",
+      "id": "34449611-b1b8-4e96-bfab-19401e0fac40",
       "in_progress_shots": 0,
       "name": "Roll-up",
       "project_code": "RPR",
       "resolution": "4096x2160 (4K DCI)",
+      "review_burn_ins": false,
       "start_date": null,
       "status": "In Progress",
       "supervisor_id": null,
@@ -285,8 +289,8 @@
       "total_assets": 0,
       "total_shots": 0,
       "type": "Feature Film",
-      "updated_at": "2026-11-12T13:04:53.371089Z",
-      "uuid": "12903dcb-461e-491b-8330-b271f10a2968",
+      "updated_at": "2026-11-16T12:10:43.821283Z",
+      "uuid": "34449611-b1b8-4e96-bfab-19401e0fac40",
       "vendor_ids": [],
       "vendor_names": [],
       "vendor_team_ids": [],
@@ -295,12 +299,12 @@
     "headers": {
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "67ac025c-df5c-4a17-a7f7-f7e39a29c765"
+      "X-Request-ID": "4b4da6d9-4053-4252-a075-d50ac3927b75"
     },
     "request": {
       "body": null,
       "method": "GET",
-      "path": "/api/v1/projects/12903dcb-461e-491b-8330-b271f10a2968/"
+      "path": "/api/v1/projects/34449611-b1b8-4e96-bfab-19401e0fac40/"
     },
     "status": 200
   },
@@ -323,15 +327,16 @@
           "color_space": "ACEScg",
           "coordinator_id": null,
           "coordinator_name": "",
-          "created_at": "2026-11-12T13:04:53.390870Z",
+          "created_at": "2026-11-16T12:10:43.836192Z",
           "delivery_date": null,
           "description": "",
           "fps": "24.000",
-          "id": "4decc2e4-2acd-4462-9743-6ebb88ce037f",
+          "id": "67bd2597-e793-44e7-99f5-63cfdc6ec12c",
           "in_progress_shots": 0,
           "name": "By hand",
           "project_code": "RPQ",
           "resolution": "4096x2160 (4K DCI)",
+          "review_burn_ins": false,
           "start_date": null,
           "status": "In Progress",
           "supervisor_id": null,
@@ -340,8 +345,8 @@
           "total_assets": 0,
           "total_shots": 0,
           "type": "Feature Film",
-          "updated_at": "2026-11-12T13:04:53.390879Z",
-          "uuid": "4decc2e4-2acd-4462-9743-6ebb88ce037f",
+          "updated_at": "2026-11-16T12:10:43.836199Z",
+          "uuid": "67bd2597-e793-44e7-99f5-63cfdc6ec12c",
           "vendor_ids": [],
           "vendor_names": [],
           "vendor_team_ids": [],
@@ -360,15 +365,16 @@
           "color_space": "ACEScg",
           "coordinator_id": null,
           "coordinator_name": "",
-          "created_at": "2026-11-12T13:04:53.371080Z",
+          "created_at": "2026-11-16T12:10:43.821275Z",
           "delivery_date": null,
           "description": "",
           "fps": "24.000",
-          "id": "12903dcb-461e-491b-8330-b271f10a2968",
+          "id": "34449611-b1b8-4e96-bfab-19401e0fac40",
           "in_progress_shots": 0,
           "name": "Roll-up",
           "project_code": "RPR",
           "resolution": "4096x2160 (4K DCI)",
+          "review_burn_ins": false,
           "start_date": null,
           "status": "In Progress",
           "supervisor_id": null,
@@ -377,8 +383,8 @@
           "total_assets": 0,
           "total_shots": 0,
           "type": "Feature Film",
-          "updated_at": "2026-11-12T13:04:53.371089Z",
-          "uuid": "12903dcb-461e-491b-8330-b271f10a2968",
+          "updated_at": "2026-11-16T12:10:43.821283Z",
+          "uuid": "34449611-b1b8-4e96-bfab-19401e0fac40",
           "vendor_ids": [],
           "vendor_names": [],
           "vendor_team_ids": [],
@@ -389,7 +395,7 @@
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "e76543ad-a287-40a4-80a7-166a8fc8de05"
+      "X-Request-ID": "d34bcbf2-76e4-4ad0-8343-b426244c0bb6"
     },
     "request": {
       "body": null,
@@ -402,11 +408,11 @@
     "body": {
       "asset_id": null,
       "assignee_avatar": null,
-      "assignee_id": "2e38741b-9fe9-4a54-9fe3-c2a62a442db1",
+      "assignee_id": "8b1348f5-dc15-48e6-aa35-4b2ce4291e19",
       "assignee_name": "user@example.test",
       "assignee_role": "",
       "code": "RPQ_T_COMP",
-      "created_at": "2026-11-12T13:04:53.762002Z",
+      "created_at": "2026-11-16T12:10:44.129660Z",
       "department": "Comp",
       "department_id": "",
       "dependencies": {},
@@ -417,13 +423,13 @@
       "entity_name": "",
       "entity_type": "General",
       "estimated_hours": "0.00",
-      "id": "a80b8122-cff7-47ef-ac46-32e4b1e35531",
+      "id": "a7b94944-68a4-4dbb-a393-44748a270630",
       "is_archived": false,
       "logged_hours": "0.00",
       "pending_hours": "0.00",
       "priority": "Medium",
       "project_code": "RPQ",
-      "project_id": "4decc2e4-2acd-4462-9743-6ebb88ce037f",
+      "project_id": "67bd2597-e793-44e7-99f5-63cfdc6ec12c",
       "project_name": "By hand",
       "reviewer_avatar": null,
       "reviewer_id": null,
@@ -440,8 +446,8 @@
       "team_id": null,
       "team_name": "",
       "title": "Comp",
-      "updated_at": "2026-11-12T13:04:53.762009Z",
-      "uuid": "a80b8122-cff7-47ef-ac46-32e4b1e35531",
+      "updated_at": "2026-11-16T12:10:44.129667Z",
+      "uuid": "a7b94944-68a4-4dbb-a393-44748a270630",
       "vendor_code": "",
       "vendor_id": "",
       "vendor_name": "",
@@ -450,12 +456,12 @@
     "headers": {
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "8b0c05cc-a982-423d-b3cc-236b97dbc24f"
+      "X-Request-ID": "f8697f39-f287-4649-b9a5-d6c3a4909670"
     },
     "request": {
       "body": null,
       "method": "GET",
-      "path": "/api/v1/tasks/a80b8122-cff7-47ef-ac46-32e4b1e35531/"
+      "path": "/api/v1/tasks/a7b94944-68a4-4dbb-a393-44748a270630/"
     },
     "status": 200
   },
@@ -464,12 +470,12 @@
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "a496a16c-e2d8-4d2a-8a2b-bc7cf7f8c987"
+      "X-Request-ID": "bf63ed78-3a36-4282-85ad-10f1eba5d966"
     },
     "request": {
       "body": null,
       "method": "GET",
-      "path": "/api/v1/tasks/a80b8122-cff7-47ef-ac46-32e4b1e35531/status-history/"
+      "path": "/api/v1/tasks/a7b94944-68a4-4dbb-a393-44748a270630/status-history/"
     },
     "status": 200
   },
@@ -477,11 +483,11 @@
     "body": {
       "asset_id": null,
       "assignee_avatar": null,
-      "assignee_id": "2e38741b-9fe9-4a54-9fe3-c2a62a442db1",
+      "assignee_id": "8b1348f5-dc15-48e6-aa35-4b2ce4291e19",
       "assignee_name": "user@example.test",
       "assignee_role": "",
       "code": "RPR_T_COMP",
-      "created_at": "2026-11-12T13:04:53.655330Z",
+      "created_at": "2026-11-16T12:10:44.042350Z",
       "department": "Comp",
       "department_id": "",
       "dependencies": {},
@@ -492,13 +498,13 @@
       "entity_name": "",
       "entity_type": "General",
       "estimated_hours": "0.00",
-      "id": "39ee131d-28bc-4007-8daf-f60aaf0df14c",
+      "id": "b6581b71-b5d0-41a2-ab42-1c11149643ef",
       "is_archived": false,
       "logged_hours": "0.00",
       "pending_hours": "0.00",
       "priority": "Medium",
       "project_code": "RPR",
-      "project_id": "12903dcb-461e-491b-8330-b271f10a2968",
+      "project_id": "34449611-b1b8-4e96-bfab-19401e0fac40",
       "project_name": "Roll-up",
       "reviewer_avatar": null,
       "reviewer_id": null,
@@ -515,8 +521,8 @@
       "team_id": null,
       "team_name": "",
       "title": "Comp",
-      "updated_at": "2026-11-12T13:04:53.862284Z",
-      "uuid": "39ee131d-28bc-4007-8daf-f60aaf0df14c",
+      "updated_at": "2026-11-16T12:10:44.248240Z",
+      "uuid": "b6581b71-b5d0-41a2-ab42-1c11149643ef",
       "vendor_code": "",
       "vendor_id": "",
       "vendor_name": "",
@@ -525,26 +531,26 @@
     "headers": {
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "8ff5840c-1b48-4ceb-8725-27b2e475ebcd"
+      "X-Request-ID": "1a162b23-3c3b-4543-9d8c-a22cea9aa468"
     },
     "request": {
       "body": null,
       "method": "GET",
-      "path": "/api/v1/tasks/39ee131d-28bc-4007-8daf-f60aaf0df14c/"
+      "path": "/api/v1/tasks/b6581b71-b5d0-41a2-ab42-1c11149643ef/"
     },
     "status": 200
   },
   "task_on_status_history": {
     "body": [
       {
-        "actor_id": "026a8ca0-67df-468a-b5d4-15e3fefb2c8c",
+        "actor_id": "dba3b840-2fb6-4176-801b-68724eb4a508",
         "actor_name": "user@example.test",
-        "changed_at": "2026-11-12T13:04:53.864962Z",
+        "changed_at": "2026-11-16T12:10:44.250195Z",
         "entity_code": "RPR_T_COMP",
-        "entity_id": "39ee131d-28bc-4007-8daf-f60aaf0df14c",
+        "entity_id": "b6581b71-b5d0-41a2-ab42-1c11149643ef",
         "entity_type": "Task",
         "from_status": "In Progress",
-        "id": "bb9b6d28-6878-4d57-bd0f-12657fca0602",
+        "id": "fb07e8a8-69a9-4ff4-8cbb-7d2a6403961c",
         "reason": "Version RPR_SH0010_COMP_V001 approved",
         "to_status": "Approved"
       }
@@ -552,12 +558,12 @@
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "63c25aed-9c2f-49c5-b144-7c31af9f97a9"
+      "X-Request-ID": "563e56b3-4384-4010-8e84-520c37e5f042"
     },
     "request": {
       "body": null,
       "method": "GET",
-      "path": "/api/v1/tasks/39ee131d-28bc-4007-8daf-f60aaf0df14c/status-history/"
+      "path": "/api/v1/tasks/b6581b71-b5d0-41a2-ab42-1c11149643ef/status-history/"
     },
     "status": 200
   }

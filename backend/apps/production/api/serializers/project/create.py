@@ -31,6 +31,7 @@ class ProjectCreateSerializer(BudgetGatedMixin, BaseWriteSerializer[Any]):
             "aspect_ratio",
             "color_space",
             "approve_task_on_version_approval",
+            "review_burn_ins",
             "start_date",
             "delivery_date",
             "thumbnail_url",

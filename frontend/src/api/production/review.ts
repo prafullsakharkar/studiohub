@@ -66,7 +66,7 @@ export interface Version {
   project_code: string;
   /** The movie or still the server made from an upload (RP-5, C-RP-21): the `ready` row, or null. */
   review_media: ReviewMedia | null;
-  /** The newest upload that is not ready: queued, processing or failed (with its message), or null. */
+  /** The newest upload that is not ready: uploading (a sequence still arriving), queued, processing or failed (with its message), or null. */
   review_media_job: ReviewMedia | null;
   created_at: string;
   updated_at: string;
@@ -83,9 +83,33 @@ export interface ReviewMediaProbe {
   duration_seconds: number;
   video_codec: string;
   has_audio: boolean;
+  /** A sequence's own frame range; null for a movie or still (RP-12, C-RP-32). */
+  first_frame: number | null;
+  last_frame: number | null;
+  /** How the picture was shown: an EXR is turned from linear light to sRGB, anything else is as stored. */
+  colour: 'srgb_from_linear' | 'as_stored';
+  /** Whether the copy carries the project's burn-ins (C-RP-33). */
+  burn_ins: boolean;
 }
 
-export type ReviewMediaStatus = 'queued' | 'processing' | 'ready' | 'failed' | 'superseded' | 'removed';
+export type ReviewMediaStatus = 'uploading' | 'queued' | 'processing' | 'ready' | 'failed' | 'superseded' | 'removed';
+
+/** An image sequence as it was opened, and how many of its frames have arrived (RP-12, C-RP-31). */
+export interface ReviewMediaSequence {
+  name: string;
+  extension: string;
+  first_frame: number;
+  last_frame: number;
+  frames_received: number;
+}
+
+/** The answer to one part of a sequence's frames (C-RP-31). */
+export interface ReviewMediaFramesResult {
+  frames_received: number;
+  frames_expected: number;
+  /** The first 50 frame numbers still missing. */
+  missing_frames: number[];
+}
 
 /**
  * A movie or still uploaded to a version and what the media worker made from it (C-RP-19 to C-RP-22), pinned to
@@ -96,11 +120,13 @@ export type ReviewMediaStatus = 'queued' | 'processing' | 'ready' | 'failed' | '
 export interface ReviewMedia {
   id: string;
   version_id: string;
-  kind: 'movie' | 'still';
+  kind: 'movie' | 'still' | 'sequence';
   status: ReviewMediaStatus;
   source_name: string;
   source_size: number;
   probe: ReviewMediaProbe | null;
+  /** Set for a sequence, null otherwise. */
+  sequence: ReviewMediaSequence | null;
   proxy_url: string | null;
   thumbnail_url: string | null;
   filmstrip_url: string | null;
@@ -195,8 +221,22 @@ export const reviewMediaApi = {
   },
   /** A failed row, at most three attempts in all (400 after that, or when it is not failed). */
   retry: (id: string) => apiClient.post<ReviewMedia>(`${V1}/review-media/${id}/retry/`, {}),
-  /** A ready row (400 otherwise); its files are deleted. 204. */
+  /** A ready row, or a sequence still arriving (cancelled); 400 otherwise. Its files are deleted. 204. */
   remove: (id: string) => apiClient.delete<void>(`${V1}/review-media/${id}/`),
+  /**
+   * Open an image sequence upload (RP-12, C-RP-31): the same rights and 409s as `upload`; 400 on a field (the name,
+   * the extension, the range, more frames than the studio allows). 201 with the row, `status: 'uploading'`.
+   */
+  openSequence: (versionId: string, body: { name: string; extension: string; first_frame: number; last_frame: number }) =>
+    apiClient.post<ReviewMedia>(`${V1}/versions/${versionId}/review-media/sequence/`, body),
+  /** One part of the frames, at most 50 files; a bad frame refuses the whole part (400 on `frames`). */
+  sendFrames: (id: string, files: readonly File[]) => {
+    const form = new FormData();
+    for (const file of files) form.append('frames', file);
+    return apiClient.upload<ReviewMediaFramesResult>(`${V1}/review-media/${id}/frames/`, form, { timeout: UPLOAD_TIMEOUT_MS });
+  },
+  /** Queue the sequence once every frame is in (202); 400 naming the missing frames otherwise. */
+  complete: (id: string) => apiClient.post<ReviewMedia>(`${V1}/review-media/${id}/complete/`, {}),
 };
 
 export interface VersionInput {

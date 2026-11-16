@@ -17,10 +17,11 @@ import { freshTotp, live } from './liveBackend';
  * Review-pipeline RP-10 (WP 10.6) against a REAL backend started with SYNC_LIVE_MEDIA=1: the harness processes queued
  * rows with the host's ffmpeg in place of the media worker. An artist uploads a movie to their own version (C-RP-26),
  * the version page follows the job to `ready` and plays the proxy through its signed link; on a version that is not
- * theirs the panel offers nothing and the server answers 403. Skipped without SYNC_LIVE_MEDIA.
+ * theirs the panel offers nothing and the server answers 403. RP-12 (WP 12.7): an EXR sequence sent in two parts.
+ * Skipped without SYNC_LIVE_MEDIA.
  */
 const uid = `${Date.now().toString(36)}`.toUpperCase();
-const fixture = {} as { own: string; ownCode: string; others: string; othersCode: string };
+const fixture = {} as { own: string; ownCode: string; others: string; othersCode: string; frames: string; framesCode: string };
 
 const tree = (ui: React.ReactElement, initial: string) => (
   <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -51,6 +52,23 @@ async function upload(versionId: string) {
   });
   return { status: response.status, body: await response.json().catch(() => null) };
 }
+/** RP-12: one part of a sequence's frames, as the panel sends it (field `frames`), by Node's fetch for the same reason. */
+async function sendFrames(mediaId: string, numbers: number[]) {
+  const boundary = `----live-frames-${uid}`;
+  const pieces: Buffer[] = [];
+  for (const n of numbers) {
+    const name = `live_comp.${n}.exr`;
+    pieces.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="frames"; filename="${name}"\r\nContent-Type: image/x-exr\r\n\r\n`));
+    pieces.push(fs.readFileSync(`${live.media?.sequence}/${name}`), Buffer.from('\r\n'));
+  }
+  pieces.push(Buffer.from(`--${boundary}--\r\n`));
+  const response = await fetch(`${live.url}/api/v1/review-media/${mediaId}/frames/`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${tokenStorage.getAccessToken()}`, 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+    body: Buffer.concat(pieces),
+  });
+  return { status: response.status, body: await response.json().catch(() => null) };
+}
 const reviewPanel = () => screen.findByRole('region', { name: 'Review movie' }, { timeout: 20000 });
 async function openMedia(versionId: string) {
   render(tree(page, `/versions/${versionId}`));
@@ -75,10 +93,11 @@ describe.skipIf(!live.media)('review movies against a live backend (SYNC_LIVE_ME
     const task = await tasksApi.create({ project: project.id, code: `${project.code}_T`, title: 'Comp', entity_type: 'Shot', entity_id: shot.id, assignee: artist.user_id });
     const own = await versionsApi.create({ project: project.id, shot: shot.id, task: task.id, department: 'Compositing', artist: artist.user_id });
     const others = await versionsApi.create({ project: project.id, shot: shot.id, task: task.id, department: 'Compositing', artist: lead.user_id });
+    const frames = await versionsApi.create({ project: project.id, shot: shot.id, task: task.id, department: 'Compositing', artist: artist.user_id });
     // The create answer is the write shape (no `artist_id`): read the version back.
     expect((await versionsApi.get(own.id)).artist_id).toBe(artist.user_id);
     expect((await versionsApi.get(others.id)).artist_id).toBe(lead.user_id);
-    Object.assign(fixture, { own: own.id, ownCode: own.code, others: others.id, othersCode: others.code });
+    Object.assign(fixture, { own: own.id, ownCode: own.code, others: others.id, othersCode: others.code, frames: frames.id, framesCode: frames.code });
     tokenStorage.clearTokens();
     const signed = await authService.login(live.users.artist);
     if (signed.status === 'mfa_required') throw new Error('the artist unexpectedly needs MFA');
@@ -115,8 +134,38 @@ describe.skipIf(!live.media)('review movies against a live backend (SYNC_LIVE_ME
 
   it('on a version that is not theirs the panel offers nothing, and the server answers 403', async () => {
     const panel = await openMedia(fixture.others);
-    expect(within(panel).getByText(/^Upload a movie or still/)).toBeTruthy();
+    expect(within(panel).getByText(/^Upload a movie, a still or an image sequence/)).toBeTruthy();
     expect(within(panel).queryByRole('button')).toBeNull();
     expect((await upload(fixture.others)).status).toBe(403);
   }, 60000);
+
+  it('RP-12: a sequence sent in two parts shows as unfinished in between, then plays from its first frame', async () => {
+    const opened = await reviewMediaApi.openSequence(fixture.frames, { name: 'live_comp', extension: 'exr', first_frame: 1001, last_frame: 1008 });
+    expect(opened).toMatchObject({ kind: 'sequence', status: 'uploading', source_name: 'live_comp.[1001-1008].exr' });
+    const first = await sendFrames(opened.id, [1001, 1002, 1003, 1004]);
+    expect(first).toEqual({ status: 200, body: { frames_received: 4, frames_expected: 8, missing_frames: [1005, 1006, 1007, 1008] } });
+
+    // Between the parts the page shows how far it got, and blocks another upload.
+    const panel = await openMedia(fixture.frames);
+    expect(within(panel).getByRole('alert').textContent).toContain('live_comp.[1001-1008].exr: 4 of 8 frames arrived and the upload was not finished.');
+    expect((within(panel).getByRole('button', { name: 'Upload a sequence' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(within(panel).getByRole('button', { name: 'Cancel upload' })).toBeTruthy();
+    cleanup();
+
+    expect((await sendFrames(opened.id, [1005, 1006, 1007, 1008])).body).toEqual({ frames_received: 8, frames_expected: 8, missing_frames: [] });
+    expect(await reviewMediaApi.complete(opened.id)).toMatchObject({ status: 'queued' });
+    await waitFor(async () => expect((await reviewMediaApi.list(fixture.frames))[0]?.status).toBe('ready'), { timeout: 90000, interval: 1000 });
+
+    // The version's empty range was filled from the frames, and the player counts from 1001.
+    const version = await versionsApi.get(fixture.frames);
+    expect([version.start_frame, version.end_frame]).toEqual([1001, 1008]);
+    await openMedia(fixture.frames);
+    await screen.findByText('640×360 · 24 fps · frames 1001–1008 · EXR', {}, { timeout: 20000 });
+    expect(screen.getByText('EXR shown as sRGB from linear light; not for colour approval')).toBeTruthy();
+    const video = (await screen.findByLabelText(`${fixture.framesCode} preview video`)) as HTMLVideoElement;
+    expect(screen.getByLabelText('Current frame').textContent).toBe('1001');
+    const proxy = await fetch(video.getAttribute('src') as string);
+    expect(proxy.status).toBe(200);
+    expect(proxy.headers.get('content-type')).toBe('video/mp4');
+  }, 180000);
 });

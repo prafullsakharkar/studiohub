@@ -78,7 +78,7 @@ describe('the version and review media shapes', () => {
     expect(flow.upload_mismatch_400.body.file).toEqual(["The file's content does not match its extension."]);
     for (const key of ['upload_by_artist_403', 'retry_by_artist_403', 'remove_by_artist_403']) expect(flow[key].status).toBe(403);
     expect(flow.retry_not_failed_400.body.detail).toEqual(['Only a failed upload can be retried.']);
-    expect(flow.remove_again_400.body.detail).toEqual(['Only a ready movie or still can be removed.']);
+    expect(flow.remove_again_400.body.detail).toEqual(['Only a ready copy, or an upload in progress, can be removed.']);
     expect(flow.remove_204.status).toBe(204);
   });
 

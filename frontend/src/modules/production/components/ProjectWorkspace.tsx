@@ -627,6 +627,12 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
                     <span>Tasks approved with their versions</span>
                   </>
                 )}
+                {project.review_burn_ins && (
+                  <>
+                    <span>•</span>
+                    <span>Burn-ins on review copies</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
