@@ -805,7 +805,7 @@ The same as RP-11: `ruff check`, `manage.py check`, `makemigrations --check`, `b
 
 ## RP-13 Notifications beyond reviews (deliveries, publishing, milestones)
 
-**Status:** planned 2026-11-16; answered the same day (Q-RP-57 to Q-RP-62 = A, [DECISIONS.md](DECISIONS.md#rp-13-answers)); contracts C-RP-34 to C-RP-36; built, report in [rp-13-verification.md](rp-13-verification.md). Not committed. Branch `feature/rp-13-notifications-beyond-reviews`, off `develop` at `987d6839` (v4.9.0). The owner chose this over colour (LUT/OCIO), media depth part 2, object storage and the cleanup phase.
+**Status:** planned 2026-11-16; answered the same day (Q-RP-57 to Q-RP-62 = A, [DECISIONS.md](DECISIONS.md#rp-13-answers)); contracts C-RP-34 to C-RP-36; built, report in [rp-13-verification.md](rp-13-verification.md); committed `88a24c4b`. Branch `feature/rp-13-notifications-beyond-reviews`, off `develop` at `987d6839` (v4.9.0). The owner chose this over colour (LUT/OCIO), media depth part 2, object storage and the cleanup phase.
 
 **Goal.** The inbox that RP-6 and RP-11 built for notes, tasks, versions and reviews also tells people about the records that production waits on: a delivery moving (signed off, sent, answered by the client, reopened), a publish job finishing or failing, a published file being revoked, and a milestone coming due. Still in-app only (Q-RP-7 = A), still polled, with the same rules: only people in reach, never the actor, one row per person per event, muted kinds skipped (C-RP-24, C-RP-30).
 

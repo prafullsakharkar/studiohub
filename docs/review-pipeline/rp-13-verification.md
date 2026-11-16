@@ -1,6 +1,6 @@
 # RP-13 verification: notifications beyond reviews
 
-Branch `feature/rp-13-notifications-beyond-reviews`, off `develop` at `987d6839` (v4.9.0). Planned, answered (Q-RP-57 to Q-RP-62 = A, "go ahead") and built on 2026-11-16. Contracts C-RP-34 to C-RP-36 ([CONTRACTS.md](CONTRACTS.md#rp-13-notifications-beyond-reviews)). **Not committed.**
+Branch `feature/rp-13-notifications-beyond-reviews`, off `develop` at `987d6839` (v4.9.0). Planned, answered (Q-RP-57 to Q-RP-62 = A, "go ahead") and built on 2026-11-16. Contracts C-RP-34 to C-RP-36 ([CONTRACTS.md](CONTRACTS.md#rp-13-notifications-beyond-reviews)). Committed as `88a24c4b`.
 
 ## What was built
 
