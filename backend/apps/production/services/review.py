@@ -6,7 +6,14 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
+from apps.core.events.bus import default_event_bus
 from apps.core.services.business import BusinessService
+from apps.production.events.reviews import (
+    ReviewCommentAdded,
+    ReviewDecided,
+    ReviewParticipantAdded,
+    ReviewParticipantVerdict,
+)
 from apps.production.models import (
     ProjectMembership,
     Review,
@@ -18,6 +25,7 @@ from apps.production.models import (
     ReviewParticipant,
     Version,
 )
+from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.services.status import OVERRIDE_SELF_APPROVAL, StatusService
 from apps.production.validators.references import require_project_member
 
@@ -25,6 +33,10 @@ from apps.production.validators.references import require_project_member
 VERDICT_STATUSES = ("Approved", "Retake", "Changes Requested")
 #: decisions: a second one on the same review is a conflict, not a no-op
 DECISION_STATUSES = frozenset({"Approved", "Rejected", "Changes Requested", "Retake"})
+
+
+def _sid(value) -> str | None:
+    return str(value) if value else None
 
 
 class ReviewService(BusinessService):
@@ -75,6 +87,7 @@ class ReviewService(BusinessService):
         override_reason=None,
     ):
         """Set the supervisor verdict; Approved and Retake also move the status."""
+        before = Review._base_manager.filter(pk=review.pk).values_list("status", flat=True).first()
         if verdict == "Approved" and review.status == "Approved":
             # No status moves, so the transition would not check separation of duties.
             cls.guard_approval(
@@ -99,6 +112,17 @@ class ReviewService(BusinessService):
         if notes:
             cls.log(review, actor=actor, action="VERDICT", verdict=verdict, notes=notes)
         review.save(update_fields=["supervisor_verdict", "updated_at"])
+        moved = verdict in ("Approved", "Retake") and before != verdict
+        if verdict in DECISION_STATUSES and not moved:
+            # A status move is told through StatusChanged; a verdict that left the status is told here.
+            default_event_bus.publish(
+                ReviewDecided(
+                    review_id=str(review.pk),
+                    project_id=_sid(review.project_id),
+                    decision=verdict,
+                    actor_id=_sid(getattr(actor, "pk", None)),
+                )
+            )
         return review
 
     @classmethod
@@ -202,10 +226,15 @@ class ReviewService(BusinessService):
         """Add a comment (or a reply) written by ``actor``; whatever author the client names is ignored.
 
         ``version_id`` must be a version shown in the review; a reply is on its thread's version (C-RP-05).
+        A client member's comment is always client-visible, and they reply only to what they are shown
+        (C-RP-29).
         """
+        client = cls.is_client(actor, review)
+        if client:
+            is_client_visible = True
         parent = None
         if parent_id:
-            parent = cls._comment(review, parent_id)
+            parent = cls._comment(review, parent_id, client=client)
             if parent.parent_id:  # pyright: ignore[reportAttributeAccessIssue]
                 raise ValidationError({"parent_id": ["Reply to the first comment of the thread."]})
             thread_version = parent.version_id  # pyright: ignore[reportAttributeAccessIssue]
@@ -214,7 +243,7 @@ class ReviewService(BusinessService):
             version_id = thread_version
         else:
             version_id = cls._review_version(review, version_id)
-        return ReviewComment.objects.create(
+        row = ReviewComment.objects.create(
             review=review,
             parent=parent,
             version_id=version_id,
@@ -227,6 +256,23 @@ class ReviewService(BusinessService):
             tags=tags or [],
             created_by=actor,
         )
+        default_event_bus.publish(
+            ReviewCommentAdded(
+                review_id=str(review.pk),
+                project_id=_sid(review.project_id),
+                comment_id=str(row.pk),
+                parent_id=_sid(parent.pk) if parent else None,
+                version_id=_sid(version_id),
+                is_client_visible=bool(is_client_visible),
+                author_id=_sid(getattr(actor, "pk", None)),
+            )
+        )
+        return row
+
+    @staticmethod
+    def is_client(actor, review) -> bool:
+        """Whether ``actor`` is a client member of the review's project (C-RP-29)."""
+        return review.project_id in ProductionBaseSelector.client_project_ids(actor)
 
     @staticmethod
     def _review_version(review, version_id):
@@ -240,19 +286,24 @@ class ReviewService(BusinessService):
         return version_id
 
     @staticmethod
-    def _comment(review, comment_id):
+    def _comment(review, comment_id, *, client=False):
+        """The comment ``comment_id`` of ``review``; one hidden from a client member is unknown (C-RP-29)."""
         try:
             key = UUID(str(comment_id))
         except ValueError:
             raise NotFound("Comment not found on this review.") from None
         comment = ReviewComment.objects.filter(review=review, pk=key).first()
+        if comment is not None and client:
+            thread = comment.parent if comment.parent_id else comment  # pyright: ignore[reportAttributeAccessIssue]
+            if not (comment.is_client_visible and thread.is_client_visible):
+                comment = None
         if comment is None:
             raise NotFound("Comment not found on this review.")
         return comment
 
     @classmethod
     def set_comment_resolved(cls, *, actor, review, comment_id, resolved):
-        comment = cls._comment(review, comment_id)
+        comment = cls._comment(review, comment_id, client=cls.is_client(actor, review))
         comment.resolved_at = timezone.now() if resolved else None
         comment.resolved_by = actor if resolved else None
         comment.updated_by = actor
@@ -304,7 +355,7 @@ class ReviewService(BusinessService):
         require_project_member(review.project, user, field="user_id")
         try:
             with transaction.atomic():
-                return ReviewParticipant.objects.create(
+                row = ReviewParticipant.objects.create(
                     review=review,
                     user=user,
                     name=cls._name(user),
@@ -313,6 +364,15 @@ class ReviewService(BusinessService):
                 )
         except IntegrityError:
             raise ValidationError({"user_id": ["This user is already on the review."]}) from None
+        default_event_bus.publish(
+            ReviewParticipantAdded(
+                review_id=str(review.pk),
+                project_id=_sid(review.project_id),
+                user_id=_sid(user.pk),
+                actor_id=_sid(getattr(actor, "pk", None)),
+            )
+        )
+        return row
 
     @classmethod
     def participant(cls, review, ref):
@@ -381,6 +441,15 @@ class ReviewService(BusinessService):
         )
         cls.log(
             review, actor=actor, action="PARTICIPANT_VERDICT", verdict=verdict, notes=notes or ""
+        )
+        default_event_bus.publish(
+            ReviewParticipantVerdict(
+                review_id=str(review.pk),
+                project_id=_sid(review.project_id),
+                participant_user_id=_sid(row.user_id),  # pyright: ignore[reportAttributeAccessIssue]
+                verdict=verdict,
+                actor_id=_sid(getattr(actor, "pk", None)),
+            )
         )
         return row
 

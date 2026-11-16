@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { notificationsApi, UNREAD_POLL_MS } from '@/api/notifications/notifications';
-import type { Notification } from '@/api/notifications/notifications';
+import type { Notification, NotificationKind, NotificationPreferences } from '@/api/notifications/notifications';
 
 /** How many rows the bell's panel shows; the page has the rest. */
 export const BELL_ROWS = 20;
@@ -45,4 +45,22 @@ export function useNotificationActions() {
 /** The newest `created_at` among rows the reader has seen: read-all stops there, so a row that came since stays unread. */
 export function newestSeen(rows: Notification[]): string | undefined {
   return rows.reduce<string | undefined>((best, n) => (best === undefined || Date.parse(n.created_at) > Date.parse(best) ? n.created_at : best), undefined);
+}
+
+/** The caller's muted kinds and the kinds that can be muted (C-RP-30). */
+export function useNotificationPreferences(enabled = true) {
+  return useQuery({
+    queryKey: notificationsApi.keys.preferences(),
+    queryFn: ({ signal }) => notificationsApi.preferences(signal),
+    enabled,
+  });
+}
+
+/** Saves the muted kinds; the panel then shows the server's answer. */
+export function useSaveNotificationPreferences() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (muted: NotificationKind[]) => notificationsApi.savePreferences(muted),
+    onSuccess: (saved: NotificationPreferences) => client.setQueryData(notificationsApi.keys.preferences(), saved),
+  });
 }

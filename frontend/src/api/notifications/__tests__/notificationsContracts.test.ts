@@ -6,7 +6,7 @@ import { mockFetch } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
 import { NOTIFICATION_KINDS, NOTIFICATION_TARGET_TYPES, notificationsApi } from '../notifications';
 import type { Notification } from '../notifications';
-import { NOTIFICATION_KEYS, NOTIFICATIONACTOR_KEYS, NOTIFICATIONPROJECT_KEYS, NOTIFICATIONRECORD_KEYS, NOTIFICATIONTARGET_KEYS } from '../notificationsRowKeys';
+import { NOTIFICATION_KEYS, NOTIFICATIONACTOR_KEYS, NOTIFICATIONPREFERENCES_KEYS, NOTIFICATIONPROJECT_KEYS, NOTIFICATIONRECORD_KEYS, NOTIFICATIONTARGET_KEYS } from '../notificationsRowKeys';
 
 /**
  * Review pipeline RP-6 (docs/review-pipeline/CONTRACTS.md C-RP-23 to C-RP-25), pinned to the responses captured in
@@ -15,6 +15,9 @@ import { NOTIFICATION_KEYS, NOTIFICATIONACTOR_KEYS, NOTIFICATIONPROJECT_KEYS, NO
 type Captured = { status: number; body: any; request: { method: string; path: string; body: unknown } };
 const flow = loadSample<Record<string, Captured>>('notifications/_notifications_flow.json');
 const rows = (key: string): Notification[] => flow[key].body.results;
+/** RP-11 (C-RP-28 to C-RP-30): docs/sync/samples/notifications/_review_notifications_flow.json (test_capture_review_notifications.py). */
+const reviewFlow = loadSample<Record<string, Captured>>('notifications/_review_notifications_flow.json');
+const reviewRows = (key: string): Notification[] => reviewFlow[key].body.results;
 const sorted = (o: object) => Object.keys(o).sort();
 
 beforeEach(() => tokenStorage.setTokens({ access: 'a', refresh: 'r' }));
@@ -38,7 +41,7 @@ describe('C-RP-23: the row shape', () => {
   });
 
   it('the kinds and target types the frontend lists are the server’s, and every kind was captured', () => {
-    const all = [...rows('artist_list'), ...rows('lead_list'), ...rows('supervisor_list')];
+    const all = [...rows('artist_list'), ...rows('lead_list'), ...rows('supervisor_list'), ...reviewRows('artist_list'), ...reviewRows('lead_list'), ...reviewRows('supervisor_list'), ...reviewRows('client_list')];
     for (const n of all) {
       expect(NOTIFICATION_KINDS).toContain(n.kind);
       expect(NOTIFICATION_TARGET_TYPES).toContain(n.target.type);
@@ -147,5 +150,85 @@ describe('C-RP-25: mentions on a note', () => {
     for (const m of members) {
       for (const key of ['user_id', 'status', 'show_id', 'department', 'department_id', 'client_id', 'vendor_id', 'name', 'email', 'role'] as const) expect(m).toHaveProperty(key);
     }
+  });
+});
+
+describe('C-RP-28: review rows', () => {
+  const all = () => [...reviewRows('artist_list'), ...reviewRows('lead_list'), ...reviewRows('supervisor_list'), ...reviewRows('client_list')];
+
+  it('every review row has the pinned keys and names the review by its code and title, its record by the shot', () => {
+    expect(all().length).toBeGreaterThan(0);
+    for (const n of all()) {
+      expect(sorted(n)).toEqual(sorted(NOTIFICATION_KEYS));
+      expect(sorted(n.target)).toEqual(sorted(NOTIFICATIONTARGET_KEYS));
+      expect([n.target.type, n.target.code, n.target.name]).toEqual(['review', 'RPR_DAILIES', 'Dailies']);
+      expect([n.record?.type, n.record?.code]).toEqual(['Shot', 'RPR_SH010']);
+    }
+  });
+
+  it('each kind carries its data: the decision, the verdict, the version commented on; an invitation nothing', () => {
+    const decision = reviewRows('artist_list_kind_review_decision');
+    expect(decision.map((n) => [n.kind, n.data])).toEqual([['review_decision', { to_status: 'Approved' }]]);
+    expect(reviewRows('lead_list').map((n) => [n.kind, n.data])).toEqual([['review_verdict', { verdict: 'Approved' }]]);
+    expect(reviewRows('supervisor_list').map((n) => [n.kind, n.data])).toEqual([['review_invited', {}]]);
+    const versionId = (reviewFlow.review_add_version.request.body as { version_id: string }).version_id;
+    for (const n of reviewRows('artist_list').filter((r) => r.kind === 'review_comment')) expect(n.data).toEqual({ version_id: versionId });
+  });
+
+  it('the artist hears the decision and every comment on their version, internal ones too; the client no internal one', () => {
+    expect(reviewRows('artist_list').map((n) => n.kind)).toEqual(['review_decision', 'review_comment', 'review_comment', 'review_comment', 'review_comment']);
+    expect(reviewRows('client_list').map((n) => n.kind)).toEqual(['review_decision', 'review_comment', 'review_invited']);
+  });
+});
+
+describe('C-RP-29: comments a client member is served', () => {
+  const texts = (key: string) => (reviewFlow[key].body.comments as { text: string; replies: { text: string }[] }[]).map((c) => [c.text, c.replies.map((r) => r.text)]);
+
+  it('the client sees only client-visible threads and replies; the lead sees every comment', () => {
+    expect(texts('review_detail_as_client')).toEqual([['Can the walk be slower?', ['Yes, in v002.']]]);
+    expect(texts('review_detail_as_lead')).toEqual([
+      ['Can the walk be slower?', ['Yes, in v002.', 'Budget is tight for this.']],
+      ['Studio only: check the edge.', []],
+    ]);
+  });
+
+  it('a client’s comment is stored client-visible though they asked for internal; a hidden comment is 404 to them', () => {
+    expect(reviewFlow.client_comment_forced_visible.request.body).toMatchObject({ is_client_visible: false });
+    expect(reviewFlow.client_comment_forced_visible.body.is_client_visible).toBe(true);
+    expect(reviewFlow.lead_comment_internal.body.is_client_visible).toBe(false);
+    expect(reviewFlow.client_resolves_internal_404.status).toBe(404);
+    expect(reviewFlow.client_replies_internal_404.status).toBe(404);
+  });
+});
+
+describe('C-RP-30: preferences', () => {
+  it('the shape is exactly muted_kinds and mutable_kinds; mentions and verdict requests cannot be muted', () => {
+    const prefs = reviewFlow.preferences_default.body;
+    expect(sorted(prefs)).toEqual(sorted(NOTIFICATIONPREFERENCES_KEYS));
+    expect(prefs.muted_kinds).toEqual([]);
+    expect(prefs.mutable_kinds).toEqual(NOTIFICATION_KINDS.filter((k) => k !== 'note_mention' && k !== 'review_invited'));
+  });
+
+  it('a save answers the list in the kinds’ order, each once; a refused kind is a 400 on the field', () => {
+    expect(reviewFlow.preferences_save.body.muted_kinds).toEqual(['task_status', 'review_comment']);
+    expect(reviewFlow.preferences_after_save.body).toEqual(reviewFlow.preferences_save.body);
+    expect([reviewFlow.preferences_unmutable_400.status, reviewFlow.preferences_unmutable_400.body.muted_kinds]).toEqual([400, ['note_mention cannot be muted.']]);
+    expect([reviewFlow.preferences_unknown_400.status, reviewFlow.preferences_unknown_400.body.muted_kinds]).toEqual([400, ['Unknown kind: spaceship.']]);
+    expect(reviewFlow.preferences_signed_out_401.status).toBe(401);
+  });
+
+  it('a muted kind is not written: the comment made after muting adds nothing to the count', () => {
+    expect(reviewFlow.artist_unread_count_while_muted.body).toEqual({ count: reviewFlow.artist_list.body.count });
+  });
+
+  it('the client reads and replaces the preferences on the captured path and body', async () => {
+    const { calls } = mockFetch(() => ({ body: reviewFlow.preferences_save.body }));
+    await notificationsApi.preferences();
+    const saved = await notificationsApi.savePreferences(['task_status', 'review_comment']);
+    expect(calls.map((c) => [c.method, new URL(c.url).pathname, c.body ?? null])).toEqual([
+      ['GET', reviewFlow.preferences_default.request.path, null],
+      ['PUT', reviewFlow.preferences_save.request.path, { muted_kinds: ['task_status', 'review_comment'] }],
+    ]);
+    expect(saved).toEqual(reviewFlow.preferences_save.body);
   });
 });

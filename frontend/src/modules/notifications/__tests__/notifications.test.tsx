@@ -24,11 +24,15 @@ const of = (kind: Notification['kind'], rows: Notification[] = list) => rows.fin
 const lead = flow.lead_list.body.results as Notification[];
 const path = (c: MockCall) => new URL(c.url).pathname;
 const BASE = '/api/v1/notifications/';
+/** RP-11 (C-RP-28, C-RP-30): docs/sync/samples/notifications/_review_notifications_flow.json. */
+const reviewFlow = loadSample<Record<string, Captured>>('notifications/_review_notifications_flow.json');
+const reviewList = [...reviewFlow.artist_list.body.results, ...reviewFlow.lead_list.body.results, ...reviewFlow.supervisor_list.body.results] as Notification[];
 
 function server(c: MockCall): MockReply {
   const p = path(c);
   if (p === `${BASE}unread-count/`) return { body: flow.artist_unread_count.body };
   if (p === `${BASE}read-all/`) return { body: flow.artist_read_all.body };
+  if (p === `${BASE}preferences/`) return { body: c.method === 'PUT' ? reviewFlow.preferences_save.body : reviewFlow.preferences_default.body };
   if (p.endsWith('/unread/')) return { body: flow.artist_unread_one.body };
   if (p.endsWith('/read/')) return { body: flow.artist_read_one.body };
   if (p === BASE) {
@@ -95,6 +99,15 @@ describe('what a row says and where it leads', () => {
     expect(notificationPath({ ...note, record: { type: 'Shot', id: 's1', code: 'SH' } })).toBe(`/projects/${note.project.id}/shots/s1/notes`);
     expect(notificationPath({ ...note, record: { type: 'Asset', id: 'a1', code: 'AS' } })).toBe(`/projects/${note.project.id}/assets/a1/notes`);
     expect(notificationPath({ ...note, record: null })).toBe(`/projects/${note.project.id}/notes`);
+  });
+
+  it('a review row says who decided, asked, answered or commented, and opens the review (C-RP-28)', () => {
+    const decision = of('review_decision', reviewList);
+    expect(describeNotification(decision)).toBe(`${decision.actor?.name} decided RPR_DAILIES: Approved`);
+    expect(describeNotification(of('review_invited', reviewList))).toMatch(/ asked for your verdict on RPR_DAILIES$/);
+    expect(describeNotification(of('review_verdict', reviewList))).toMatch(/ gave a verdict on RPR_DAILIES: Approved$/);
+    expect(describeNotification(of('review_comment', reviewList))).toMatch(/ commented on your work in RPR_DAILIES$/);
+    for (const n of reviewList) expect(notificationPath(n)).toBe(`/reviews/${n.target.id}`);
   });
 
   it('read-all stops at the newest row seen, whatever the order given', () => {
@@ -192,5 +205,44 @@ describe('the notifications page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Mark all read' }));
     await waitFor(() => expect(calls.some((c) => path(c) === `${BASE}read-all/`)).toBe(true));
     expect(calls.find((c) => path(c) === `${BASE}read-all/`)?.body).toEqual({ before: list[0].created_at });
+  });
+});
+
+describe('preferences on the notifications page (C-RP-30)', () => {
+  const box = (name: string) => screen.findByRole('checkbox', { name }) as Promise<HTMLInputElement>;
+
+  it('one switch per kind that can be muted, on until muted; mentions and verdict requests are not offered', async () => {
+    mockFetch(server);
+    mount(<NotificationsPage />, '/notifications');
+    expect((await box('Review comments on my work')).checked).toBe(true);
+    const region = screen.getByRole('region', { name: 'What to tell me' });
+    expect(within(region).getAllByRole('checkbox')).toHaveLength(reviewFlow.preferences_default.body.mutable_kinds.length);
+    expect(within(region).queryByRole('checkbox', { name: 'Mentions' })).toBeNull();
+    expect(within(region).queryByRole('checkbox', { name: 'Verdicts asked of me' })).toBeNull();
+  });
+
+  it('turning a kind off saves the whole list and shows the server’s answer', async () => {
+    const { calls } = mockFetch(server);
+    mount(<NotificationsPage />, '/notifications');
+    fireEvent.click(await box('Review comments on my work'));
+    await waitFor(() => expect(calls.filter((c) => c.method === 'PUT').map((c) => c.body)).toEqual([{ muted_kinds: ['review_comment'] }]));
+    // The server's answer (task_status and review_comment muted) is what the panel shows.
+    await waitFor(async () => expect((await box('Task status')).checked).toBe(false));
+    expect((await box('Review comments on my work')).checked).toBe(false);
+    expect((await box('Review decisions')).checked).toBe(true);
+  });
+
+  it('turning a muted kind back on sends the list without it', async () => {
+    const { calls } = mockFetch((c) => (path(c) === `${BASE}preferences/` && c.method === 'GET' ? { body: reviewFlow.preferences_after_save.body } : server(c)));
+    mount(<NotificationsPage />, '/notifications');
+    fireEvent.click(await box('Task status'));
+    await waitFor(() => expect(calls.filter((c) => c.method === 'PUT').map((c) => c.body)).toEqual([{ muted_kinds: ['review_comment'] }]));
+  });
+
+  it('a refused save says so', async () => {
+    mockFetch((c) => (path(c) === `${BASE}preferences/` && c.method === 'PUT' ? { status: 400, body: reviewFlow.preferences_unknown_400.body } : server(c)));
+    mount(<NotificationsPage />, '/notifications');
+    fireEvent.click(await box('Review decisions'));
+    expect((await screen.findByRole('alert')).textContent).toBe('The change could not be saved.');
   });
 });

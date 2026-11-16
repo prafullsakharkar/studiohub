@@ -14,7 +14,7 @@ import { cn } from '@/shared/utils/cn';
 import { SELECTED } from '@/shared/utils/kitStyles';
 import { AnnotationLayer } from './AnnotationLayer';
 import { COLORS, parseDrawing, type Shape, TOOLS, type Tool, toDrawing } from './annotationModel';
-import { useReviewWrite } from './ReviewPanels';
+import { InternalSwitch, useOffersInternal, useReviewWrite } from './ReviewPanels';
 
 interface Feedback {
   key: string;
@@ -38,6 +38,8 @@ interface Feedback {
 export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | null }> = ({ review, compareWith = null }) => {
   const canEdit = useCan('review.update');
   const write = useReviewWrite();
+  const offersInternal = useOffersInternal(review);
+  const [internal, setInternal] = useState(false);
   const player = useRef<MediaPlayerHandle>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [frame, setFrame] = useState(0);
@@ -225,11 +227,12 @@ export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | nul
                 {versions.length > 1 ? `Comment on ${current.code}, frame ${frame}` : `Comment on frame ${frame}`}
                 <input aria-label="Comment on this frame" value={text} onChange={(e) => setText(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200" />
               </label>
+              {offersInternal && <InternalSwitch checked={internal} onChange={setInternal} />}
               <Button
                 size="sm"
                 variant="primary"
                 disabled={!text.trim()}
-                onClick={async () => (await write(() => reviewsApi.addComment(review.id, { text: text.trim(), frame_number: frame, timecode: timecode(frame, startFrame, fps), version_id: current.id }))) && setText('')}
+                onClick={async () => (await write(() => reviewsApi.addComment(review.id, { text: text.trim(), frame_number: frame, timecode: timecode(frame, startFrame, fps), version_id: current.id, ...(offersInternal ? { is_client_visible: !internal } : {}) }))) && (setText(''), setInternal(false))}
               >
                 Add comment
               </Button>
