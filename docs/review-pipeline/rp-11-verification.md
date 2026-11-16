@@ -1,6 +1,6 @@
 # RP-11 Notification depth (reviews and preferences): verification
 
-Branch `feature/rp-11-notification-depth`, off `develop` at `81db4182` (v4.8.0). The plan and contracts are commit `fd07451c` (Q-RP-46 to Q-RP-50 answered as recommended). **WP 11.1 to 11.7 are built and not committed.**
+Branch `feature/rp-11-notification-depth`, off `develop` at `81db4182` (v4.8.0). The plan and contracts are commit `fd07451c` (Q-RP-46 to Q-RP-50 answered as recommended). **WP 11.1 to 11.7 are committed as `a7443900`, not merged.**
 
 ## 0. Read first
 
