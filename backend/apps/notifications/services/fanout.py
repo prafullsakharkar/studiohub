@@ -2,8 +2,9 @@
 Writing notifications (docs/review-pipeline RP-6, C-RP-24).
 
 ``FanoutService.notify`` takes who might be told and why, and writes one row per person who passes
-the rules: never the actor, only active people, only those who may open the target now, and one
-row per person per event (a mention wins over the other kinds). The handlers call it after the
+the rules: never the actor, only active people, only those who may open the target now, one row per
+person per event (a mention wins over the other kinds), and never a kind the person muted (RP-11,
+C-RP-30). The handlers call it after the
 action has committed; they log and swallow its errors, so a notification never fails the action.
 """
 
@@ -16,6 +17,7 @@ from django.contrib.auth import get_user_model
 
 from apps.notifications.constants import KIND_PRIORITY
 from apps.notifications.models import Notification
+from apps.notifications.services.preferences import PreferenceService
 from apps.production.selectors.notification_sources import NotificationSources, as_request
 
 
@@ -49,6 +51,10 @@ class FanoutService:
         """Write the rows for ``kinds`` (``{user_id: kind}``); the rows written."""
         actor = str(actor_id) if actor_id else None
         wanted = {user_id: kind for user_id, kind in kinds.items() if user_id and user_id != actor}
+        if not wanted:
+            return []
+        muted = PreferenceService.muting(wanted, set(wanted.values()))
+        wanted = {user_id: kind for user_id, kind in wanted.items() if (user_id, kind) not in muted}
         if not wanted:
             return []
         users = get_user_model().objects.filter(pk__in=list(wanted), is_active=True)

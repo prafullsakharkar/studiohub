@@ -14,6 +14,7 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { MemberSelect } from '@/modules/production/work/pickers';
 import { VersionPicker } from './pickers';
+import { isClientMemberOf } from './clientMember';
 import { formatDateTime } from '@/core/locale/studioLocale';
 
 /** Runs a write on a review, refreshes the review and its history afterwards, and shows the server's own refusal. */
@@ -203,10 +204,29 @@ export const ReviewParticipantsPanel: React.FC<{ review: Review }> = ({ review }
   );
 };
 
+/**
+ * Whether the signed-in person may mark what they write as internal: studio members only (C-RP-29). For a client
+ * member of the review's project the switch is not offered; the server stores their comments client-visible anyway.
+ */
+export function useOffersInternal(review: Review): boolean {
+  const user = useContext(AuthContext)?.user;
+  return !isClientMemberOf(user, review.project_id);
+}
+
+/** "Internal (hidden from the client)": a comment or reply the client members of the project are not shown. */
+export const InternalSwitch: React.FC<{ checked: boolean; onChange: (internal: boolean) => void; label?: string }> = ({ checked, onChange, label = 'Internal (hidden from the client)' }) => (
+  <label className="flex items-center gap-1.5 text-[11px] text-slate-400">
+    <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+    {label}
+  </label>
+);
+
 const CommentThread: React.FC<{ review: Review; comment: ReviewComment | ReviewReply; reply: boolean; canEdit: boolean }> = ({ review, comment, reply, canEdit }) => {
   const write = useReviewWrite();
+  const offersInternal = useOffersInternal(review);
   const [replying, setReplying] = useState(false);
   const [text, setText] = useState('');
+  const [internal, setInternal] = useState(false);
   return (
     <li className={`rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-xs ${reply ? 'ml-6' : ''}`}>
       <div className="flex flex-wrap items-center gap-2 text-slate-400">
@@ -214,6 +234,7 @@ const CommentThread: React.FC<{ review: Review; comment: ReviewComment | ReviewR
         {!reply && versionLabel(review, comment.version_id) && <Badge variant="info">{versionLabel(review, comment.version_id)}</Badge>}
         {comment.frame_number !== null && <Badge variant="outline">frame {comment.frame_number}</Badge>}
         {comment.is_resolved && <StatusBadge status="Resolved" />}
+        {!comment.is_client_visible && <Badge variant="warning">Internal</Badge>}
         <time className="ml-auto text-[10px] font-mono" dateTime={comment.created_at}>
           {formatDateTime(comment.created_at, '')}
         </time>
@@ -234,7 +255,8 @@ const CommentThread: React.FC<{ review: Review; comment: ReviewComment | ReviewR
       {replying && (
         <div className="mt-2 flex gap-2">
           <input aria-label="Reply" value={text} onChange={(e) => setText(e.target.value)} className={`${field} flex-1`} />
-          <Button size="sm" variant="primary" disabled={!text.trim()} onClick={async () => (await write(() => reviewsApi.addComment(review.id, { text: text.trim(), parent_id: comment.id }))) && (setText(''), setReplying(false))}>
+          {offersInternal && <InternalSwitch checked={internal} onChange={setInternal} label="Internal" />}
+          <Button size="sm" variant="primary" disabled={!text.trim()} onClick={async () => (await write(() => reviewsApi.addComment(review.id, { text: text.trim(), parent_id: comment.id, ...(offersInternal ? { is_client_visible: !internal } : {}) }))) && (setText(''), setReplying(false), setInternal(false))}>
             Send reply
           </Button>
         </div>
@@ -256,6 +278,8 @@ export const ReviewCommentsPanel: React.FC<{ review: Review }> = ({ review }) =>
   const [text, setText] = useState('');
   const [frame, setFrame] = useState('');
   const [onVersion, setOnVersion] = useState('');
+  const offersInternal = useOffersInternal(review);
+  const [internal, setInternal] = useState(false);
   // The server refuses an empty comment (CR-16) but still accepts comments on a closed review; the screen takes neither.
   const closed = review.status === 'Closed';
   return (
@@ -271,7 +295,8 @@ export const ReviewCommentsPanel: React.FC<{ review: Review }> = ({ review }) =>
             <input aria-label="Frame" type="number" value={frame} onChange={(e) => setFrame(e.target.value)} className={`${field} mt-1 block w-24`} />
           </label>
           <OnVersion review={review} value={onVersion} onChange={setOnVersion} label="Comment on version" />
-          <Button size="sm" variant="primary" disabled={!text.trim()} onClick={async () => (await write(() => reviewsApi.addComment(review.id, { text: text.trim(), frame_number: frame === '' ? null : Number(frame), ...(onVersion ? { version_id: onVersion } : {}) }))) && (setText(''), setFrame(''))}>
+          {offersInternal && <InternalSwitch checked={internal} onChange={setInternal} />}
+          <Button size="sm" variant="primary" disabled={!text.trim()} onClick={async () => (await write(() => reviewsApi.addComment(review.id, { text: text.trim(), frame_number: frame === '' ? null : Number(frame), ...(onVersion ? { version_id: onVersion } : {}), ...(offersInternal ? { is_client_visible: !internal } : {}) }))) && (setText(''), setFrame(''), setInternal(false))}>
             Add comment
           </Button>
         </div>

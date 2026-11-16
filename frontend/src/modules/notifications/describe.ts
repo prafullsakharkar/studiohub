@@ -34,6 +34,14 @@ export function describeNotification(n: Notification): string {
       return `The review movie of ${target} is ready`;
     case 'review_media_failed':
       return `The review movie of ${target} failed: ${MEDIA_FAILURES[n.data.error_code ?? ''] ?? 'it could not be processed'}`;
+    case 'review_decision':
+      return `${who} decided ${target}: ${n.data.to_status ?? '—'}`;
+    case 'review_invited':
+      return `${who} asked for your verdict on ${target}`;
+    case 'review_verdict':
+      return `${who} gave a verdict on ${target}: ${n.data.verdict ?? '—'}`;
+    case 'review_comment':
+      return `${who} commented on your work in ${target}`;
     default:
       return `${who} changed ${target}`;
   }
@@ -41,10 +49,11 @@ export function describeNotification(n: Notification): string {
 
 /**
  * Where a row leads. A note opens the Notes tab of the record it is about (its first link), or the project's;
- * a task its page; a version its page (the Media tab for a review movie).
+ * a task its page; a version its page (the Media tab for a review movie); a review its page (RP-11, C-RP-28).
  */
 export function notificationPath(n: Notification): string {
   const { target, record, project } = n;
+  if (target.type === 'review') return `/reviews/${target.id}`;
   if (target.type === 'task') return `/tasks/${target.id}`;
   if (target.type === 'version') {
     return n.kind === 'review_media_ready' || n.kind === 'review_media_failed' ? `/versions/${target.id}?tab=media` : `/versions/${target.id}`;

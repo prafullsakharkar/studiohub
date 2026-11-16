@@ -592,3 +592,112 @@ The same as RP-6: `ruff check`, `manage.py check`, `basedpyright` (no new findin
 
 - *Upgrading:* no migration, no setting, nothing to run.
 - *Changed:* artists can put a review movie on their own versions, retry it and remove it. Cards on version lists keep their pictures, and a playing movie keeps its place when its link is renewed.
+
+## RP-11 Notification depth (reviews and preferences)
+
+**Status:** planned 2026-11-14; approved the same day with every recommendation (Q-RP-46 to Q-RP-50 = A, [DECISIONS.md](DECISIONS.md#rp-11-answers)). Contracts C-RP-28 to C-RP-30. Branch `feature/rp-11-notification-depth`, off `develop` at `81db4182` (v4.8.0). The owner chose this over media depth and a cleanup phase. **Built** (WP 11.1 to 11.7) and committed as `a7443900` on that branch, not merged yet ([rp-11-verification.md](rp-11-verification.md)). Three points turned out differently: one migration instead of two, a new live file instead of extending `notifications.live.test.tsx`, and "the artist of a version" includes the assignee of its task (CONTRACTS, "Details settled while building RP-11").
+
+**Goal.** People are told about the review work that concerns them: a decision on a review their version is in, being asked for a verdict, a participant's answer, a comment on their version. And each person can mute the kinds they do not want. Still in-app only (Q-RP-7 = A), still polled (Q-RP-36 = A).
+
+### Why (what is there today)
+
+- **A review's decision tells nobody.** `ReviewService.change_status` and `record_verdict` move the review through `StatusService`, which publishes `StatusChanged` with `entity_type = "Review"`. The RP-6 handler (`notifications/events/handlers.py`, `StatusChangedHandler`) only acts on `Task` and `Version`, so it returns. A decision on a review does not move its versions' statuses (no cascade), so `version_status` does not fire either. An artist learns that their version was approved or sent back only by opening the review.
+- **Being asked for a verdict tells nobody.** `ReviewService.add_participant` creates a `ReviewParticipant`, and nothing is published.
+- **A participant's verdict tells nobody.** `record_participant_verdict` saves the verdict and logs a `ReviewActivity` row. The lead reviewer (`Review.lead_reviewer`) and the review's creator see it only on the review.
+- **Review comments were left out on purpose** (Q-RP-33 = A): they have their own visibility (`is_client_visible`, external participants), and Q-RP-4 kept them apart from notes. `ReviewService.add_comment` publishes nothing.
+- **`is_client_visible` is stored and never enforced.** The flag is written by `POST reviews/{id}/comments/` (`api/viewsets/review.py:177`) and returned in each comment. But the review shape serves every comment to anyone who can read the review (`api/serializers/review/base.py:37`), and that includes a client member who takes part in the review (`selectors/external_scope.py`, "Client: the reviews they take part in"). So a comment the studio marked not client-visible is shown to the client. This is a confidentiality gap that predates the programme. The app's composer never sends the flag (every comment written in the app is client-visible), so internal comments come only through the API and the old-list import today. It matters here because a comment notification must not reach someone the comment is hidden from.
+- **Who acts on a review.** Commenting, adding participants and recording a participant's verdict need `review.update`; a decision needs `review.approve`. The seeded artist role holds `review.view` only, so artists read reviews and are the ones told; leads, supervisors and production act (and a client member acts only if their role grants `review.update`).
+- **No preferences** (Q-RP-37 = A, "once there is real use to tune against"). Every kind goes to everyone directly involved.
+- **The inbox knows three target types** (`note`, `task`, `version`). Reach and labels come from `production/selectors/notification_sources.py`, one subquery per type. A review is not one of them.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 11.1 | **Client-visible comments are enforced** (Q-RP-47). A client member of the review's project is served only comments with `is_client_visible = true`, and the replies of those threads, in every answer that holds the review's comments (`GET reviews/`, `GET reviews/{id}/`, and the actions that answer the whole review, such as resolve). A comment a client member writes is always client-visible. Internal members and vendors see every comment as now. | `backend/apps/production/api/serializers/review/{base,parts}.py`, `selectors/review.py`, `services/review.py`, `selectors/external_scope.py` (docstring) |
+| 11.2 | **Review events** (Q-RP-46, Q-RP-50). New events in `apps/production/events/reviews.py`, published after commit:<ul><li>`ReviewParticipantAdded` (`review_id`, `project_id`, `user_id`, `actor_id`);</li><li>`ReviewParticipantVerdict` (`review_id`, `project_id`, `participant_user_id`, `verdict`, `actor_id`);</li><li>`ReviewCommentAdded` (`review_id`, `project_id`, `comment_id`, `parent_id`, `version_id`, `is_client_visible`, `author_id`).</li></ul>The review's decision reuses `StatusChanged` (`entity_type = "Review"`). Ids and status names only, never the comment's text. | `backend/apps/production/events/reviews.py`, `services/review.py` |
+| 11.3 | **Review notifications** (C-RP-28). Target type `review` (reach: `review.view` and the narrowing of `GET reviews/{id}/`, which already covers external members; label: the review's code and title). New kinds `review_decision`, `review_invited`, `review_verdict`, `review_comment`. Recipients follow the table below, with the RP-6 rules: in reach when written and when read, never the actor, one row per person per event. A comment that is not client-visible is never told to a client member. Migration `notifications` `0002` (the new choices). | `backend/apps/notifications/{constants,events/handlers,migrations}.py`, `backend/apps/production/selectors/notification_sources.py` |
+| 11.4 | **Preferences** (Q-RP-48, Q-RP-49, C-RP-30). `NotificationPreference(user, muted_kinds)`, one row per person, created on first save. `GET notifications/preferences/` and `PUT notifications/preferences/` (own row only; any signed-in user; an unknown kind or a kind that cannot be muted is a 400). The fan-out skips a recipient who muted the kind. Migration `notifications` `0003`. | `backend/apps/notifications/{models,services,api}/`, migrations |
+| 11.5 | **Frontend.** The API module and row keys from captured responses. The bell and the Notifications page describe and open the new kinds (a review row opens `/reviews/{id}`). The Notifications page gets a Preferences panel: one switch per kind that can be muted. The review comment composer gets an "Internal (hidden from the client)" switch for studio members (Q-RP-47 = A); a client member never sees it, and the server forces their comments client-visible anyway. | `frontend/src/api/notifications/`, `frontend/src/modules/notifications/`, `frontend/src/modules/reviews/` |
+| 11.6 | **Live run.** Extend `notifications.live.test.tsx`: a supervisor decides a review that holds the artist's version, the artist is asked for a verdict and answers, a comment on their version; preferences mute a kind and the next event writes nothing. A client member does not see an internal comment and is not told about it. | `frontend/src/test/live/notifications.live.test.tsx`, `docs/sync/tools/live_backend.py` (seed a client member, if needed) |
+| 11.7 | **Docs.** CONTRACTS (C-RP-28 onwards), `docs/apps/notifications.md`, the pre-deploy checklist (two migrations; clients stop seeing internal comments), DECISIONS, release notes, `rp-11-verification.md`. | `docs/review-pipeline/`, `docs/apps/`, `docs/07-deployment/` |
+
+**Who is notified** (proposed, Q-RP-46 = A). Every row also requires that the review is in the recipient's reach, leaves out the actor, and skips a recipient who muted the kind (WP 11.4).
+
+| Event | Kind | Recipients | Target |
+|---|---|---|---|
+| A review reaches a decision: `Approved`, `Rejected`, `Changes Requested` or `Retake` (by a status change or the supervisor's verdict) | `review_decision` | the artists of the review's live versions; the review's participants | the review |
+| Someone is added as a participant | `review_invited` | that person | the review |
+| A participant records a verdict | `review_verdict` | the review's lead reviewer; the review's creator | the review |
+| A comment is added on a version of the review | `review_comment` | the artist of that version | the review |
+| A reply is added to a comment thread | `review_comment` | the thread's author; everyone who replied earlier; the artist of the thread's version | the review |
+
+A comment with `is_client_visible = false` reaches no client member, whatever the table says. A row keeps the decision or verdict (`data.to_status`, `data.verdict`) and the version's id (`data.version_id`), never the comment's text (Q-RP-35 = A).
+
+### Questions before RP-11 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-46 | Which review events notify, and whom? | A: the table above (decision, invitation, participant verdict, comments on your version and replies in your thread). B: A without comments. C: A, and every comment also goes to every participant. | **A**. These are the review moments a person is directly part of, as in ShotGrid and ftrack. C makes a busy review flood everyone on it, before there is any way to tune it except muting the whole kind. |
+| Q-RP-47 | What about `is_client_visible`, which is stored and never enforced? | A: enforce it in RP-11 (WP 11.1): a client member is served only client-visible comments and their replies, is never told about the others, and what they write is always client-visible. The composer gets an "Internal" switch for studio members. B: only keep notifications from leaking (no client member is told about an internal comment), and record the read-side gap as a known limit. C: hide internal comments from vendors too. | **A**. Today a client reads comments the studio marked internal. That is the flag's whole purpose, and the notification rule would be pointless while the review itself shows them. Vendors are production partners who already see their own tasks' reviews; C is a separate decision about vendors. It changes no trust model (it narrows a client to what the flag already said), so no ADR, and the pre-deploy checklist says so. |
+| Q-RP-48 | Which kinds can a person mute? | A: every kind except the ones addressed to them by name: `note_mention` and `review_invited`. B: every kind. C: no preferences yet (as RP-6). | **A**. Muting is for noise; being mentioned or asked for a verdict is a request for action, and a muted request is missed work. |
+| Q-RP-49 | What does muting do? | A: a muted kind is not written for that person; unmuting does not bring back what was skipped. B: rows are written and hidden from the bell and the list while muted. | **A**. Simpler and cheaper: no hidden rows to count, page or purge. Nothing is lost that matters, because the records themselves stay. |
+| Q-RP-50 | Which review status changes notify? | A: the decisions only (`Approved`, `Rejected`, `Changes Requested`, `Retake`), from a status change or a verdict. B: every status change (`Submitted`, `In Review`, `Closed` too). | **A**. The decisions are what an artist acts on; `Submitted` and `In Review` are the reviewer's own bookkeeping. |
+
+Also decided in the plan, without a question:
+- No e-mail, push or websocket (Q-RP-7, Q-RP-36). No digests. No following or watching a record.
+- No mentions in review comments: review comments keep their own records (Q-RP-4); mentions stay on notes.
+- No notifications for deliveries, publishing or scheduling.
+- No removal of the dead `notification.*` settings and flags, or of `core/services/notifications.py` (the cleanup phase the owner did not choose).
+- No new permission code, and no ADR: nobody learns of a record they cannot open, and WP 11.1 narrows clients to what the flag already promised.
+
+### Not in RP-11
+
+- Preferences per project, per record, or by channel (there is one channel).
+- A comment's text in the notification (Q-RP-35 = A).
+- Notifying a vendor or a client of anything outside the reviews they reach.
+
+### Tests (targeted, test database)
+
+- **11.1:**
+  - a client member gets only client-visible comments and their replies, in the list, the detail and the actions that answer the whole review;
+  - a client member's own comment is stored client-visible even when they send `false`;
+  - internal members and vendors see every comment as before;
+  - the captured review sample is recaptured.
+- **11.2, 11.3:**
+  - each event of the table writes its kind for exactly its recipients;
+  - never the actor;
+  - one row per person;
+  - a person out of the review's reach gets nothing;
+  - a client member gets no row for an internal comment;
+  - a non-decision status change writes nothing (under Q-RP-50 = A);
+  - the inbox lists and labels review rows, and drops them when the review leaves the reader's reach;
+  - a failed fan-out never fails the review action.
+- **11.4:**
+  - a muted kind writes no row for that person and still writes for the others;
+  - `note_mention` and `review_invited` cannot be muted (400);
+  - an unknown kind is a 400;
+  - a person reads and writes only their own preferences.
+- **11.5:** the new kinds' text and links; the Preferences panel saves and shows the server's answer; the composer offers "Internal" to studio members only, and sends the flag.
+- **11.6:** the live file passes against the harness.
+
+Mutation checks. Each change below must make a test fail:
+- clients served every comment again;
+- a client's comment kept internal;
+- the review handler ignoring decisions;
+- a non-decision status notifying;
+- the actor notified;
+- an internal comment told to a client member;
+- a muted kind still written;
+- a mention mutable;
+- the frontend opening a review row anywhere but the review.
+
+### Gates
+
+The same as RP-10: `ruff check`, `manage.py check`, `makemigrations --check`, `basedpyright` (no new findings in the files changed), `apps/production` and `apps/notifications` in full. Frontend: `pnpm typecheck && pnpm test && pnpm build`, Biome at 0 errors, and the unreachable-code check. The live file runs once.
+
+### Release notes (draft)
+
+- *Upgrading:* two migrations in `notifications` (new choices, and the preferences table), both additive. No setting, nothing to grant.
+- *Changed:* people are told when a review with their version reaches a decision, when they are asked for a verdict, when a participant answers their review, and when someone comments on their version. Each person can mute the kinds they do not want, except mentions and verdict requests.
+- *Security:* client members no longer see review comments the studio marked internal.

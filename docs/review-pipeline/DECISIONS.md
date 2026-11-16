@@ -92,6 +92,18 @@ The owner took every recommendation of [PLAN.md, RP-10 questions](PLAN.md#questi
 | Q-RP-44 | **A** | A renewed link keeps the player's place: players are keyed by the review-media row, and the source is swapped. |
 | Q-RP-45 | **A** | The notes views name their serializers for the OpenAPI schema (C-RP-27). |
 
+## RP-11 answers
+
+The owner took every recommendation of [PLAN.md, RP-11 questions](PLAN.md#questions-before-rp-11-starts) on 2026-11-14 ("go ahead").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-46 | **A** | Review notifications: a decision, an invitation to give a verdict, a participant's verdict, a comment on your version and a reply in your thread (C-RP-28). |
+| Q-RP-47 | **A** | `is_client_visible` is enforced: a client member is served only client-visible comments, is never told about the others, and what they write is client-visible. The composer gets an "Internal" switch for studio members. Vendors are unchanged (C-RP-29). |
+| Q-RP-48 | **A** | Every kind can be muted except `note_mention` and `review_invited` (C-RP-30). |
+| Q-RP-49 | **A** | A muted kind is not written for that person; unmuting brings nothing back. |
+| Q-RP-50 | **A** | Only review decisions notify (`Approved`, `Rejected`, `Changes Requested`, `Retake`). |
+
 ## Phases after the answers
 
 | Phase | Status |
@@ -106,5 +118,6 @@ The owner took every recommendation of [PLAN.md, RP-10 questions](PLAN.md#questi
 | RP-8 Live review | not planned (Q-RP-9 = B) |
 | RP-9 DCC integrations | separate repository (Q-RP-10 = B) |
 | RP-10 Loose ends of RP-5 and RP-6 | planned in [PLAN.md](PLAN.md#rp-10-loose-ends-of-rp-5-and-rp-6); answered (Q-RP-41 to Q-RP-45 = A), built and merged into `develop`, released in v4.8.0 ([rp-10-verification.md](rp-10-verification.md)) |
+| RP-11 Notification depth (reviews and preferences) | planned in [PLAN.md](PLAN.md#rp-11-notification-depth-reviews-and-preferences); answered (Q-RP-46 to Q-RP-50 = A); committed `a7443900` on `feature/rp-11-notification-depth`, not merged ([rp-11-verification.md](rp-11-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.

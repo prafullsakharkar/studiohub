@@ -269,4 +269,4 @@ class ReviewViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: ig
     def _detail(self, instance):
         """The review as the detail endpoint shows it, with its rows read afresh."""
         fresh = ReviewSelector.get_queryset().get(pk=instance.pk)
-        return ReviewDetailSerializer(fresh).data
+        return ReviewDetailSerializer(fresh, context=self.get_serializer_context()).data

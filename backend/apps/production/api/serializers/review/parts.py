@@ -37,7 +37,8 @@ def participant_dict(row: Any) -> dict[str, Any]:
     }
 
 
-def comment_dict(row: Any, *, replies: bool = True) -> dict[str, Any]:
+def comment_dict(row: Any, *, replies: bool = True, client: bool = False) -> dict[str, Any]:
+    """One comment and its replies; for a client member (C-RP-29) only the client-visible replies."""
     data = {
         "id": str(row.pk),
         "parent_id": str(row.parent_id) if row.parent_id else None,
@@ -55,7 +56,11 @@ def comment_dict(row: Any, *, replies: bool = True) -> dict[str, Any]:
         "created_at": _iso(row.created_at),
     }
     if replies:
-        data["replies"] = [comment_dict(r, replies=False) for r in row.replies.all()]
+        data["replies"] = [
+            comment_dict(r, replies=False)
+            for r in row.replies.all()
+            if r.is_client_visible or not client
+        ]
     return data
 
 

@@ -1,4 +1,4 @@
-"""The inbox shapes (docs/review-pipeline RP-6, C-RP-23)."""
+"""The inbox shapes (docs/review-pipeline RP-6, C-RP-23; RP-11, C-RP-28 and C-RP-30)."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from typing import Any
 
 from rest_framework import serializers
 
-from apps.notifications.constants import Kind
+from apps.notifications.constants import MUTABLE_KINDS, Kind
 from apps.notifications.models import Notification
 
 
@@ -87,6 +87,12 @@ class NotificationSerializer(serializers.ModelSerializer[Notification]):
             return {"from_status": stored.get("from_status"), "to_status": stored.get("to_status")}
         if obj.kind == Kind.REVIEW_MEDIA_FAILED:
             return {"error_code": stored.get("error_code") or ""}
+        if obj.kind == Kind.REVIEW_DECISION:
+            return {"to_status": stored.get("to_status")}
+        if obj.kind == Kind.REVIEW_VERDICT:
+            return {"verdict": stored.get("verdict")}
+        if obj.kind == Kind.REVIEW_COMMENT:
+            return {"version_id": stored.get("version_id")}
         return {}
 
 
@@ -100,3 +106,16 @@ class ReadAllSerializer(serializers.Serializer[Any]):
 
 class ReadAllResultSerializer(serializers.Serializer[Any]):
     updated = serializers.IntegerField()
+
+
+class PreferencesSerializer(serializers.Serializer[Any]):
+    """What the caller muted, and every kind that can be muted (C-RP-30)."""
+
+    muted_kinds = serializers.ListField(child=serializers.ChoiceField(choices=MUTABLE_KINDS))
+    mutable_kinds = serializers.ListField(child=serializers.ChoiceField(choices=MUTABLE_KINDS))
+
+
+class PreferencesWriteSerializer(serializers.Serializer[Any]):
+    """The kinds to mute; the service refuses an unknown kind or one that cannot be muted."""
+
+    muted_kinds = serializers.ListField(child=serializers.CharField(max_length=32), max_length=50)

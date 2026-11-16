@@ -5450,6 +5450,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/preferences/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The caller's muted kinds (C-RP-30): read, or replaced by ``PUT``. */
+        get: operations["v1_notifications_preferences_retrieve"];
+        /** @description The caller's muted kinds (C-RP-30): read, or replaced by ``PUT``. */
+        put: operations["v1_notifications_preferences_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications/read-all/": {
         parameters: {
             query?: never;
@@ -17568,9 +17586,13 @@ export interface components {
              *     * `version_status` - Your version changed status
              *     * `review_media_ready` - Your review movie is ready
              *     * `review_media_failed` - Your review movie failed
+             *     * `review_decision` - A review with your work was decided
+             *     * `review_invited` - You were asked for a verdict
+             *     * `review_verdict` - A participant gave a verdict
+             *     * `review_comment` - A comment on your work in a review
              * @enum {string}
              */
-            readonly kind: "note_created" | "note_mention" | "note_reply" | "note_status" | "task_assigned" | "task_status" | "version_status" | "review_media_ready" | "review_media_failed";
+            readonly kind: "note_created" | "note_mention" | "note_reply" | "note_status" | "task_assigned" | "task_status" | "version_status" | "review_media_ready" | "review_media_failed" | "review_decision" | "review_invited" | "review_verdict" | "review_comment";
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -22303,6 +22325,15 @@ export interface components {
              * @description Last update timestamp.
              */
             readonly updated_at: string;
+        };
+        /** @description What the caller muted, and every kind that can be muted (C-RP-30). */
+        Preferences: {
+            muted_kinds: ("note_created" | "note_reply" | "note_status" | "task_assigned" | "task_status" | "version_status" | "review_media_ready" | "review_media_failed" | "review_decision" | "review_verdict" | "review_comment")[];
+            mutable_kinds: ("note_created" | "note_reply" | "note_status" | "task_assigned" | "task_status" | "version_status" | "review_media_ready" | "review_media_failed" | "review_decision" | "review_verdict" | "review_comment")[];
+        };
+        /** @description The kinds to mute; the service refuses an unknown kind or one that cannot be muted. */
+        PreferencesWrite: {
+            muted_kinds: string[];
         };
         /**
          * @description Create a profile for the authenticated user.
@@ -39006,7 +39037,7 @@ export interface operations {
     v1_notifications_list: {
         parameters: {
             query?: {
-                kind?: "note_created" | "note_mention" | "note_reply" | "note_status" | "review_media_failed" | "review_media_ready" | "task_assigned" | "task_status" | "version_status";
+                kind?: "note_created" | "note_mention" | "note_reply" | "note_status" | "review_comment" | "review_decision" | "review_invited" | "review_media_failed" | "review_media_ready" | "review_verdict" | "task_assigned" | "task_status" | "version_status";
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
                 /** @description A page number within the paginated result set. */
@@ -39072,6 +39103,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Notification"];
+                };
+            };
+        };
+    };
+    v1_notifications_preferences_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
+                };
+            };
+        };
+    };
+    v1_notifications_preferences_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferencesWrite"];
+                "application/x-www-form-urlencoded": components["schemas"]["PreferencesWrite"];
+                "multipart/form-data": components["schemas"]["PreferencesWrite"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
                 };
             };
         };
