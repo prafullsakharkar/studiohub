@@ -356,6 +356,70 @@ describe('project form: budget (CR-55)', () => {
     expect(calls.find((c) => c.method === 'POST')!.body).not.toHaveProperty('budget_usd');
   });
 
+  /** The form under a signed-in user who is not known yet: `arrive(user)` hands the user over later, as /auth/me does. */
+  function renderBeforeTheUser(initial: string, routes: React.ReactNode) {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    const tree = (user: User | null) => (
+      <QueryClientProvider client={client}>
+        <AuthContext.Provider value={{ user, refreshUser: vi.fn() } as unknown as AuthContextValue}>
+          <MemoryRouter initialEntries={[initial]}>
+            <Routes>{routes}</Routes>
+          </MemoryRouter>
+        </AuthContext.Provider>
+      </QueryClientProvider>
+    );
+    const { rerender } = render(tree(null));
+    return { arrive: (user: User) => rerender(tree(user)) };
+  }
+
+  it('a field shown only once the user is known starts from the record and is not sent unless changed', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'PATCH' ? reply(cr55.patch_name_vfx_supervisor) : { body: asProducer }));
+    const { arrive } = renderBeforeTheUser(`/projects/${asProducer.id}/edit`, editRoutes);
+    await waitFor(() => expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe(asProducer.name));
+    expect(screen.queryByLabelText('Budget (USD)')).toBeNull();
+    // typed before the user is known: kept, and still a change
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'BDG budget' } });
+
+    arrive(editor('project.view_budget'));
+    const budget = (await screen.findByLabelText('Budget (USD)')) as HTMLInputElement;
+    await waitFor(() => expect(Number(budget.value)).toBe(4800000));
+    expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe('BDG budget');
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(await screen.findByText(`opened ${asProducer.id}`)).toBeTruthy();
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ name: 'BDG budget' });
+  });
+
+  it('a field shown late is sent once it is changed', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'PATCH' ? reply(cr55.patch_name_vfx_supervisor) : { body: asProducer }));
+    const { arrive } = renderBeforeTheUser(`/projects/${asProducer.id}/edit`, editRoutes);
+    await waitFor(() => expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe(asProducer.name));
+    arrive(editor('project.view_budget'));
+    const budget = (await screen.findByLabelText('Budget (USD)')) as HTMLInputElement;
+    await waitFor(() => expect(Number(budget.value)).toBe(4800000));
+    fireEvent.change(budget, { target: { value: '5000000' } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(await screen.findByText(`opened ${asProducer.id}`)).toBeTruthy();
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ budget_usd: 5000000 });
+  });
+
+  it('a field shown late on a new record starts blank and is left to the server', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(flow.projects_create_duplicate) : { body: { count: 0, next: null, previous: null, results: [] } }));
+    const { arrive } = renderBeforeTheUser('/projects/new', <Route path="/projects/new" element={<DirectoryFormPage config={projectsFormConfig} />} />);
+    fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Gamma' } });
+    arrive(editor('project.view_budget'));
+    expect(((await screen.findByLabelText('Budget (USD)')) as HTMLInputElement).value).toBe('');
+    expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe('Gamma');
+    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'GAMMA' } });
+    fireEvent.click(screen.getByRole('button', { name: /create project/i }));
+
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    const body = calls.find((c) => c.method === 'POST')?.body as Record<string, unknown>;
+    expect(body).toMatchObject({ name: 'Gamma', code: 'GAMMA' });
+    expect(body).not.toHaveProperty('budget_usd');
+  });
+
   it('a holder of the code sees the budget and saves a change to it', async () => {
     const { calls } = mockFetch((c) => (c.method === 'PATCH' ? reply(cr55.patch_name_vfx_supervisor) : { body: asProducer }));
     renderAt(`/projects/${asProducer.id}/edit`, editor('project.view_budget'), editRoutes);
