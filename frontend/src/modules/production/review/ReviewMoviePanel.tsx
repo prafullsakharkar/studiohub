@@ -63,6 +63,17 @@ export function copyNotes(media: ReviewMedia): string[] {
   return notes;
 }
 
+/** Whether a ready copy can be remade: from its upload, or a sequence from its frames while they are kept (RP-16, C-RP-41). */
+export function canRemake(media: ReviewMedia): boolean {
+  return media.kind !== 'sequence' || media.frames_until !== null;
+}
+
+/** How long a sequence's frames are kept (C-RP-41); null for a movie or still. */
+export function framesText(media: ReviewMedia): string | null {
+  if (media.kind !== 'sequence') return null;
+  return media.frames_until ? `Frames kept until ${formatDateTime(media.frames_until)}` : 'Frames no longer kept';
+}
+
 const KIND_TEXT: Record<ReviewMedia['kind'], string> = { movie: 'A movie', still: 'A still', sequence: 'A movie' };
 
 const JOB_TEXT: Partial<Record<ReviewMedia['status'], string>> = {
@@ -77,7 +88,7 @@ const REMAKE_TEXT: Partial<Record<ReviewMedia['status'], string>> = {
 
 /**
  * The version's review movie (RP-5, C-RP-19 to C-RP-22): upload a movie or still, follow the worker's job, retry a
- * failure, replace or remove the copy, remake a movie or still from its kept upload (RP-14, C-RP-37). Uploading, retrying and removing need `version.update`, or being the version's
+ * failure, replace or remove the copy, remake a copy from its kept upload (RP-14, C-RP-37) or a sequence from its kept frames (RP-16, C-RP-41). Uploading, retrying and removing need `version.update`, or being the version's
  * artist with `version.create` (RP-10, C-RP-26); reading needs only the version. The version is refetched while a job runs (`VersionWorkspace`), so this panel shows what the server says.
  */
 export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) => {
@@ -200,12 +211,12 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
             <Button size="sm" variant="ghost" disabled={busy !== null || running || unfinished !== null} onClick={() => framesInput.current?.click()}>
               Choose frames
             </Button>
-            {current && current.kind !== 'sequence' && (
+            {current && canRemake(current) && (
               <Button
                 size="sm"
                 variant="outline"
                 disabled={busy !== null || running || unfinished !== null}
-                title="Make the copy again from the uploaded file, with the project's burn-in and colour settings"
+                title={`Make the copy again from the ${current.kind === 'sequence' ? 'kept frames' : 'uploaded file'}, with the project's burn-in and colour settings`}
                 onClick={() =>
                   void act('Remaking…', async () => {
                     await reviewMediaApi.remake(current.id);
@@ -235,6 +246,12 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
             <div>
               <dt className="sr-only">Notes</dt>
               <dd className="text-slate-400">{copyNotes(current).join(' · ')}</dd>
+            </div>
+          )}
+          {framesText(current) && (
+            <div>
+              <dt className="sr-only">Frames</dt>
+              <dd className="text-slate-400">{framesText(current)}</dd>
             </div>
           )}
           <div>

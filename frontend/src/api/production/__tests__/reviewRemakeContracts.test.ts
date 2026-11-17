@@ -41,7 +41,8 @@ describe('C-RP-37: remaking one copy', () => {
   });
 
   it('refusals: a sequence, a copy that is no longer ready, busy, switched off, no right', () => {
-    expect(flow.remake_sequence_400.body.detail).toEqual(['The frames of a sequence are not kept once its copy is ready. Upload the frames again.']);
+    // captured with REVIEW_MEDIA_SEQUENCE_KEEP_DAYS=0: the sequence's frames went once its copy was ready (RP-16, C-RP-41)
+    expect(flow.remake_sequence_400.body.detail).toEqual(['The frames of this sequence are no longer kept. Upload the frames again.']);
     expect(flow.remake_old_not_ready_400.body.detail).toEqual(['Only a ready review copy can be remade.']);
     expect(flow.remake_busy_409.body.error.code).toBe('review_media_busy');
     expect(flow.remake_disabled_409.body.error.code).toBe('review_media_disabled');
@@ -58,10 +59,12 @@ describe('C-RP-38: a project’s copies', () => {
   });
 
   it('counts the movies and the sequences that differ from the switch, before and after remaking', () => {
-    expect(flow.copies_switch_off.body).toEqual({ review_burn_ins: false, out_of_date: 0, sequences_out_of_date: 0, colour_out_of_date: 0 });
-    expect(flow.copies_switch_on.body).toEqual({ review_burn_ins: true, out_of_date: 2, sequences_out_of_date: 1, colour_out_of_date: 0 });
+    expect(flow.copies_switch_off.body).toEqual({ review_burn_ins: false, out_of_date: 0, sequences_out_of_date: 0, colour_out_of_date: 0, differing: [], differing_more: 0 });
+    expect(flow.copies_switch_on.body).toMatchObject({ review_burn_ins: true, out_of_date: 2, sequences_out_of_date: 1, colour_out_of_date: 0, differing_more: 0 });
+    expect(flow.copies_switch_on.body.differing).toHaveLength(3);
     expect(flow.copies_after_one.body.out_of_date).toBe(1);
-    expect(flow.copies_after_all.body).toEqual({ review_burn_ins: true, out_of_date: 0, sequences_out_of_date: 1, colour_out_of_date: 0 });
+    expect(flow.copies_after_all.body).toMatchObject({ review_burn_ins: true, out_of_date: 0, sequences_out_of_date: 1, colour_out_of_date: 0 });
+    expect(flow.copies_after_all.body.differing).toEqual([expect.objectContaining({ kind: 'sequence', remakable: false, frames_until: null, why: ['burn_ins'] })]);
   });
 
   it('remakes the movies, counts the sequence, and is for project writers only (an artist reads the counts)', () => {

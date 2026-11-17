@@ -7267,10 +7267,27 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description How many review copies differ from the project's burn-in switch (C-RP-38). */
+        /** @description The review copies made with other settings than the project has now (C-RP-38, C-RP-42). */
         get: operations["v1_projects_review_copies_retrieve"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{uuid}/review-copies/keep/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Keep differing copies that cannot be remade as they are (C-RP-43). */
+        post: operations["v1_projects_review_copies_keep_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7286,7 +7303,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Remake every movie copy whose burn-ins differ from the project's switch (C-RP-38). */
+        /** @description Remake every differing copy that can be remade (C-RP-38; sequences, C-RP-41). */
         post: operations["v1_projects_review_copies_remake_create"];
         delete?: never;
         options?: never;
@@ -26336,12 +26353,21 @@ export interface components {
             /** Format: uuid */
             version_id?: string | null;
         };
-        /** @description ``GET projects/{id}/review-copies/`` (C-RP-38). */
+        /** @description ``GET projects/{id}/review-copies/`` (C-RP-38, C-RP-40, C-RP-42). */
         ReviewCopies: {
             review_burn_ins: boolean;
             out_of_date: number;
             sequences_out_of_date: number;
             colour_out_of_date: number;
+            differing: components["schemas"]["ReviewCopyDiffering"][];
+            differing_more: number;
+        };
+        /** @description ``POST projects/{id}/review-copies/keep/`` (C-RP-43): the copies to keep as they are. */
+        ReviewCopiesKeep: {
+            review_media_ids: string[];
+        };
+        ReviewCopiesKept: {
+            kept: number;
         };
         /** @description ``POST projects/{id}/review-copies/remake/`` (C-RP-38). */
         ReviewCopiesRemade: {
@@ -26349,6 +26375,29 @@ export interface components {
             skipped_busy: number;
             skipped_sequence: number;
             skipped_missing: number;
+        };
+        /** @description One copy made with other settings than its project has now (C-RP-42). */
+        ReviewCopyDiffering: {
+            /** Format: uuid */
+            review_media_id: string;
+            /**
+             * @description * `movie` - Movie
+             *     * `still` - Still
+             *     * `sequence` - Sequence
+             * @enum {string}
+             */
+            kind: "movie" | "still" | "sequence";
+            version: components["schemas"]["ReviewCopyVersion"];
+            record_code: string;
+            remakable: boolean;
+            /** Format: date-time */
+            frames_until: string | null;
+            why: ("burn_ins" | "colour")[];
+        };
+        ReviewCopyVersion: {
+            /** Format: uuid */
+            id: string;
+            code: string;
         };
         /** @description Base serializer for write operations. */
         ReviewCreate: {
@@ -26519,6 +26568,8 @@ export interface components {
             /** Format: uuid */
             readonly remake_of: string | null;
             readonly color_space: string;
+            /** Format: date-time */
+            readonly frames_until: string | null;
         };
         /** @description How a copy's colour was made (C-RP-40): the config's names, never a path. */
         ReviewMediaColour: {
@@ -46131,6 +46182,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReviewCopies"];
+                };
+            };
+        };
+    };
+    v1_projects_review_copies_keep_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewCopiesKeep"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReviewCopiesKeep"];
+                "multipart/form-data": components["schemas"]["ReviewCopiesKeep"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewCopiesKept"];
                 };
             };
         };

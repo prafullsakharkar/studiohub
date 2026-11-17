@@ -115,7 +115,9 @@ def _named_upload(user, version, color_space, *, name="clip.mov", head=MOV):
 
 
 def _copies(user, project):
-    return _api(user).get(f"/api/v1/projects/{project.pk}/review-copies/").json()
+    """The copies read's counts; RP-16's list of the copies is tested in test_rp16."""
+    body = _api(user).get(f"/api/v1/projects/{project.pk}/review-copies/").json()
+    return {k: v for k, v in body.items() if k not in ("differing", "differing_more")}
 
 
 # ---------------------------------------------------------------------------------------------- WP 15.1 the config
@@ -488,9 +490,11 @@ class TestCopies:
         editor,
         queued,
         monkeypatch,
+        settings,
         django_capture_on_commit_callbacks,
     ):
         cap = django_capture_on_commit_callbacks
+        settings.REVIEW_MEDIA_SEQUENCE_KEEP_DAYS = 0  # RP-12's rule, which RP-16 keeps for 0
         _ready_sequence(editor, _version(project, "RPF15_V1"), monkeypatch, cap)
         plain = _ready(editor, _version(project, "RPF15_V2"), monkeypatch, cap)
         resp = _named_upload(editor, _version(project, "RPF15_V3"), "ACEScct")

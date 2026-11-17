@@ -12,6 +12,8 @@ from apps.production.api.serializers.project.detail import ProjectDetailSerializ
 from apps.production.api.serializers.project.list import ProjectListSerializer
 from apps.production.api.serializers.project.update import ProjectUpdateSerializer
 from apps.production.api.serializers.review_media import (
+    ReviewCopiesKeepSerializer,
+    ReviewCopiesKeptSerializer,
     ReviewCopiesRemadeSerializer,
     ReviewCopiesSerializer,
 )
@@ -59,6 +61,7 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         "archive": (ProjectPermissions.DELETE,),
         "review_copies": (ProjectPermissions.VIEW,),
         "remake_review_copies": (ProjectPermissions.UPDATE,),
+        "keep_review_copies": (ProjectPermissions.UPDATE,),
         # check_existence / existence_check stay unmapped on purpose: this viewset has no
         # _existence_items_from_request, so mapping them would turn a 403 into a 500.
     }
@@ -161,7 +164,7 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
     @extend_schema(request=None, responses={200: ReviewCopiesSerializer})
     @action(detail=True, methods=["get"], url_path="review-copies")
     def review_copies(self, request, *args, **kwargs):
-        """How many review copies differ from the project's burn-in switch (C-RP-38)."""
+        """The review copies made with other settings than the project has now (C-RP-38, C-RP-42)."""
         instance = self.get_object()
         self._require_full_access(instance)
         return Response(ReviewCopiesSerializer(ReviewMediaSelector.copies_summary(instance)).data)
@@ -169,8 +172,21 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
     @extend_schema(request=None, responses={200: ReviewCopiesRemadeSerializer})
     @action(detail=True, methods=["post"], url_path="review-copies/remake")
     def remake_review_copies(self, request, *args, **kwargs):
-        """Remake every movie copy whose burn-ins differ from the project's switch (C-RP-38)."""
+        """Remake every differing copy that can be remade (C-RP-38; sequences, C-RP-41)."""
         instance = self.get_object()
         self._require_full_access(instance)
         counts = ReviewMediaService.remake_differing(actor=request.user, project=instance)
         return Response(ReviewCopiesRemadeSerializer(counts).data)
+
+    @extend_schema(request=ReviewCopiesKeepSerializer, responses={200: ReviewCopiesKeptSerializer})
+    @action(detail=True, methods=["post"], url_path="review-copies/keep")
+    def keep_review_copies(self, request, *args, **kwargs):
+        """Keep differing copies that cannot be remade as they are (C-RP-43)."""
+        instance = self.get_object()
+        self._require_full_access(instance)
+        body = ReviewCopiesKeepSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        kept = ReviewMediaService.keep(
+            actor=request.user, project=instance, ids=body.validated_data["review_media_ids"]
+        )
+        return Response(ReviewCopiesKeptSerializer(kept).data)

@@ -81,6 +81,7 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
     filmstrip_url = serializers.SerializerMethodField()
     links_expire_at = serializers.SerializerMethodField()
     remake_of = serializers.UUIDField(source="remake_of_id", read_only=True, allow_null=True)
+    frames_until = serializers.SerializerMethodField()
 
     class Meta:
         model = ReviewMedia
@@ -90,9 +91,18 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
             "error_code", "error_message", "attempts",
             "queued_at", "started_at", "finished_at", "created_by",
             "proxy_url", "thumbnail_url", "filmstrip_url", "filmstrip_tiles", "links_expire_at",
-            "remake_of", "color_space",
+            "remake_of", "color_space", "frames_until",
         )  # fmt: skip
         read_only_fields = fields
+
+    @extend_schema_field(serializers.DateTimeField(allow_null=True))
+    def get_frames_until(self, obj: ReviewMedia) -> Any:
+        """RP-16 (C-RP-41): until when a sequence's frames are kept to remake it; ``null`` once gone."""
+        return (
+            serializers.DateTimeField().to_representation(obj.frames_until)
+            if obj.frames_kept
+            else None
+        )
 
     @extend_schema_field(ReviewMediaProbeSerializer(allow_null=True))
     def get_probe(self, obj: ReviewMedia) -> dict[str, Any] | None:
@@ -181,13 +191,47 @@ class ReviewMediaFramesResultSerializer(serializers.Serializer[Any]):
     missing_frames = serializers.ListField(child=serializers.IntegerField())
 
 
+class ReviewCopyVersionSerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    code = serializers.CharField()
+
+
+class ReviewCopyDifferingSerializer(serializers.Serializer[Any]):
+    """One copy made with other settings than its project has now (C-RP-42)."""
+
+    review_media_id = serializers.UUIDField()
+    kind = serializers.ChoiceField(choices=ReviewMedia.Kind.choices)
+    version = ReviewCopyVersionSerializer()
+    record_code = serializers.CharField(allow_blank=True)
+    remakable = serializers.BooleanField()
+    frames_until = serializers.DateTimeField(allow_null=True)
+    why = serializers.ListField(child=serializers.ChoiceField(choices=["burn_ins", "colour"]))
+
+
 class ReviewCopiesSerializer(serializers.Serializer[Any]):
-    """``GET projects/{id}/review-copies/`` (C-RP-38)."""
+    """``GET projects/{id}/review-copies/`` (C-RP-38, C-RP-40, C-RP-42)."""
 
     review_burn_ins = serializers.BooleanField()
     out_of_date = serializers.IntegerField()
     sequences_out_of_date = serializers.IntegerField()
     colour_out_of_date = serializers.IntegerField()
+    differing = ReviewCopyDifferingSerializer(many=True)
+    differing_more = serializers.IntegerField()
+
+
+class ReviewCopiesKeepSerializer(serializers.Serializer[Any]):
+    """``POST projects/{id}/review-copies/keep/`` (C-RP-43): the copies to keep as they are."""
+
+    review_media_ids = serializers.ListField(
+        child=serializers.UUIDField(), min_length=1, max_length=100
+    )
+
+    def validate_review_media_ids(self, value: list[Any]) -> list[Any]:
+        return list(dict.fromkeys(value))
+
+
+class ReviewCopiesKeptSerializer(serializers.Serializer[Any]):
+    kept = serializers.IntegerField()
 
 
 class ReviewCopiesRemadeSerializer(serializers.Serializer[Any]):

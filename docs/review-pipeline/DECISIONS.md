@@ -149,6 +149,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-13 Notifications beyond reviews (deliveries, publishing, milestones) | planned in [PLAN.md](PLAN.md#rp-13-notifications-beyond-reviews-deliveries-publishing-milestones); answered (Q-RP-57 to Q-RP-62 = A); committed `88a24c4b`, merged into `develop` and `main`, released in v4.10.0 ([rp-13-verification.md](rp-13-verification.md)) |
 | RP-14 Review copies: remaking and slates | planned in [PLAN.md](PLAN.md#rp-14-review-copies-remaking-and-slates); answered (Q-RP-63 to Q-RP-67 = A); committed `10fedb13`, merged into `develop` and `main`, released in v4.11.0 ([rp-14-verification.md](rp-14-verification.md)) |
 | RP-15 Colour management for review copies | planned in [PLAN.md](PLAN.md#rp-15-colour-management-for-review-copies); answered (Q-RP-68 to Q-RP-72 = A); committed `ae0c6dde`, merged into `develop` and `main`, released in v4.12.0 ([rp-15-verification.md](rp-15-verification.md)) |
+| RP-16 Sequence copies after a settings change | planned in [PLAN.md](PLAN.md#rp-16-sequence-copies-after-a-settings-change); answered (Q-RP-73 to Q-RP-76 = A); built and committed as `eb5cb64d` ([rp-16-verification.md](rp-16-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
@@ -175,3 +176,14 @@ The owner took every recommendation of [PLAN.md, RP-15 questions](PLAN.md#questi
 | Q-RP-70 | **A** | A project chooses a view and an optional look of the sRGB display. No P3 or HDR copies. |
 | Q-RP-71 | **A** | A project write that changes `color_space`, `review_view` or `review_look` must name one the config knows (400 on the field otherwise); stored values are left, and one the config does not know means "no transform" for new copies, said in the probe. |
 | Q-RP-72 | **A** | Copies made with other colour settings are counted in the project's review-copies notice and the movies among them remade as in RP-14; sequences cannot be remade. |
+
+## RP-16 answers
+
+The owner took every recommendation of [PLAN.md, RP-16 questions](PLAN.md#questions-before-rp-16-starts) on 2026-11-17 ("go ahead").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-73 | **A** | A setting, `REVIEW_MEDIA_SEQUENCE_KEEP_DAYS` (default 14), keeps a sequence's frames that many days once its copy is ready, so it can be remade; 0 deletes them at once, as before. |
+| Q-RP-74 | **A** | A remake keeps the original's `frames_until`; it never keeps the frames longer. |
+| Q-RP-75 | **A** | The copies read lists the first 100 differing copies, oldest first, and how many more. |
+| Q-RP-76 | **A** | Copies that cannot be remade can be kept as they are by whoever may change the project; they count again once its burn-ins, colour space, view or look change. Movies cannot be kept, they can be remade. |

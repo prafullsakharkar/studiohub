@@ -1033,3 +1033,66 @@ Also decided in the plan, without a question:
 ### Gates
 
 ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, notifications, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI, Containers and Dependency audit green.
+
+## RP-16 Sequence copies after a settings change
+
+**Status:** planned 2026-11-17; answered the same day (Q-RP-73 to Q-RP-76 = A, [DECISIONS.md](DECISIONS.md#rp-16-answers)); built and committed as `eb5cb64d` ([rp-16-verification.md](rp-16-verification.md)). Branch `feature/rp-16-sequence-copies`, off `develop` at `f446bd6b` (v4.12.1).
+
+**Goal.** When a project's colour or burn-in settings change, its image-sequence copies can be dealt with. Recent ones are remade like movies, old ones are listed so their frames can be uploaded again, and copies a project is happy with can be kept as they are, so the project's notice can go.
+
+### Why (what is there today)
+
+- **A sequence's frames go when its copy is ready** (Q-RP-56, C-RP-32): `ReviewMediaService._finish` deletes `source/` and clears `source_path`. So `_remake` refuses every sequence (`"sequence"`), and the project remake only counts them (`skipped_sequence`).
+- **v4.12.0 makes every project with EXR sequences show a notice nobody can act on.** Copies made before RP-15 went through the fixed curve, so they differ from the ACES view (C-RP-40, "copies made before RP-15"). The notice says "N image sequences were made with other settings" but does not say which, and only re-uploading clears it. The same happens whenever a project changes its view, look or burn-ins later.
+- **The notice is a count.** `GET projects/{id}/review-copies/` answers four numbers (C-RP-38, C-RP-40), with no list of versions.
+- **The pieces for keeping frames exist.**
+  - A remake hard-links its upload (RP-14), and the same works per frame (up to `REVIEW_MEDIA_MAX_FRAMES`, 2,000).
+  - The ten-minute sweep (`production.sweep_review_media`, general worker) already finds rows to tidy and hands folders to the media worker's `production.discard_review_media`.
+  - A sequence is at most `REVIEW_MEDIA_SEQUENCE_MAX_BYTES` (20 GiB).
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 16.1 | **Keep a sequence's frames for a while** (Q-RP-73, Q-RP-74). Setting `REVIEW_MEDIA_SEQUENCE_KEEP_DAYS` (default 14; 0 = today's rule). New `ReviewMedia.frames_until` (datetime, null), set when a sequence's copy is first ready. The frames stay in `source/` until then, superseding the copy still deletes its folder, and the sweep clears `source_path` and discards `<folder>/source` once the time has passed. Migration production `0013`. | `models/review_media.py`, `services/review_media.py`, `config/env.py`, `components/storage.py`, `base.py` |
+| 16.2 | **Remake a sequence while its frames are kept.** `_remake` accepts a ready sequence whose frames are still there: the new row hard-links each frame into its own `source/` (a copy where linking fails), keeps `color_space`, the burn-in date and `frames_until` (Q-RP-74), and is processed as a sequence. The project remake remakes those too; `skipped_sequence` then counts only sequences whose frames are gone. The 400 sentence for a sequence becomes "The frames of this sequence are no longer kept. Upload the frames again." | `services/review_media.py`, `api/viewsets/review_media.py` |
+| 16.3 | **Which copies differ** (Q-RP-75). The read gains `differing`: up to 100 rows, each `{review_media_id, kind, version {id, code}, record_code, remakable, frames_until, why}`, where `why` is `burn_ins` and/or `colour`, oldest first. Plus `differing_more` (how many were left out). | `selectors/review_media.py`, `api/serializers/review_media.py` |
+| 16.4 | **Keep copies as they are** (Q-RP-76). `POST projects/{id}/review-copies/keep/` (`project.update`) takes `{"review_media_ids": [...]}`: differing copies that cannot be remade. It stores on each row what it was kept against (`kept_for`: the burn-in switch and the colour transform it would be made with now). A kept copy stops counting until the project's settings change again. Audit `review_media_kept`. Migration in `0013`. | `models/review_media.py`, `services/review_media.py`, `selectors/review_media.py`, `api/viewsets/review_media.py` |
+| 16.5 | **Frontend.** The notice gains a list ("Show which"), each row linking to the version's page: its code, why it differs, and "frames kept until <date>" or "upload the frames again". There is a **Keep as they are** button for whoever may change the project. Remake on a ready sequence copy while its frames are kept, with "Frames kept until <date>" on the panel. Typed API from captured responses. | `frontend/src/api/production/`, `modules/production/review/` |
+| 16.6 | **Capture, live, docs.** Capture tool and sample on real ffmpeg (a kept sequence remade after a view change, an expired one listed, keep, the refusals). A live file. CONTRACTS (C-RP-41 to C-RP-43), DECISIONS, ADR-0040 amended (frames kept for a window), pre-deploy checklist (the migration, the setting, the disk it costs), `rp-16-verification.md`. | `docs/sync/`, `docs/review-pipeline/`, `docs/adr/`, `docs/07-deployment/` |
+
+### Questions before RP-16 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-73 | How long are a sequence's frames kept once its copy is ready? | A: a setting, `REVIEW_MEDIA_SEQUENCE_KEEP_DAYS`, default 14 days; 0 keeps today's rule. B: for as long as the copy is current (Q-RP-72 B). C: not kept; RP-16 only lists and keeps copies as they are. | **A**. The settings of a show are usually corrected in its first weeks, and 14 days covers that. The disk is bounded by what is uploaded in 14 days rather than by every sequence ever uploaded (up to 20 GiB each). A studio short on disk sets 0 and still gets the list and "keep as they are". |
+| Q-RP-74 | Does a remake keep the frames longer? | A: no, a remake keeps the original's `frames_until`, as it keeps the burn-in date (Q-RP-66). B: each remake starts a new window. | **A**. With B, remaking every two weeks would keep frames forever without anyone choosing that. |
+| Q-RP-75 | How are the differing copies listed? | A: in the read itself (`differing`, the first 100, oldest first, and how many more). B: a separate paginated route. | **A**. One request for the notice. A project with more than 100 differing copies is told how many more there are; remaking or keeping the first ones brings the rest up. |
+| Q-RP-76 | Can a project keep differing copies as they are? | A: yes, copies that cannot be remade (sequences whose frames are gone), by whoever may change the project; kept against the settings of the moment, so a later change counts them again. B: no; only re-uploading clears them. C: A, for movies too. | **A**. Without it, the notice v4.12.0 brings for old EXR sequences never goes unless every sequence is uploaded again. Movies can always be remade, so they need no "keep". |
+
+Also decided in the plan, without a question:
+- **No new permission code.** Reading the list follows `project.view`, as the counts do; keeping and remaking follow `project.update` (C-RP-38).
+- **Existing copies' frames are already gone,** so the window applies only to sequences whose copy becomes ready after the upgrade. Old ones are listed and can be kept or uploaded again.
+- **No notification** for frames reaching the end of their window.
+- **Disk:** at most the sequences uploaded in `REVIEW_MEDIA_SEQUENCE_KEEP_DAYS` days, each up to `REVIEW_MEDIA_SEQUENCE_MAX_BYTES`. The checklist says how to measure it before choosing the number.
+
+### Not in RP-16
+
+- Keeping frames for good (Q-RP-73 B); reading frames from studio storage by path; object storage.
+- Notifications about frames that will expire, or about copies that differ.
+- Per-shot grades (CDL); P3 and HDR copies.
+
+### Tests (targeted, test database)
+
+- **16.1:** frames kept after ready with `frames_until` set; 0 deletes them at once as today; the sweep discards them once due and not before; superseding still deletes the folder; the migration.
+- **16.2:** a kept sequence is remade (frames linked, then processed as a sequence, burn-in date, colour space and `frames_until` kept); an expired one is refused with the new sentence; the project remake remakes kept sequences and counts the rest as `skipped_sequence`; deleting the remade copy's folder leaves the remake's frames.
+- **16.3:** `differing` lists what the counts count, with `why`, `remakable` and the cap; reach and rights as C-RP-38.
+- **16.4:** keep marks only differing copies that cannot be remade (other ids are a 400); kept copies stop counting; a later change of view or burn-ins counts them again; rights; audit.
+
+### Mutation checks
+
+Frames deleted at ready with a window set; the sweep discarding frames before their time; a remake starting a new window; a remake moving the frames instead of linking them; a sequence with expired frames remade; `differing` listing copies that match; a kept copy still counted; a kept copy not counted again after a settings change; keep accepted for a remakable copy.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, notifications, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green (no dependency change, so Containers and the dependency audit should not run).
