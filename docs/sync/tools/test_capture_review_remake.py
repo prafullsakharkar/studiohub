@@ -63,6 +63,9 @@ def test_capture_review_remake(
     settings.MEDIA_ROOT = tmp_path / "media"
     settings.MEDIA_ACCEL_PREFIX = ""
     settings.REVIEW_MEDIA_ENABLED = True
+    # RP-14's case: the sequence's frames went once its copy was ready (RP-16 keeps them for a while;
+    # the sequence remake is captured in test_capture_review_sequence_copies.py)
+    settings.REVIEW_MEDIA_SEQUENCE_KEEP_DAYS = 0
     font = os.environ.get("REVIEW_MEDIA_BURN_IN_FONT") or next(f for f in FONTS if Path(f).is_file())
     settings.REVIEW_MEDIA_BURN_IN_FONT = font
     queued: list[str] = []

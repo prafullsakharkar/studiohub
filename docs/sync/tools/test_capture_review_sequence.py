@@ -194,7 +194,8 @@ def test_capture_review_sequence(
         assert ReviewMediaService.process(sid) == ReviewMedia.Status.READY
     flow["version_ready"] = call(ar, "GET", vpath)
     row = ReviewMedia.objects.get(pk=sid)
-    assert row.source_path == "" and not (Path(settings.MEDIA_ROOT) / row.directory / "source").exists()
+    # RP-16 (C-RP-41): the frames are kept for REVIEW_MEDIA_SEQUENCE_KEEP_DAYS (14 by default)
+    assert row.frames_until is not None and (Path(settings.MEDIA_ROOT) / row.source_path).is_dir()
     version.refresh_from_db()
     assert (version.start_frame, version.end_frame) == (1001, 1008)
 

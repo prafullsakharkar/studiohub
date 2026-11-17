@@ -18,6 +18,9 @@ from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.transcode import colour
 from apps.production.transcode import sequence as frames
 
+# RP-16 (C-RP-42, Q-RP-75): how many differing copies the copies read lists.
+DIFFERING_LIMIT = 100
+
 #: rows a version's shape can show (``review_media`` and ``review_media_job``)
 _SHOWN = (
     ReviewMedia.Status.UPLOADING,
@@ -133,24 +136,42 @@ class ReviewMediaSelector(ProductionBaseSelector):
     @classmethod
     def differing(cls, project: Any) -> QuerySet[ReviewMedia]:
         """
-        The ready copies of ``project``'s live versions made with other settings than it has now.
+        The ready copies of ``project``'s live versions made with other settings than it has now,
+        oldest first (C-RP-38, C-RP-40, C-RP-43); see ``differences``.
+        """
+        return (
+            cls._live_copies(project)
+            .filter(pk__in=list(cls.differences(project)))
+            .order_by("queued_at", "id")
+        )
+
+    @classmethod
+    def differences(cls, project: Any) -> dict[Any, list[str]]:
+        """
+        Each differing copy's id and why: ``burn_ins`` and/or ``colour``.
 
         Burn-ins (C-RP-38): movie and sequence copies whose burn-ins are not ``review_burn_ins``; a
         row without ``burn_ins`` counts as without, and stills never carry burn-ins. Colour (C-RP-40):
         any copy whose ``probe.ocio`` is not the transform it would be made with now; a row without
-        ``ocio`` counts as made without one.
+        ``ocio`` counts as made without one. A copy kept as it is against the settings the project has
+        now does not differ (C-RP-43).
         """
         with_burn_ins = Q(probe__burn_ins=True)
         # spelled out: a negated key lookup would drop the rows made before RP-12, which lack the key
         without = Q(probe__isnull=True) | ~Q(probe__has_key="burn_ins") | Q(probe__burn_ins=False)
         live = cls._live_copies(project)
-        burn_ins = live.filter(kind__in=(ReviewMedia.Kind.MOVIE, ReviewMedia.Kind.SEQUENCE)).filter(
-            without if project.review_burn_ins else with_burn_ins
+        kept = set(cls._kept_matching(project, live))
+        burn_ins = set(
+            live.filter(kind__in=(ReviewMedia.Kind.MOVIE, ReviewMedia.Kind.SEQUENCE))
+            .filter(without if project.review_burn_ins else with_burn_ins)
+            .values_list("pk", flat=True)
         )
-        colour_ids = cls._colour_differing(project, live)
-        return live.filter(Q(pk__in=burn_ins.values("pk")) | Q(pk__in=colour_ids)).order_by(
-            "queued_at", "id"
-        )
+        why: dict[Any, list[str]] = {}
+        for row_id in burn_ins - kept:
+            why.setdefault(row_id, []).append("burn_ins")
+        for row_id in set(cls._colour_differing(project, live)) - kept:
+            why.setdefault(row_id, []).append("colour")
+        return why
 
     @staticmethod
     def _live_copies(project: Any) -> QuerySet[ReviewMedia]:
@@ -173,13 +194,7 @@ class ReviewMediaSelector(ProductionBaseSelector):
         for row_id, kind, container, named, probe in live.values_list(
             "pk", "kind", "source_container", "color_space", "probe"
         ):
-            key = (kind, container, named)
-            if key not in targets:
-                made, why = cls.colour_target(
-                    project, kind=kind, container=container, color_space=named
-                )
-                targets[key] = (made.as_json() if made is not None else None, why)
-            target, why = targets[key]
+            target, why = cls._target_json(project, targets, kind, container, named)
             if why == "colour_config_unavailable":
                 continue
             recorded = probe.get("ocio") if isinstance(probe, dict) else None
@@ -188,14 +203,102 @@ class ReviewMediaSelector(ProductionBaseSelector):
         return ids
 
     @classmethod
+    def _target_json(
+        cls,
+        project: Any,
+        cache: dict[tuple[str, str, str], tuple[dict[str, str] | None, str | None]],
+        kind: str,
+        container: str,
+        named: str,
+    ) -> tuple[dict[str, str] | None, str | None]:
+        key = (kind, container, named)
+        if key not in cache:
+            made, why = cls.colour_target(
+                project, kind=kind, container=container, color_space=named
+            )
+            cache[key] = (made.as_json() if made is not None else None, why)
+        return cache[key]
+
+    @classmethod
+    def _kept_matching(cls, project: Any, live: QuerySet[ReviewMedia]) -> list[Any]:
+        """The ids of ``live`` copies kept as they are against the settings ``project`` has now."""
+        cache: dict[tuple[str, str, str], tuple[dict[str, str] | None, str | None]] = {}
+        ids = []
+        for row_id, kind, container, named, kept in live.filter(kept_for__isnull=False).values_list(
+            "pk", "kind", "source_container", "color_space", "kept_for"
+        ):
+            if not isinstance(kept, dict) or kept.get("burn_ins") != bool(project.review_burn_ins):
+                continue
+            target, why = cls._target_json(project, cache, kind, container, named)
+            # while the config cannot be read colour does not count (above), so neither does it here
+            if why == "colour_config_unavailable" or kept.get("ocio") == target:
+                ids.append(row_id)
+        return ids
+
+    @classmethod
+    def settings_now(cls, project: Any, row: ReviewMedia) -> dict[str, Any] | None:
+        """What ``row`` would be made with now (``kept_for``, C-RP-43); ``None`` if the config is unreadable."""
+        made, why = cls.colour_target(
+            project, kind=row.kind, container=row.source_container, color_space=row.color_space
+        )
+        if why == "colour_config_unavailable":
+            return None
+        return {
+            "burn_ins": bool(project.review_burn_ins),
+            "ocio": made.as_json() if made is not None else None,
+        }
+
+    @staticmethod
+    def remakable(row: ReviewMedia) -> bool:
+        """Whether ``row`` can be remade: a movie or still with its upload, a sequence with its frames."""
+        if row.kind == ReviewMedia.Kind.SEQUENCE:
+            return row.frames_kept
+        return bool(row.source_path)
+
+    @classmethod
+    def differing_list(
+        cls, project: Any, why: dict[Any, list[str]]
+    ) -> tuple[list[dict[str, Any]], int]:
+        """The first ``DIFFERING_LIMIT`` differing copies, oldest first, and how many more (C-RP-42)."""
+        rows = list(
+            cls._live_copies(project)
+            .filter(pk__in=list(why))
+            .select_related("version", "version__shot", "version__asset")
+            .order_by("queued_at", "id")[:DIFFERING_LIMIT]
+        )
+        listed = []
+        for row in rows:
+            version = row.version
+            record = version.shot or version.asset
+            listed.append(
+                {
+                    "review_media_id": row.pk,
+                    "kind": row.kind,
+                    "version": {"id": version.pk, "code": version.code},
+                    "record_code": getattr(record, "code", "") or version.entity_code or "",
+                    "remakable": cls.remakable(row),
+                    "frames_until": row.frames_until if row.frames_kept else None,
+                    "why": why[row.pk],
+                }
+            )
+        return listed, max(0, len(why) - len(listed))
+
+    @classmethod
     def copies_summary(cls, project: Any) -> dict[str, Any]:
         """``GET projects/{id}/review-copies/`` (C-RP-38; colour, C-RP-40)."""
-        kinds = list(cls.differing(project).values_list("kind", flat=True))
+        why = cls.differences(project)
+        kinds = list(
+            cls._live_copies(project).filter(pk__in=list(why)).values_list("kind", flat=True)
+        )
         sequences = kinds.count(ReviewMedia.Kind.SEQUENCE)
+        differing, more = cls.differing_list(project, why)
         return {
             "review_burn_ins": bool(project.review_burn_ins),
             "out_of_date": len(kinds) - sequences,
             "sequences_out_of_date": sequences,
             # RP-15: how many of them (sequences included) differ in colour, burn-ins aside
-            "colour_out_of_date": len(cls._colour_differing(project, cls._live_copies(project))),
+            "colour_out_of_date": sum("colour" in reasons for reasons in why.values()),
+            # RP-16 (C-RP-42): which ones, the oldest first
+            "differing": differing,
+            "differing_more": more,
         }

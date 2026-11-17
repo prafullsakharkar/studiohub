@@ -160,12 +160,18 @@ export interface ReviewMedia {
   remake_of: string | null;
   /** The colour space the upload named (RP-15, C-RP-40), in the config's spelling; blank when it named none. */
   color_space: string;
+  /**
+   * Until when a sequence's frames are kept so its copy can be remade (RP-16, C-RP-41); null for a movie or a still,
+   * and once the frames are gone (then the frames must be uploaded again).
+   */
+  frames_until: string | null;
 }
 
 /**
- * A project's review copies against its burn-in switch (RP-14, C-RP-38), pinned to
- * docs/sync/samples/production/_review_remake_flow.json. `out_of_date` counts the movies that can be remade; a sequence's
- * frames are gone once its copy is ready, so `sequences_out_of_date` can only be fixed by uploading the frames again.
+ * A project's review copies made with other settings than it has now (RP-14, C-RP-38; colour, RP-15; the list, RP-16,
+ * C-RP-42), pinned to docs/sync/samples/production/_review_remake_flow.json and _review_sequence_copies_flow.json.
+ * `out_of_date` counts the movies and stills; `sequences_out_of_date` the sequences, which can be remade only while their
+ * frames are kept.
  */
 export interface ReviewCopies {
   review_burn_ins: boolean;
@@ -173,6 +179,32 @@ export interface ReviewCopies {
   sequences_out_of_date: number;
   /** How many of them (sequences included) were made with other colour settings than the project has now (RP-15). */
   colour_out_of_date: number;
+  /** The first 100 of them, oldest first (RP-16, C-RP-42). */
+  differing: ReviewCopyDiffering[];
+  /** How many more differ than `differing` lists. */
+  differing_more: number;
+}
+
+/** Why a copy differs from its project's settings now (C-RP-42). */
+export type ReviewCopyDifference = 'burn_ins' | 'colour';
+
+/** One copy made with other settings than its project has now (RP-16, C-RP-42). */
+export interface ReviewCopyDiffering {
+  review_media_id: string;
+  kind: ReviewMedia['kind'];
+  version: { id: string; code: string };
+  /** The shot's or asset's code. */
+  record_code: string;
+  /** A movie or still with its upload, or a sequence whose frames are kept; else only kept as it is or uploaded again. */
+  remakable: boolean;
+  /** Until when a sequence's frames are kept; null otherwise. */
+  frames_until: string | null;
+  why: ReviewCopyDifference[];
+}
+
+/** What `POST projects/{id}/review-copies/keep/` did (C-RP-43). */
+export interface ReviewCopiesKept {
+  kept: number;
 }
 
 /**
@@ -309,9 +341,10 @@ export const reviewMediaApi = {
   /** Queue the sequence once every frame is in (202); 400 naming the missing frames otherwise. */
   complete: (id: string) => apiClient.post<ReviewMedia>(`${V1}/review-media/${id}/complete/`, {}),
   /**
-   * Remake a ready movie or still from its kept upload (RP-14, C-RP-37): the rights of `upload`; 202 with a new queued
-   * row (`remake_of` set) while the copy stays shown; 400 for a sequence, a row that is not ready or an upload that is
-   * gone (the reason in `detail`); 409 `review_media_busy` / `review_media_disabled`.
+   * Remake a ready copy from its kept upload, or a sequence from its kept frames (RP-14, C-RP-37; RP-16, C-RP-41): the
+   * rights of `upload`; 202 with a new queued row (`remake_of` set) while the copy stays shown; 400 for a sequence whose
+   * frames are gone, a row that is not ready or an upload that is gone (the reason in `detail`); 409
+   * `review_media_busy` / `review_media_disabled`.
    */
   remake: (id: string) => apiClient.post<ReviewMedia>(`${V1}/review-media/${id}/remake/`, {}),
   /** What the studio's colour config offers (RP-15, C-RP-39): `project.view`. */
@@ -319,13 +352,19 @@ export const reviewMediaApi = {
   colourOptionsKey: ['production', 'review-colour'] as const,
 };
 
-/** A project's review copies against its burn-in switch (RP-14, C-RP-38). */
+/** A project's review copies against its settings (RP-14, C-RP-38; RP-16, C-RP-42, C-RP-43). */
 export const reviewCopiesApi = {
   keys: { all: ['production', 'review-copies'] as const, of: (projectId: string) => ['production', 'review-copies', projectId] as const },
   /** `project.view` with full internal access (404 otherwise). */
   get: (projectId: string, signal?: AbortSignal) => apiClient.get<ReviewCopies>(`${V1}/projects/${projectId}/review-copies/`, { signal }),
-  /** `project.update`: remakes every movie that differs, each on its own; 200 with what it did. */
+  /** `project.update`: remakes every copy that differs and can be remade, each on its own; 200 with what it did. */
   remake: (projectId: string) => apiClient.post<ReviewCopiesRemade>(`${V1}/projects/${projectId}/review-copies/remake/`, {}),
+  /**
+   * `project.update`: keeps differing copies that cannot be remade as they are (C-RP-43), all or none; they count again
+   * once the project's settings change. 400 on `review_media_ids` naming a copy that does not differ or can be remade.
+   */
+  keep: (projectId: string, ids: string[]) =>
+    apiClient.post<ReviewCopiesKept>(`${V1}/projects/${projectId}/review-copies/keep/`, { review_media_ids: ids }),
 };
 
 export interface VersionInput {

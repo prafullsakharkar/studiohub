@@ -299,6 +299,11 @@ class Settings(BaseSettings):
     review_media_sequence_max_bytes: int = Field(
         default=20 * 1024**3, alias="REVIEW_MEDIA_SEQUENCE_MAX_BYTES", gt=0
     )
+    # Days a sequence's frames are kept once its copy is ready, so it can be remade (RP-16, Q-RP-73);
+    # 0 deletes them as soon as the copy is ready (RP-12's rule).
+    review_media_sequence_keep_days: int = Field(
+        default=14, alias="REVIEW_MEDIA_SEQUENCE_KEEP_DAYS", ge=0
+    )
 
     # The font burn-ins are drawn in (Q-RP-54); the default is in the image's `worker` target.
     review_media_burn_in_font: str = Field(

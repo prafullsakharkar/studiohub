@@ -3,7 +3,7 @@
 Status: **accepted** (planned 2026-11-13 as review-pipeline RP-5; approved by the owner the same day: "go ahead", every
 recommendation of Q-RP-24 to Q-RP-31). **Amended by RP-12** (2026-11-16, Q-RP-51 to Q-RP-56 = A): image sequences and
 burn-ins, see "Amendment: image sequences and burn-ins" below. **Amended by RP-14** (2026-11-17, Q-RP-63 to Q-RP-67 = A):
-remaking a copy from its kept upload, see "Amendment: remaking copies" below. **Colour** of review copies (RP-15, 2026-11-17): [ADR-0041](ADR-0041-review-colour-management.md) · Plan and contracts: `docs/review-pipeline/PLAN.md` (RP-5),
+remaking a copy from its kept upload, see "Amendment: remaking copies" below. **Colour** of review copies (RP-15, 2026-11-17): [ADR-0041](ADR-0041-review-colour-management.md). **Amended by RP-16** (2026-11-17, Q-RP-73 to Q-RP-76 = A): a sequence's frames are kept for a while, see "Amendment: keeping a sequence's frames" below · Plan and contracts: `docs/review-pipeline/PLAN.md` (RP-5),
 `docs/review-pipeline/CONTRACTS.md` (C-RP-19 to C-RP-22) · Evidence: `docs/review-pipeline/rp-5-verification.md`
 
 ## Context
@@ -114,7 +114,7 @@ Evidence: `docs/review-pipeline/rp-12-verification.md`.
    expanded text is the frame counter, whose whole template the code writes. The font is copied into the job's
    folder from `REVIEW_MEDIA_BURN_IN_FONT` (the `worker` image installs `fonts-dejavu-core`), so no path enters the
    filter graph. A font that cannot be read gives a copy without burn-ins (logged), not a failed job.
-6. **Frames do not stay.** A sequence's frames are deleted once its copy is ready; a failed job keeps them for a retry.
+6. **Frames do not stay.** A sequence's frames are deleted once its copy is ready; a failed job keeps them for a retry. *(Changed by RP-16, below: they stay `REVIEW_MEDIA_SEQUENCE_KEEP_DAYS` days.)*
 
 ## Amendment: remaking copies (review-pipeline RP-14)
 
@@ -126,12 +126,30 @@ Evidence: `docs/review-pipeline/rp-14-verification.md`.
    same media volume as an upload. The remade row stays `ready` and shown until the new one is ready, then is
    superseded and its folder deleted as before; the link keeps the upload alive. Nothing new reaches ffmpeg: the job
    is the same job, on our own file.
-2. **A sequence cannot be remade.** Its frames are gone once its copy is ready (point 6 above stands).
+2. **A sequence cannot be remade.** Its frames are gone once its copy is ready (point 6 above stands). *(Changed by RP-16, below: it can while its frames are kept.)*
 3. **The burn-in date is fixed when a copy is first made** (`burn_in_date`, set as processing starts) and carried by
    its remakes, so remaking does not date old work today.
 4. **A project's copies.** `GET projects/{id}/review-copies/` counts the ready copies whose burn-ins differ from the
    switch; `POST .../remake/` remakes the movies among them (`project.update`). Nothing is remade automatically.
 5. **No slates** (Q-RP-63): a slate inside the copy would shift every frame number that comments and drawings store.
+
+## Amendment: keeping a sequence's frames (review-pipeline RP-16)
+
+Plan and contracts: `docs/review-pipeline/PLAN.md` (RP-16), `docs/review-pipeline/CONTRACTS.md` (C-RP-41 to C-RP-43).
+Evidence: `docs/review-pipeline/rp-16-verification.md`.
+
+1. **Frames stay for a set time.** When a sequence's copy becomes ready, its frames stay in the row's `source/` folder
+   until `frames_until`, `REVIEW_MEDIA_SEQUENCE_KEEP_DAYS` days later (default 14; 0 keeps RP-12's rule). The
+   ten-minute sweep, on the general worker, clears the row's `source_path` once that time has passed and hands the
+   folder to the media worker's `production.discard_review_media`, as for an abandoned upload. The cost is disk:
+   the media volume holds the sequences of that window, each up to `REVIEW_MEDIA_SEQUENCE_MAX_BYTES`.
+2. **A kept sequence is remade like a movie.** The new row's frames are hard links to the kept ones (copies where a
+   link cannot be made), so superseding the old copy does not take them. The remake keeps the original's
+   `frames_until` (Q-RP-74), so remaking never keeps frames longer than the first window.
+3. **A project can keep copies as they are.** A copy that cannot be remade can be marked kept against the project's
+   settings of the moment (`kept_for`: the burn-in switch and the colour transform). It counts again once those change.
+   Nothing is deleted or remade by keeping.
+4. **Nothing reaches ffmpeg that did not before**: a remade sequence is the same job, on our own files.
 
 ## Not decided here
 
