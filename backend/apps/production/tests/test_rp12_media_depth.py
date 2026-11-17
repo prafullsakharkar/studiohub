@@ -784,10 +784,17 @@ class TestSweep:
 # ---------------------------------------------------------------------------------------------- C-RP-32 processing
 
 
+def _no_colour_space(version):
+    """RP-12's rule for EXR (linear to sRGB) holds for a project that names no colour space (RP-15)."""
+    version.project.color_space = ""
+    version.project.save(update_fields=["color_space"])
+
+
 class TestSequenceProcessing:
     def test_an_exr_sequence_becomes_ready(
         self, editor, version, queued, settings, monkeypatch, django_capture_on_commit_callbacks
     ):
+        _no_colour_space(version)
         media = _whole(_api(editor), version, django_capture_on_commit_callbacks)
         with django_capture_on_commit_callbacks(execute=True):
             result, calls = _process(media, monkeypatch)
@@ -810,6 +817,7 @@ class TestSequenceProcessing:
         assert (Path(settings.MEDIA_ROOT) / media.proxy_path).is_file()
 
     def test_the_serialized_row(self, editor, version, queued, monkeypatch):
+        _no_colour_space(version)
         media = _whole(_api(editor), version, None)
         _process(media, monkeypatch)
         current = _api(editor).get(f"/api/v1/versions/{version.pk}/").json()["review_media"]
@@ -1097,6 +1105,7 @@ class TestRealFfmpeg:
     def test_an_exr_sequence_becomes_a_playable_proxy(
         self, editor, version, queued, settings, tmp_path, django_capture_on_commit_callbacks
     ):
+        _no_colour_space(version)
         files = self._frames(tmp_path, "exr", "gbrpf32le")
         media = self._upload(_api(editor), version, files, ext="exr", first=1001, last=1010)
         with django_capture_on_commit_callbacks(execute=True):

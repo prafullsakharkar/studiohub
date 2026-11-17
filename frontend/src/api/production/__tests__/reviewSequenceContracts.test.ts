@@ -73,7 +73,9 @@ describe('C-RP-32: the processed sequence', () => {
   it('is played like a movie, at the version’s rate; the probe carries the range and the colour rule', () => {
     const media = ready.review_media;
     expect(media?.kind).toBe('sequence');
-    expect(media?.probe).toMatchObject({ first_frame: 1001, last_frame: 1008, frames: 8, colour: 'srgb_from_linear', burn_ins: false, fps: 24 });
+    // RP-15: the project's colour space (ACEScg) sends EXR frames through the studio's view
+    expect(media?.probe).toMatchObject({ first_frame: 1001, last_frame: 1008, frames: 8, colour: 'ocio', burn_ins: false, fps: 24, colour_skipped: null });
+    expect(media?.probe?.ocio).toMatchObject({ input: 'ACEScg', display: 'sRGB - Display' });
     const playback = versionPlayback(ready);
     expect(playback.generated).toBe(true);
     expect(playback.src).toMatch(/\/proxy\/\?token=SAMPLE$/);

@@ -66,7 +66,7 @@ export function wireValue(field: FieldDef, value: string | boolean): unknown {
   if (field.kind === 'checkbox') return value;
   if (field.kind === 'json') return value === '' ? (field.shape === 'array' ? [] : {}) : JSON.parse(String(value));
   if (field.kind === 'multi-entity') return splitIds(value);
-  if (value === '') return field.kind === 'number' || field.kind === 'date' || field.kind === 'datetime' || field.kind === 'entity' ? null : '';
+  if (value === '') return field.kind === 'number' || field.kind === 'date' || field.kind === 'datetime' || (field.kind === 'entity' && !field.textValue) ? null : '';
   if (field.kind === 'datetime') return fromLocalInput(String(value));
   return field.kind === 'number' ? Number(value) : value;
 }

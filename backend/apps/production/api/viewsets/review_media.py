@@ -1,6 +1,7 @@
 """
 Review media rows (C-RP-20, C-RP-22): retry a failed job, remove a ready movie; a sequence's frames
-and its completion, and cancelling it (C-RP-31); remaking a ready movie or still (C-RP-37).
+and its completion, and cancelling it (C-RP-31); remaking a ready movie or still (C-RP-37); what the
+studio's colour config offers (C-RP-39).
 
 Upload and the version's list are actions on ``versions/{id}/review-media/`` (``VersionViewSet``).
 A row is reached through its version: one the caller cannot read is a 404 like an unknown id.
@@ -20,11 +21,12 @@ from rest_framework.response import Response
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
 from apps.production.api.serializers.review_media import (
+    ReviewColourSerializer,
     ReviewMediaFramesResultSerializer,
     ReviewMediaFramesSerializer,
     ReviewMediaSerializer,
 )
-from apps.production.constants.permissions import VersionPermissions
+from apps.production.constants.permissions import ProjectPermissions, VersionPermissions
 from apps.production.exceptions import ReviewMediaDisabled
 from apps.production.permissions.review_media import require_manage_review_media
 from apps.production.selectors.review_media import ReviewMediaSelector
@@ -42,6 +44,7 @@ class ReviewMediaViewSet(viewsets.ViewSet):
         "frames": (VersionPermissions.VIEW,),
         "complete": (VersionPermissions.VIEW,),
         "remake": (VersionPermissions.VIEW,),
+        "colour": (ProjectPermissions.VIEW,),
     }
 
     def get_permission_required(self):
@@ -92,6 +95,12 @@ class ReviewMediaViewSet(viewsets.ViewSet):
         row = ReviewMediaService.complete(actor=request.user, media=self._row(request, pk))
         body = ReviewMediaSerializer(row, context={"request": request}).data
         return Response(body, status=status.HTTP_202_ACCEPTED)
+
+    @extend_schema(responses={200: ReviewColourSerializer})
+    @action(detail=False, methods=["get"], url_path="colour")
+    def colour(self, request):
+        """The colour spaces, views and looks a project may choose (C-RP-39)."""
+        return Response(ReviewColourSerializer(ReviewMediaSelector.colour_options()).data)
 
     @extend_schema(parameters=[_ID], request=None, responses={202: ReviewMediaSerializer})
     @action(detail=True, methods=["post"], url_path="remake")

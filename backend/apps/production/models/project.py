@@ -69,6 +69,11 @@ class Project(EntityModel):
             "record codes, the version, the date and the frame number (review pipeline RP-12, C-RP-33)."
         ),
     )
+    # RP-15 (C-RP-39): how review copies of scene-referred frames are shown. ``color_space`` is their
+    # input space; the view (blank = the config's default) and look (blank = none) are the studio
+    # OpenColorIO config's, for its sRGB display.
+    review_view = models.CharField(max_length=100, blank=True, default="")
+    review_look = models.CharField(max_length=100, blank=True, default="")
 
     start_date = models.DateField(null=True, blank=True)
     delivery_date = models.DateField(null=True, blank=True)

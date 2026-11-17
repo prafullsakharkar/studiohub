@@ -227,6 +227,89 @@ describe('project form: burn-ins on review copies (RP-12, C-RP-33)', () => {
   });
 });
 
+describe('project form: review colour (RP-15, C-RP-39)', () => {
+  const colour = loadSample<Record<string, Captured>>('production/_review_colour_flow.json');
+  const stored = colour.project_default.body;
+  const serve = (patch: Captured) => (c: MockCall) =>
+    path(c).endsWith('/review-media/colour/') ? reply(colour.colour_options) : c.method === 'PATCH' ? reply(patch) : { body: stored };
+  const editAt = () =>
+    renderAt(
+      `/projects/${stored.id}/edit`,
+      superuser,
+      <>
+        <Route path="/projects/:id/edit" element={<DirectoryFormPage config={projectsFormConfig} />} />
+        <Route path="/projects/:id" element={<Opened />} />
+      </>
+    );
+  const select = (label: string) => screen.getByLabelText(label) as HTMLSelectElement;
+
+  it('offers the config’s names, shows what blank means, and sends only the change', async () => {
+    const { calls } = mockFetch(serve(colour.project_view_200));
+    editAt();
+    await waitFor(() => expect(select('Review view').disabled).toBe(false));
+    expect(select('Color space').value).toBe('ACEScg');
+    const views = Array.from(select('Review view').options).map((o) => o.textContent);
+    expect(views[0]).toBe('Default: ACES 2.0 - SDR 100 nits (Rec.709)');
+    expect(views).toContain('Un-tone-mapped');
+    expect(within(select('Color space')).getByRole('group', { name: 'ACES' })).toBeTruthy();
+    expect(Array.from(select('Review look').options).map((o) => o.value)).toEqual(['', 'ACES 1.3 Reference Gamut Compression']);
+    fireEvent.change(select('Review view'), { target: { value: 'Un-tone-mapped' } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    expect(await screen.findByText(`opened ${stored.id}`)).toBeTruthy();
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ review_view: 'Un-tone-mapped' });
+  });
+
+  it('a blank choice is sent as an empty name, not null', async () => {
+    const { calls } = mockFetch(serve(colour.project_alias_200));
+    editAt();
+    await waitFor(() => expect(select('Color space').disabled).toBe(false));
+    fireEvent.change(select('Color space'), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ color_space: '' });
+  });
+
+  it('a refused name shows its sentence under the field', async () => {
+    mockFetch(serve(colour.project_bad_400));
+    editAt();
+    await waitFor(() => expect(select('Review look').disabled).toBe(false));
+    fireEvent.change(select('Review look'), { target: { value: 'ACES 1.3 Reference Gamut Compression' } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    expect(await screen.findByText("The studio's colour config has no look named 'Warm'.")).toBeTruthy();
+  });
+
+  it('a stored name the config does not know stays chosen and is marked', async () => {
+    const legacy = { ...stored, color_space: 'ACEScg 1.3' };
+    mockFetch((c) => (path(c).endsWith('/review-media/colour/') ? reply(colour.colour_options) : { body: legacy }));
+    editAt();
+    await waitFor(() => expect(select('Color space').value).toBe('ACEScg 1.3'));
+    expect(screen.getByText(/"ACEScg 1.3" is not in the studio's colour config/)).toBeTruthy();
+  });
+
+  it('without a readable config the fields cannot be changed', async () => {
+    mockFetch((c) => (path(c).endsWith('/review-media/colour/') ? reply(colour.colour_options_unavailable) : { body: stored }));
+    editAt();
+    await waitFor(() => expect(screen.getAllByText("The studio's colour config cannot be read, so this cannot be changed now.")).toHaveLength(3));
+    expect(select('Color space').disabled).toBe(true);
+    expect(select('Color space').value).toBe('ACEScg');
+  });
+
+  it('a new project starts with ACEScg', async () => {
+    const { calls } = mockFetch((c) => (path(c).endsWith('/review-media/colour/') ? reply(colour.colour_options) : { status: 201, body: stored }));
+    renderAt('/projects/new', superuser, <Route path="/projects/new" element={<DirectoryFormPage config={projectsFormConfig} />} />);
+    await waitFor(() => expect(select('Color space').disabled).toBe(false));
+    expect(select('Color space').value).toBe('ACEScg');
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Colour' } });
+    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'RPC' } });
+    fireEvent.click(screen.getByRole('button', { name: /create project/i }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    // blank view and look are left to the server's defaults (the default view, no look)
+    const body = calls.find((c) => c.method === 'POST')?.body as Record<string, unknown>;
+    expect(body.color_space).toBe('ACEScg');
+    expect('review_view' in body || 'review_look' in body).toBe(false);
+  });
+});
+
 describe('project form: budget (CR-55)', () => {
   // Captured after CR-55: the supervisor's project has no budget_usd, the producer's has it.
   const cr55 = loadSample<Record<string, Captured>>('production/_budget_counts_cr54_55_after.json');

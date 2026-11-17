@@ -32,6 +32,10 @@ export interface Project {
   approve_task_on_version_approval: boolean;
   /** RP-12 (C-RP-33): review copies made from movies and sequences carry burn-ins. Off by default. */
   review_burn_ins: boolean;
+  /** RP-15 (C-RP-39): the OpenColorIO view review copies of scene-referred frames are shown through; blank = the config's default. */
+  review_view: string;
+  /** RP-15 (C-RP-39): the look applied with the view; blank = none. */
+  review_look: string;
   start_date: string | null;
   delivery_date: string | null;
   /** Only for holders of project.view_budget; left out otherwise (CR-55). */
@@ -70,6 +74,9 @@ export interface ProjectInput {
   color_space?: string;
   approve_task_on_version_approval?: boolean;
   review_burn_ins?: boolean;
+  /** RP-15: each must be a name the studio's colour config knows (400 otherwise); `color_space` too, once changed. */
+  review_view?: string;
+  review_look?: string;
   start_date?: string | null;
   delivery_date?: string | null;
   budget_usd?: number;

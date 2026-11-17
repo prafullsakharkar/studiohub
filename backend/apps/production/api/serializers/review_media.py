@@ -1,4 +1,4 @@
-"""Review media shapes (docs/review-pipeline/CONTRACTS.md C-RP-19 to C-RP-21; C-RP-31, C-RP-32; C-RP-37, C-RP-38)."""
+"""Review media shapes (docs/review-pipeline/CONTRACTS.md C-RP-19 to C-RP-21; C-RP-31, C-RP-32; C-RP-37 to C-RP-40)."""
 
 from __future__ import annotations
 
@@ -13,8 +13,25 @@ from apps.production.transcode import sequence as frames
 
 #: what the probe shows (``frame_rate``, the exact rational, stays internal)
 PROBE_KEYS = ("width", "height", "fps", "frames", "duration_seconds", "video_codec", "has_audio")
-#: added by RP-12 (C-RP-32), with what a row made before it answers
-PROBE_DEFAULTS = {"first_frame": None, "last_frame": None, "colour": "as_stored", "burn_ins": False}
+#: added by RP-12 (C-RP-32) and RP-15 (C-RP-40), with what a row made before them answers
+PROBE_DEFAULTS = {
+    "first_frame": None,
+    "last_frame": None,
+    "colour": "as_stored",
+    "burn_ins": False,
+    "ocio": None,
+    "colour_skipped": None,
+}
+
+
+class ReviewMediaColourSerializer(serializers.Serializer[Any]):
+    """How a copy's colour was made (C-RP-40): the config's names, never a path."""
+
+    config = serializers.CharField()
+    input = serializers.CharField()
+    display = serializers.CharField()
+    view = serializers.CharField()
+    look = serializers.CharField(allow_blank=True)
 
 
 class ReviewMediaProbeSerializer(serializers.Serializer[Any]):
@@ -27,8 +44,12 @@ class ReviewMediaProbeSerializer(serializers.Serializer[Any]):
     has_audio = serializers.BooleanField()
     first_frame = serializers.IntegerField(allow_null=True)
     last_frame = serializers.IntegerField(allow_null=True)
-    colour = serializers.ChoiceField(choices=("srgb_from_linear", "as_stored"))
+    colour = serializers.ChoiceField(choices=("ocio", "srgb_from_linear", "as_stored"))
     burn_ins = serializers.BooleanField()
+    ocio = ReviewMediaColourSerializer(allow_null=True)
+    colour_skipped = serializers.ChoiceField(
+        choices=("unknown_colour_space", "colour_config_unavailable"), allow_null=True
+    )
 
 
 class ReviewMediaSequenceSerializer(serializers.Serializer[Any]):
@@ -69,7 +90,7 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
             "error_code", "error_message", "attempts",
             "queued_at", "started_at", "finished_at", "created_by",
             "proxy_url", "thumbnail_url", "filmstrip_url", "filmstrip_tiles", "links_expire_at",
-            "remake_of",
+            "remake_of", "color_space",
         )  # fmt: skip
         read_only_fields = fields
 
@@ -130,6 +151,8 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
 class ReviewMediaUploadSerializer(serializers.Serializer[Any]):
     #: size, extension and content are checked by the service (one message each)
     file = serializers.FileField(allow_empty_file=True, use_url=False)
+    #: RP-15 (C-RP-40): the movie's or still's colour space, when it is not display-ready
+    color_space = serializers.CharField(max_length=100, required=False, allow_blank=True)
 
 
 class ReviewMediaSequenceOpenSerializer(serializers.Serializer[Any]):
@@ -139,6 +162,8 @@ class ReviewMediaSequenceOpenSerializer(serializers.Serializer[Any]):
     extension = serializers.CharField(max_length=10)
     first_frame = serializers.IntegerField()
     last_frame = serializers.IntegerField()
+    #: RP-15 (C-RP-40): the frames' colour space; blank = the project's for EXR, none otherwise
+    color_space = serializers.CharField(max_length=100, required=False, allow_blank=True)
 
 
 class ReviewMediaFramesSerializer(serializers.Serializer[Any]):
@@ -162,6 +187,7 @@ class ReviewCopiesSerializer(serializers.Serializer[Any]):
     review_burn_ins = serializers.BooleanField()
     out_of_date = serializers.IntegerField()
     sequences_out_of_date = serializers.IntegerField()
+    colour_out_of_date = serializers.IntegerField()
 
 
 class ReviewCopiesRemadeSerializer(serializers.Serializer[Any]):
@@ -171,3 +197,22 @@ class ReviewCopiesRemadeSerializer(serializers.Serializer[Any]):
     skipped_busy = serializers.IntegerField()
     skipped_sequence = serializers.IntegerField()
     skipped_missing = serializers.IntegerField()
+
+
+class ReviewColourSpaceSerializer(serializers.Serializer[Any]):
+    name = serializers.CharField()
+    family = serializers.CharField(allow_blank=True)
+    encoding = serializers.CharField(allow_blank=True)
+    aliases = serializers.ListField(child=serializers.CharField())
+
+
+class ReviewColourSerializer(serializers.Serializer[Any]):
+    """``GET review-media/colour/`` (C-RP-39)."""
+
+    available = serializers.BooleanField()
+    config = serializers.CharField(allow_null=True)
+    display = serializers.CharField(allow_null=True)
+    default_view = serializers.CharField(allow_null=True)
+    views = serializers.ListField(child=serializers.CharField())
+    looks = serializers.ListField(child=serializers.CharField())
+    color_spaces = ReviewColourSpaceSerializer(many=True)

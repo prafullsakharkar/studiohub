@@ -101,6 +101,8 @@ class ReviewMedia(models.Model):
         "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     burn_in_date = models.DateField(null=True, blank=True)
+    # RP-15 (C-RP-40): the colour space the upload named; blank = the project's rule (EXR frames only).
+    color_space = models.CharField(max_length=100, blank=True, default="")
 
     class Meta:
         db_table = "production_review_media"
