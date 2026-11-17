@@ -147,7 +147,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-11 Notification depth (reviews and preferences) | planned in [PLAN.md](PLAN.md#rp-11-notification-depth-reviews-and-preferences); answered (Q-RP-46 to Q-RP-50 = A); committed `a7443900`, merged into `develop` and `main`, released in v4.9.0 ([rp-11-verification.md](rp-11-verification.md)) |
 | RP-12 Media depth (image sequences and burn-ins) | planned in [PLAN.md](PLAN.md#rp-12-media-depth-image-sequences-and-burn-ins); answered (Q-RP-51 to Q-RP-56 = A); committed `f2b84225`, merged into `develop` and `main`, released in v4.9.0 ([rp-12-verification.md](rp-12-verification.md)) |
 | RP-13 Notifications beyond reviews (deliveries, publishing, milestones) | planned in [PLAN.md](PLAN.md#rp-13-notifications-beyond-reviews-deliveries-publishing-milestones); answered (Q-RP-57 to Q-RP-62 = A); committed `88a24c4b`, merged into `develop` and `main`, released in v4.10.0 ([rp-13-verification.md](rp-13-verification.md)) |
-| RP-14 Review copies: remaking and slates | planned in [PLAN.md](PLAN.md#rp-14-review-copies-remaking-and-slates); answered (Q-RP-63 to Q-RP-67 = A); built, not committed ([rp-14-verification.md](rp-14-verification.md)) |
+| RP-14 Review copies: remaking and slates | planned in [PLAN.md](PLAN.md#rp-14-review-copies-remaking-and-slates); answered (Q-RP-63 to Q-RP-67 = A); committed `10fedb13` ([rp-14-verification.md](rp-14-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 

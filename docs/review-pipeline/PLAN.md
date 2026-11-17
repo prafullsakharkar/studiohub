@@ -897,7 +897,7 @@ The same as RP-12: `ruff check`, `manage.py check`, `makemigrations --check`, `b
 
 ## RP-14 Review copies: remaking and slates
 
-**Status:** planned 2026-11-17; answered the same day (Q-RP-63 to Q-RP-67 = A, [DECISIONS.md](DECISIONS.md#rp-14-answers)): no slates, WP 14.3 drops. Contracts C-RP-37 and C-RP-38. Built, report in [rp-14-verification.md](rp-14-verification.md). Not committed. Branch `feature/rp-14-media-slates`, off `develop` at `f7f99139` (v4.10.0).
+**Status:** planned 2026-11-17; answered the same day (Q-RP-63 to Q-RP-67 = A, [DECISIONS.md](DECISIONS.md#rp-14-answers)): no slates, WP 14.3 drops. Contracts C-RP-37 and C-RP-38. Built, report in [rp-14-verification.md](rp-14-verification.md); committed `10fedb13` (cleanup `6bffaefa`). Branch `feature/rp-14-media-slates`, off `develop` at `f7f99139` (v4.10.0).
 
 **Goal.** A project's review copies match its burn-in switch: someone who turns burn-ins on or off can have the copies already made remade, without uploading again and without the current copy disappearing while the new one is made. Whether review copies also get a slate is decided here (Q-RP-63). The dead notification code left from before RP-6 is removed.
 
