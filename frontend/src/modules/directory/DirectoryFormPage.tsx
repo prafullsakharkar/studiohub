@@ -30,6 +30,8 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
   // Fields behind a permission (sensitive person data, client financials) are rendered, validated and sent only for callers who hold it.
   const fields = useMemo(() => config.fields.filter((f) => !f.permission || evaluateAccess(user, f.permission, {})), [config.fields, user]);
   const schema = useMemo(() => buildSchema(fields, editing), [fields, editing]);
+  // What a field starts with on a new record: a parameter named like it in the address, else its blank.
+  const startOf = (f: FieldDef) => (!editing && searchParams.get(f.name) !== null ? (searchParams.get(f.name) as string) : blank(f));
   const row = useQuery({ queryKey: [...config.queryKey, 'detail', id], queryFn: ({ signal }) => config.get(id as string, signal), enabled: editing });
 
   const {
@@ -37,10 +39,11 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
     control,
     submit,
     reset,
+    resetField,
     serverError,
     clearServerError,
     formState: { errors, isSubmitting, isDirty, dirtyFields },
-  } = useServerForm<Values>({ resolver: zodResolver(schema) as never, defaultValues: Object.fromEntries(fields.map((f) => [f.name, !editing && searchParams.get(f.name) !== null ? (searchParams.get(f.name) as string) : blank(f)])) });
+  } = useServerForm<Values>({ resolver: zodResolver(schema) as never, defaultValues: Object.fromEntries(fields.map((f) => [f.name, startOf(f)])) });
   // A field with `projectPrefix` (the code of a sequence, shot, asset, task) starts with the chosen project's code.
   const prefixed = !editing && fields.some((f) => f.kind === 'text' && f.projectPrefix);
   const chosenProject = String(useWatch({ control, name: 'project' }) ?? '');
@@ -50,12 +53,24 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
   // Fill the form ONCE per record. A background refetch (window focus, an invalidation after another
   // save) hands back a new object for the same record; resetting then would discard what the user is typing.
   const filledFor = useRef<string | null>(null);
+  // The fields whose starting value the form holds. A field behind a permission can appear later, when the
+  // signed-in user arrives after the form was set up; it then starts from the record (or its blank) as a clean
+  // default, so it is neither shown empty nor sent as a change nobody made.
+  const prepared = useRef(new Set(fields.map((f) => f.name)));
   useEffect(() => {
     if (row.data && filledFor.current !== row.data.id) {
       filledFor.current = row.data.id;
       reset(fromRow(fields, row.data as unknown as Record<string, unknown>));
     }
   }, [row.data, fields, reset]);
+  useEffect(() => {
+    const record = filledFor.current !== null && row.data ? (row.data as unknown as Record<string, unknown>) : null;
+    for (const field of fields) {
+      if (prepared.current.has(field.name)) continue;
+      prepared.current.add(field.name);
+      resetField(field.name, { defaultValue: record ? fromRow([field], record)[field.name] : startOf(field) });
+    }
+  });
 
   const onSubmit = submit(async (values) => {
     const touched = (field: FieldDef) => !editing || Boolean((dirtyFields as Record<string, unknown>)[field.name]);
