@@ -1,6 +1,6 @@
 # RP-14 verification: remaking review copies
 
-Branch `feature/rp-14-media-slates`, off `develop` at `f7f99139` (v4.10.0). Planned, answered (Q-RP-63 to Q-RP-67 = A, "go ahead") and built on 2026-11-17. Contracts C-RP-37 and C-RP-38 ([CONTRACTS.md](CONTRACTS.md#rp-14-review-copies-remaking)). Committed as `10fedb13`; the cleanup (WP 14.5) as `6bffaefa`.
+Branch `feature/rp-14-media-slates`, off `develop` at `f7f99139` (v4.10.0). Planned, answered (Q-RP-63 to Q-RP-67 = A, "go ahead") and built on 2026-11-17. Contracts C-RP-37 and C-RP-38 ([CONTRACTS.md](CONTRACTS.md#rp-14-review-copies-remaking)). Committed as `10fedb13`; the cleanup (WP 14.5) as `6bffaefa`. Merged into `develop` (`3a6a80cc`, CI green) and `main` (`176af304`, CI green), **released in v4.11.0**.
 
 ## What was built
 
