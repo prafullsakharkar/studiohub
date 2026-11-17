@@ -149,7 +149,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-13 Notifications beyond reviews (deliveries, publishing, milestones) | planned in [PLAN.md](PLAN.md#rp-13-notifications-beyond-reviews-deliveries-publishing-milestones); answered (Q-RP-57 to Q-RP-62 = A); committed `88a24c4b`, merged into `develop` and `main`, released in v4.10.0 ([rp-13-verification.md](rp-13-verification.md)) |
 | RP-14 Review copies: remaking and slates | planned in [PLAN.md](PLAN.md#rp-14-review-copies-remaking-and-slates); answered (Q-RP-63 to Q-RP-67 = A); committed `10fedb13`, merged into `develop` and `main`, released in v4.11.0 ([rp-14-verification.md](rp-14-verification.md)) |
 | RP-15 Colour management for review copies | planned in [PLAN.md](PLAN.md#rp-15-colour-management-for-review-copies); answered (Q-RP-68 to Q-RP-72 = A); committed `ae0c6dde`, merged into `develop` and `main`, released in v4.12.0 ([rp-15-verification.md](rp-15-verification.md)) |
-| RP-16 Sequence copies after a settings change | planned in [PLAN.md](PLAN.md#rp-16-sequence-copies-after-a-settings-change); answered (Q-RP-73 to Q-RP-76 = A); built, not committed ([rp-16-verification.md](rp-16-verification.md)) |
+| RP-16 Sequence copies after a settings change | planned in [PLAN.md](PLAN.md#rp-16-sequence-copies-after-a-settings-change); answered (Q-RP-73 to Q-RP-76 = A); built and committed as `eb5cb64d` ([rp-16-verification.md](rp-16-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 

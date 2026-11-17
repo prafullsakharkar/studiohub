@@ -1,6 +1,6 @@
 # RP-16 verification: sequence copies after a settings change
 
-Built 2026-11-17 on `feature/rp-16-sequence-copies`, off `develop` at `f446bd6b` (v4.12.1), with every recommendation of Q-RP-73 to Q-RP-76 ([DECISIONS.md](DECISIONS.md#rp-16-answers)). Not committed. Contracts C-RP-41 to C-RP-43 ([CONTRACTS.md](CONTRACTS.md#rp-16-sequence-copies-after-a-settings-change)); [ADR-0040](../adr/ADR-0040-review-media-processing.md) amended ("keeping a sequence's frames").
+Built 2026-11-17 on `feature/rp-16-sequence-copies`, off `develop` at `f446bd6b` (v4.12.1), with every recommendation of Q-RP-73 to Q-RP-76 ([DECISIONS.md](DECISIONS.md#rp-16-answers)). Committed as `eb5cb64d`. Contracts C-RP-41 to C-RP-43 ([CONTRACTS.md](CONTRACTS.md#rp-16-sequence-copies-after-a-settings-change)); [ADR-0040](../adr/ADR-0040-review-media-processing.md) amended ("keeping a sequence's frames").
 
 ## What was built
 

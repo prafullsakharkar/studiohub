@@ -1036,7 +1036,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-16 Sequence copies after a settings change
 
-**Status:** planned 2026-11-17; answered the same day (Q-RP-73 to Q-RP-76 = A, [DECISIONS.md](DECISIONS.md#rp-16-answers)); built, not committed ([rp-16-verification.md](rp-16-verification.md)). Branch `feature/rp-16-sequence-copies`, off `develop` at `f446bd6b` (v4.12.1).
+**Status:** planned 2026-11-17; answered the same day (Q-RP-73 to Q-RP-76 = A, [DECISIONS.md](DECISIONS.md#rp-16-answers)); built and committed as `eb5cb64d` ([rp-16-verification.md](rp-16-verification.md)). Branch `feature/rp-16-sequence-copies`, off `develop` at `f446bd6b` (v4.12.1).
 
 **Goal.** When a project's colour or burn-in settings change, its image-sequence copies can be dealt with. Recent ones are remade like movies, old ones are listed so their frames can be uploaded again, and copies a project is happy with can be kept as they are, so the project's notice can go.
 
