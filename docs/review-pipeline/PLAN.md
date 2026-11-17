@@ -959,3 +959,77 @@ The old row superseded on queue instead of on ready; the upload moved instead of
 ### Gates
 
 ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, notifications, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs.
+
+## RP-15 Colour management for review copies
+
+**Status:** planned 2026-11-17; answered the same day, every recommendation taken (Q-RP-68 to Q-RP-72 = A, [DECISIONS.md](DECISIONS.md#rp-15-answers)). Built on `feature/rp-15-colour-management`, off `develop` at `73570a2e` (v4.11.0), committed `ae0c6dde`, not merged ([rp-15-verification.md](rp-15-verification.md)). Contracts C-RP-39 and C-RP-40; [ADR-0041](../adr/ADR-0041-review-colour-management.md). Corrections made while building: the upload field is `color_space` (as the project's), not `colour_space`; the transform goes into `probe.ocio` and `probe.colour` gains the value `ocio`, rather than `probe.colour` becoming an object; the host has a LUT-capable ffmpeg, so no wrapper is needed (below).
+
+**Goal.** A review copy made from scene-linear or log frames looks the way the studio's pipeline shows them: the frames go through the studio's OpenColorIO view (by default ACES 2.0, SDR, for an sRGB screen) instead of today's fixed linear-to-sRGB curve. Each project chooses its view; each copy records how it was made; copies made with other colour settings can be remade (RP-14).
+
+### Why (what is there today)
+
+- **One fixed rule.** EXR frames are decoded with ffmpeg's `apply_trc iec61966_2_1`: linear light straight to the sRGB curve, no tone mapping and no gamut conversion (`transcode/sequence.py`, `transcode/ffmpeg.py`). DPX, TIFF, PNG, JPEG and every movie are taken as already display-ready. Anything above 1.0 clips, and ACEScg primaries are shown as if they were Rec.709.
+- **Measured against the ACES view** (spike below): mid grey 0.18 shows as 118 of 255 today, 89 through the ACES 2.0 SDR view; across a test image the mean difference is 40 of 255 and the largest 227. A supervisor reviewing comp in the app sees a brighter, clipped, more saturated picture than in Nuke or RV.
+- **The colour fields exist but nothing reads them.** `Project.color_space` and `Version.color_space` are free text, both default `"ACEScg"`, and are shown on the project page and dashboard only. A version's value is `ACEScg` whatever was uploaded, H.264 movies included, so it cannot drive processing.
+- **The worker's ffmpeg has no OpenColorIO filter.** The worker image is `python:3.14-slim` (Debian trixie) with Debian's ffmpeg 7.1.5. FFmpeg's `ocio` filter arrived in 8.1; Debian has 9.0 only in testing.
+- **OpenColorIO is available as a wheel.** `opencolorio` 2.6.0 (2026-10-01, BSD-3-Clause, about 6 MB) has manylinux wheels for CPython 3.13 and 3.14 on x86_64 and aarch64. It carries the ASWF built-in configs, `ocio://studio-config-v5.0.0_aces-v2.1_ocio-v2.6` (ACES 2.0; what `ocio://default` resolves to) back to the ACES 1.3 ones, so no config file has to be shipped.
+
+**Spike** (throwaway container: the worker's base image, Debian's ffmpeg 7.1.5, `opencolorio` 2.6.0). OpenColorIO bakes the whole transform (input space → display/view) into a cineSpace LUT with an ACEScct shaper (65³ cube, 4096-point shaper, 0.4 s, 7.6 MB); ffmpeg applies it with `lut3d=…:interp=tetrahedral` on the float EXR picture, before scaling and burn-ins. Compared with OpenColorIO's own processor on the same pixels:
+
+| | Difference from OCIO, in 8-bit code values |
+|---|---|
+| Pixels of ordinary saturation (channel ratio under 8) | largest 1.75, mean 0.15: below what the 8-bit 4:2:0 copy can show |
+| All pixels of a random HDR test image (values to 32, ratios to 7,000) | mean 0.47; 2.3% of pixels differ by more than 4, the worst by 27, all very bright, near-pure greens where ACES 2.0's gamut compression bends hardest (a 129³ cube halves it) |
+| Today's rule | mean 40, largest 227 |
+
+The encode of 48 frames at 2048×1080 took 1.68 s with the LUT against 1.46 s today (+15%). *Corrected while building:* the host's `/usr/bin/ffmpeg` is Debian's 7.1.5 and reads the LUT; only the shell's `ffmpeg` alias points to an old 2.8 build that cannot. The capture and live runs use `/usr/bin/ffmpeg`; no wrapper is needed.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 15.1 | **The config** (Q-RP-68). Setting `REVIEW_MEDIA_OCIO_CONFIG`: default the pinned built-in `ocio://studio-config-v5.0.0_aces-v2.1_ocio-v2.6`; a studio sets it to its own `config.ocio` (a path the worker and web can read) or another built-in. Dependency `opencolorio==2.6.0`. A small `transcode/colour.py`: load the config once, resolve a colour space by name or alias, list the sRGB display's views and the looks, bake a LUT for (config, input, view, look) into `REVIEW_MEDIA_DIR/luts/<hash>.csp` once and reuse it. `manage.py check` warns when the config cannot be loaded. | `config/settings/components/storage.py`, `config/settings/base.py`, `production/transcode/colour.py`, `pyproject.toml`, `uv.lock` |
+| 15.2 | **Project colour settings** (Q-RP-69, Q-RP-70, Q-RP-71). The project's `color_space` is the input space of its scene-referred frames (EXR); new `review_view` (a view of the sRGB display; blank = the config's default view) and `review_look` (blank = none). A project write naming a colour space, view or look must name one in the config (400 otherwise). Values already stored are not changed; one the config does not know means "no transform" for new copies and is flagged. `GET review-media/colour/` (any signed-in user who can see a project) lists the config's name, colour spaces (with aliases and encoding), the views and looks, for the form. Migration production `0012`. | `production/models/project.py`, `api/serializers/project/*`, `validators/`, `api/viewsets/review_media.py` |
+| 15.3 | **Processing.** EXR frames go through the baked LUT for the project's input, view and look instead of `apply_trc`; the same filter feeds the copy, its thumbnail, filmstrip and still. Burn-ins are drawn after the LUT, so their text is not coloured. An upload may name its own colour space (`colour_space` on a movie upload or a sequence create), which applies the transform to that movie or those frames (a log ProRes, a DPX in ADX10); otherwise movies and non-EXR frames stay as today. `probe.colour` records `{config, input, display, view, look}`, or `null` when nothing was transformed. A copy whose input space the config cannot resolve falls back to today's rule and records `colour: null` with `colour_skipped` saying why. | `production/transcode/{ffmpeg,sequence,colour}.py`, `services/review_media.py` |
+| 15.4 | **Copies made with other settings** (Q-RP-72). C-RP-38's count includes ready copies whose `probe.colour` differs from what the project would use now; the project remake (C-RP-37/38) remakes those movies with the project's settings and the burn-in date kept. A sequence copy still cannot be remade. | `production/selectors/review_media.py`, `services/review_media.py` |
+| 15.5 | **Frontend.** The project's settings: Colour space, Review view and Look as selects from `review-media/colour/` (a stored unknown value shown with "not in the studio's colour config"). The review movie panel shows how the copy was made ("ACEScg → sRGB, ACES 2.0 SDR 100 nits"). An optional colour space on a movie upload and a sequence upload. The review-copies notice says "made with other colour or burn-in settings". Typed API from captured responses. | `frontend/src/api/production/`, `modules/production/review/`, project settings |
+| 15.6 | **Capture, live, docs.** Capture tool and sample on real ffmpeg with OpenColorIO (an EXR sequence through the ACES view, a log movie with a named colour space, the refusals, the colour list); the capture and live runs use the host's `/usr/bin/ffmpeg` (7.1.5, as the worker's); *the wrapper planned here was not needed*. A live file (the project picks a view, an EXR sequence comes out tone-mapped, the panel says how). ADR-0041 (colour management for review copies: OpenColorIO as a Python dependency, a baked LUT applied by the distribution's ffmpeg, the config setting; to be replaced by ffmpeg's own `ocio` filter once the worker's ffmpeg has it). CONTRACTS, DECISIONS, the pre-deploy checklist (one migration, a new dependency, the setting), `rp-15-verification.md`. | `docs/sync/`, `docs/adr/`, `docs/review-pipeline/`, `docs/07-deployment/` |
+
+### Questions before RP-15 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-68 | Which OpenColorIO config? | A: a setting, `REVIEW_MEDIA_OCIO_CONFIG`, defaulting to the pinned built-in ACES 2.0 studio config; a studio on ACES 1.3 or with its own config sets it. B: the built-in config only. C: the studio's own config, required (no default). | **A**. Works out of the box, and a studio whose artists work in ACES 1.3 (`ocio://studio-config-v2.2.0_aces-v1.3_ocio-v2.4`) or in its own config gets the same picture in review as in Nuke by changing one setting. The default is pinned by name, so upgrading the package never changes how copies look. |
+| Q-RP-69 | Where does a copy's input colour space come from? | A: EXR frames use the project's `color_space` (default ACEScg); movies and other frames stay display-ready as today unless the upload names a colour space. B: the version's `color_space`. C: a default per format on the project (EXR, DPX, movie). | **A**. The version's field says ACEScg on every version, H.264 movies included, so B would tone-map movies that are already graded for display. C is more settings for a case the upload's own colour space covers. |
+| Q-RP-70 | What does a project choose for display? | A: a view and an optional look for the sRGB display (the browser shows sRGB). B: the display too (Display P3, Rec.2100 PQ for HDR). | **A**. The browser draws the copy as sRGB on almost every screen, and the copy is 8-bit H.264; P3 and HDR copies would need a different encode and a viewer that tags and shows them, which is its own phase. |
+| Q-RP-71 | Check `color_space` on project writes? | A: from now on a project write must name a colour space the config knows (by name or alias); stored values are left, and an unknown one means "no transform" and is flagged. B: keep it free text; an unknown value means "no transform". | **A**. The field starts to matter, and a typo ("ACEScg 1.3", the dashboard's fallback text) would silently turn colour management off. The frontend gets a select, so the check costs users nothing. This changes the project write contract (one more 400), recorded in CONTRACTS. |
+| Q-RP-72 | Copies made with other colour settings? | A: counted in the project's review-copies notice and remade like the burn-in ones (RP-14); sequences cannot be remade, as today. B: A, and from now on an EXR or DPX sequence's frames are kept while its copy is current, so changing a project's view can remake them too (Q-RP-56 and Q-RP-64 change; up to 20 GiB per sequence). C: not counted; new settings apply to new copies only. | **A**. EXR sequences are where colour matters most, so B is tempting, but it pays the storage for every sequence to serve a setting a project sets once at the start. A view chosen before review starts makes A enough; if projects change views mid-show, B can follow. |
+
+Also decided in the plan, without a question:
+- **A baked LUT, not ffmpeg's `ocio` filter.** The worker's Debian ffmpeg 7.1 has no `ocio` filter, and building ffmpeg ourselves would put a compiler and a hand-built media stack into the worker image. The bake is OpenColorIO's own (`Baker`), measured above; ADR-0041 records that the filter replaces it once Debian stable's ffmpeg has it.
+- **Burn-ins stay readable**: they are drawn after the colour transform.
+- **No new permission code.** The colour settings use the rights that write a project (as the burn-in switch); the colour list follows reading a project.
+- **The web image gets the package too** (it checks names on project writes and lists the options); it bakes nothing.
+- **The dependency change runs Containers and the dependency audit** on the merge (`pyproject.toml`, `uv.lock`); the release waits for both to be green.
+
+### Not in RP-15
+
+- Display P3 and HDR copies (Q-RP-70 B); 10-bit copies.
+- Per-shot or per-version grades (CDL), and looks per sequence.
+- Keeping a sequence's frames to remake it (Q-RP-72 B).
+- Reading frames from studio storage by path; object storage; downloading a review copy; slates.
+
+### Tests (targeted, test database)
+
+- **15.1:** the pinned config loads; a missing config path makes `check` warn and processing fall back to today's rule; a LUT is baked once per settings and reused; names and aliases resolve.
+- **15.2:** project writes accept known colour spaces, views and looks and refuse unknown ones (400 with the field); stored unknown values survive other writes; the colour list's shape and who may read it; the migration.
+- **15.3:** an EXR sequence's ffmpeg command uses the LUT and no `apply_trc`; burn-ins come after it; thumbnail, filmstrip and still use it; a movie without a named colour space is untouched; a movie with one uses it; `probe.colour` and `colour_skipped`; real ffmpeg (skipped without a LUT-capable ffmpeg): mid grey lands within 2 code values of OpenColorIO's own answer.
+- **15.4:** copies whose colour differs are counted and remade; matching ones are not; sequences are counted as such.
+
+### Mutation checks
+
+`apply_trc` kept alongside the LUT; burn-ins drawn before the LUT; the thumbnail made without the LUT; a movie transformed without a named colour space; the version's `color_space` used instead of the project's; an unknown colour space accepted on a project write; the LUT rebaked on every job; `probe.colour` left out; copies with matching colour counted as differing.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, notifications, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI, Containers and Dependency audit green.

@@ -88,6 +88,8 @@ class ProjectSerializer(BudgetGatedMixin, BaseReadSerializer[Any]):
             "color_space",
             "approve_task_on_version_approval",
             "review_burn_ins",
+            "review_view",
+            "review_look",
             "start_date",
             "delivery_date",
             "thumbnail_url",

@@ -205,7 +205,10 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
         body = ReviewMediaUploadSerializer(data=request.data)
         body.is_valid(raise_exception=True)
         row = ReviewMediaService.upload(
-            actor=request.user, version=version, upload=body.validated_data["file"]
+            actor=request.user,
+            version=version,
+            upload=body.validated_data["file"],
+            color_space=body.validated_data.get("color_space", ""),
         )
         data = ReviewMediaSerializer(row, context={"request": request}).data
         return Response(data, status=status.HTTP_202_ACCEPTED)

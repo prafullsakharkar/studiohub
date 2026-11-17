@@ -1,5 +1,5 @@
 """
-Review media reads (docs/review-pipeline/CONTRACTS.md C-RP-19, C-RP-21; C-RP-38, RP-14).
+Review media reads (docs/review-pipeline/CONTRACTS.md C-RP-19, C-RP-21; C-RP-38, RP-14; C-RP-40, RP-15).
 
 A row is read through its version: whoever reads the version (``GET versions/{id}/``'s narrowing,
 client and vendor members included) reads its review media, and nobody else.
@@ -15,6 +15,8 @@ from django.db.models import Prefetch, Q, QuerySet
 
 from apps.production.models import ReviewMedia, Version
 from apps.production.selectors.base import ProductionBaseSelector
+from apps.production.transcode import colour
+from apps.production.transcode import sequence as frames
 
 #: rows a version's shape can show (``review_media`` and ``review_media_job``)
 _SHOWN = (
@@ -92,33 +94,108 @@ class ReviewMediaSelector(ProductionBaseSelector):
         )
 
     @staticmethod
-    def differing(project: Any) -> QuerySet[ReviewMedia]:
+    def colour_target(
+        project: Any, *, kind: str, container: str, color_space: str
+    ) -> tuple[colour.Target | None, str | None]:
         """
-        The ready movie and sequence copies of ``project``'s live versions whose burn-ins are not
-        its ``review_burn_ins`` (C-RP-38). A row without ``burn_ins`` counts as without; stills never
-        carry burn-ins and are left out.
+        The colour transform a copy is made with now (C-RP-40), or ``None`` and why not.
+
+        The input is the colour space the upload named, else the project's ``color_space`` for EXR
+        frames (scene-linear), else none: movies and other frames are shown as stored (Q-RP-69).
+        Why not: ``None`` when nothing is to be transformed, ``unknown_colour_space`` when the config
+        does not know the input, view or look, ``colour_config_unavailable`` when it cannot be read.
+        """
+        name = color_space.strip()
+        if not name and kind == ReviewMedia.Kind.SEQUENCE:
+            frame_format = frames.FORMATS.get(container)
+            if frame_format is not None and frame_format.linear:
+                name = (project.color_space or "").strip()
+        if not name:
+            return None, None
+        try:
+            return colour.target(name, project.review_view or "", project.review_look or ""), None
+        except colour.UnknownColour:
+            return None, "unknown_colour_space"
+        except colour.ColourUnavailable:
+            return None, "colour_config_unavailable"
+
+    @staticmethod
+    def colour_options() -> dict[str, Any]:
+        """``GET review-media/colour/`` (C-RP-39); ``available`` false when the config cannot be read."""
+        try:
+            return {"available": True, **colour.options()}
+        except colour.ColourUnavailable:
+            return {
+                "available": False, "config": None, "display": None, "default_view": None,
+                "views": [], "looks": [], "color_spaces": [],
+            }  # fmt: skip
+
+    @classmethod
+    def differing(cls, project: Any) -> QuerySet[ReviewMedia]:
+        """
+        The ready copies of ``project``'s live versions made with other settings than it has now.
+
+        Burn-ins (C-RP-38): movie and sequence copies whose burn-ins are not ``review_burn_ins``; a
+        row without ``burn_ins`` counts as without, and stills never carry burn-ins. Colour (C-RP-40):
+        any copy whose ``probe.ocio`` is not the transform it would be made with now; a row without
+        ``ocio`` counts as made without one.
         """
         with_burn_ins = Q(probe__burn_ins=True)
         # spelled out: a negated key lookup would drop the rows made before RP-12, which lack the key
         without = Q(probe__isnull=True) | ~Q(probe__has_key="burn_ins") | Q(probe__burn_ins=False)
-        return (
-            ReviewMedia.objects.filter(
-                project_id=project.pk,
-                status=ReviewMedia.Status.READY,
-                kind__in=(ReviewMedia.Kind.MOVIE, ReviewMedia.Kind.SEQUENCE),
-                version__is_deleted=False,
-            )
-            .filter(without if project.review_burn_ins else with_burn_ins)
-            .order_by("queued_at", "id")
+        live = cls._live_copies(project)
+        burn_ins = live.filter(kind__in=(ReviewMedia.Kind.MOVIE, ReviewMedia.Kind.SEQUENCE)).filter(
+            without if project.review_burn_ins else with_burn_ins
+        )
+        colour_ids = cls._colour_differing(project, live)
+        return live.filter(Q(pk__in=burn_ins.values("pk")) | Q(pk__in=colour_ids)).order_by(
+            "queued_at", "id"
+        )
+
+    @staticmethod
+    def _live_copies(project: Any) -> QuerySet[ReviewMedia]:
+        return ReviewMedia.objects.filter(
+            project_id=project.pk,
+            status=ReviewMedia.Status.READY,
+            version__is_deleted=False,
         )
 
     @classmethod
+    def _colour_differing(cls, project: Any, live: QuerySet[ReviewMedia]) -> list[Any]:
+        """
+        The ids of ``live`` copies whose ``probe.ocio`` is not what they would be made with now.
+
+        While the config cannot be read, what a copy would be made with is not known, so no copy
+        counts: a passing outage must not offer to remake managed copies without their transform.
+        """
+        targets: dict[tuple[str, str, str], tuple[dict[str, str] | None, str | None]] = {}
+        ids = []
+        for row_id, kind, container, named, probe in live.values_list(
+            "pk", "kind", "source_container", "color_space", "probe"
+        ):
+            key = (kind, container, named)
+            if key not in targets:
+                made, why = cls.colour_target(
+                    project, kind=kind, container=container, color_space=named
+                )
+                targets[key] = (made.as_json() if made is not None else None, why)
+            target, why = targets[key]
+            if why == "colour_config_unavailable":
+                continue
+            recorded = probe.get("ocio") if isinstance(probe, dict) else None
+            if recorded != target:
+                ids.append(row_id)
+        return ids
+
+    @classmethod
     def copies_summary(cls, project: Any) -> dict[str, Any]:
-        """``GET projects/{id}/review-copies/`` (C-RP-38)."""
+        """``GET projects/{id}/review-copies/`` (C-RP-38; colour, C-RP-40)."""
         kinds = list(cls.differing(project).values_list("kind", flat=True))
         sequences = kinds.count(ReviewMedia.Kind.SEQUENCE)
         return {
             "review_burn_ins": bool(project.review_burn_ins),
             "out_of_date": len(kinds) - sequences,
             "sequences_out_of_date": sequences,
+            # RP-15: how many of them (sequences included) differ in colour, burn-ins aside
+            "colour_out_of_date": len(cls._colour_differing(project, cls._live_copies(project))),
         }

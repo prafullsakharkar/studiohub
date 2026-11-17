@@ -2,6 +2,7 @@ import { PROJECT_STATUSES, PROJECT_TYPES, PROJECT_WORKFLOWS, TRACK_TYPES, episod
 import type { EditorialTrack, Episode, Project, Sequence, Show } from '@/api/production/structure';
 import { EntityPicker } from '@/components/forms/EntityPicker';
 import { ClientPicker, VendorMultiPicker } from '@/modules/directory/pickers';
+import { ReviewColourSelect } from '@/modules/production/review/ReviewColourSelect';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RelatedRecordsConfig } from '@/modules/directory/types';
 import { Badge } from '@/shared/components/Badge';
 import { StatusBadge } from '@/shared/components/StatusBadge';
@@ -75,11 +76,14 @@ export const projectsFormConfig: DirectoryFormConfig<Project> = {
     { kind: 'number', name: 'fps', label: 'Frame rate (fps)' },
     { kind: 'text', name: 'resolution', label: 'Resolution', hint: 'For example 4096x2160.' },
     { kind: 'text', name: 'aspect_ratio', label: 'Aspect ratio' },
-    { kind: 'text', name: 'color_space', label: 'Color space' },
+    // RP-15 (C-RP-39): names from the studio's OpenColorIO config; blank is sent as '' (no transform, the default view, no look).
+    { kind: 'entity', textValue: true, name: 'color_space', label: 'Color space', initial: 'ACEScg', render: (p) => <ReviewColourSelect field="color_space" value={p.value} onChange={p.onChange} error={p.error} /> },
     // RP-3 (C-RP-14, C-RP-15): the server approves the task once the version's approval has committed.
     { kind: 'checkbox', name: 'approve_task_on_version_approval', label: 'Approve the task when one of its versions is approved' },
     // RP-12 (C-RP-33): review copies made afterwards carry the codes, the version, the date and the frame number.
     { kind: 'checkbox', name: 'review_burn_ins', label: 'Burn the shot, version and frame number into review copies' },
+    { kind: 'entity', textValue: true, name: 'review_view', label: 'Review view', render: (p) => <ReviewColourSelect field="review_view" value={p.value} onChange={p.onChange} error={p.error} /> },
+    { kind: 'entity', textValue: true, name: 'review_look', label: 'Review look', render: (p) => <ReviewColourSelect field="review_look" value={p.value} onChange={p.onChange} error={p.error} /> },
     // Read and written only with project.view_budget (CR-55): hidden, it is never sent.
     { kind: 'number', name: 'budget_usd', label: 'Budget (USD)', permission: 'project.view_budget' },
   ],

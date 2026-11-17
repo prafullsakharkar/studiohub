@@ -101,7 +101,7 @@ describe("a project's copies (C-RP-38)", () => {
 
   it('the sentences', () => {
     expect(outOfDateText(flow.copies_switch_on.body as ReviewCopies)).toBe('2 review copies were made without burn-ins; the project now adds them.');
-    expect(outOfDateText({ review_burn_ins: false, out_of_date: 1, sequences_out_of_date: 0 })).toBe('1 review copy was made with burn-ins; the project now leaves them off.');
+    expect(outOfDateText({ review_burn_ins: false, out_of_date: 1, sequences_out_of_date: 0, colour_out_of_date: 0 })).toBe('1 review copy was made with burn-ins; the project now leaves them off.');
     expect(remadeText(flow.remake_all_200.body)).toBe('Remaking 1 review copy.');
     expect(remadeText({ queued: 3, skipped_busy: 1, skipped_sequence: 0, skipped_missing: 2 })).toBe(
       'Remaking 3 review copies. 1 left: their version already has a copy being made. 2 left: the uploaded file is gone; upload it again.',
@@ -113,7 +113,7 @@ describe("a project's copies (C-RP-38)", () => {
     mount(<ReviewCopiesNotice project={project} />);
     const region = await notice();
     expect(region.textContent).toContain('2 review copies were made without burn-ins; the project now adds them.');
-    expect(region.textContent).toContain('1 image sequence was made with the other setting.');
+    expect(region.textContent).toContain('1 image sequence was made with other settings.');
     expect(calls[0].url).toContain(`/api/v1/projects/${project.id}/review-copies/`);
     fireEvent.click(within(region).getByRole('button', { name: 'Remake them' }));
     await waitFor(() => expect(calls.map((c) => `${c.method} ${path(c)}`)).toContain(`POST /api/v1/projects/${project.id}/review-copies/remake/`));

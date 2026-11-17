@@ -98,7 +98,8 @@ describe('uploading a sequence', () => {
     mount(before);
     pickFolder([...folder(1001, 1003), ...folder(1006, 1008)]);
     expect((await within(panel()).findByRole('alert')).textContent).toBe('2 frames are missing between 1001 and 1008: 1004, 1005.');
-    expect(calls).toHaveLength(0);
+    // only the colour options the upload's colour choice reads (RP-15)
+    expect(calls.filter((c) => !path(c).endsWith('/review-media/colour/'))).toHaveLength(0);
   });
 
   it('two sequences in one folder are refused', async () => {
@@ -161,14 +162,15 @@ describe('a ready sequence', () => {
     const region = panel();
     expect(within(region).getByText(/A movie made by the server from rps_sh0010_comp\.\[1001-1008\]\.exr/)).toBeTruthy();
     expect(within(region).getByText('640×360 · 24 fps · frames 1001–1008 · EXR')).toBeTruthy();
-    expect(within(region).getByText('EXR shown as sRGB from linear light; not for colour approval')).toBeTruthy();
+    // RP-15: the project's colour space is ACEScg, so the frames went through the studio's view
+    expect(within(region).getByText('ACEScg → sRGB - Display, ACES 2.0 - SDR 100 nits (Rec.709)')).toBeTruthy();
     expect(within(region).queryByText(/With burn-ins/)).toBeNull();
   });
 
   it('says when the copy has burn-ins', () => {
     mockFetch(() => ({ status: 500 }));
     mount(burnt);
-    expect(within(panel()).getByText('EXR shown as sRGB from linear light; not for colour approval · With burn-ins')).toBeTruthy();
+    expect(within(panel()).getByText('ACEScg → sRGB - Display, ACES 2.0 - SDR 100 nits (Rec.709) · With burn-ins')).toBeTruthy();
   });
 
   it('a movie made before RP-12 (as stored, no burn-ins) shows no notes', () => {

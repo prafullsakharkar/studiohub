@@ -306,6 +306,15 @@ class Settings(BaseSettings):
         alias="REVIEW_MEDIA_BURN_IN_FONT",
     )
 
+    # The OpenColorIO config review copies are made with (RP-15, Q-RP-68): a built-in config by its
+    # full ``ocio://`` name (pinned, so a package upgrade never changes how copies look), or the path
+    # of the studio's own ``config.ocio``, readable by the web and media worker containers.
+    review_media_ocio_config: str = Field(
+        default="ocio://studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+        alias="REVIEW_MEDIA_OCIO_CONFIG",
+        min_length=1,
+    )
+
     ####################################################################
     # In-app notifications (review-pipeline RP-6)
     ####################################################################
