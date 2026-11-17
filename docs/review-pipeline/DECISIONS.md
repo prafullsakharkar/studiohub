@@ -147,5 +147,19 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-11 Notification depth (reviews and preferences) | planned in [PLAN.md](PLAN.md#rp-11-notification-depth-reviews-and-preferences); answered (Q-RP-46 to Q-RP-50 = A); committed `a7443900`, merged into `develop` and `main`, released in v4.9.0 ([rp-11-verification.md](rp-11-verification.md)) |
 | RP-12 Media depth (image sequences and burn-ins) | planned in [PLAN.md](PLAN.md#rp-12-media-depth-image-sequences-and-burn-ins); answered (Q-RP-51 to Q-RP-56 = A); committed `f2b84225`, merged into `develop` and `main`, released in v4.9.0 ([rp-12-verification.md](rp-12-verification.md)) |
 | RP-13 Notifications beyond reviews (deliveries, publishing, milestones) | planned in [PLAN.md](PLAN.md#rp-13-notifications-beyond-reviews-deliveries-publishing-milestones); answered (Q-RP-57 to Q-RP-62 = A); committed `88a24c4b`, merged into `develop` and `main`, released in v4.10.0 ([rp-13-verification.md](rp-13-verification.md)) |
+| RP-14 Review copies: remaking and slates | planned in [PLAN.md](PLAN.md#rp-14-review-copies-remaking-and-slates); answered (Q-RP-63 to Q-RP-67 = A); committed `10fedb13` ([rp-14-verification.md](rp-14-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
+
+## RP-14 answers
+
+The owner took every recommendation of [PLAN.md, RP-14 questions](PLAN.md#questions-before-rp-14-starts) on 2026-11-17 ("go ahead").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-63 | **A** | No slates on review copies. Slates are rendered by the studio's pipeline before upload; a slate inside the copy would shift every stored frame number. WP 14.3 drops. |
+| Q-RP-64 | **A** | Movies and stills can be remade from their kept upload; a sequence cannot (its frames are gone, Q-RP-56 stands) and is told to upload its frames again. |
+| Q-RP-65 | **A** | A "Remake" action on one copy, and "Remake the copies that differ" for a project after its burn-in switch changes. Nothing is remade automatically. |
+| Q-RP-66 | **A** | A remade copy keeps the original copy's burn-in date; a copy made before RP-14 dates from the day its row was created. |
+| Q-RP-67 | **A** | A remade copy that becomes ready tells nobody; one that fails tells whoever asked for the remake (`review_media_failed`). |
+

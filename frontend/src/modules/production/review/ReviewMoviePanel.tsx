@@ -52,10 +52,15 @@ const JOB_TEXT: Partial<Record<ReviewMedia['status'], string>> = {
   queued: 'Waiting for the media worker…',
   processing: 'Making the review copy…',
 };
+/** A remake (RP-14, C-RP-37): the copy it remakes stays shown until it is ready. */
+const REMAKE_TEXT: Partial<Record<ReviewMedia['status'], string>> = {
+  queued: 'Waiting for the media worker to remake the copy. The current copy stays until then.',
+  processing: 'Remaking the review copy. The current copy stays until it is ready.',
+};
 
 /**
  * The version's review movie (RP-5, C-RP-19 to C-RP-22): upload a movie or still, follow the worker's job, retry a
- * failure, replace or remove the copy. Uploading, retrying and removing need `version.update`, or being the version's
+ * failure, replace or remove the copy, remake a movie or still from its kept upload (RP-14, C-RP-37). Uploading, retrying and removing need `version.update`, or being the version's
  * artist with `version.create` (RP-10, C-RP-26); reading needs only the version. The version is refetched while a job runs (`VersionWorkspace`), so this panel shows what the server says.
  */
 export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) => {
@@ -143,6 +148,22 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
             <Button size="sm" variant="ghost" disabled={busy !== null || running || unfinished !== null} onClick={() => framesInput.current?.click()}>
               Choose frames
             </Button>
+            {current && current.kind !== 'sequence' && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy !== null || running || unfinished !== null}
+                title="Make the copy again from the uploaded file, with the project's burn-in setting"
+                onClick={() =>
+                  void act('Remaking…', async () => {
+                    await reviewMediaApi.remake(current.id);
+                    notify.success('The review copy is being remade. The current one stays until the new one is ready.');
+                  })
+                }
+              >
+                Remake
+              </Button>
+            )}
             {current && (
               <Button size="sm" variant="outline" disabled={busy !== null} onClick={() => setRemoving(true)}>
                 Remove
@@ -195,13 +216,14 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
       )}
       {job && running && (
         <p role="status" className="text-xs text-cyan-300">
-          {job.source_name}: {JOB_TEXT[job.status]}
+          {job.source_name}: {(job.remake_of ? REMAKE_TEXT : JOB_TEXT)[job.status]}
         </p>
       )}
       {job && job.status === 'failed' && (
         <div role="alert" className="flex flex-wrap items-center gap-2 rounded border border-rose-500/30 bg-rose-500/10 px-2 py-1.5 text-xs text-rose-200">
           <span>
             {job.source_name}: {job.error_message}
+            {job.remake_of && current ? ' The remake failed; the current copy stays.' : ''}
             {job.attempts >= MAX_ATTEMPTS ? ' Upload the file again.' : ''}
           </span>
           {canManage && job.attempts < MAX_ATTEMPTS && (

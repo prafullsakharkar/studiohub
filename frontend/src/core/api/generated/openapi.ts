@@ -7260,6 +7260,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{uuid}/review-copies/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description How many review copies differ from the project's burn-in switch (C-RP-38). */
+        get: operations["v1_projects_review_copies_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{uuid}/review-copies/remake/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Remake every movie copy whose burn-ins differ from the project's switch (C-RP-38). */
+        post: operations["v1_projects_review_copies_remake_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{uuid}/statistics/": {
         parameters: {
             query?: never;
@@ -7865,6 +7899,23 @@ export interface paths {
         put?: never;
         /** @description One part of a sequence's frames, up to 50 files under ``frames`` (C-RP-31). */
         post: operations["v1_review_media_frames_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review-media/{id}/remake/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description A new copy of a ready movie or still from its kept upload (C-RP-37). */
+        post: operations["v1_review_media_remake_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -26242,6 +26293,19 @@ export interface components {
             /** Format: uuid */
             version_id?: string | null;
         };
+        /** @description ``GET projects/{id}/review-copies/`` (C-RP-38). */
+        ReviewCopies: {
+            review_burn_ins: boolean;
+            out_of_date: number;
+            sequences_out_of_date: number;
+        };
+        /** @description ``POST projects/{id}/review-copies/remake/`` (C-RP-38). */
+        ReviewCopiesRemade: {
+            queued: number;
+            skipped_busy: number;
+            skipped_sequence: number;
+            skipped_missing: number;
+        };
         /** @description Base serializer for write operations. */
         ReviewCreate: {
             /** Format: uuid */
@@ -26408,6 +26472,8 @@ export interface components {
             readonly filmstrip_tiles: number;
             /** Format: date-time */
             readonly links_expire_at: string | null;
+            /** Format: uuid */
+            readonly remake_of: string | null;
         };
         /** @description ``POST review-media/{id}/frames/``: up to 50 files under ``frames`` (C-RP-31). */
         ReviewMediaFrames: {
@@ -45985,6 +46051,48 @@ export interface operations {
             };
         };
     };
+    v1_projects_review_copies_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewCopies"];
+                };
+            };
+        };
+    };
+    v1_projects_review_copies_remake_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewCopiesRemade"];
+                };
+            };
+        };
+    };
     v1_projects_statistics_retrieve: {
         parameters: {
             query?: never;
@@ -47172,6 +47280,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReviewMediaFramesResult"];
+                };
+            };
+        };
+    };
+    v1_review_media_remake_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewMedia"];
                 };
             };
         };

@@ -74,6 +74,14 @@ def _media_worker(settings, monkeypatch, tmp_path) -> dict:
     settings.MEDIA_ROOT = str(tmp_path / "media")
     settings.MEDIA_ACCEL_PREFIX = ""
     settings.REVIEW_MEDIA_ENABLED = True
+    # RP-14: burn-ins need a font; the worker image's Debian path is not on every host
+    fonts = (
+        os.environ.get("REVIEW_MEDIA_BURN_IN_FONT", ""),
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSans.ttf",
+    )
+    settings.REVIEW_MEDIA_BURN_IN_FONT = next((f for f in fonts if f and Path(f).is_file()), fonts[1])
     jobs: queue.Queue[str] = queue.Queue()
     # The upload's on_commit hook hands the row to the thread instead of Celery.
     monkeypatch.setattr(service_module, "enqueue", lambda media_id: jobs.put(str(media_id)))

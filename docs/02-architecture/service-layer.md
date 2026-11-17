@@ -57,7 +57,6 @@ Core provides generic infrastructure only. Each service is a focused, single-pur
 | `SearchService` | Search helpers |
 | `StorageService` | Storage helpers |
 | `EmailService` | Email helpers |
-| `NotificationService` | Notification helpers |
 
 ### BaseService Hooks
 

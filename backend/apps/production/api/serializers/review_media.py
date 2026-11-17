@@ -1,4 +1,4 @@
-"""Review media shapes (docs/review-pipeline/CONTRACTS.md C-RP-19 to C-RP-21; C-RP-31, C-RP-32)."""
+"""Review media shapes (docs/review-pipeline/CONTRACTS.md C-RP-19 to C-RP-21; C-RP-31, C-RP-32; C-RP-37, C-RP-38)."""
 
 from __future__ import annotations
 
@@ -59,6 +59,7 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
     thumbnail_url = serializers.SerializerMethodField()
     filmstrip_url = serializers.SerializerMethodField()
     links_expire_at = serializers.SerializerMethodField()
+    remake_of = serializers.UUIDField(source="remake_of_id", read_only=True, allow_null=True)
 
     class Meta:
         model = ReviewMedia
@@ -68,6 +69,7 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
             "error_code", "error_message", "attempts",
             "queued_at", "started_at", "finished_at", "created_by",
             "proxy_url", "thumbnail_url", "filmstrip_url", "filmstrip_tiles", "links_expire_at",
+            "remake_of",
         )  # fmt: skip
         read_only_fields = fields
 
@@ -152,3 +154,20 @@ class ReviewMediaFramesResultSerializer(serializers.Serializer[Any]):
     frames_received = serializers.IntegerField()
     frames_expected = serializers.IntegerField()
     missing_frames = serializers.ListField(child=serializers.IntegerField())
+
+
+class ReviewCopiesSerializer(serializers.Serializer[Any]):
+    """``GET projects/{id}/review-copies/`` (C-RP-38)."""
+
+    review_burn_ins = serializers.BooleanField()
+    out_of_date = serializers.IntegerField()
+    sequences_out_of_date = serializers.IntegerField()
+
+
+class ReviewCopiesRemadeSerializer(serializers.Serializer[Any]):
+    """``POST projects/{id}/review-copies/remake/`` (C-RP-38)."""
+
+    queued = serializers.IntegerField()
+    skipped_busy = serializers.IntegerField()
+    skipped_sequence = serializers.IntegerField()
+    skipped_missing = serializers.IntegerField()

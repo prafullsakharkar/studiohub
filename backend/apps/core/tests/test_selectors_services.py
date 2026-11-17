@@ -8,7 +8,6 @@ from apps.core.services import (
     EmailService,
     EventService,
     LifecycleService,
-    NotificationService,
     SearchService,
     SoftDeleteService,
     StorageService,
@@ -69,11 +68,10 @@ class TestServiceSurface(SimpleTestCase):
         self.assertTrue(hasattr(LifecycleService, "archive"))
         self.assertTrue(hasattr(SearchService, "normalize"))
 
-    def test_storage_and_email_and_notification_services(self):
+    def test_storage_and_email_services(self):
         self.assertTrue(hasattr(StorageService, "exists"))
         self.assertTrue(hasattr(StorageService, "delete"))
         self.assertTrue(hasattr(EmailService, "send"))
-        self.assertTrue(hasattr(NotificationService, "notify"))
 
     def test_event_service_after_delete_returns_instance(self):
         # The EventService lifecycle hooks should return the instance

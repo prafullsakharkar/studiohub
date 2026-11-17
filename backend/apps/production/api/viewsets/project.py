@@ -1,4 +1,5 @@
 from django.db import transaction
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
@@ -10,6 +11,10 @@ from apps.production.api.serializers.project.create import ProjectCreateSerializ
 from apps.production.api.serializers.project.detail import ProjectDetailSerializer
 from apps.production.api.serializers.project.list import ProjectListSerializer
 from apps.production.api.serializers.project.update import ProjectUpdateSerializer
+from apps.production.api.serializers.review_media import (
+    ReviewCopiesRemadeSerializer,
+    ReviewCopiesSerializer,
+)
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import ProjectPermissions
@@ -19,8 +24,10 @@ from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.dashboard import ProjectDashboardSelector
 from apps.production.selectors.delivery_figures import delivery_figures
 from apps.production.selectors.project import ProjectSelector
+from apps.production.selectors.review_media import ReviewMediaSelector
 from apps.production.services.project import ProjectService
 from apps.production.services.project_scoped import ProjectMembershipService
+from apps.production.services.review_media import ReviewMediaService
 
 
 class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
@@ -50,6 +57,8 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         "restore": (ProjectPermissions.UPDATE,),
         # Same as episodes and sequences: DELETE already archives, so archive needs the delete permission.
         "archive": (ProjectPermissions.DELETE,),
+        "review_copies": (ProjectPermissions.VIEW,),
+        "remake_review_copies": (ProjectPermissions.UPDATE,),
         # check_existence / existence_check stay unmapped on purpose: this viewset has no
         # _existence_items_from_request, so mapping them would turn a 403 into a 500.
     }
@@ -148,3 +157,20 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
                 include_budget=has_permission_code(request, ProjectPermissions.VIEW_BUDGET),
             )
         )
+
+    @extend_schema(request=None, responses={200: ReviewCopiesSerializer})
+    @action(detail=True, methods=["get"], url_path="review-copies")
+    def review_copies(self, request, *args, **kwargs):
+        """How many review copies differ from the project's burn-in switch (C-RP-38)."""
+        instance = self.get_object()
+        self._require_full_access(instance)
+        return Response(ReviewCopiesSerializer(ReviewMediaSelector.copies_summary(instance)).data)
+
+    @extend_schema(request=None, responses={200: ReviewCopiesRemadeSerializer})
+    @action(detail=True, methods=["post"], url_path="review-copies/remake")
+    def remake_review_copies(self, request, *args, **kwargs):
+        """Remake every movie copy whose burn-ins differ from the project's switch (C-RP-38)."""
+        instance = self.get_object()
+        self._require_full_access(instance)
+        counts = ReviewMediaService.remake_differing(actor=request.user, project=instance)
+        return Response(ReviewCopiesRemadeSerializer(counts).data)
