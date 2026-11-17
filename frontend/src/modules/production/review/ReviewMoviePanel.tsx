@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
 import { useRef, useState } from 'react';
 import { reviewMediaApi, reviewMediaInFlight, versionsApi } from '@/api/production/review';
@@ -10,6 +10,7 @@ import { formatDateTime, formatNumber } from '@/core/locale/studioLocale';
 import { useCan } from '@/core/permissions/useCan';
 import { notify } from '@/core/notifications/notify';
 import { Button } from '@/shared/components/Button';
+import { choicesOf } from './ReviewColourSelect';
 import { partsOf, planSequence, SEQUENCE_EXTENSIONS } from './sequenceFrames';
 
 /** What the file picker offers; the server decides (by the first bytes and the extension) and answers 400 on `file`. */
@@ -38,9 +39,25 @@ function probeText(media: ReviewMedia): string {
   return [size, `${formatNumber(p.fps)} fps`, `${formatNumber(p.frames)} frames`, p.video_codec, p.has_audio ? 'with sound' : 'no sound'].join(' · ');
 }
 
-/** The colour rule and burn-ins of a copy (C-RP-32, C-RP-33); empty when there is nothing to say. */
-function copyNotes(media: ReviewMedia): string[] {
+/** Why a colour transform that was due was left out (RP-15, C-RP-40). */
+const COLOUR_SKIPPED: Record<NonNullable<NonNullable<ReviewMedia['probe']>['colour_skipped']>, string> = {
+  unknown_colour_space: "colour not managed: its colour space, view or look is not in the studio's colour config",
+  colour_config_unavailable: "colour not managed: the studio's colour config could not be read",
+};
+
+/** How a copy's colour was made (RP-15, C-RP-40), e.g. `ACEScg → sRGB - Display, ACES 2.0 - SDR 100 nits (Rec.709)`. */
+export function colourText(media: ReviewMedia): string | null {
+  const o = media.probe?.ocio;
+  if (!o) return null;
+  return `${o.input} → ${o.display}, ${o.view}${o.look ? ` with ${o.look}` : ''}`;
+}
+
+/** The colour rule and burn-ins of a copy (C-RP-32, C-RP-33, C-RP-40); empty when there is nothing to say. */
+export function copyNotes(media: ReviewMedia): string[] {
   const notes: string[] = [];
+  const colour = colourText(media);
+  if (colour) notes.push(colour);
+  if (media.probe?.colour_skipped) notes.push(COLOUR_SKIPPED[media.probe.colour_skipped]);
   if (media.probe?.colour === 'srgb_from_linear') notes.push('EXR shown as sRGB from linear light; not for colour approval');
   if (media.probe?.burn_ins) notes.push('With burn-ins');
   return notes;
@@ -75,6 +92,14 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
   const [busy, setBusy] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [removing, setRemoving] = useState(false);
+  // RP-15 (C-RP-40): the colour space the next upload names; blank = the project's rule (EXR only)
+  const [colorSpace, setColorSpace] = useState('');
+  const { data: colourOptions } = useQuery({
+    queryKey: reviewMediaApi.colourOptionsKey,
+    queryFn: ({ signal }) => reviewMediaApi.colourOptions(signal),
+    staleTime: 5 * 60_000,
+    enabled: canManage,
+  });
   const current = version.review_media;
   const job = version.review_media_job;
   const running = reviewMediaInFlight(job);
@@ -97,7 +122,7 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
   const upload = (file: File | undefined) => {
     if (!file) return;
     void act('Uploading…', async () => {
-      await reviewMediaApi.upload(version.id, file);
+      await reviewMediaApi.upload(version.id, file, colorSpace);
       notify.success(`${file.name} uploaded. The review copy is being made.`);
     });
   };
@@ -111,7 +136,13 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
     }
     const { plan } = planned;
     void act('Sending frames…', async () => {
-      const row = await reviewMediaApi.openSequence(version.id, { name: plan.name, extension: plan.extension, first_frame: plan.first, last_frame: plan.last });
+      const row = await reviewMediaApi.openSequence(version.id, {
+        name: plan.name,
+        extension: plan.extension,
+        first_frame: plan.first,
+        last_frame: plan.last,
+        ...(colorSpace ? { color_space: colorSpace } : {}),
+      });
       let sent = 0;
       for (const part of partsOf(plan.frames)) {
         setBusy(`Sending frames ${formatNumber(sent + 1)}–${formatNumber(sent + part.length)} of ${formatNumber(plan.frames.length)}…`);
@@ -139,6 +170,27 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
             <input ref={input} type="file" accept={ACCEPT} aria-label="Movie or still to upload" className="hidden" onChange={(e) => { upload(e.target.files?.[0]); e.target.value = ''; }} />
             <input ref={folderInput} type="file" multiple {...FOLDER_PICKER} aria-label="Folder of frames to upload" className="hidden" onChange={(e) => { uploadSequence(e.target.files); e.target.value = ''; }} />
             <input ref={framesInput} type="file" multiple accept={FRAMES_ACCEPT} aria-label="Frames to upload" className="hidden" onChange={(e) => { uploadSequence(e.target.files); e.target.value = ''; }} />
+            {colourOptions?.available && (
+              <select
+                aria-label="Colour space of the upload"
+                title="The colour space of what you upload next. Leave it at the project's rule for display-ready movies; EXR frames take the project's colour space."
+                value={colorSpace}
+                disabled={busy !== null}
+                className="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-200"
+                onChange={(e) => setColorSpace(e.target.value)}
+              >
+                <option value="">Colour: the project's rule</option>
+                {choicesOf('color_space', colourOptions).map(({ group, names }) => (
+                  <optgroup key={group} label={group}>
+                    {names.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            )}
             <Button size="sm" variant={current ? 'outline' : 'primary'} disabled={busy !== null || running || unfinished !== null} onClick={() => input.current?.click()}>
               {busy === 'Uploading…' ? 'Uploading…' : current ? 'Replace' : 'Upload'}
             </Button>
@@ -153,7 +205,7 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
                 size="sm"
                 variant="outline"
                 disabled={busy !== null || running || unfinished !== null}
-                title="Make the copy again from the uploaded file, with the project's burn-in setting"
+                title="Make the copy again from the uploaded file, with the project's burn-in and colour settings"
                 onClick={() =>
                   void act('Remaking…', async () => {
                     await reviewMediaApi.remake(current.id);

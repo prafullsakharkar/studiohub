@@ -5,8 +5,9 @@ Every command is an argument list (never a shell). Each input is read with its d
 (``-f``), that demuxer as the only one allowed (``-format_whitelist``), only the ``file`` protocol
 (``-protocol_whitelist``) and an explicit ``file:`` URL, so no input can make ffmpeg open another
 file or a network address. A sequence also forces its decoder (``-codec_whitelist``). Burn-in text
-is read from files with expansion off, never written into a filter. The builders are pure; ``run``
-is the one place a program starts.
+is read from files with expansion off, never written into a filter. A colour-managed input (RP-15)
+is read through the LUT ``COLOUR_LUT`` in the job's folder, before scaling and burn-ins. The builders
+are pure; ``run`` is the one place a program starts.
 """
 
 from __future__ import annotations
@@ -26,6 +27,9 @@ FILMSTRIP_TILE_WIDTH = 240
 FILMSTRIP_MAX_TILES = 60
 #: larger pictures are refused before decoding (``unsupported_stream``)
 MAX_DIMENSION = 16384
+
+#: the baked OpenColorIO LUT in a job's folder (RP-15, ``transcode/colour.py``)
+COLOUR_LUT = "colour.csp"
 
 PROBE_TIMEOUT_SECONDS = 120
 TRANSCODE_TIMEOUT_SECONDS = 25 * 60
@@ -65,10 +69,14 @@ class Probe:
 
 @dataclass(frozen=True)
 class MovieInput:
-    """One uploaded movie or still, read with the demuxer its first bytes chose."""
+    """One uploaded movie or still, read with the demuxer its first bytes chose.
+
+    ``colour``: its picture goes through ``COLOUR_LUT`` (RP-15, an upload that named its colour space).
+    """
 
     demuxer: str
     source: Path
+    colour: bool = False
 
     def args(self, *, seek: float | None = None, decode: bool = True) -> list[str]:
         args = ["-protocol_whitelist", "file", "-format_whitelist", self.demuxer]
@@ -82,8 +90,9 @@ class SequenceInput:
     """The stored frames of a sequence (RP-12, C-RP-32), read in order from ``first``.
 
     ``pattern`` is our own (``frame.%08d.<ext>``, relative to the job's folder, so no ``%`` of
-    MEDIA_ROOT can reach it). Only ``image2`` and the frame format's own decoder may be used; an EXR
-    is turned from linear light to sRGB with the decoder's ``apply_trc``.
+    MEDIA_ROOT can reach it). Only ``image2`` and the frame format's own decoder may be used. With
+    ``colour`` the frames go through ``COLOUR_LUT`` (RP-15) and are decoded as they are stored;
+    otherwise an EXR is turned from linear light to sRGB with the decoder's ``apply_trc`` (RP-12).
     """
 
     codec: str
@@ -91,6 +100,7 @@ class SequenceInput:
     first: int
     frame_rate: str
     linear: bool = False
+    colour: bool = False
 
     def args(self, *, seek: float | None = None, decode: bool = True) -> list[str]:
         args = [
@@ -105,7 +115,7 @@ class SequenceInput:
         ]  # fmt: skip
         if decode:
             args += ["-c:v", self.codec]
-            if self.linear:
+            if self.linear and not self.colour:
                 args += ["-apply_trc", "iec61966_2_1"]
         return [*args, "-i", f"file:{self.pattern}"]
 
@@ -196,6 +206,11 @@ def _scale(width: int) -> str:
     return f"scale=trunc(min({width}\\,iw)/2)*2:-2"
 
 
+def _colour(source: Input) -> str:
+    """The colour transform that comes first in every picture made from ``source`` (RP-15), or ``""``."""
+    return f"lut3d=file={COLOUR_LUT}:interp=tetrahedral," if source.colour else ""
+
+
 @dataclass(frozen=True)
 class BurnIn:
     """What a review copy carries burnt in (RP-12, C-RP-33). Text never enters the filter graph."""
@@ -256,7 +271,10 @@ def proxy_command(
     With ``burn_in`` the job's folder must hold ``burn_in_texts`` and the font (``BURN_IN_FONT``).
     """
     keyframes = max(1, round(probe.fps))
-    picture = _scale(PROXY_MAX_WIDTH) + (f",{burn_in_filter()}" if burn_in else "")
+    # the colour transform first, burn-ins last: their text is drawn on the finished picture
+    picture = (
+        _colour(source) + _scale(PROXY_MAX_WIDTH) + (f",{burn_in_filter()}" if burn_in else "")
+    )
     return [
         ffmpeg, "-nostdin", "-v", "error", *source.args(),
         "-map", "0:v:0", "-map", "0:a:0?",
@@ -273,7 +291,7 @@ def still_command(ffmpeg: str, source: Input, width: int, out: Path) -> list[str
     """One JPEG at most ``width`` wide, from a still."""
     return [
         ffmpeg, "-nostdin", "-v", "error", *source.args(),
-        "-frames:v", "1", "-vf", _scale(width), "-q:v", "3",
+        "-frames:v", "1", "-vf", _colour(source) + _scale(width), "-q:v", "3",
         "-f", "image2", "-update", "1", "-y", str(out),
     ]  # fmt: skip
 
@@ -283,7 +301,7 @@ def thumbnail_command(ffmpeg: str, source: Input, probe: Probe, out: Path) -> li
     middle = probe.duration_seconds / 2 if probe.duration_seconds > 0 else 0.0
     return [
         ffmpeg, "-nostdin", "-v", "error", *source.args(seek=middle),
-        "-frames:v", "1", "-vf", _scale(THUMBNAIL_WIDTH), "-q:v", "3",
+        "-frames:v", "1", "-vf", _colour(source) + _scale(THUMBNAIL_WIDTH), "-q:v", "3",
         "-f", "image2", "-update", "1", "-y", str(out),
     ]  # fmt: skip
 
@@ -297,9 +315,11 @@ def filmstrip_layout(frames: int) -> tuple[int, int]:
 def filmstrip_command(ffmpeg: str, source: Input, probe: Probe, out: Path) -> list[str]:
     """One JPEG strip of evenly spaced frames, ``FILMSTRIP_TILE_WIDTH`` wide each, left to right."""
     step, tiles = filmstrip_layout(probe.frames)
+    # the frames are picked before the colour transform, so only the picked ones go through it
+    picture = f"select=not(mod(n\\,{step})),{_colour(source)}scale={FILMSTRIP_TILE_WIDTH}:-2,tile={tiles}x1"
     return [
         ffmpeg, "-nostdin", "-v", "error", *source.args(),
-        "-vf", f"select=not(mod(n\\,{step})),scale={FILMSTRIP_TILE_WIDTH}:-2,tile={tiles}x1",
+        "-vf", picture,
         "-frames:v", "1", "-fps_mode", "passthrough", "-q:v", "3",
         "-f", "image2", "-update", "1", "-y", str(out),
     ]  # fmt: skip

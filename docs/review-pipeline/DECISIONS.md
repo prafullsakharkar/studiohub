@@ -148,6 +148,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-12 Media depth (image sequences and burn-ins) | planned in [PLAN.md](PLAN.md#rp-12-media-depth-image-sequences-and-burn-ins); answered (Q-RP-51 to Q-RP-56 = A); committed `f2b84225`, merged into `develop` and `main`, released in v4.9.0 ([rp-12-verification.md](rp-12-verification.md)) |
 | RP-13 Notifications beyond reviews (deliveries, publishing, milestones) | planned in [PLAN.md](PLAN.md#rp-13-notifications-beyond-reviews-deliveries-publishing-milestones); answered (Q-RP-57 to Q-RP-62 = A); committed `88a24c4b`, merged into `develop` and `main`, released in v4.10.0 ([rp-13-verification.md](rp-13-verification.md)) |
 | RP-14 Review copies: remaking and slates | planned in [PLAN.md](PLAN.md#rp-14-review-copies-remaking-and-slates); answered (Q-RP-63 to Q-RP-67 = A); committed `10fedb13`, merged into `develop` and `main`, released in v4.11.0 ([rp-14-verification.md](rp-14-verification.md)) |
+| RP-15 Colour management for review copies | planned in [PLAN.md](PLAN.md#rp-15-colour-management-for-review-copies); answered (Q-RP-68 to Q-RP-72 = A); built on `feature/rp-15-colour-management`, not committed ([rp-15-verification.md](rp-15-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
@@ -163,3 +164,14 @@ The owner took every recommendation of [PLAN.md, RP-14 questions](PLAN.md#questi
 | Q-RP-66 | **A** | A remade copy keeps the original copy's burn-in date; a copy made before RP-14 dates from the day its row was created. |
 | Q-RP-67 | **A** | A remade copy that becomes ready tells nobody; one that fails tells whoever asked for the remake (`review_media_failed`). |
 
+## RP-15 answers
+
+The owner took every recommendation of [PLAN.md, RP-15 questions](PLAN.md#questions-before-rp-15-starts) on 2026-11-17 ("go ahead").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-68 | **A** | A setting, `REVIEW_MEDIA_OCIO_CONFIG`, names the OpenColorIO config; by default the pinned built-in ACES 2.0 studio config (`ocio://studio-config-v5.0.0_aces-v2.1_ocio-v2.6`). A studio on ACES 1.3 or with its own `config.ocio` sets it. |
+| Q-RP-69 | **A** | EXR frames use the project's `color_space`; movies and other frames are shown as stored unless their upload names a colour space. `Version.color_space` is not read. |
+| Q-RP-70 | **A** | A project chooses a view and an optional look of the sRGB display. No P3 or HDR copies. |
+| Q-RP-71 | **A** | A project write that changes `color_space`, `review_view` or `review_look` must name one the config knows (400 on the field otherwise); stored values are left, and one the config does not know means "no transform" for new copies, said in the probe. |
+| Q-RP-72 | **A** | Copies made with other colour settings are counted in the project's review-copies notice and the movies among them remade as in RP-14; sequences cannot be remade. |

@@ -3,7 +3,7 @@
 Status: **accepted** (planned 2026-11-13 as review-pipeline RP-5; approved by the owner the same day: "go ahead", every
 recommendation of Q-RP-24 to Q-RP-31). **Amended by RP-12** (2026-11-16, Q-RP-51 to Q-RP-56 = A): image sequences and
 burn-ins, see "Amendment: image sequences and burn-ins" below. **Amended by RP-14** (2026-11-17, Q-RP-63 to Q-RP-67 = A):
-remaking a copy from its kept upload, see "Amendment: remaking copies" below · Plan and contracts: `docs/review-pipeline/PLAN.md` (RP-5),
+remaking a copy from its kept upload, see "Amendment: remaking copies" below. **Colour** of review copies (RP-15, 2026-11-17): [ADR-0041](ADR-0041-review-colour-management.md) · Plan and contracts: `docs/review-pipeline/PLAN.md` (RP-5),
 `docs/review-pipeline/CONTRACTS.md` (C-RP-19 to C-RP-22) · Evidence: `docs/review-pipeline/rp-5-verification.md`
 
 ## Context

@@ -450,15 +450,30 @@ class TestProjectCopies:
         self._switch(other)
 
         body = self._copies(producer, project).json()
-        assert body == {"review_burn_ins": False, "out_of_date": 0, "sequences_out_of_date": 0}
+        assert body == {
+            "review_burn_ins": False,
+            "out_of_date": 0,
+            "sequences_out_of_date": 0,
+            "colour_out_of_date": 0,
+        }
         self._switch(project)
         body = self._copies(producer, project).json()
-        assert body == {"review_burn_ins": True, "out_of_date": 2, "sequences_out_of_date": 1}
+        assert body == {
+            "review_burn_ins": True,
+            "out_of_date": 2,
+            "sequences_out_of_date": 1,
+            "colour_out_of_date": 0,
+        }
         ReviewMedia.objects.filter(pk=movie.pk).update(probe={**movie.probe, "burn_ins": True})
         assert self._copies(producer, project).json()["out_of_date"] == 1
         self._switch(project, on=False)
         body = self._copies(producer, project).json()
-        assert body == {"review_burn_ins": False, "out_of_date": 1, "sequences_out_of_date": 0}
+        assert body == {
+            "review_burn_ins": False,
+            "out_of_date": 1,
+            "sequences_out_of_date": 0,
+            "colour_out_of_date": 0,
+        }
 
     def test_remake_the_ones_that_differ(
         self,

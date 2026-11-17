@@ -15,9 +15,10 @@ const WHILE_REMAKING_MS = 10_000;
 
 const copies = (n: number) => `${formatNumber(n)} review ${n === 1 ? 'copy' : 'copies'}`;
 
-/** The sentence about the copies that differ from the project's switch (C-RP-38). */
+/** The sentence about the copies that differ from the project's settings (C-RP-38; colour, RP-15). */
 export function outOfDateText(c: ReviewCopies): string {
   const verb = c.out_of_date === 1 ? 'was' : 'were';
+  if (c.colour_out_of_date > 0) return `${copies(c.out_of_date)} ${verb} made with other colour or burn-in settings than the project has now.`;
   return c.review_burn_ins
     ? `${copies(c.out_of_date)} ${verb} made without burn-ins; the project now adds them.`
     : `${copies(c.out_of_date)} ${verb} made with burn-ins; the project now leaves them off.`;
@@ -80,7 +81,7 @@ export const ReviewCopiesNotice: React.FC<{ project: Project }> = ({ project }) 
       )}
       {data.sequences_out_of_date > 0 && (
         <p>
-          {formatNumber(data.sequences_out_of_date)} image {data.sequences_out_of_date === 1 ? 'sequence was' : 'sequences were'} made with the other setting. A
+          {formatNumber(data.sequences_out_of_date)} image {data.sequences_out_of_date === 1 ? 'sequence was' : 'sequences were'} made with other settings. A
           sequence's frames are not kept, so upload its frames again to change it.
         </p>
       )}

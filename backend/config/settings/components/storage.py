@@ -69,6 +69,9 @@ REVIEW_MEDIA_SEQUENCE_MAX_BYTES = settings.review_media_sequence_max_bytes
 # The font file burn-ins are drawn in (copied into each job's folder, never put in a filter).
 REVIEW_MEDIA_BURN_IN_FONT = settings.review_media_burn_in_font
 
+# The OpenColorIO config review copies are made with (RP-15): an ``ocio://`` built-in or a file path.
+REVIEW_MEDIA_OCIO_CONFIG = settings.review_media_ocio_config
+
 # The programs the media worker runs (Debian's ffmpeg package in the image's `worker` target).
 REVIEW_MEDIA_FFMPEG = "ffmpeg"
 REVIEW_MEDIA_FFPROBE = "ffprobe"

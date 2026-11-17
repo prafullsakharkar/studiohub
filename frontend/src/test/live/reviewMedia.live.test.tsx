@@ -161,7 +161,8 @@ describe.skipIf(!live.media)('review movies against a live backend (SYNC_LIVE_ME
     expect([version.start_frame, version.end_frame]).toEqual([1001, 1008]);
     await openMedia(fixture.frames);
     await screen.findByText('640×360 · 24 fps · frames 1001–1008 · EXR', {}, { timeout: 20000 });
-    expect(screen.getByText('EXR shown as sRGB from linear light; not for colour approval')).toBeTruthy();
+    // RP-15: a new project's colour space is ACEScg, so the frames go through the studio's view
+    expect(screen.getByText('ACEScg → sRGB - Display, ACES 2.0 - SDR 100 nits (Rec.709)')).toBeTruthy();
     const video = (await screen.findByLabelText(`${fixture.framesCode} preview video`)) as HTMLVideoElement;
     expect(screen.getByLabelText('Current frame').textContent).toBe('1001');
     const proxy = await fetch(video.getAttribute('src') as string);

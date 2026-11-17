@@ -54,7 +54,8 @@ export type FieldDef = FieldGate &
     | { kind: 'checkbox'; name: string; label: string }
     /** A JSON document typed as text: validated on the form, sent parsed, shown pretty-printed. Blank sends an empty array or object. */
     | { kind: 'json'; name: string; label: string; shape: 'array' | 'object'; required?: boolean; hint?: string }
-    | { kind: 'entity'; name: string; label: string; required?: boolean; render: (props: EntityFieldRenderProps) => React.ReactNode }
+    /** A value chosen in a control of its own. Blank is sent as null, or as '' with `textValue` (a name from a list, RP-15's colour fields). */
+    | { kind: 'entity'; name: string; label: string; required?: boolean; textValue?: boolean; render: (props: EntityFieldRenderProps) => React.ReactNode }
     /** Several foreign keys. The form holds the ids joined by commas (ids hold none); the wire gets the list, and an edit sends it only when it changed. */
     | { kind: 'multi-entity'; name: string; label: string; required?: boolean; render: (props: MultiEntityFieldRenderProps) => React.ReactNode }
   );

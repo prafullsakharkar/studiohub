@@ -1,0 +1,1420 @@
+{
+  "colour_options": {
+    "body": {
+      "available": true,
+      "color_spaces": [
+        {
+          "aliases": [
+            "aces2065_1",
+            "aces",
+            "ACES - ACES2065-1",
+            "lin_ap0",
+            "lin_ap0_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "ACES",
+          "name": "ACES2065-1"
+        },
+        {
+          "aliases": [
+            "ACES - ACEScc",
+            "acescc_ap1",
+            "ocio:acescc_ap1_scene"
+          ],
+          "encoding": "log",
+          "family": "ACES",
+          "name": "ACEScc"
+        },
+        {
+          "aliases": [
+            "ACES - ACEScct",
+            "acescct_ap1",
+            "ocio:acescct_ap1_scene"
+          ],
+          "encoding": "log",
+          "family": "ACES",
+          "name": "ACEScct"
+        },
+        {
+          "aliases": [
+            "ACES - ACEScg",
+            "lin_ap1",
+            "lin_ap1_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "ACES",
+          "name": "ACEScg"
+        },
+        {
+          "aliases": [
+            "Input - ADX - ADX10",
+            "ocio:adx10_apd_scene"
+          ],
+          "encoding": "log",
+          "family": "ACES",
+          "name": "ADX10"
+        },
+        {
+          "aliases": [
+            "Input - ADX - ADX16",
+            "ocio:adx16_apd_scene"
+          ],
+          "encoding": "log",
+          "family": "ACES",
+          "name": "ADX16"
+        },
+        {
+          "aliases": [
+            "apple_log",
+            "ocio:applelog_rec2020_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/Apple",
+          "name": "Apple Log"
+        },
+        {
+          "aliases": [
+            "apple_log_2",
+            "ocio:applelog_applewg_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/Apple",
+          "name": "Apple Log 2"
+        },
+        {
+          "aliases": [
+            "lin_apple_wide_gamut",
+            "ocio:lin_applewg_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/Apple",
+          "name": "Linear Apple Wide Gamut"
+        },
+        {
+          "aliases": [
+            "arri_logc3_ei800",
+            "logc3ei800_alexawide",
+            "Input - ARRI - V3 LogC (EI800) - Wide Gamut",
+            "ocio:arrilogc3_awg3_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/ARRI",
+          "name": "ARRI LogC3 (EI800)"
+        },
+        {
+          "aliases": [
+            "lin_arri_wide_gamut_3",
+            "lin_alexawide",
+            "Input - ARRI - Linear - ALEXA Wide Gamut",
+            "ocio:lin_awg3_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/ARRI",
+          "name": "Linear ARRI Wide Gamut 3"
+        },
+        {
+          "aliases": [
+            "arri_logc4",
+            "ocio:arrilogc4_awg4_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/ARRI",
+          "name": "ARRI LogC4"
+        },
+        {
+          "aliases": [
+            "lin_arri_wide_gamut_4",
+            "lin_awg4",
+            "ocio:lin_awg4_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/ARRI",
+          "name": "Linear ARRI Wide Gamut 4"
+        },
+        {
+          "aliases": [
+            "bmdfilm_widegamut_gen5",
+            "ocio:bmdfilm5_wg5_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/BlackmagicDesign",
+          "name": "BMDFilm WideGamut Gen5"
+        },
+        {
+          "aliases": [
+            "lin_bmd_widegamut_gen5",
+            "ocio:lin_bmdwg5_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/BlackmagicDesign",
+          "name": "Linear BMD WideGamut Gen5"
+        },
+        {
+          "aliases": [
+            "davinci_intermediate_widegamut",
+            "ocio:davinci_dwg_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/BlackmagicDesign",
+          "name": "DaVinci Intermediate WideGamut"
+        },
+        {
+          "aliases": [
+            "lin_davinci_widegamut",
+            "ocio:lin_dwg_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/BlackmagicDesign",
+          "name": "Linear DaVinci WideGamut"
+        },
+        {
+          "aliases": [
+            "canonlog2_cinemagamut_d55",
+            "canonlog2_cgamutday",
+            "Input - Canon - Canon-Log2 - Cinema Gamut Daylight",
+            "ocio:canonlog2_cgamutd55_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/Canon",
+          "name": "CanonLog2 CinemaGamut D55"
+        },
+        {
+          "aliases": [
+            "lin_cinemagamut_d55",
+            "lin_canoncgamutday",
+            "Input - Canon - Linear - Canon Cinema Gamut Daylight",
+            "ocio:lin_cgamutd55_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/Canon",
+          "name": "Linear CinemaGamut D55"
+        },
+        {
+          "aliases": [
+            "canonlog3_cinemagamut_d55",
+            "canonlog3_cgamutday",
+            "Input - Canon - Canon-Log3 - Cinema Gamut Daylight",
+            "ocio:canonlog3_cgamutd55_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/Canon",
+          "name": "CanonLog3 CinemaGamut D55"
+        },
+        {
+          "aliases": [
+            "dlog_dgamut",
+            "ocio:djilog_dgamut_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/DJI",
+          "name": "D-Log D-Gamut"
+        },
+        {
+          "aliases": [
+            "lin_dgamut",
+            "ocio:lin_dgamut_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/DJI",
+          "name": "Linear D-Gamut"
+        },
+        {
+          "aliases": [
+            "vlog_vgamut",
+            "Input - Panasonic - V-Log - V-Gamut",
+            "ocio:vlog_vgamut_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/Panasonic",
+          "name": "V-Log V-Gamut"
+        },
+        {
+          "aliases": [
+            "lin_vgamut",
+            "Input - Panasonic - Linear - V-Gamut",
+            "ocio:lin_vgamut_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/Panasonic",
+          "name": "Linear V-Gamut"
+        },
+        {
+          "aliases": [
+            "log3g10_redwidegamutrgb",
+            "rl3g10_rwg",
+            "Input - RED - REDLog3G10 - REDWideGamutRGB",
+            "ocio:redlog3g10_rwg_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/RED",
+          "name": "Log3G10 REDWideGamutRGB"
+        },
+        {
+          "aliases": [
+            "lin_redwidegamutrgb",
+            "lin_rwg",
+            "Input - RED - Linear - REDWideGamutRGB",
+            "ocio:lin_rwg_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/RED",
+          "name": "Linear REDWideGamutRGB"
+        },
+        {
+          "aliases": [
+            "slog3_sgamut3",
+            "Input - Sony - S-Log3 - S-Gamut3",
+            "ocio:slog3_sgamut3_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/Sony",
+          "name": "S-Log3 S-Gamut3"
+        },
+        {
+          "aliases": [
+            "slog3_sgamut3cine",
+            "slog3_sgamutcine",
+            "Input - Sony - S-Log3 - S-Gamut3.Cine",
+            "ocio:slog3_sgamut3cine_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/Sony",
+          "name": "S-Log3 S-Gamut3.Cine"
+        },
+        {
+          "aliases": [
+            "slog3_venice_sgamut3",
+            "Input - Sony - S-Log3 - Venice S-Gamut3",
+            "ocio:slog3_sgamut3venice_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/Sony/Legacy",
+          "name": "S-Log3 Venice S-Gamut3"
+        },
+        {
+          "aliases": [
+            "slog3_venice_sgamut3cine",
+            "slog3_venice_sgamutcine",
+            "Input - Sony - S-Log3 - Venice S-Gamut3.Cine",
+            "ocio:slog3_sgamut3cinevenice_scene"
+          ],
+          "encoding": "log",
+          "family": "Input/Sony/Legacy",
+          "name": "S-Log3 Venice S-Gamut3.Cine"
+        },
+        {
+          "aliases": [
+            "lin_sgamut3",
+            "Input - Sony - Linear - S-Gamut3",
+            "ocio:lin_sgamut3_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/Sony",
+          "name": "Linear S-Gamut3"
+        },
+        {
+          "aliases": [
+            "lin_sgamut3cine",
+            "Input - Sony - Linear - S-Gamut3.Cine",
+            "ocio:lin_sgamut3cine_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/Sony",
+          "name": "Linear S-Gamut3.Cine"
+        },
+        {
+          "aliases": [
+            "lin_venice_sgamut3",
+            "Input - Sony - Linear - Venice S-Gamut3",
+            "ocio:lin_sgamut3venice_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/Sony/Legacy",
+          "name": "Linear Venice S-Gamut3"
+        },
+        {
+          "aliases": [
+            "lin_venice_sgamut3cine",
+            "Input - Sony - Linear - Venice S-Gamut3.Cine",
+            "ocio:lin_sgamut3cinevenice_scene"
+          ],
+          "encoding": "scene-linear",
+          "family": "Input/Sony/Legacy",
+          "name": "Linear Venice S-Gamut3.Cine"
+        },
+        {
+          "aliases": [
+            "srgb_encoded_rec709_srgb",
+            "srgb_texture",
+            "srgb_rec709_scene",
+            "Utility - sRGB - Texture",
+            "Input - Generic - sRGB - Texture",
+            "sRGB - Texture",
+            "srgb_tx"
+          ],
+          "encoding": "sdr-video",
+          "family": "Utility",
+          "name": "sRGB Encoded Rec.709 (sRGB)"
+        },
+        {
+          "aliases": [
+            "g18_encoded_rec709",
+            "g18_rec709",
+            "Utility - Gamma 1.8 - Rec.709 - Texture",
+            "Gamma 1.8 Rec.709 - Texture",
+            "g18_rec709_tx",
+            "g18_rec709_scene"
+          ],
+          "encoding": "sdr-video",
+          "family": "Utility",
+          "name": "Gamma 1.8 Encoded Rec.709"
+        },
+        {
+          "aliases": [
+            "g22_encoded_rec709",
+            "g22_rec709",
+            "Utility - Gamma 2.2 - Rec.709 - Texture",
+            "Gamma 2.2 Rec.709 - Texture",
+            "g22_rec709_tx",
+            "g22_rec709_scene"
+          ],
+          "encoding": "sdr-video",
+          "family": "Utility",
+          "name": "Gamma 2.2 Encoded Rec.709"
+        },
+        {
+          "aliases": [
+            "g24_encoded_rec709",
+            "g24_rec709",
+            "rec709_display",
+            "Utility - Rec.709 - Display",
+            "Gamma 2.4 Rec.709 - Texture",
+            "g24_rec709_tx",
+            "ocio:g24_rec709_scene",
+            "g24_rec709_scene"
+          ],
+          "encoding": "sdr-video",
+          "family": "Utility",
+          "name": "Gamma 2.4 Encoded Rec.709"
+        },
+        {
+          "aliases": [
+            "camera_rec709",
+            "rec709_camera",
+            "Utility - Rec.709 - Camera",
+            "ocio:itu709_rec709_scene"
+          ],
+          "encoding": "sdr-video",
+          "family": "Utility/ITU",
+          "name": "Camera Rec.709"
+        },
+        {
+          "aliases": [
+            "srgb_encoded_p3d65",
+            "srgb_p3d65",
+            "srgb_displayp3",
+            "srgb_p3d65_scene",
+            "sRGB Encoded P3-D65 - Texture",
+            "srgb_encoded_p3d65_tx"
+          ],
+          "encoding": "sdr-video",
+          "family": "Utility",
+          "name": "sRGB Encoded P3-D65"
+        },
+        {
+          "aliases": [
+            "g22_encoded_adobergb",
+            "adobergb",
+            "g22_adobergb_scene"
+          ],
+          "encoding": "sdr-video",
+          "family": "Utility",
+          "name": "Gamma 2.2 Encoded AdobeRGB"
+        },
+        {
+          "aliases": [
+            "srgb_encoded_ap1",
+            "srgb_ap1",
+            "srgb_ap1_scene",
+            "sRGB Encoded AP1 - Texture",
+            "srgb_encoded_ap1_tx"
+          ],
+          "encoding": "sdr-video",
+          "family": "Utility",
+          "name": "sRGB Encoded AP1"
+        },
+        {
+          "aliases": [
+            "g22_encoded_ap1",
+            "g22_ap1",
+            "Gamma 2.2 AP1 - Texture",
+            "g22_ap1_tx",
+            "g22_ap1_scene"
+          ],
+          "encoding": "sdr-video",
+          "family": "Utility",
+          "name": "Gamma 2.2 Encoded AP1"
+        },
+        {
+          "aliases": [
+            "lin_adobergb",
+            "lin_adobergb_scene",
+            "Utility - Linear - Adobe RGB"
+          ],
+          "encoding": "scene-linear",
+          "family": "Utility",
+          "name": "Linear AdobeRGB"
+        },
+        {
+          "aliases": [
+            "lin_p3d65",
+            "lin_displayp3",
+            "lin_p3d65_scene",
+            "Utility - Linear - P3-D65",
+            "Linear Display P3"
+          ],
+          "encoding": "scene-linear",
+          "family": "Utility",
+          "name": "Linear P3-D65"
+        },
+        {
+          "aliases": [
+            "lin_rec2020",
+            "lin_rec2020_scene",
+            "Utility - Linear - Rec.2020"
+          ],
+          "encoding": "scene-linear",
+          "family": "Utility",
+          "name": "Linear Rec.2020"
+        },
+        {
+          "aliases": [
+            "lin_rec709_srgb",
+            "lin_rec709",
+            "lin_rec709_scene",
+            "lin_srgb",
+            "Utility - Linear - sRGB",
+            "Utility - Linear - Rec.709"
+          ],
+          "encoding": "scene-linear",
+          "family": "Utility",
+          "name": "Linear Rec.709 (sRGB)"
+        }
+      ],
+      "config": "studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+      "default_view": "ACES 2.0 - SDR 100 nits (Rec.709)",
+      "display": "sRGB - Display",
+      "looks": [
+        "ACES 1.3 Reference Gamut Compression"
+      ],
+      "views": [
+        "ACES 2.0 - SDR 100 nits (Rec.709)",
+        "Un-tone-mapped",
+        "Video (colorimetric)",
+        "Raw"
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/review-media/colour/"
+    },
+    "status": 200
+  },
+  "colour_options_unavailable": {
+    "body": {
+      "available": false,
+      "color_spaces": [],
+      "config": null,
+      "default_view": null,
+      "display": null,
+      "looks": [],
+      "views": []
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/review-media/colour/"
+    },
+    "status": 200
+  },
+  "copies_after_remake": {
+    "body": {
+      "colour_out_of_date": 1,
+      "out_of_date": 0,
+      "review_burn_ins": false,
+      "sequences_out_of_date": 1
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/5595f2f8-b245-48b2-8335-2cabcdea5313/review-copies/"
+    },
+    "status": 200
+  },
+  "copies_matching": {
+    "body": {
+      "colour_out_of_date": 0,
+      "out_of_date": 0,
+      "review_burn_ins": false,
+      "sequences_out_of_date": 0
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/5595f2f8-b245-48b2-8335-2cabcdea5313/review-copies/"
+    },
+    "status": 200
+  },
+  "copies_other_view": {
+    "body": {
+      "colour_out_of_date": 2,
+      "out_of_date": 1,
+      "review_burn_ins": false,
+      "sequences_out_of_date": 1
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/5595f2f8-b245-48b2-8335-2cabcdea5313/review-copies/"
+    },
+    "status": 200
+  },
+  "ids": {
+    "first": "6a5a2f34-6d29-44cb-9253-41514700e4d2",
+    "named": "8de29ecb-5f38-4aca-ad38-d87809eeda94",
+    "plain": "59e986aa-bf00-417d-b91b-27ace2b2e24c",
+    "project": "5595f2f8-b245-48b2-8335-2cabcdea5313",
+    "second": "3a77065e-5f60-4d66-bda3-c252d3f328e9",
+    "sequence": "f0345408-8818-41c0-995f-b68b4ea38481",
+    "third": "a790f081-2764-448b-844a-1d2624af15ea"
+  },
+  "movie_bad_colour_400": {
+    "body": {
+      "color_space": [
+        "The studio's colour config has no colour space named 'Kodak 2383'."
+      ],
+      "error": {
+        "code": "validation_error"
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "color_space": "Kodak 2383",
+        "file": "log.mp4"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/versions/3a77065e-5f60-4d66-bda3-c252d3f328e9/review-media/"
+    },
+    "status": 400
+  },
+  "movie_named_202": {
+    "body": {
+      "attempts": 0,
+      "color_space": "ACEScct",
+      "created_by": {
+        "id": "b7d46e31-deb6-453f-943f-d6cbab4ef708",
+        "name": "user@example.test"
+      },
+      "error_code": "",
+      "error_message": "",
+      "filmstrip_tiles": 0,
+      "filmstrip_url": null,
+      "finished_at": null,
+      "id": "8de29ecb-5f38-4aca-ad38-d87809eeda94",
+      "kind": "movie",
+      "links_expire_at": null,
+      "probe": null,
+      "proxy_url": null,
+      "queued_at": "2026-11-17T07:12:08.405838Z",
+      "remake_of": null,
+      "sequence": null,
+      "source_name": "log.mp4",
+      "source_size": 90524,
+      "started_at": null,
+      "status": "queued",
+      "thumbnail_url": null,
+      "version_id": "3a77065e-5f60-4d66-bda3-c252d3f328e9"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "color_space": "acescct_ap1",
+        "file": "log.mp4"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/versions/3a77065e-5f60-4d66-bda3-c252d3f328e9/review-media/"
+    },
+    "status": 202
+  },
+  "project_alias_200": {
+    "body": {
+      "approve_task_on_version_approval": false,
+      "aspect_ratio": "2.39:1",
+      "budget_usd": "0.00",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "client_id": "",
+      "client_name": "",
+      "code": "RPC",
+      "color_space": "ACEScg",
+      "coordinator": null,
+      "delivery_date": null,
+      "description": "",
+      "fps": "24.000",
+      "name": "Review colour",
+      "resolution": "4096x2160 (4K DCI)",
+      "review_burn_ins": false,
+      "review_look": "",
+      "review_view": "",
+      "start_date": null,
+      "status": "In Progress",
+      "supervisor": null,
+      "thumbnail_url": "",
+      "type": "Feature Film",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": []
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "color_space": "lin_ap1"
+      },
+      "method": "PATCH",
+      "params": null,
+      "path": "/api/v1/projects/5595f2f8-b245-48b2-8335-2cabcdea5313/"
+    },
+    "status": 200
+  },
+  "project_bad_400": {
+    "body": {
+      "color_space": [
+        "The studio's colour config has no colour space named 'ACEScg 1.3'."
+      ],
+      "error": {
+        "code": "validation_error"
+      },
+      "review_look": [
+        "The studio's colour config has no look named 'Warm'."
+      ],
+      "review_view": [
+        "The studio's colour config has no view named 'Cinema' for sRGB - Display."
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "color_space": "ACEScg 1.3",
+        "review_look": "Warm",
+        "review_view": "Cinema"
+      },
+      "method": "PATCH",
+      "params": null,
+      "path": "/api/v1/projects/5595f2f8-b245-48b2-8335-2cabcdea5313/"
+    },
+    "status": 400
+  },
+  "project_default": {
+    "body": {
+      "approve_task_on_version_approval": false,
+      "approved_shots": 0,
+      "aspect_ratio": "2.39:1",
+      "budget_usd": "0.00",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "client_id": "",
+      "client_name": "",
+      "code": "RPC",
+      "color_space": "ACEScg",
+      "coordinator_id": null,
+      "coordinator_name": "",
+      "created_at": "2026-11-17T07:12:04.264631Z",
+      "delivery_date": null,
+      "description": "",
+      "fps": "24.000",
+      "id": "5595f2f8-b245-48b2-8335-2cabcdea5313",
+      "in_progress_shots": 0,
+      "name": "Review colour",
+      "project_code": "RPC",
+      "resolution": "4096x2160 (4K DCI)",
+      "review_burn_ins": false,
+      "review_look": "",
+      "review_view": "",
+      "start_date": null,
+      "status": "In Progress",
+      "supervisor_id": null,
+      "supervisor_name": "",
+      "thumbnail_url": "",
+      "total_assets": 0,
+      "total_shots": 0,
+      "type": "Feature Film",
+      "updated_at": "2026-11-17T07:12:04.264640Z",
+      "uuid": "5595f2f8-b245-48b2-8335-2cabcdea5313",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": [],
+      "workflow_type": "standard"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/5595f2f8-b245-48b2-8335-2cabcdea5313/"
+    },
+    "status": 200
+  },
+  "project_unavailable_400": {
+    "body": {
+      "error": {
+        "code": "validation_error"
+      },
+      "review_view": [
+        "The studio's colour config cannot be read, so colour settings cannot be changed now."
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "review_view": "Raw"
+      },
+      "method": "PATCH",
+      "params": null,
+      "path": "/api/v1/projects/5595f2f8-b245-48b2-8335-2cabcdea5313/"
+    },
+    "status": 400
+  },
+  "project_view_200": {
+    "body": {
+      "approve_task_on_version_approval": false,
+      "aspect_ratio": "2.39:1",
+      "budget_usd": "0.00",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "client_id": "",
+      "client_name": "",
+      "code": "RPC",
+      "color_space": "ACEScg",
+      "coordinator": null,
+      "delivery_date": null,
+      "description": "",
+      "fps": "24.000",
+      "name": "Review colour",
+      "resolution": "4096x2160 (4K DCI)",
+      "review_burn_ins": false,
+      "review_look": "",
+      "review_view": "Un-tone-mapped",
+      "start_date": null,
+      "status": "In Progress",
+      "supervisor": null,
+      "thumbnail_url": "",
+      "type": "Feature Film",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": []
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "review_look": "",
+        "review_view": "un-tone-mapped"
+      },
+      "method": "PATCH",
+      "params": null,
+      "path": "/api/v1/projects/5595f2f8-b245-48b2-8335-2cabcdea5313/"
+    },
+    "status": 200
+  },
+  "remake_all_200": {
+    "body": {
+      "queued": 1,
+      "skipped_busy": 0,
+      "skipped_missing": 0,
+      "skipped_sequence": 1
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/5595f2f8-b245-48b2-8335-2cabcdea5313/review-copies/remake/"
+    },
+    "status": 200
+  },
+  "sequence_bad_colour_400": {
+    "body": {
+      "color_space": [
+        "The studio's colour config has no colour space named 'Kodak 2383'."
+      ],
+      "error": {
+        "code": "validation_error"
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "color_space": "Kodak 2383",
+        "extension": "exr",
+        "first_frame": 1001,
+        "last_frame": 1004,
+        "name": "rpc_comp"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/versions/6a5a2f34-6d29-44cb-9253-41514700e4d2/review-media/sequence/"
+    },
+    "status": 400
+  },
+  "version_movie_as_stored": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPC_SH0030_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-17T07:12:05.253154Z",
+      "department": "",
+      "end_frame": 1004,
+      "entity_code": "RPC_SH0030",
+      "entity_id": "84cdc7b3-ec71-49cc-868f-e23f2422dbfc",
+      "entity_name": "Shot 3",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "a790f081-2764-448b-844a-1d2624af15ea",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPC",
+      "project_id": "5595f2f8-b245-48b2-8335-2cabcdea5313",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "",
+        "created_by": {
+          "id": "b7d46e31-deb6-453f-943f-d6cbab4ef708",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 24,
+        "filmstrip_url": "/api/v1/review-media/59e986aa-bf00-417d-b91b-27ace2b2e24c/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-17T07:12:12.519033Z",
+        "id": "59e986aa-bf00-417d-b91b-27ace2b2e24c",
+        "kind": "movie",
+        "links_expire_at": "2026-11-17T08:12:12.579016Z",
+        "probe": {
+          "burn_ins": false,
+          "colour": "as_stored",
+          "colour_skipped": null,
+          "duration_seconds": 1.0,
+          "first_frame": null,
+          "fps": 24.0,
+          "frames": 24,
+          "has_audio": false,
+          "height": 360,
+          "last_frame": null,
+          "ocio": null,
+          "video_codec": "h264",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/59e986aa-bf00-417d-b91b-27ace2b2e24c/proxy/?token=SAMPLE",
+        "queued_at": "2026-11-17T07:12:11.472734Z",
+        "remake_of": null,
+        "sequence": null,
+        "source_name": "plain.mp4",
+        "source_size": 90524,
+        "started_at": "2026-11-17T07:12:11.485572Z",
+        "status": "ready",
+        "thumbnail_url": "/api/v1/review-media/59e986aa-bf00-417d-b91b-27ace2b2e24c/thumbnail/?token=SAMPLE",
+        "version_id": "a790f081-2764-448b-844a-1d2624af15ea"
+      },
+      "review_media_job": null,
+      "shot_id": "84cdc7b3-ec71-49cc-868f-e23f2422dbfc",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "4ff3f37e-db72-4c1b-9a16-47a5f02a5fd5",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-17T07:12:05.253161Z",
+      "uuid": "a790f081-2764-448b-844a-1d2624af15ea",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/a790f081-2764-448b-844a-1d2624af15ea/"
+    },
+    "status": 200
+  },
+  "version_movie_ocio": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPC_SH0020_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-17T07:12:05.205852Z",
+      "department": "",
+      "end_frame": 1004,
+      "entity_code": "RPC_SH0020",
+      "entity_id": "391e951c-7b2e-4cf5-9208-0a928a1cf4ac",
+      "entity_name": "Shot 2",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "3a77065e-5f60-4d66-bda3-c252d3f328e9",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPC",
+      "project_id": "5595f2f8-b245-48b2-8335-2cabcdea5313",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "ACEScct",
+        "created_by": {
+          "id": "b7d46e31-deb6-453f-943f-d6cbab4ef708",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 24,
+        "filmstrip_url": "/api/v1/review-media/8de29ecb-5f38-4aca-ad38-d87809eeda94/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-17T07:12:11.371044Z",
+        "id": "8de29ecb-5f38-4aca-ad38-d87809eeda94",
+        "kind": "movie",
+        "links_expire_at": "2026-11-17T08:12:11.432988Z",
+        "probe": {
+          "burn_ins": false,
+          "colour": "ocio",
+          "colour_skipped": null,
+          "duration_seconds": 1.0,
+          "first_frame": null,
+          "fps": 24.0,
+          "frames": 24,
+          "has_audio": false,
+          "height": 360,
+          "last_frame": null,
+          "ocio": {
+            "config": "studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+            "display": "sRGB - Display",
+            "input": "ACEScct",
+            "look": "",
+            "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
+          },
+          "video_codec": "h264",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/8de29ecb-5f38-4aca-ad38-d87809eeda94/proxy/?token=SAMPLE",
+        "queued_at": "2026-11-17T07:12:08.405838Z",
+        "remake_of": null,
+        "sequence": null,
+        "source_name": "log.mp4",
+        "source_size": 90524,
+        "started_at": "2026-11-17T07:12:08.419104Z",
+        "status": "ready",
+        "thumbnail_url": "/api/v1/review-media/8de29ecb-5f38-4aca-ad38-d87809eeda94/thumbnail/?token=SAMPLE",
+        "version_id": "3a77065e-5f60-4d66-bda3-c252d3f328e9"
+      },
+      "review_media_job": null,
+      "shot_id": "391e951c-7b2e-4cf5-9208-0a928a1cf4ac",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "2d63f359-2fba-417f-b96e-e8928a6f467e",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-17T07:12:05.205859Z",
+      "uuid": "3a77065e-5f60-4d66-bda3-c252d3f328e9",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/3a77065e-5f60-4d66-bda3-c252d3f328e9/"
+    },
+    "status": 200
+  },
+  "version_movie_remade": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPC_SH0020_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-17T07:12:05.205852Z",
+      "department": "",
+      "end_frame": 1004,
+      "entity_code": "RPC_SH0020",
+      "entity_id": "391e951c-7b2e-4cf5-9208-0a928a1cf4ac",
+      "entity_name": "Shot 2",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "3a77065e-5f60-4d66-bda3-c252d3f328e9",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPC",
+      "project_id": "5595f2f8-b245-48b2-8335-2cabcdea5313",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "ACEScct",
+        "created_by": {
+          "id": "b7d46e31-deb6-453f-943f-d6cbab4ef708",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 24,
+        "filmstrip_url": "/api/v1/review-media/88072356-3103-411b-9866-8e97c7f2cefd/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-17T07:12:16.004313Z",
+        "id": "88072356-3103-411b-9866-8e97c7f2cefd",
+        "kind": "movie",
+        "links_expire_at": "2026-11-17T08:12:16.091045Z",
+        "probe": {
+          "burn_ins": false,
+          "colour": "ocio",
+          "colour_skipped": null,
+          "duration_seconds": 1.0,
+          "first_frame": null,
+          "fps": 24.0,
+          "frames": 24,
+          "has_audio": false,
+          "height": 360,
+          "last_frame": null,
+          "ocio": {
+            "config": "studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+            "display": "sRGB - Display",
+            "input": "ACEScct",
+            "look": "",
+            "view": "Un-tone-mapped"
+          },
+          "video_codec": "h264",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/88072356-3103-411b-9866-8e97c7f2cefd/proxy/?token=SAMPLE",
+        "queued_at": "2026-11-17T07:12:12.706818Z",
+        "remake_of": "8de29ecb-5f38-4aca-ad38-d87809eeda94",
+        "sequence": null,
+        "source_name": "log.mp4",
+        "source_size": 90524,
+        "started_at": "2026-11-17T07:12:12.716072Z",
+        "status": "ready",
+        "thumbnail_url": "/api/v1/review-media/88072356-3103-411b-9866-8e97c7f2cefd/thumbnail/?token=SAMPLE",
+        "version_id": "3a77065e-5f60-4d66-bda3-c252d3f328e9"
+      },
+      "review_media_job": null,
+      "shot_id": "391e951c-7b2e-4cf5-9208-0a928a1cf4ac",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "2d63f359-2fba-417f-b96e-e8928a6f467e",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-17T07:12:05.205859Z",
+      "uuid": "3a77065e-5f60-4d66-bda3-c252d3f328e9",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/3a77065e-5f60-4d66-bda3-c252d3f328e9/"
+    },
+    "status": 200
+  },
+  "version_sequence_ocio": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPC_SH0010_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-17T07:12:05.153674Z",
+      "department": "",
+      "end_frame": 1004,
+      "entity_code": "RPC_SH0010",
+      "entity_id": "22f5cc2d-fdcb-4d12-88dc-6468bc861a2b",
+      "entity_name": "Shot 1",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "6a5a2f34-6d29-44cb-9253-41514700e4d2",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPC",
+      "project_id": "5595f2f8-b245-48b2-8335-2cabcdea5313",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "",
+        "created_by": {
+          "id": "b7d46e31-deb6-453f-943f-d6cbab4ef708",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 4,
+        "filmstrip_url": "/api/v1/review-media/f0345408-8818-41c0-995f-b68b4ea38481/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-17T07:12:08.165808Z",
+        "id": "f0345408-8818-41c0-995f-b68b4ea38481",
+        "kind": "sequence",
+        "links_expire_at": "2026-11-17T08:12:08.347467Z",
+        "probe": {
+          "burn_ins": false,
+          "colour": "ocio",
+          "colour_skipped": null,
+          "duration_seconds": 0.167,
+          "first_frame": 1001,
+          "fps": 24.0,
+          "frames": 4,
+          "has_audio": false,
+          "height": 360,
+          "last_frame": 1004,
+          "ocio": {
+            "config": "studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+            "display": "sRGB - Display",
+            "input": "ACEScg",
+            "look": "",
+            "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
+          },
+          "video_codec": "exr",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/f0345408-8818-41c0-995f-b68b4ea38481/proxy/?token=SAMPLE",
+        "queued_at": "2026-11-17T07:12:05.392118Z",
+        "remake_of": null,
+        "sequence": {
+          "extension": "exr",
+          "first_frame": 1001,
+          "frames_received": 4,
+          "last_frame": 1004,
+          "name": "rpc_comp"
+        },
+        "source_name": "rpc_comp.[1001-1004].exr",
+        "source_size": 11083808,
+        "started_at": "2026-11-17T07:12:05.403665Z",
+        "status": "ready",
+        "thumbnail_url": "/api/v1/review-media/f0345408-8818-41c0-995f-b68b4ea38481/thumbnail/?token=SAMPLE",
+        "version_id": "6a5a2f34-6d29-44cb-9253-41514700e4d2"
+      },
+      "review_media_job": null,
+      "shot_id": "22f5cc2d-fdcb-4d12-88dc-6468bc861a2b",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "eac94fb6-5c70-4b28-8e93-2e8b05724394",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-17T07:12:05.153683Z",
+      "uuid": "6a5a2f34-6d29-44cb-9253-41514700e4d2",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/6a5a2f34-6d29-44cb-9253-41514700e4d2/"
+    },
+    "status": 200
+  },
+  "version_sequence_unmanaged": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPC_SH0040_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-17T07:12:16.354557Z",
+      "department": "",
+      "end_frame": 1004,
+      "entity_code": "RPC_SH0040",
+      "entity_id": "34f09a17-bbba-4ef6-b8ec-b14570245560",
+      "entity_name": "Shot 4",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "3ba45bac-bf0c-4cd1-8241-30c47adbda21",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPC",
+      "project_id": "5595f2f8-b245-48b2-8335-2cabcdea5313",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "",
+        "created_by": {
+          "id": "b7d46e31-deb6-453f-943f-d6cbab4ef708",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 4,
+        "filmstrip_url": "/api/v1/review-media/e941e2a5-85c4-4fb2-949e-4d14cd489e64/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-17T07:12:17.412024Z",
+        "id": "e941e2a5-85c4-4fb2-949e-4d14cd489e64",
+        "kind": "sequence",
+        "links_expire_at": "2026-11-17T08:12:17.467335Z",
+        "probe": {
+          "burn_ins": false,
+          "colour": "srgb_from_linear",
+          "colour_skipped": "colour_config_unavailable",
+          "duration_seconds": 0.167,
+          "first_frame": 1001,
+          "fps": 24.0,
+          "frames": 4,
+          "has_audio": false,
+          "height": 360,
+          "last_frame": 1004,
+          "ocio": null,
+          "video_codec": "exr",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/e941e2a5-85c4-4fb2-949e-4d14cd489e64/proxy/?token=SAMPLE",
+        "queued_at": "2026-11-17T07:12:16.461221Z",
+        "remake_of": null,
+        "sequence": {
+          "extension": "exr",
+          "first_frame": 1001,
+          "frames_received": 4,
+          "last_frame": 1004,
+          "name": "rpc_comp"
+        },
+        "source_name": "rpc_comp.[1001-1004].exr",
+        "source_size": 11083808,
+        "started_at": "2026-11-17T07:12:16.470255Z",
+        "status": "ready",
+        "thumbnail_url": "/api/v1/review-media/e941e2a5-85c4-4fb2-949e-4d14cd489e64/thumbnail/?token=SAMPLE",
+        "version_id": "3ba45bac-bf0c-4cd1-8241-30c47adbda21"
+      },
+      "review_media_job": null,
+      "shot_id": "34f09a17-bbba-4ef6-b8ec-b14570245560",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "07714b83-778b-43ac-bc67-891400576885",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-17T07:12:16.354566Z",
+      "uuid": "3ba45bac-bf0c-4cd1-8241-30c47adbda21",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/3ba45bac-bf0c-4cd1-8241-30c47adbda21/"
+    },
+    "status": 200
+  }
+}

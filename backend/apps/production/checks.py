@@ -1,5 +1,5 @@
 """
-Deployment checks of the production app (``manage.py check --deploy``).
+Checks of the production app: deployment (``manage.py check --deploy``) and the colour config.
 """
 
 from __future__ import annotations
@@ -27,3 +27,27 @@ def review_media_needs_nginx_ranges(app_configs, **kwargs):
             id="production.W001",
         )
     ]
+
+
+@register()
+def review_media_colour_config(app_configs, **kwargs):
+    """
+    The OpenColorIO config review copies are made with must load (review-pipeline RP-15, ADR-0041).
+    Without it copies are made as before RP-15 and colour settings cannot be changed.
+    """
+
+    if not getattr(settings, "REVIEW_MEDIA_ENABLED", False):
+        return []
+    from apps.production.transcode import colour
+
+    try:
+        colour.config()
+    except colour.ColourUnavailable as error:
+        return [
+            Warning(
+                f"REVIEW_MEDIA_OCIO_CONFIG cannot be loaded: {error}",
+                hint="Name a built-in config (ocio://...) or a config.ocio the web and media worker can read.",
+                id="production.W002",
+            )
+        ]
+    return []

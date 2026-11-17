@@ -13,6 +13,7 @@ link to the kept upload of the ready copy it remakes, so superseding that copy l
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import os
 import shutil
@@ -34,11 +35,12 @@ from apps.audit.models import AuditLog
 from apps.core.events import default_event_bus
 from apps.production.events.review_media import ReviewMediaFinished
 from apps.production.exceptions import ReviewMediaBusy, ReviewMediaDisabled
-from apps.production.models import ReviewMedia, Version
+from apps.production.models import Project, ReviewMedia, Version
 from apps.production.selectors.review_media import ReviewMediaSelector
-from apps.production.transcode import detect
+from apps.production.transcode import colour, detect
 from apps.production.transcode import ffmpeg as commands
 from apps.production.transcode import sequence as frames
+from apps.production.validators.colour import validate_upload_colour
 
 logger = structlog.get_logger(__name__)
 
@@ -53,6 +55,8 @@ STALE_QUEUED = timedelta(hours=24)
 STALE_UPLOADING = timedelta(hours=24)
 #: the whole job's budget, shared by its commands (the task's soft limit is a little longer)
 JOB_BUDGET_SECONDS = commands.TRANSCODE_TIMEOUT_SECONDS
+#: baked colour LUTs, under the review media folder (RP-15): one per transform, shared by jobs
+LUT_FOLDER = "luts"
 
 _CHUNK = 1024 * 1024
 _LOG_TAIL = 2000
@@ -224,9 +228,12 @@ class ReviewMediaService:
     # ------------------------------------------------------------------ request side
 
     @classmethod
-    def upload(cls, *, actor: Any, version: Version, upload: Any) -> ReviewMedia:
-        """Store ``upload`` for ``version`` and queue its job after commit (C-RP-19)."""
+    def upload(
+        cls, *, actor: Any, version: Version, upload: Any, color_space: str = ""
+    ) -> ReviewMedia:
+        """Store ``upload`` for ``version`` and queue its job after commit (C-RP-19; C-RP-40)."""
         _require_enabled()
+        color_space = validate_upload_colour(color_space)
         container = _check_upload(upload)
         extension = detect.extension_of(str(upload.name))
         folder: str | None = None
@@ -245,6 +252,7 @@ class ReviewMediaService:
                     status=Status.QUEUED,
                     source_name=str(upload.name).rsplit("/", 1)[-1][:255],
                     source_container=container.key,
+                    color_space=color_space,
                     queued_at=timezone.now(),
                     created_by=actor if getattr(actor, "pk", None) else None,
                 )
@@ -406,6 +414,7 @@ class ReviewMediaService:
                     source_size=row.source_size,
                     source_sha256=row.source_sha256,
                     source_container=row.source_container,
+                    color_space=row.color_space,
                     queued_at=now,
                     created_by=actor if getattr(actor, "pk", None) else None,
                     remake_of=row,
@@ -458,6 +467,7 @@ class ReviewMediaService:
         extension: str,
         first_frame: int,
         last_frame: int,
+        color_space: str = "",
     ) -> ReviewMedia:
         """Open a sequence upload: an ``uploading`` row that takes frames in parts."""
         _require_enabled()
@@ -479,6 +489,10 @@ class ReviewMediaService:
                 errors["last_frame"] = [
                     f"A sequence has at most {settings.REVIEW_MEDIA_MAX_FRAMES} frames."
                 ]
+        try:
+            color_space = validate_upload_colour(color_space)
+        except ValidationError as error:
+            errors.update(error.detail)  # pyright: ignore[reportCallIssue, reportArgumentType]
         if errors:
             raise ValidationError(errors)
         frame_format = frames.format_for(extension)
@@ -499,6 +513,7 @@ class ReviewMediaService:
                     source_container=frame_format.key,
                     sequence_name=name,
                     sequence_extension=extension,
+                    color_space=color_space,
                     first_frame=first_frame,
                     last_frame=last_frame,
                     queued_at=timezone.now(),
@@ -819,11 +834,16 @@ class ReviewMediaService:
             )
             raise _Failed(Code.UNSUPPORTED_STREAM)
 
-        linear = isinstance(source, commands.SequenceInput) and source.linear
+        target, skipped = cls._prepare_colour(media, work)
+        if target is not None:
+            source = dataclasses.replace(source, colour=True)
+        linear = isinstance(source, commands.SequenceInput) and source.linear and not source.colour
         extra: dict[str, Any] = {
             "first_frame": media.first_frame if media.kind == ReviewMedia.Kind.SEQUENCE else None,
             "last_frame": media.last_frame if media.kind == ReviewMedia.Kind.SEQUENCE else None,
-            "colour": "srgb_from_linear" if linear else "as_stored",
+            "colour": "ocio" if target else ("srgb_from_linear" if linear else "as_stored"),
+            "ocio": target.as_json() if target else None,
+            "colour_skipped": skipped,
             "burn_ins": cls._prepare_burn_in(media, work),
         }
 
@@ -860,6 +880,37 @@ class ReviewMediaService:
                 )
                 raise _Failed(Code.TRANSCODE_FAILED)
         return probe, made, extra
+
+    @staticmethod
+    def _prepare_colour(media: ReviewMedia, work: Path) -> tuple[colour.Target | None, str | None]:
+        """Put the copy's LUT into ``work`` (C-RP-40); its transform, or ``None`` and why not.
+
+        A colour space the config does not know, or a config that cannot be read, leaves the copy
+        made as before RP-15 (logged and recorded in ``colour_skipped``), rather than without a copy.
+        """
+        project = Project.objects.only("color_space", "review_view", "review_look").get(
+            pk=media.project_id  # pyright: ignore[reportAttributeAccessIssue]
+        )
+        target, skipped = ReviewMediaSelector.colour_target(
+            project,
+            kind=media.kind,
+            container=media.source_container,
+            color_space=media.color_space,
+        )
+        if target is not None:
+            try:
+                lut = colour.lut_for(target, _media_root() / settings.REVIEW_MEDIA_DIR / LUT_FOLDER)
+                shutil.copyfile(lut, work / commands.COLOUR_LUT)
+            except (colour.ColourUnavailable, OSError) as error:
+                logger.error(
+                    "review_media_colour_failed", review_media_id=str(media.pk), error=str(error)
+                )
+                return None, "colour_config_unavailable"
+        elif skipped:
+            logger.warning(
+                "review_media_colour_skipped", review_media_id=str(media.pk), reason=skipped
+            )
+        return target, skipped
 
     @staticmethod
     def _prepare_burn_in(media: ReviewMedia, work: Path) -> bool:

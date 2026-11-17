@@ -86,10 +86,27 @@ export interface ReviewMediaProbe {
   /** A sequence's own frame range; null for a movie or still (RP-12, C-RP-32). */
   first_frame: number | null;
   last_frame: number | null;
-  /** How the picture was shown: an EXR is turned from linear light to sRGB, anything else is as stored. */
-  colour: 'srgb_from_linear' | 'as_stored';
+  /**
+   * How the picture was shown: through the studio's OpenColorIO view (`ocio`, RP-15, C-RP-40, with `ocio` saying how),
+   * an EXR turned from linear light to sRGB (RP-12's rule, `srgb_from_linear`), or as stored.
+   */
+  colour: 'ocio' | 'srgb_from_linear' | 'as_stored';
   /** Whether the copy carries the project's burn-ins (C-RP-33). */
   burn_ins: boolean;
+  /** The colour transform the copy was made with (RP-15), or null when nothing was transformed. */
+  ocio: ReviewMediaColour | null;
+  /** Why a transform that was due was left out: the copy was then made by RP-12's rule. Null otherwise. */
+  colour_skipped: 'unknown_colour_space' | 'colour_config_unavailable' | null;
+}
+
+/** How a copy's colour was made (C-RP-40): names from the studio's OpenColorIO config, never a server path. */
+export interface ReviewMediaColour {
+  config: string;
+  input: string;
+  display: string;
+  view: string;
+  /** Blank when no look was applied. */
+  look: string;
 }
 
 export type ReviewMediaStatus = 'uploading' | 'queued' | 'processing' | 'ready' | 'failed' | 'superseded' | 'removed';
@@ -141,6 +158,8 @@ export interface ReviewMedia {
   created_by: { id: string; name: string } | null;
   /** The copy this row remakes (RP-14, C-RP-37), or null: a remake keeps that copy shown until it is ready. */
   remake_of: string | null;
+  /** The colour space the upload named (RP-15, C-RP-40), in the config's spelling; blank when it named none. */
+  color_space: string;
 }
 
 /**
@@ -152,6 +171,33 @@ export interface ReviewCopies {
   review_burn_ins: boolean;
   out_of_date: number;
   sequences_out_of_date: number;
+  /** How many of them (sequences included) were made with other colour settings than the project has now (RP-15). */
+  colour_out_of_date: number;
+}
+
+/**
+ * What the studio's OpenColorIO config offers a project (RP-15, C-RP-39), pinned to
+ * docs/sync/samples/production/_review_colour_flow.json. `available` is false (and everything empty) when the server
+ * cannot read the config; colour settings cannot be changed then.
+ */
+export interface ReviewColourOptions {
+  available: boolean;
+  config: string | null;
+  /** The sRGB display copies are made for (the browser shows sRGB). */
+  display: string | null;
+  /** What a blank `review_view` means. */
+  default_view: string | null;
+  views: string[];
+  looks: string[];
+  color_spaces: ReviewColourSpace[];
+}
+
+/** A scene-referred colour space of the config; any alias names it too (the server stores the name). */
+export interface ReviewColourSpace {
+  name: string;
+  family: string;
+  encoding: string;
+  aliases: string[];
 }
 
 /** What `POST projects/{id}/review-copies/remake/` did (C-RP-38). */
@@ -234,10 +280,13 @@ export const reviewMediaApi = {
   /**
    * Needs `version.update`, or being the version's artist with `version.create` (C-RP-26). 202 with the queued row; 409 `review_media_disabled` when the studio has not switched it on,
    * 409 `review_media_busy` while another upload of the version is processed, 400 on `file` for a refused file.
+   * `colorSpace` (RP-15, C-RP-40) names the movie's or still's colour space when it is not display-ready; 400 on
+   * `color_space` when the studio's config does not know it.
    */
-  upload: (versionId: string, file: File) => {
+  upload: (versionId: string, file: File, colorSpace = '') => {
     const form = new FormData();
     form.append('file', file);
+    if (colorSpace) form.append('color_space', colorSpace);
     return apiClient.upload<ReviewMedia>(`${V1}/versions/${versionId}/review-media/`, form, { timeout: UPLOAD_TIMEOUT_MS });
   },
   /** A failed row, at most three attempts in all (400 after that, or when it is not failed). */
@@ -246,9 +295,10 @@ export const reviewMediaApi = {
   remove: (id: string) => apiClient.delete<void>(`${V1}/review-media/${id}/`),
   /**
    * Open an image sequence upload (RP-12, C-RP-31): the same rights and 409s as `upload`; 400 on a field (the name,
-   * the extension, the range, more frames than the studio allows). 201 with the row, `status: 'uploading'`.
+   * the extension, the range, more frames than the studio allows; `color_space`, RP-15, one the config does not know).
+   * 201 with the row, `status: 'uploading'`. Without `color_space` an EXR takes the project's, other frames none.
    */
-  openSequence: (versionId: string, body: { name: string; extension: string; first_frame: number; last_frame: number }) =>
+  openSequence: (versionId: string, body: { name: string; extension: string; first_frame: number; last_frame: number; color_space?: string }) =>
     apiClient.post<ReviewMedia>(`${V1}/versions/${versionId}/review-media/sequence/`, body),
   /** One part of the frames, at most 50 files; a bad frame refuses the whole part (400 on `frames`). */
   sendFrames: (id: string, files: readonly File[]) => {
@@ -264,6 +314,9 @@ export const reviewMediaApi = {
    * gone (the reason in `detail`); 409 `review_media_busy` / `review_media_disabled`.
    */
   remake: (id: string) => apiClient.post<ReviewMedia>(`${V1}/review-media/${id}/remake/`, {}),
+  /** What the studio's colour config offers (RP-15, C-RP-39): `project.view`. */
+  colourOptions: (signal?: AbortSignal) => apiClient.get<ReviewColourOptions>(`${V1}/review-media/colour/`, { signal }),
+  colourOptionsKey: ['production', 'review-colour'] as const,
 };
 
 /** A project's review copies against its burn-in switch (RP-14, C-RP-38). */

@@ -78,6 +78,8 @@ dependencies = [
     "uvicorn[standard]>=0.34",
     "cryptography>=50.0.2",
     "ldap3>=2.9.1",
+    # Review copies: OpenColorIO bakes the colour transform the media worker applies (RP-15, ADR-0041)
+    "opencolorio>=2.6.0,<3",
 ]
 
 [dependency-groups]

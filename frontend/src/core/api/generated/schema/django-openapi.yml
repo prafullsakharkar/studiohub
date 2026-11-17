@@ -20953,6 +20953,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReviewMedia'
           description: ''
+  /api/v1/review-media/colour/:
+    get:
+      operationId: v1_review_media_colour_retrieve
+      description: The colour spaces, views and looks a project may choose (C-RP-39).
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewColour'
+          description: ''
   /api/v1/reviews/:
     get:
       operationId: v1_reviews_list
@@ -46754,6 +46771,12 @@ components:
           description: 'When on, review copies made from movies and sequences carry
             burn-ins: the project and record codes, the version, the date and the
             frame number (review pipeline RP-12, C-RP-33).'
+        review_view:
+          type: string
+          maxLength: 100
+        review_look:
+          type: string
+          maxLength: 100
         start_date:
           type: string
           format: date
@@ -55118,6 +55141,12 @@ components:
           description: 'When on, review copies made from movies and sequences carry
             burn-ins: the project and record codes, the version, the date and the
             frame number (review pipeline RP-12, C-RP-33).'
+        review_view:
+          type: string
+          maxLength: 100
+        review_look:
+          type: string
+          maxLength: 100
         start_date:
           type: string
           format: date
@@ -55262,6 +55291,12 @@ components:
           description: 'When on, review copies made from movies and sequences carry
             burn-ins: the project and record codes, the version, the date and the
             frame number (review pipeline RP-12, C-RP-33).'
+        review_view:
+          type: string
+          maxLength: 100
+        review_look:
+          type: string
+          maxLength: 100
         start_date:
           type: string
           format: date
@@ -55442,6 +55477,12 @@ components:
           description: 'When on, review copies made from movies and sequences carry
             burn-ins: the project and record codes, the version, the date and the
             frame number (review pipeline RP-12, C-RP-33).'
+        review_view:
+          type: string
+          maxLength: 100
+        review_look:
+          type: string
+          maxLength: 100
         start_date:
           type: string
           format: date
@@ -56060,6 +56101,12 @@ components:
           description: 'When on, review copies made from movies and sequences carry
             burn-ins: the project and record codes, the version, the date and the
             frame number (review pipeline RP-12, C-RP-33).'
+        review_view:
+          type: string
+          maxLength: 100
+        review_look:
+          type: string
+          maxLength: 100
         start_date:
           type: string
           format: date
@@ -57508,6 +57555,59 @@ components:
         override_reason:
           type: string
           maxLength: 1000
+    ReviewColour:
+      type: object
+      description: '``GET review-media/colour/`` (C-RP-39).'
+      properties:
+        available:
+          type: boolean
+        config:
+          type: string
+          nullable: true
+        display:
+          type: string
+          nullable: true
+        default_view:
+          type: string
+          nullable: true
+        views:
+          type: array
+          items:
+            type: string
+        looks:
+          type: array
+          items:
+            type: string
+        color_spaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewColourSpace'
+      required:
+      - available
+      - color_spaces
+      - config
+      - default_view
+      - display
+      - looks
+      - views
+    ReviewColourSpace:
+      type: object
+      properties:
+        name:
+          type: string
+        family:
+          type: string
+        encoding:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+      required:
+      - aliases
+      - encoding
+      - family
+      - name
     ReviewComment:
       type: object
       description: Rejects keys the serializer does not declare.
@@ -57549,7 +57649,10 @@ components:
           type: integer
         sequences_out_of_date:
           type: integer
+        colour_out_of_date:
+          type: integer
       required:
+      - colour_out_of_date
       - out_of_date
       - review_burn_ins
       - sequences_out_of_date
@@ -57960,8 +58063,12 @@ components:
           format: uuid
           readOnly: true
           nullable: true
+        color_space:
+          type: string
+          readOnly: true
       required:
       - attempts
+      - color_space
       - created_by
       - error_code
       - error_message
@@ -57982,6 +58089,27 @@ components:
       - status
       - thumbnail_url
       - version_id
+    ReviewMediaColour:
+      type: object
+      description: 'How a copy''s colour was made (C-RP-40): the config''s names,
+        never a path.'
+      properties:
+        config:
+          type: string
+        input:
+          type: string
+        display:
+          type: string
+        view:
+          type: string
+        look:
+          type: string
+      required:
+      - config
+      - display
+      - input
+      - look
+      - view
     ReviewMediaFrames:
       type: object
       description: '``POST review-media/{id}/frames/``: up to 50 files under ``frames``
@@ -58035,18 +58163,36 @@ components:
           nullable: true
         colour:
           enum:
+          - ocio
           - srgb_from_linear
           - as_stored
           type: string
           description: |-
+            * `ocio` - ocio
             * `srgb_from_linear` - srgb_from_linear
             * `as_stored` - as_stored
-          x-spec-enum-id: 4f326bff0d876c14
+          x-spec-enum-id: 0e62522de5da029b
         burn_ins:
           type: boolean
+        ocio:
+          allOf:
+          - $ref: '#/components/schemas/ReviewMediaColour'
+          nullable: true
+        colour_skipped:
+          enum:
+          - unknown_colour_space
+          - colour_config_unavailable
+          - null
+          type: string
+          description: |-
+            * `unknown_colour_space` - unknown_colour_space
+            * `colour_config_unavailable` - colour_config_unavailable
+          x-spec-enum-id: a712adc02d690526
+          nullable: true
       required:
       - burn_ins
       - colour
+      - colour_skipped
       - duration_seconds
       - first_frame
       - fps
@@ -58054,6 +58200,7 @@ components:
       - has_audio
       - height
       - last_frame
+      - ocio
       - video_codec
       - width
     ReviewMediaSequence:
@@ -58090,6 +58237,9 @@ components:
           type: integer
         last_frame:
           type: integer
+        color_space:
+          type: string
+          maxLength: 100
       required:
       - extension
       - first_frame
@@ -58100,6 +58250,9 @@ components:
       properties:
         file:
           type: string
+        color_space:
+          type: string
+          maxLength: 100
       required:
       - file
     ReviewMediaUser:

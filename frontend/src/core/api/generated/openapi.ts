@@ -7938,6 +7938,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/review-media/colour/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The colour spaces, views and looks a project may choose (C-RP-39). */
+        get: operations["v1_review_media_colour_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reviews/": {
         parameters: {
             query?: never;
@@ -20626,6 +20643,8 @@ export interface components {
             approve_task_on_version_approval?: boolean;
             /** @description When on, review copies made from movies and sequences carry burn-ins: the project and record codes, the version, the date and the frame number (review pipeline RP-12, C-RP-33). */
             review_burn_ins?: boolean;
+            review_view?: string;
+            review_look?: string;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25069,6 +25088,8 @@ export interface components {
             approve_task_on_version_approval?: boolean;
             /** @description When on, review copies made from movies and sequences carry burn-ins: the project and record codes, the version, the date and the frame number (review pipeline RP-12, C-RP-33). */
             review_burn_ins?: boolean;
+            review_view?: string;
+            review_look?: string;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25144,6 +25165,8 @@ export interface components {
             approve_task_on_version_approval?: boolean;
             /** @description When on, review copies made from movies and sequences carry burn-ins: the project and record codes, the version, the date and the frame number (review pipeline RP-12, C-RP-33). */
             review_burn_ins?: boolean;
+            review_view?: string;
+            review_look?: string;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25229,6 +25252,8 @@ export interface components {
             approve_task_on_version_approval?: boolean;
             /** @description When on, review copies made from movies and sequences carry burn-ins: the project and record codes, the version, the date and the frame number (review pipeline RP-12, C-RP-33). */
             review_burn_ins?: boolean;
+            review_view?: string;
+            review_look?: string;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25510,6 +25535,8 @@ export interface components {
             approve_task_on_version_approval?: boolean;
             /** @description When on, review copies made from movies and sequences carry burn-ins: the project and record codes, the version, the date and the frame number (review pipeline RP-12, C-RP-33). */
             review_burn_ins?: boolean;
+            review_view?: string;
+            review_look?: string;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -26278,6 +26305,22 @@ export interface components {
         Restore: {
             override_reason?: string;
         };
+        /** @description ``GET review-media/colour/`` (C-RP-39). */
+        ReviewColour: {
+            available: boolean;
+            config: string | null;
+            display: string | null;
+            default_view: string | null;
+            views: string[];
+            looks: string[];
+            color_spaces: components["schemas"]["ReviewColourSpace"][];
+        };
+        ReviewColourSpace: {
+            name: string;
+            family: string;
+            encoding: string;
+            aliases: string[];
+        };
         /** @description Rejects keys the serializer does not declare. */
         ReviewComment: {
             frame_number?: number | null;
@@ -26298,6 +26341,7 @@ export interface components {
             review_burn_ins: boolean;
             out_of_date: number;
             sequences_out_of_date: number;
+            colour_out_of_date: number;
         };
         /** @description ``POST projects/{id}/review-copies/remake/`` (C-RP-38). */
         ReviewCopiesRemade: {
@@ -26474,6 +26518,15 @@ export interface components {
             readonly links_expire_at: string | null;
             /** Format: uuid */
             readonly remake_of: string | null;
+            readonly color_space: string;
+        };
+        /** @description How a copy's colour was made (C-RP-40): the config's names, never a path. */
+        ReviewMediaColour: {
+            config: string;
+            input: string;
+            display: string;
+            view: string;
+            look: string;
         };
         /** @description ``POST review-media/{id}/frames/``: up to 50 files under ``frames`` (C-RP-31). */
         ReviewMediaFrames: {
@@ -26497,12 +26550,20 @@ export interface components {
             first_frame: number | null;
             last_frame: number | null;
             /**
-             * @description * `srgb_from_linear` - srgb_from_linear
+             * @description * `ocio` - ocio
+             *     * `srgb_from_linear` - srgb_from_linear
              *     * `as_stored` - as_stored
              * @enum {string}
              */
-            colour: "srgb_from_linear" | "as_stored";
+            colour: "ocio" | "srgb_from_linear" | "as_stored";
             burn_ins: boolean;
+            ocio: components["schemas"]["ReviewMediaColour"] | null;
+            /**
+             * @description * `unknown_colour_space` - unknown_colour_space
+             *     * `colour_config_unavailable` - colour_config_unavailable
+             * @enum {string|null}
+             */
+            colour_skipped: "unknown_colour_space" | "colour_config_unavailable" | null;
         };
         ReviewMediaSequence: {
             name: string;
@@ -26517,9 +26578,11 @@ export interface components {
             extension: string;
             first_frame: number;
             last_frame: number;
+            color_space?: string;
         };
         ReviewMediaUpload: {
             file: string;
+            color_space?: string;
         };
         ReviewMediaUser: {
             /** Format: uuid */
@@ -47322,6 +47385,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReviewMedia"];
+                };
+            };
+        };
+    };
+    v1_review_media_colour_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewColour"];
                 };
             };
         };
