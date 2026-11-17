@@ -1,6 +1,6 @@
 """
 Review media rows (C-RP-20, C-RP-22): retry a failed job, remove a ready movie; a sequence's frames
-and its completion, and cancelling it (C-RP-31).
+and its completion, and cancelling it (C-RP-31); remaking a ready movie or still (C-RP-37).
 
 Upload and the version's list are actions on ``versions/{id}/review-media/`` (``VersionViewSet``).
 A row is reached through its version: one the caller cannot read is a 404 like an unknown id.
@@ -41,6 +41,7 @@ class ReviewMediaViewSet(viewsets.ViewSet):
         "destroy": (VersionPermissions.VIEW,),
         "frames": (VersionPermissions.VIEW,),
         "complete": (VersionPermissions.VIEW,),
+        "remake": (VersionPermissions.VIEW,),
     }
 
     def get_permission_required(self):
@@ -89,5 +90,13 @@ class ReviewMediaViewSet(viewsets.ViewSet):
     def complete(self, request, pk=None):
         """Queue a sequence whose every frame is in (C-RP-31)."""
         row = ReviewMediaService.complete(actor=request.user, media=self._row(request, pk))
+        body = ReviewMediaSerializer(row, context={"request": request}).data
+        return Response(body, status=status.HTTP_202_ACCEPTED)
+
+    @extend_schema(parameters=[_ID], request=None, responses={202: ReviewMediaSerializer})
+    @action(detail=True, methods=["post"], url_path="remake")
+    def remake(self, request, pk=None):
+        """A new copy of a ready movie or still from its kept upload (C-RP-37)."""
+        row = ReviewMediaService.remake(actor=request.user, media=self._row(request, pk))
         body = ReviewMediaSerializer(row, context={"request": request}).data
         return Response(body, status=status.HTTP_202_ACCEPTED)

@@ -36,11 +36,6 @@ class SettingDefinitionCodes:
     # Delivery Settings
     DELIVERY_EXPIRY_DAYS = "delivery.expiry_days"
 
-    # Notification Settings
-    NOTIFICATION_EMAIL_ENABLED = "notification.email_enabled"
-    NOTIFICATION_SMS_ENABLED = "notification.sms_enabled"
-    NOTIFICATION_PUSH_ENABLED = "notification.push_enabled"
-
     # Billing Settings
     BILLING_CURRENCY = "billing.currency"
     BILLING_TAX_RATE = "billing.tax_rate"
@@ -92,9 +87,6 @@ class SettingDefinitionCodes:
         REVIEW_DEFAULT_STATUS,
         REVIEW_RETENTION_DAYS,
         DELIVERY_EXPIRY_DAYS,
-        NOTIFICATION_EMAIL_ENABLED,
-        NOTIFICATION_SMS_ENABLED,
-        NOTIFICATION_PUSH_ENABLED,
         BILLING_CURRENCY,
         BILLING_TAX_RATE,
         BILLING_INVOICE_PREFIX,

@@ -444,3 +444,5 @@ The full contracts are `docs/review-pipeline/CONTRACTS.md` C-RP-19 to C-RP-22; t
 | C-73 | `GET /api/v1/review-media/{id}/{proxy,thumbnail,filmstrip}/?token=` | — | No header needed: the signed token names the user, the row and the output. 404 for anything that is not a live link of an active user who still reads the version and a `ready` row. Fixed content type, `nosniff`, a CSP sandbox, `no-store`, a single `Range`. |
 
 Evidence: `docs/sync/samples/production/_review_media_flow.json` (captured with a real ffmpeg by `docs/sync/tools/test_capture_review_media.py`), `docs/review-pipeline/rp-5-verification.md`.
+
+Later review-pipeline phases extend these routes in `docs/review-pipeline/CONTRACTS.md`: image sequences and burn-ins (RP-12, C-RP-31 to C-RP-33), and remaking a copy, `POST review-media/{id}/remake/`, with a project's `GET projects/{id}/review-copies/` and `POST projects/{id}/review-copies/remake/` (RP-14, C-RP-37, C-RP-38; every review-media row gains `remake_of`).

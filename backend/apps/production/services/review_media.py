@@ -7,7 +7,8 @@ Upload, the sequence's parts, retry and remove run in the request; ``process`` r
 or still as ``source.<ext>``, a sequence's frames as ``source/frame.<8 digits>.<ext>``, and the
 results as ``proxy.mp4`` (``proxy.jpg`` for a still), ``thumbnail.jpg`` and ``filmstrip.jpg``. A row
 that is superseded or removed loses its folder once the change is committed; a sequence loses its
-frames once its copy is ready (Q-RP-56).
+frames once its copy is ready (Q-RP-56). A remake (RP-14, C-RP-37) is a new row whose upload is a hard
+link to the kept upload of the ready copy it remakes, so superseding that copy later cannot delete it.
 """
 
 from __future__ import annotations
@@ -34,6 +35,7 @@ from apps.core.events import default_event_bus
 from apps.production.events.review_media import ReviewMediaFinished
 from apps.production.exceptions import ReviewMediaBusy, ReviewMediaDisabled
 from apps.production.models import ReviewMedia, Version
+from apps.production.selectors.review_media import ReviewMediaSelector
 from apps.production.transcode import detect
 from apps.production.transcode import ffmpeg as commands
 from apps.production.transcode import sequence as frames
@@ -78,6 +80,7 @@ def _publish_finished(row: ReviewMedia) -> None:
             status=row.status,
             error_code=row.error_code or "",
             created_by_id=str(row.created_by_id) if row.created_by_id else None,  # pyright: ignore[reportAttributeAccessIssue]
+            remake=row.remake_of_id is not None,  # pyright: ignore[reportAttributeAccessIssue]
         )
     )
 
@@ -144,7 +147,8 @@ def _burn_in(media: ReviewMedia) -> commands.BurnIn | None:
     return commands.BurnIn(
         top_left="  ".join(part for part in (project.code, record_code) if part),
         top_right=version.code,
-        bottom_left=timezone.now().date().isoformat(),
+        # C-RP-37: fixed when the copy is first made, and kept by its remakes
+        bottom_left=(media.burn_in_date or timezone.now().date()).isoformat(),
         first_frame=first,
     )
 
@@ -179,6 +183,14 @@ def _audit(
             "attempts": media.attempts,
         },
     )
+
+
+#: why a copy cannot be remade (C-RP-37), one sentence each
+REMAKE_REFUSALS = {
+    "sequence": "The frames of a sequence are not kept once its copy is ready. Upload the frames again.",
+    "not_ready": "Only a ready review copy can be remade.",
+    "missing": "The uploaded file is no longer on the server. Upload it again.",
+}
 
 
 def _require_enabled() -> None:
@@ -326,6 +338,113 @@ class ReviewMediaService:
         except IntegrityError as error:
             raise ReviewMediaBusy() from error
         return row
+
+    # ------------------------------------------------------------------ remakes (C-RP-37, C-RP-38)
+
+    @classmethod
+    def remake(cls, *, actor: Any, media: ReviewMedia) -> ReviewMedia:
+        """Queue a new copy of the ready movie or still ``media`` from its kept upload (C-RP-37)."""
+        _require_enabled()
+        made, problem = cls._remake(actor=actor, media_id=media.pk)
+        if problem == "busy":
+            raise ReviewMediaBusy()
+        if made is None:
+            raise ValidationError({"detail": [REMAKE_REFUSALS[problem or "not_ready"]]})
+        return made
+
+    @classmethod
+    def remake_differing(cls, *, actor: Any, project: Any) -> dict[str, int]:
+        """Remake every movie copy of ``project`` whose burn-ins differ from its switch (C-RP-38)."""
+        _require_enabled()
+        counts = {"queued": 0, "skipped_busy": 0, "skipped_sequence": 0, "skipped_missing": 0}
+        for row_id, kind in ReviewMediaSelector.differing(project).values_list("pk", "kind"):
+            if kind == ReviewMedia.Kind.SEQUENCE:
+                counts["skipped_sequence"] += 1
+                continue
+            made, problem = cls._remake(actor=actor, media_id=row_id)
+            if made is not None:
+                counts["queued"] += 1
+            elif problem == "busy":
+                counts["skipped_busy"] += 1
+            elif problem == "missing":
+                counts["skipped_missing"] += 1
+        return counts
+
+    @classmethod
+    def _remake(cls, *, actor: Any, media_id: Any) -> tuple[ReviewMedia | None, str | None]:
+        """The new row, or ``None`` and why not: ``busy``, ``sequence``, ``not_ready`` or ``missing``."""
+        folder: str | None = None
+        try:
+            with transaction.atomic():
+                row = ReviewMedia.objects.select_related("version").filter(pk=media_id).first()
+                if row is None:
+                    return None, "not_ready"
+                # One job at a time per version: the lock orders a remake against an upload.
+                Version.objects.select_for_update().filter(pk=row.version_id).first()  # pyright: ignore[reportAttributeAccessIssue]
+                row = (
+                    ReviewMedia.objects.select_for_update().select_related("version").get(pk=row.pk)
+                )
+                if row.kind == ReviewMedia.Kind.SEQUENCE:
+                    return None, "sequence"
+                if row.status != Status.READY:
+                    return None, "not_ready"
+                if ReviewMedia.objects.filter(
+                    version_id=row.version_id,  # pyright: ignore[reportAttributeAccessIssue]
+                    status__in=ReviewMedia.IN_FLIGHT,
+                ).exists():
+                    return None, "busy"
+                source = _media_root() / row.source_path if row.source_path else None
+                if source is None or not source.is_file():
+                    return None, "missing"
+                now = timezone.now()
+                made = ReviewMedia(
+                    project_id=row.project_id,  # pyright: ignore[reportAttributeAccessIssue]
+                    version=row.version,
+                    kind=row.kind,
+                    status=Status.QUEUED,
+                    source_name=row.source_name,
+                    source_size=row.source_size,
+                    source_sha256=row.source_sha256,
+                    source_container=row.source_container,
+                    queued_at=now,
+                    created_by=actor if getattr(actor, "pk", None) else None,
+                    remake_of=row,
+                    # Q-RP-66: the original's date; a copy made before RP-14 dates from its row
+                    burn_in_date=row.burn_in_date or row.queued_at.date(),
+                )
+                made.save()
+                folder = made.directory
+                made.source_path = f"{folder}/source{source.suffix}"
+                cls._link(source, _media_root() / made.source_path)
+                made.save(update_fields=["source_path"])
+                _audit(
+                    actor=actor,
+                    version=row.version,
+                    operation="review_media_remake",
+                    media=made,
+                    action=AuditLog.ACTION_CREATE,
+                    description=f"Review {made.kind} of version {row.version.code} queued to be remade.",
+                )
+                made_id = made.pk
+                transaction.on_commit(lambda: enqueue(made_id))
+        except IntegrityError:
+            if folder:
+                _delete_folder(folder)
+            return None, "busy"
+        except BaseException:
+            if folder:
+                _delete_folder(folder)
+            raise
+        return made, None
+
+    @staticmethod
+    def _link(source: Path, target: Path) -> None:
+        """``target`` becomes another name of ``source`` (a copy where a link cannot be made)."""
+        target.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            os.link(source, target)
+        except OSError:
+            shutil.copyfile(source, target)
 
     # ------------------------------------------------------------------ sequences (C-RP-31)
 
@@ -598,7 +717,9 @@ class ReviewMediaService:
             media.status = Status.PROCESSING
             media.started_at = timezone.now()
             media.attempts += 1
-            media.save(update_fields=["status", "started_at", "attempts"])
+            # C-RP-37: the burn-in date is the day the copy is first made; a retry or a remake keeps it
+            media.burn_in_date = media.burn_in_date or media.started_at.date()
+            media.save(update_fields=["status", "started_at", "attempts", "burn_in_date"])
 
         source = cls._input(media)
         if source is None:

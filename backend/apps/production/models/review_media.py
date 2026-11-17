@@ -5,7 +5,8 @@ made from it (docs/review-pipeline/CONTRACTS.md C-RP-19 to C-RP-22, RP-5; C-RP-3
 The upload and the results live under ``MEDIA_ROOT/review_media/`` and leave only through signed,
 per-user links (``services/review_media_links.py``). The paths are ours, never the uploader's.
 A version has at most one row in flight (uploading, queued or processing) and one ``ready`` row;
-older rows stay as ``superseded`` or ``removed``, without files, for the audit trail. A sequence's
+older rows stay as ``superseded`` or ``removed``, without files, for the audit trail. A remake
+(RP-14, C-RP-37) is a new row that links to the kept upload of the copy it remakes. A sequence's
 frames arrive in parts while the row is ``uploading`` and are stored as ``source/frame.<n>.<ext>``.
 """
 
@@ -95,6 +96,11 @@ class ReviewMedia(models.Model):
         blank=True,
         related_name="+",
     )
+    # RP-14 (C-RP-37): the copy this row remakes, and the date its burn-ins carry (fixed when first made).
+    remake_of = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    burn_in_date = models.DateField(null=True, blank=True)
 
     class Meta:
         db_table = "production_review_media"

@@ -894,3 +894,68 @@ The same as RP-12: `ruff check`, `manage.py check`, `makemigrations --check`, `b
 
 - *Upgrading:* one migration in `notifications`. Beat gains `notifications.milestone_reminders` (hourly). No new setting, no new permission code.
 - *Changed:* the inbox also tells people when a delivery they work on is signed off, sent, answered by the client or reopened; when a publish job they started ends or fails; when a file they built on is revoked; and when a milestone they set is due or overdue. Each kind can be muted.
+
+## RP-14 Review copies: remaking and slates
+
+**Status:** planned 2026-11-17; answered the same day (Q-RP-63 to Q-RP-67 = A, [DECISIONS.md](DECISIONS.md#rp-14-answers)): no slates, WP 14.3 drops. Contracts C-RP-37 and C-RP-38. Built, report in [rp-14-verification.md](rp-14-verification.md); committed `10fedb13` (cleanup `6bffaefa`). Branch `feature/rp-14-media-slates`, off `develop` at `f7f99139` (v4.10.0).
+
+**Goal.** A project's review copies match its burn-in switch: someone who turns burn-ins on or off can have the copies already made remade, without uploading again and without the current copy disappearing while the new one is made. Whether review copies also get a slate is decided here (Q-RP-63). The dead notification code left from before RP-6 is removed.
+
+### Why (what is there today)
+
+- **The burn-in switch only affects new copies.** C-RP-33: "Copies already made are not remade when the switch changes." Each ready row records whether it has burn-ins (`probe.burn_ins`), so the copies that differ from the switch are known, but nothing can remake them. A retry (C-RP-20) takes only a `failed` row.
+- **A movie's upload is kept, a sequence's frames are not.** A movie or still keeps `source_path` after it is ready. A sequence's frames are deleted when its copy is ready (Q-RP-56, C-RP-32), so a sequence copy cannot be remade; only a new upload can change it.
+- **A new copy replaces the old one only when it is ready.** `_finish` marks the version's older `ready`/`failed` rows `superseded` and deletes their folders, including the kept upload. One row per version may be in flight (`review_media_busy`, 409). So a remake cannot simply be a new row pointing at the old upload: the old folder would be deleted under it.
+- **The burn-in's date is the day the copy is made** (C-RP-33, bottom left, UTC). A remake made today would date old work today.
+- **Each ready copy notifies its uploader** (`review_media_ready`, RP-6). A bulk remake would send one per version.
+- **Slates.** A slate is a title card (project, shot, version, artist, date, frame range) before the first frame. The viewer turns playback time into a frame number from the copy's rate and the version's first frame (`ReviewViewer.tsx`), and every comment and drawing stores that frame number. A slate inside the movie shifts every frame by its length unless the probe says how long it is and the viewer skips it. Review copies are watched only inside the app (no download route), where the version's header already shows everything a slate says. ShotGrid and ftrack do not add slates to review media either: the studio's pipeline renders them before upload (RP-9, a separate repository).
+- **Dead code.** `apps/core/services/notifications.py` (`NotificationService`, 28 lines, a stub from before RP-6) is used only by its own re-export and one test that checks it has `notify`. `SettingKeys.NOTIFICATION_EMAIL_ENABLED`, `NOTIFICATION_SMS_ENABLED` and `NOTIFICATION_PUSH_ENABLED` (`apps/settings/constants/settings.py`) are read nowhere, seeded nowhere, and not used by the frontend (Q-RP-7: in-app only).
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 14.1 | **Remake one copy** (Q-RP-64, Q-RP-66, Q-RP-67). `POST review-media/{id}/remake/` on a `ready` movie or still whose upload is kept: a new row for the same version, `queued`, whose upload is a hard link to the old row's (same volume; a copy if linking fails), so superseding the old row later cannot delete it. The old row stays `ready` and shown until the new one is ready; if the new one fails, the old one stays (as for any upload). The new row remembers the row it remakes (`remakes`), keeps the original's burn-in date, and makes no `review_media_ready` notification. The right is C-RP-26's (manage the version's review copy). 409 `review_media_busy` while the version has a row in flight; 400 for a sequence (its frames are gone), a row that is not `ready`, or an upload that is missing. Audit `review_media_remake`. Migration production `0011`: `ReviewMedia.remakes` (nullable, self), `ReviewMedia.burn_in_date` (nullable date). | `production/services/review_media.py`, `api/viewsets/review_media.py`, `models/review_media.py` |
+| 14.2 | **Remake a project's copies that differ** (Q-RP-65). `POST projects/{id}/review-media/remake/` (the rights that write a project, like the switch): every version's current `ready` movie or still whose `probe.burn_ins` differs from `review_burn_ins` and whose version has nothing in flight is remade as in 14.1. Answers `{"queued", "skipped_busy", "skipped_sequence"}`. The project read shows `review_copies_out_of_date` (the number that differ), so the frontend can offer it. | `production/services/review_media.py`, `api/viewsets/project*.py`, `selectors/` |
+| 14.3 | **Slates** (Q-RP-63). Option A: none (this WP drops). Option B: a slate image (`slate.jpg`) made beside each movie copy, same text rules as burn-ins (text files, `expansion=none`), shown in the review panel and before playback; the movie and its frame numbers are unchanged. Option C: a one-second slate at the start of the movie copy, `probe.slate_frames`, and the viewer skips it in its frame arithmetic, timeline and filmstrip. | `production/transcode/ffmpeg.py`, `services/review_media.py`, frontend review viewer |
+| 14.4 | **Frontend.** The review movie panel: a "Remake" action on a ready movie or still copy whose burn-ins differ from the project's switch (or always, for those with the right), the queued state while the old copy stays shown, the sentence for a sequence ("upload the frames again"). The project's review settings: after the switch changes, "N review copies were made with the other setting. Remake them" when `review_copies_out_of_date` > 0. Typed API from captured responses. | `frontend/src/api/production/`, `modules/production/review/`, project settings |
+| 14.5 | **Cleanup** (no question). Remove `core/services/notifications.py`, its re-export and test assertion, and the three `notification.*` setting keys, in their own commit, listed in the report. | `apps/core/services/`, `apps/core/tests/test_selectors_services.py`, `apps/settings/constants/settings.py` |
+| 14.6 | **Capture, live and docs.** Capture tool and sample (remake one, remake the project's, the busy and sequence refusals); a live file (switch on, the project offers the remake, the copy is remade and the old one stays until then); CONTRACTS, DECISIONS, the pre-deploy checklist (one migration), `docs/apps/` media notes, release notes, `rp-14-verification.md`. | `docs/sync/`, `docs/review-pipeline/`, `docs/07-deployment/` |
+
+### Questions before RP-14 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-63 | Slates on review copies? | A: no slate in RP-14; slates are rendered by the studio's pipeline before upload. B: a slate image beside each movie copy, shown in the panel and before playback; the movie is unchanged. C: a one-second slate inside the movie copy, with the viewer skipping it. | **A**. I suggested slates before reading the viewer: inside the movie (C) a slate shifts every frame number that comments and drawings store, so the viewer, timeline and filmstrip all have to skip it, for a card that repeats the version's header. Copies are watched only in the app, and ShotGrid and ftrack leave slates to the pipeline too. B is cheap and safe but adds little. If clients later get review copies as files (a download or a delivery), C becomes worth it then. |
+| Q-RP-64 | What can be remade? | A: movies and stills, whose uploads are kept; a sequence says to upload its frames again. B: A, and from now on a sequence's frames are kept while its copy is current, so it can be remade too (Q-RP-56 changes; up to 20 GiB per sequence stays on the media volume). | **A**. Keeping frames reverses Q-RP-56 for a storage cost that every sequence pays, to serve a switch that rarely changes. |
+| Q-RP-65 | How is a remake started? | A: a "Remake" action on one copy, and "Remake the copies that differ" for the project after the switch changes. B: automatically: changing the switch queues every differing copy. C: one copy at a time only. | **A**. Turning the switch should not silently queue hours of media work (B); doing it per version (C) is tedious on a project of hundreds. The project action queues them on the media queue, which runs one job at a time per worker as today. |
+| Q-RP-66 | The burn-in date of a remade copy? | A: the original copy's date, so a remake does not date old work today. B: the day it is remade (C-RP-33 as written). | **A**. The date tells a reviewer when the work was put up for review. Copies made before RP-14 have no stored date; their remake uses the day the original row was created. |
+| Q-RP-67 | Does a remade copy notify? | A: no; the copy is the same work, and a project remake would send one per version. B: yes, `review_media_ready` to whoever asked for the remake. C: as today, to the original uploader. | **A**. A failed remake still tells whoever asked for it (`review_media_failed`), since the old copy stays and they may want to know. |
+
+Also decided in the plan, without a question:
+- A remake never removes what is shown: the old copy stays `ready` until the new one is ready, then it is superseded as any older copy is.
+- No new permission code: one copy uses C-RP-26's right; the project action uses the rights that write a project (the same as the switch).
+- No new setting and no ADR (ADR-0040 is unchanged: same pipeline, same font, same text rules).
+- The cleanup (14.5) is its own commit.
+
+### Not in RP-14
+
+- OpenColorIO, per-project LUTs and HDR (their own planning, ADR-0040).
+- Reading frames from studio storage by path (the worker's access to studio storage is a security decision).
+- Object storage for review media.
+- Downloading a review copy, which is what would make a slate inside the movie worth its cost.
+- More notification sources (QC results, bookings, calendar events, leave requests).
+
+### Tests (targeted, test database)
+
+- **14.1:** remake answers 202 with a queued row; the old row stays ready and shown until the new one is ready, then is superseded and its folder deleted while the new upload survives (hard link); a failed remake leaves the old copy ready; 409 while busy; 400 for a sequence, a non-ready row, a missing upload; 404 out of reach, 403 without the right; the burn-in date is the original's; no `review_media_ready` row, a `review_media_failed` row to the asker; the audit entry.
+- **14.2:** only differing current copies are remade; busy versions and sequences are counted, not remade; `review_copies_out_of_date` before and after; the project write rights.
+- **14.5:** `manage.py check` and the core tests after the removal.
+
+### Mutation checks
+
+The old row superseded on queue instead of on ready; the upload moved instead of linked; the busy check skipped; a sequence accepted; the burn-in date taken from today; the ready notification sent; the project remake including copies that already match.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, notifications, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs.

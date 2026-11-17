@@ -184,10 +184,15 @@ class StatusChangedHandler(_Handler):
 
 
 class ReviewMediaFinishedHandler(_Handler):
-    """A review movie is ready or failed: the person who uploaded it."""
+    """A review movie is ready or failed: the person who uploaded it (or asked for the remake).
+
+    A remake that becomes ready tells nobody: the copy is the same work (Q-RP-67, C-RP-37).
+    """
 
     def notify(self, payload):
         failed = payload.get("status") == "failed"
+        if payload.get("remake") and not failed:
+            return
         FanoutService.notify(
             kinds=merge(
                 (
