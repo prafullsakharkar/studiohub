@@ -124,6 +124,7 @@ from .components.storage import (
     REVIEW_MEDIA_MAX_BYTES,
     REVIEW_MEDIA_MAX_FRAMES,
     REVIEW_MEDIA_OCIO_CONFIG,
+    REVIEW_MEDIA_SEQUENCE_KEEP_DAYS,
     REVIEW_MEDIA_SEQUENCE_MAX_BYTES,
 )
 from .components.templates import TEMPLATES

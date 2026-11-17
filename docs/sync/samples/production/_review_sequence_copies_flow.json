@@ -1,0 +1,954 @@
+{
+  "copies_after_all": {
+    "body": {
+      "colour_out_of_date": 1,
+      "differing": [
+        {
+          "frames_until": null,
+          "kind": "sequence",
+          "record_code": "RPS_SH0010",
+          "remakable": false,
+          "review_media_id": "9a75a0b0-516f-4dec-ab25-5e8b1aa01556",
+          "version": {
+            "code": "RPS_SH0010_COMP_V001",
+            "id": "f950387c-c0cc-4707-a4a7-85ed225cd0d6"
+          },
+          "why": [
+            "burn_ins",
+            "colour"
+          ]
+        }
+      ],
+      "differing_more": 0,
+      "out_of_date": 0,
+      "review_burn_ins": true,
+      "sequences_out_of_date": 1
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/bfbabdd4-7fdb-46e8-808d-346146217d98/review-copies/"
+    },
+    "status": 200
+  },
+  "copies_after_keep": {
+    "body": {
+      "colour_out_of_date": 0,
+      "differing": [
+        {
+          "frames_until": null,
+          "kind": "movie",
+          "record_code": "RPS_SH0030",
+          "remakable": true,
+          "review_media_id": "c277cc6b-9237-4322-a4e1-2e5859bc79d5",
+          "version": {
+            "code": "RPS_SH0030_COMP_V001",
+            "id": "2455b1cd-5127-4c89-acfc-9c48ae7bacad"
+          },
+          "why": [
+            "burn_ins"
+          ]
+        }
+      ],
+      "differing_more": 0,
+      "out_of_date": 1,
+      "review_burn_ins": true,
+      "sequences_out_of_date": 0
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/bfbabdd4-7fdb-46e8-808d-346146217d98/review-copies/"
+    },
+    "status": 200
+  },
+  "copies_after_view_change": {
+    "body": {
+      "colour_out_of_date": 2,
+      "differing": [
+        {
+          "frames_until": null,
+          "kind": "sequence",
+          "record_code": "RPS_SH0010",
+          "remakable": false,
+          "review_media_id": "9a75a0b0-516f-4dec-ab25-5e8b1aa01556",
+          "version": {
+            "code": "RPS_SH0010_COMP_V001",
+            "id": "f950387c-c0cc-4707-a4a7-85ed225cd0d6"
+          },
+          "why": [
+            "burn_ins",
+            "colour"
+          ]
+        },
+        {
+          "frames_until": null,
+          "kind": "movie",
+          "record_code": "RPS_SH0030",
+          "remakable": true,
+          "review_media_id": "c277cc6b-9237-4322-a4e1-2e5859bc79d5",
+          "version": {
+            "code": "RPS_SH0030_COMP_V001",
+            "id": "2455b1cd-5127-4c89-acfc-9c48ae7bacad"
+          },
+          "why": [
+            "burn_ins"
+          ]
+        },
+        {
+          "frames_until": "2026-12-01T13:11:07.167726Z",
+          "kind": "sequence",
+          "record_code": "RPS_SH0020",
+          "remakable": true,
+          "review_media_id": "723fa5e9-b8c4-4676-baf1-6390221e99de",
+          "version": {
+            "code": "RPS_SH0020_COMP_V001",
+            "id": "f84a53af-f519-479c-88fc-9c94ea5a6053"
+          },
+          "why": [
+            "colour"
+          ]
+        }
+      ],
+      "differing_more": 0,
+      "out_of_date": 1,
+      "review_burn_ins": true,
+      "sequences_out_of_date": 2
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/bfbabdd4-7fdb-46e8-808d-346146217d98/review-copies/"
+    },
+    "status": 200
+  },
+  "copies_by_artist": {
+    "body": {
+      "colour_out_of_date": 0,
+      "differing": [
+        {
+          "frames_until": null,
+          "kind": "sequence",
+          "record_code": "RPS_SH0010",
+          "remakable": false,
+          "review_media_id": "9a75a0b0-516f-4dec-ab25-5e8b1aa01556",
+          "version": {
+            "code": "RPS_SH0010_COMP_V001",
+            "id": "f950387c-c0cc-4707-a4a7-85ed225cd0d6"
+          },
+          "why": [
+            "burn_ins"
+          ]
+        },
+        {
+          "frames_until": "2026-12-01T13:11:07.167726Z",
+          "kind": "sequence",
+          "record_code": "RPS_SH0020",
+          "remakable": true,
+          "review_media_id": "7e9df4bd-7c62-4c69-bb44-286a75dc76d2",
+          "version": {
+            "code": "RPS_SH0020_COMP_V001",
+            "id": "f84a53af-f519-479c-88fc-9c94ea5a6053"
+          },
+          "why": [
+            "burn_ins"
+          ]
+        },
+        {
+          "frames_until": null,
+          "kind": "movie",
+          "record_code": "RPS_SH0030",
+          "remakable": true,
+          "review_media_id": "c277cc6b-9237-4322-a4e1-2e5859bc79d5",
+          "version": {
+            "code": "RPS_SH0030_COMP_V001",
+            "id": "2455b1cd-5127-4c89-acfc-9c48ae7bacad"
+          },
+          "why": [
+            "burn_ins"
+          ]
+        }
+      ],
+      "differing_more": 0,
+      "out_of_date": 1,
+      "review_burn_ins": true,
+      "sequences_out_of_date": 2
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/bfbabdd4-7fdb-46e8-808d-346146217d98/review-copies/"
+    },
+    "status": 200
+  },
+  "copies_switch_off": {
+    "body": {
+      "colour_out_of_date": 0,
+      "differing": [],
+      "differing_more": 0,
+      "out_of_date": 0,
+      "review_burn_ins": false,
+      "sequences_out_of_date": 0
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/bfbabdd4-7fdb-46e8-808d-346146217d98/review-copies/"
+    },
+    "status": 200
+  },
+  "copies_switch_on": {
+    "body": {
+      "colour_out_of_date": 0,
+      "differing": [
+        {
+          "frames_until": null,
+          "kind": "sequence",
+          "record_code": "RPS_SH0010",
+          "remakable": false,
+          "review_media_id": "9a75a0b0-516f-4dec-ab25-5e8b1aa01556",
+          "version": {
+            "code": "RPS_SH0010_COMP_V001",
+            "id": "f950387c-c0cc-4707-a4a7-85ed225cd0d6"
+          },
+          "why": [
+            "burn_ins"
+          ]
+        },
+        {
+          "frames_until": "2026-12-01T13:11:07.167726Z",
+          "kind": "sequence",
+          "record_code": "RPS_SH0020",
+          "remakable": true,
+          "review_media_id": "7e9df4bd-7c62-4c69-bb44-286a75dc76d2",
+          "version": {
+            "code": "RPS_SH0020_COMP_V001",
+            "id": "f84a53af-f519-479c-88fc-9c94ea5a6053"
+          },
+          "why": [
+            "burn_ins"
+          ]
+        },
+        {
+          "frames_until": null,
+          "kind": "movie",
+          "record_code": "RPS_SH0030",
+          "remakable": true,
+          "review_media_id": "c277cc6b-9237-4322-a4e1-2e5859bc79d5",
+          "version": {
+            "code": "RPS_SH0030_COMP_V001",
+            "id": "2455b1cd-5127-4c89-acfc-9c48ae7bacad"
+          },
+          "why": [
+            "burn_ins"
+          ]
+        }
+      ],
+      "differing_more": 0,
+      "out_of_date": 1,
+      "review_burn_ins": true,
+      "sequences_out_of_date": 2
+    },
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/bfbabdd4-7fdb-46e8-808d-346146217d98/review-copies/"
+    },
+    "status": 200
+  },
+  "ids": {
+    "first": "f950387c-c0cc-4707-a4a7-85ed225cd0d6",
+    "gone": "9a75a0b0-516f-4dec-ab25-5e8b1aa01556",
+    "kept": "7e9df4bd-7c62-4c69-bb44-286a75dc76d2",
+    "movie": "c277cc6b-9237-4322-a4e1-2e5859bc79d5",
+    "project": "bfbabdd4-7fdb-46e8-808d-346146217d98",
+    "remade": "723fa5e9-b8c4-4676-baf1-6390221e99de",
+    "second": "f84a53af-f519-479c-88fc-9c94ea5a6053",
+    "third": "2455b1cd-5127-4c89-acfc-9c48ae7bacad"
+  },
+  "keep_200": {
+    "body": {
+      "kept": 1
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "review_media_ids": [
+          "9a75a0b0-516f-4dec-ab25-5e8b1aa01556"
+        ]
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/bfbabdd4-7fdb-46e8-808d-346146217d98/review-copies/keep/"
+    },
+    "status": 200
+  },
+  "keep_by_artist_403": {
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "f8dd0ef2-f073-4bc8-a6e8-9e9c986c2be6"
+      }
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "review_media_ids": [
+          "9a75a0b0-516f-4dec-ab25-5e8b1aa01556"
+        ]
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/bfbabdd4-7fdb-46e8-808d-346146217d98/review-copies/keep/"
+    },
+    "status": 403
+  },
+  "keep_empty_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "9eb8399a-5850-496d-82ae-e5477ddd0820"
+      },
+      "review_media_ids": [
+        "Ensure this field has at least 1 elements."
+      ]
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "review_media_ids": []
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/bfbabdd4-7fdb-46e8-808d-346146217d98/review-copies/keep/"
+    },
+    "status": 400
+  },
+  "keep_remakable_400": {
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "request_id": "9b4dbf25-375f-4afb-a97a-8f6952eba673"
+      },
+      "review_media_ids": [
+        "RPS_SH0030_COMP_V001: this copy can be remade; remake it instead."
+      ]
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "review_media_ids": [
+          "c277cc6b-9237-4322-a4e1-2e5859bc79d5"
+        ]
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/bfbabdd4-7fdb-46e8-808d-346146217d98/review-copies/keep/"
+    },
+    "status": 400
+  },
+  "remake_all_200": {
+    "body": {
+      "queued": 2,
+      "skipped_busy": 0,
+      "skipped_missing": 0,
+      "skipped_sequence": 1
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/bfbabdd4-7fdb-46e8-808d-346146217d98/review-copies/remake/"
+    },
+    "status": 200
+  },
+  "remake_gone_400": {
+    "body": {
+      "detail": [
+        "The frames of this sequence are no longer kept. Upload the frames again."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "83e26a79-51cb-46f6-87d3-a80af69c0f64"
+      }
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/review-media/9a75a0b0-516f-4dec-ab25-5e8b1aa01556/remake/"
+    },
+    "status": 400
+  },
+  "remake_kept_202": {
+    "body": {
+      "attempts": 0,
+      "color_space": "",
+      "created_by": {
+        "id": "c345cf1e-88da-46d4-aba0-d44e6462f08f",
+        "name": "user@example.test"
+      },
+      "error_code": "",
+      "error_message": "",
+      "filmstrip_tiles": 0,
+      "filmstrip_url": null,
+      "finished_at": null,
+      "frames_until": "2026-12-01T13:11:07.167726Z",
+      "id": "723fa5e9-b8c4-4676-baf1-6390221e99de",
+      "kind": "sequence",
+      "links_expire_at": null,
+      "probe": null,
+      "proxy_url": null,
+      "queued_at": "2026-11-17T13:11:08.708978Z",
+      "remake_of": "7e9df4bd-7c62-4c69-bb44-286a75dc76d2",
+      "sequence": {
+        "extension": "exr",
+        "first_frame": 1001,
+        "frames_received": 2,
+        "last_frame": 1002,
+        "name": "rps_comp"
+      },
+      "source_name": "rps_comp.[1001-1002].exr",
+      "source_size": 5541904,
+      "started_at": null,
+      "status": "queued",
+      "thumbnail_url": null,
+      "version_id": "f84a53af-f519-479c-88fc-9c94ea5a6053"
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/review-media/7e9df4bd-7c62-4c69-bb44-286a75dc76d2/remake/"
+    },
+    "status": 202
+  },
+  "version_frames_gone": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPS_SH0010_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-17T13:11:01.675967Z",
+      "department": "",
+      "end_frame": 1024,
+      "entity_code": "RPS_SH0010",
+      "entity_id": "415137bb-f449-4a51-be65-3461435a351b",
+      "entity_name": "Shot 1",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "f950387c-c0cc-4707-a4a7-85ed225cd0d6",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPS",
+      "project_id": "bfbabdd4-7fdb-46e8-808d-346146217d98",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "",
+        "created_by": {
+          "id": "c345cf1e-88da-46d4-aba0-d44e6462f08f",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 2,
+        "filmstrip_url": "/api/v1/review-media/9a75a0b0-516f-4dec-ab25-5e8b1aa01556/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-17T13:11:04.715289Z",
+        "frames_until": null,
+        "id": "9a75a0b0-516f-4dec-ab25-5e8b1aa01556",
+        "kind": "sequence",
+        "links_expire_at": "2026-11-17T14:11:08.513111Z",
+        "probe": {
+          "burn_ins": false,
+          "colour": "ocio",
+          "colour_skipped": null,
+          "duration_seconds": 0.083,
+          "first_frame": 1001,
+          "fps": 24.0,
+          "frames": 2,
+          "has_audio": false,
+          "height": 360,
+          "last_frame": 1002,
+          "ocio": {
+            "config": "studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+            "display": "sRGB - Display",
+            "input": "ACEScg",
+            "look": "",
+            "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
+          },
+          "video_codec": "exr",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/9a75a0b0-516f-4dec-ab25-5e8b1aa01556/proxy/?token=SAMPLE",
+        "queued_at": "2026-11-17T13:11:01.922359Z",
+        "remake_of": null,
+        "sequence": {
+          "extension": "exr",
+          "first_frame": 1001,
+          "frames_received": 2,
+          "last_frame": 1002,
+          "name": "rps_comp"
+        },
+        "source_name": "rps_comp.[1001-1002].exr",
+        "source_size": 5541904,
+        "started_at": "2026-11-17T13:11:01.935870Z",
+        "status": "ready",
+        "thumbnail_url": "/api/v1/review-media/9a75a0b0-516f-4dec-ab25-5e8b1aa01556/thumbnail/?token=SAMPLE",
+        "version_id": "f950387c-c0cc-4707-a4a7-85ed225cd0d6"
+      },
+      "review_media_job": null,
+      "shot_id": "415137bb-f449-4a51-be65-3461435a351b",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "0acf365f-b059-429c-9a2e-52ccb13bab02",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-17T13:11:01.675979Z",
+      "uuid": "f950387c-c0cc-4707-a4a7-85ed225cd0d6",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/f950387c-c0cc-4707-a4a7-85ed225cd0d6/"
+    },
+    "status": 200
+  },
+  "version_frames_kept": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPS_SH0020_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-17T13:11:01.737968Z",
+      "department": "",
+      "end_frame": 1024,
+      "entity_code": "RPS_SH0020",
+      "entity_id": "d8ca70db-5be5-4803-9ae0-5045f6beff75",
+      "entity_name": "Shot 2",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "f84a53af-f519-479c-88fc-9c94ea5a6053",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPS",
+      "project_id": "bfbabdd4-7fdb-46e8-808d-346146217d98",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "",
+        "created_by": {
+          "id": "c345cf1e-88da-46d4-aba0-d44e6462f08f",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 2,
+        "filmstrip_url": "/api/v1/review-media/7e9df4bd-7c62-4c69-bb44-286a75dc76d2/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-17T13:11:07.167726Z",
+        "frames_until": "2026-12-01T13:11:07.167726Z",
+        "id": "7e9df4bd-7c62-4c69-bb44-286a75dc76d2",
+        "kind": "sequence",
+        "links_expire_at": "2026-11-17T14:11:08.482039Z",
+        "probe": {
+          "burn_ins": false,
+          "colour": "ocio",
+          "colour_skipped": null,
+          "duration_seconds": 0.083,
+          "first_frame": 1001,
+          "fps": 24.0,
+          "frames": 2,
+          "has_audio": false,
+          "height": 360,
+          "last_frame": 1002,
+          "ocio": {
+            "config": "studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+            "display": "sRGB - Display",
+            "input": "ACEScg",
+            "look": "",
+            "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
+          },
+          "video_codec": "exr",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/7e9df4bd-7c62-4c69-bb44-286a75dc76d2/proxy/?token=SAMPLE",
+        "queued_at": "2026-11-17T13:11:04.871224Z",
+        "remake_of": null,
+        "sequence": {
+          "extension": "exr",
+          "first_frame": 1001,
+          "frames_received": 2,
+          "last_frame": 1002,
+          "name": "rps_comp"
+        },
+        "source_name": "rps_comp.[1001-1002].exr",
+        "source_size": 5541904,
+        "started_at": "2026-11-17T13:11:04.880341Z",
+        "status": "ready",
+        "thumbnail_url": "/api/v1/review-media/7e9df4bd-7c62-4c69-bb44-286a75dc76d2/thumbnail/?token=SAMPLE",
+        "version_id": "f84a53af-f519-479c-88fc-9c94ea5a6053"
+      },
+      "review_media_job": null,
+      "shot_id": "d8ca70db-5be5-4803-9ae0-5045f6beff75",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "374ffc49-8f21-45e6-a9c4-54f144e879a6",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-17T13:11:01.737975Z",
+      "uuid": "f84a53af-f519-479c-88fc-9c94ea5a6053",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/f84a53af-f519-479c-88fc-9c94ea5a6053/"
+    },
+    "status": 200
+  },
+  "version_sequence_remade": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPS_SH0020_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-17T13:11:01.737968Z",
+      "department": "",
+      "end_frame": 1024,
+      "entity_code": "RPS_SH0020",
+      "entity_id": "d8ca70db-5be5-4803-9ae0-5045f6beff75",
+      "entity_name": "Shot 2",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "f84a53af-f519-479c-88fc-9c94ea5a6053",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPS",
+      "project_id": "bfbabdd4-7fdb-46e8-808d-346146217d98",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "",
+        "created_by": {
+          "id": "c345cf1e-88da-46d4-aba0-d44e6462f08f",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 2,
+        "filmstrip_url": "/api/v1/review-media/723fa5e9-b8c4-4676-baf1-6390221e99de/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-17T13:11:11.099696Z",
+        "frames_until": "2026-12-01T13:11:07.167726Z",
+        "id": "723fa5e9-b8c4-4676-baf1-6390221e99de",
+        "kind": "sequence",
+        "links_expire_at": "2026-11-17T14:11:11.150050Z",
+        "probe": {
+          "burn_ins": true,
+          "colour": "ocio",
+          "colour_skipped": null,
+          "duration_seconds": 0.083,
+          "first_frame": 1001,
+          "fps": 24.0,
+          "frames": 2,
+          "has_audio": false,
+          "height": 360,
+          "last_frame": 1002,
+          "ocio": {
+            "config": "studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+            "display": "sRGB - Display",
+            "input": "ACEScg",
+            "look": "",
+            "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
+          },
+          "video_codec": "exr",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/723fa5e9-b8c4-4676-baf1-6390221e99de/proxy/?token=SAMPLE",
+        "queued_at": "2026-11-17T13:11:08.708978Z",
+        "remake_of": "7e9df4bd-7c62-4c69-bb44-286a75dc76d2",
+        "sequence": {
+          "extension": "exr",
+          "first_frame": 1001,
+          "frames_received": 2,
+          "last_frame": 1002,
+          "name": "rps_comp"
+        },
+        "source_name": "rps_comp.[1001-1002].exr",
+        "source_size": 5541904,
+        "started_at": "2026-11-17T13:11:08.757993Z",
+        "status": "ready",
+        "thumbnail_url": "/api/v1/review-media/723fa5e9-b8c4-4676-baf1-6390221e99de/thumbnail/?token=SAMPLE",
+        "version_id": "f84a53af-f519-479c-88fc-9c94ea5a6053"
+      },
+      "review_media_job": null,
+      "shot_id": "d8ca70db-5be5-4803-9ae0-5045f6beff75",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "374ffc49-8f21-45e6-a9c4-54f144e879a6",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-17T13:11:01.737975Z",
+      "uuid": "f84a53af-f519-479c-88fc-9c94ea5a6053",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/f84a53af-f519-479c-88fc-9c94ea5a6053/"
+    },
+    "status": 200
+  },
+  "version_sequence_remaking": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPS_SH0020_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-17T13:11:01.737968Z",
+      "department": "",
+      "end_frame": 1024,
+      "entity_code": "RPS_SH0020",
+      "entity_id": "d8ca70db-5be5-4803-9ae0-5045f6beff75",
+      "entity_name": "Shot 2",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "f84a53af-f519-479c-88fc-9c94ea5a6053",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPS",
+      "project_id": "bfbabdd4-7fdb-46e8-808d-346146217d98",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "",
+        "created_by": {
+          "id": "c345cf1e-88da-46d4-aba0-d44e6462f08f",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 2,
+        "filmstrip_url": "/api/v1/review-media/7e9df4bd-7c62-4c69-bb44-286a75dc76d2/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-17T13:11:07.167726Z",
+        "frames_until": "2026-12-01T13:11:07.167726Z",
+        "id": "7e9df4bd-7c62-4c69-bb44-286a75dc76d2",
+        "kind": "sequence",
+        "links_expire_at": "2026-11-17T14:11:08.751417Z",
+        "probe": {
+          "burn_ins": false,
+          "colour": "ocio",
+          "colour_skipped": null,
+          "duration_seconds": 0.083,
+          "first_frame": 1001,
+          "fps": 24.0,
+          "frames": 2,
+          "has_audio": false,
+          "height": 360,
+          "last_frame": 1002,
+          "ocio": {
+            "config": "studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+            "display": "sRGB - Display",
+            "input": "ACEScg",
+            "look": "",
+            "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
+          },
+          "video_codec": "exr",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/7e9df4bd-7c62-4c69-bb44-286a75dc76d2/proxy/?token=SAMPLE",
+        "queued_at": "2026-11-17T13:11:04.871224Z",
+        "remake_of": null,
+        "sequence": {
+          "extension": "exr",
+          "first_frame": 1001,
+          "frames_received": 2,
+          "last_frame": 1002,
+          "name": "rps_comp"
+        },
+        "source_name": "rps_comp.[1001-1002].exr",
+        "source_size": 5541904,
+        "started_at": "2026-11-17T13:11:04.880341Z",
+        "status": "ready",
+        "thumbnail_url": "/api/v1/review-media/7e9df4bd-7c62-4c69-bb44-286a75dc76d2/thumbnail/?token=SAMPLE",
+        "version_id": "f84a53af-f519-479c-88fc-9c94ea5a6053"
+      },
+      "review_media_job": {
+        "attempts": 0,
+        "color_space": "",
+        "created_by": {
+          "id": "c345cf1e-88da-46d4-aba0-d44e6462f08f",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 0,
+        "filmstrip_url": null,
+        "finished_at": null,
+        "frames_until": "2026-12-01T13:11:07.167726Z",
+        "id": "723fa5e9-b8c4-4676-baf1-6390221e99de",
+        "kind": "sequence",
+        "links_expire_at": null,
+        "probe": null,
+        "proxy_url": null,
+        "queued_at": "2026-11-17T13:11:08.708978Z",
+        "remake_of": "7e9df4bd-7c62-4c69-bb44-286a75dc76d2",
+        "sequence": {
+          "extension": "exr",
+          "first_frame": 1001,
+          "frames_received": 2,
+          "last_frame": 1002,
+          "name": "rps_comp"
+        },
+        "source_name": "rps_comp.[1001-1002].exr",
+        "source_size": 5541904,
+        "started_at": null,
+        "status": "queued",
+        "thumbnail_url": null,
+        "version_id": "f84a53af-f519-479c-88fc-9c94ea5a6053"
+      },
+      "shot_id": "d8ca70db-5be5-4803-9ae0-5045f6beff75",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "374ffc49-8f21-45e6-a9c4-54f144e879a6",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-17T13:11:01.737975Z",
+      "uuid": "f84a53af-f519-479c-88fc-9c94ea5a6053",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/f84a53af-f519-479c-88fc-9c94ea5a6053/"
+    },
+    "status": 200
+  }
+}

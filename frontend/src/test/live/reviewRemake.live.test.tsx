@@ -69,7 +69,7 @@ describe.skipIf(!live.media)('remaking review copies against a live backend (SYN
     await waitFor(async () => expect((await newest())?.status).toBe('ready'), { timeout: 90000, interval: 1000 });
     const original = await newest();
     expect(original.probe?.burn_ins).toBe(false);
-    expect(await reviewCopiesApi.get(fixture.project.id)).toEqual({ review_burn_ins: false, out_of_date: 0, sequences_out_of_date: 0 });
+    expect(await reviewCopiesApi.get(fixture.project.id)).toMatchObject({ review_burn_ins: false, out_of_date: 0, sequences_out_of_date: 0, differing: [] });
 
     // the write answer is the write shape (no `id`): the notice gets the project read back, as the workspace has it
     expect((await projectsApi.update(fixture.project.id, { review_burn_ins: true })).review_burn_ins).toBe(true);

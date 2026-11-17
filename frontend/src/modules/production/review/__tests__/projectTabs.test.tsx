@@ -18,6 +18,7 @@ import type { Project } from '@/api/production/structure';
 const auth = loadSample('identity/_auth_flow.json');
 const artist = auth.me_artist.body as unknown as User;
 const project = { id: 'p-123', code: 'PRJ' } as unknown as Project;
+const nothingDiffers = loadSample('production/_review_sequence_copies_flow.json').copies_switch_off.body;
 
 beforeEach(() => tokenStorage.setTokens({ access: 'a', refresh: 'r' }));
 afterEach(() => {
@@ -34,7 +35,13 @@ describe('project tabs', () => {
     ['media', ProjectMediaTab, '/api/v1/media/', 'Media'],
     ['workflow', ProjectWorkflowTab, '/api/v1/workflows/', 'Workflows'],
   ] as const)('the %s tab asks the server for this project only', async (_name, Tab, listPath, title) => {
-    const { calls } = mockFetch((c) => (new URL(c.url).pathname === '/api/v1/media/' ? { status: 200, body: [] } : { status: 200, body: { count: 0, next: null, previous: null, results: [] } }));
+    const { calls } = mockFetch((c) => {
+      const path = new URL(c.url).pathname;
+      if (path === '/api/v1/media/') return { status: 200, body: [] };
+      // The versions tab's review-copies notice reads the copies (C-RP-38, C-RP-42): answer it as the server does.
+      if (path === `/api/v1/projects/${project.id}/review-copies/`) return { status: 200, body: nothingDiffers };
+      return { status: 200, body: { count: 0, next: null, previous: null, results: [] } };
+    });
     render(
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}>
         <AuthContext.Provider value={{ user: artist, refreshUser: vi.fn() } as unknown as AuthContextValue}>

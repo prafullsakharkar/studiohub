@@ -66,6 +66,9 @@ REVIEW_MEDIA_MAX_FRAMES = settings.review_media_max_frames
 
 REVIEW_MEDIA_SEQUENCE_MAX_BYTES = settings.review_media_sequence_max_bytes
 
+# Days a sequence's frames are kept once its copy is ready, to remake it (RP-16); 0 = not kept.
+REVIEW_MEDIA_SEQUENCE_KEEP_DAYS = settings.review_media_sequence_keep_days
+
 # The font file burn-ins are drawn in (copied into each job's folder, never put in a filter).
 REVIEW_MEDIA_BURN_IN_FONT = settings.review_media_burn_in_font
 

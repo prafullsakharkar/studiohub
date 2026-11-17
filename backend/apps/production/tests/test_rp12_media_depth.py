@@ -794,6 +794,7 @@ class TestSequenceProcessing:
     def test_an_exr_sequence_becomes_ready(
         self, editor, version, queued, settings, monkeypatch, django_capture_on_commit_callbacks
     ):
+        settings.REVIEW_MEDIA_SEQUENCE_KEEP_DAYS = 0  # RP-12's rule, which RP-16 keeps for 0
         _no_colour_space(version)
         media = _whole(_api(editor), version, django_capture_on_commit_callbacks)
         with django_capture_on_commit_callbacks(execute=True):
@@ -812,7 +813,7 @@ class TestSequenceProcessing:
         assert media.probe["colour"] == "srgb_from_linear" and media.probe["burn_ins"] is False
         assert media.probe["frames"] == 4 and media.filmstrip_tiles == 4
         # Q-RP-56: the frames are gone once the copy is ready
-        assert media.source_path == ""
+        assert media.source_path == "" and media.frames_until is None
         assert not (Path(settings.MEDIA_ROOT) / media.directory / "source").exists()
         assert (Path(settings.MEDIA_ROOT) / media.proxy_path).is_file()
 
@@ -1105,6 +1106,7 @@ class TestRealFfmpeg:
     def test_an_exr_sequence_becomes_a_playable_proxy(
         self, editor, version, queued, settings, tmp_path, django_capture_on_commit_callbacks
     ):
+        settings.REVIEW_MEDIA_SEQUENCE_KEEP_DAYS = 0  # RP-12's rule, which RP-16 keeps for 0
         _no_colour_space(version)
         files = self._frames(tmp_path, "exr", "gbrpf32le")
         media = self._upload(_api(editor), version, files, ext="exr", first=1001, last=1010)

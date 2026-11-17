@@ -6,9 +6,11 @@ Upload, the sequence's parts, retry and remove run in the request; ``process`` r
 ``celery-media`` worker, which has ffmpeg. Files live under ``MEDIA_ROOT/<row.directory>/``: a movie
 or still as ``source.<ext>``, a sequence's frames as ``source/frame.<8 digits>.<ext>``, and the
 results as ``proxy.mp4`` (``proxy.jpg`` for a still), ``thumbnail.jpg`` and ``filmstrip.jpg``. A row
-that is superseded or removed loses its folder once the change is committed; a sequence loses its
-frames once its copy is ready (Q-RP-56). A remake (RP-14, C-RP-37) is a new row whose upload is a hard
-link to the kept upload of the ready copy it remakes, so superseding that copy later cannot delete it.
+that is superseded or removed loses its folder once the change is committed. A sequence keeps its
+frames for ``REVIEW_MEDIA_SEQUENCE_KEEP_DAYS`` once its copy is ready (``frames_until``), then the sweep
+deletes them (RP-16, C-RP-41; with 0 they go at once, as Q-RP-56 had it). A remake (RP-14, C-RP-37;
+sequences, RP-16) is a new row whose upload is a hard link to the kept upload, or to each kept frame, of
+the ready copy it remakes, so superseding that copy later cannot delete it.
 """
 
 from __future__ import annotations
@@ -191,10 +193,21 @@ def _audit(
 
 #: why a copy cannot be remade (C-RP-37), one sentence each
 REMAKE_REFUSALS = {
-    "sequence": "The frames of a sequence are not kept once its copy is ready. Upload the frames again.",
+    "sequence": "The frames of this sequence are no longer kept. Upload the frames again.",
     "not_ready": "Only a ready review copy can be remade.",
     "missing": "The uploaded file is no longer on the server. Upload it again.",
 }
+KEEP_UNAVAILABLE = "The studio's colour config cannot be read, so copies cannot be kept now."
+
+
+def _keep_frames_until(row: ReviewMedia, now: Any) -> Any:
+    """Until when a sequence copy that is now ready keeps its frames, or ``None`` (C-RP-41, Q-RP-74)."""
+    days = settings.REVIEW_MEDIA_SEQUENCE_KEEP_DAYS
+    if days <= 0:
+        return None
+    # a remake keeps the original's time; a first copy starts it
+    until = row.frames_until or now + timedelta(days=days)
+    return until if until > now else None
 
 
 def _require_enabled() -> None:
@@ -351,7 +364,7 @@ class ReviewMediaService:
 
     @classmethod
     def remake(cls, *, actor: Any, media: ReviewMedia) -> ReviewMedia:
-        """Queue a new copy of the ready movie or still ``media`` from its kept upload (C-RP-37)."""
+        """Queue a new copy of the ready ``media`` from its kept upload or frames (C-RP-37, C-RP-41)."""
         _require_enabled()
         made, problem = cls._remake(actor=actor, media_id=media.pk)
         if problem == "busy":
@@ -362,21 +375,69 @@ class ReviewMediaService:
 
     @classmethod
     def remake_differing(cls, *, actor: Any, project: Any) -> dict[str, int]:
-        """Remake every movie copy of ``project`` whose burn-ins differ from its switch (C-RP-38)."""
+        """Remake every copy of ``project`` made with other settings than it has now (C-RP-38).
+
+        Movies from their kept upload, sequences while their frames are kept (C-RP-41); a sequence
+        whose frames are gone is counted in ``skipped_sequence``.
+        """
         _require_enabled()
         counts = {"queued": 0, "skipped_busy": 0, "skipped_sequence": 0, "skipped_missing": 0}
-        for row_id, kind in ReviewMediaSelector.differing(project).values_list("pk", "kind"):
-            if kind == ReviewMedia.Kind.SEQUENCE:
-                counts["skipped_sequence"] += 1
-                continue
+        for row_id in ReviewMediaSelector.differing(project).values_list("pk", flat=True):
             made, problem = cls._remake(actor=actor, media_id=row_id)
             if made is not None:
                 counts["queued"] += 1
             elif problem == "busy":
                 counts["skipped_busy"] += 1
+            elif problem == "sequence":
+                counts["skipped_sequence"] += 1
             elif problem == "missing":
                 counts["skipped_missing"] += 1
         return counts
+
+    @classmethod
+    def keep(cls, *, actor: Any, project: Any, ids: list[Any]) -> dict[str, int]:
+        """Keep differing copies that cannot be remade as they are (C-RP-43); all of them or none.
+
+        Each row stores the settings it was kept against (``kept_for``), so it counts again once the
+        project's burn-ins, colour space, view or look change.
+        """
+        with transaction.atomic():
+            why = ReviewMediaSelector.differences(project)
+            rows = {
+                row.pk: row
+                for row in ReviewMedia.objects.select_for_update()
+                .select_related("version")
+                .filter(project_id=project.pk, pk__in=ids)
+            }
+            problems = []
+            for media_id in ids:
+                row = rows.get(media_id)
+                if row is None or media_id not in why:
+                    problems.append(f"{media_id}: this is not a copy of the project that differs.")
+                elif ReviewMediaSelector.remakable(row):
+                    problems.append(
+                        f"{row.version.code}: this copy can be remade; remake it instead."
+                    )
+            if problems:
+                raise ValidationError({"review_media_ids": problems[:10]})
+            for row in rows.values():
+                kept_for = ReviewMediaSelector.settings_now(project, row)
+                if kept_for is None:
+                    raise ValidationError({"detail": [KEEP_UNAVAILABLE]})
+                row.kept_for = kept_for
+                row.save(update_fields=["kept_for"])
+                _audit(
+                    actor=actor,
+                    version=row.version,
+                    operation="review_media_kept",
+                    media=row,
+                    action=AuditLog.ACTION_UPDATE,
+                    description=(
+                        f"Review {row.kind} of version {row.version.code} kept as it is with the "
+                        "project's settings."
+                    ),
+                )
+        return {"kept": len(rows)}
 
     @classmethod
     def _remake(cls, *, actor: Any, media_id: Any) -> tuple[ReviewMedia | None, str | None]:
@@ -392,18 +453,19 @@ class ReviewMediaService:
                 row = (
                     ReviewMedia.objects.select_for_update().select_related("version").get(pk=row.pk)
                 )
-                if row.kind == ReviewMedia.Kind.SEQUENCE:
-                    return None, "sequence"
                 if row.status != Status.READY:
                     return None, "not_ready"
+                sequence = row.kind == ReviewMedia.Kind.SEQUENCE
+                if sequence and not row.frames_kept:
+                    return None, "sequence"
                 if ReviewMedia.objects.filter(
                     version_id=row.version_id,  # pyright: ignore[reportAttributeAccessIssue]
                     status__in=ReviewMedia.IN_FLIGHT,
                 ).exists():
                     return None, "busy"
                 source = _media_root() / row.source_path if row.source_path else None
-                if source is None or not source.is_file():
-                    return None, "missing"
+                if source is None or not (source.is_dir() if sequence else source.is_file()):
+                    return None, "sequence" if sequence else "missing"
                 now = timezone.now()
                 made = ReviewMedia(
                     project_id=row.project_id,  # pyright: ignore[reportAttributeAccessIssue]
@@ -415,16 +477,28 @@ class ReviewMediaService:
                     source_sha256=row.source_sha256,
                     source_container=row.source_container,
                     color_space=row.color_space,
+                    sequence_name=row.sequence_name,
+                    sequence_extension=row.sequence_extension,
+                    first_frame=row.first_frame,
+                    last_frame=row.last_frame,
+                    frames_received=row.frames_received,
                     queued_at=now,
                     created_by=actor if getattr(actor, "pk", None) else None,
                     remake_of=row,
                     # Q-RP-66: the original's date; a copy made before RP-14 dates from its row
                     burn_in_date=row.burn_in_date or row.queued_at.date(),
+                    # Q-RP-74: a remake keeps the original's time, it does not start a new one
+                    frames_until=row.frames_until if sequence else None,
                 )
                 made.save()
                 folder = made.directory
-                made.source_path = f"{folder}/source{source.suffix}"
-                cls._link(source, _media_root() / made.source_path)
+                if sequence:
+                    made.source_path = f"{folder}/source"
+                    for frame in sorted(source.iterdir()):
+                        cls._link(frame, _media_root() / made.source_path / frame.name)
+                else:
+                    made.source_path = f"{folder}/source{source.suffix}"
+                    cls._link(source, _media_root() / made.source_path)
                 made.save(update_fields=["source_path"])
                 _audit(
                     actor=actor,
@@ -697,6 +771,7 @@ class ReviewMediaService:
                     "thumbnail_path",
                     "filmstrip_path",
                     "filmstrip_tiles",
+                    "frames_until",
                 ]
             )
             _audit(
@@ -719,6 +794,7 @@ class ReviewMediaService:
     def _clear_outputs(row: ReviewMedia) -> None:
         row.proxy_path = row.thumbnail_path = row.filmstrip_path = ""
         row.filmstrip_tiles = 0
+        row.frames_until = None  # its folder, frames included, goes with it
 
     # ------------------------------------------------------------------ worker side
 
@@ -966,6 +1042,7 @@ class ReviewMediaService:
                         "thumbnail_path",
                         "filmstrip_path",
                         "filmstrip_tiles",
+                        "frames_until",
                     ]
                 )
                 older_folders.append(previous.directory)
@@ -979,9 +1056,12 @@ class ReviewMediaService:
             row.error_code = ""
             row.finished_at = timezone.now()
             if row.kind == ReviewMedia.Kind.SEQUENCE:
-                # Q-RP-56: the frames go once the copy is ready; C-RP-32: an unset range is filled.
-                older_folders.append(row.source_path)
-                row.source_path = ""
+                # C-RP-41: the frames are kept for a while to remake the copy, else they go now
+                # (Q-RP-56); C-RP-32: an unset range is filled.
+                row.frames_until = _keep_frames_until(row, row.finished_at)
+                if row.frames_until is None:
+                    older_folders.append(row.source_path)
+                    row.source_path = ""
                 Version.objects.filter(
                     pk=row.version_id,  # pyright: ignore[reportAttributeAccessIssue]
                     start_frame__isnull=True,
@@ -1016,7 +1096,8 @@ class ReviewMediaService:
         """Fail jobs a worker dropped (``processing`` 45 minutes) or a broker lost (``queued`` a day).
 
         A sequence left ``uploading`` a day after its last part is removed, and its frames deleted
-        by the ``media`` worker (C-RP-31).
+        by the ``media`` worker (C-RP-31). A sequence whose frames were kept past ``frames_until``
+        loses them the same way; its copy stays (C-RP-41).
         """
         now = timezone.now()
         abandoned: list[str] = []
@@ -1034,6 +1115,22 @@ class ReviewMediaService:
                 transaction.on_commit(lambda: [discard_later(f) for f in abandoned])
         if abandoned:
             logger.warning("review_media_uploads_expired", count=len(abandoned))
+        # C-RP-41: a sequence's frames go once their time is up; its copy stays
+        expired: list[str] = []
+        with transaction.atomic():
+            rows = list(
+                ReviewMedia.objects.select_for_update()
+                .filter(kind=ReviewMedia.Kind.SEQUENCE, frames_until__lte=now)
+                .exclude(source_path="")
+            )
+            for row in rows:
+                expired.append(row.source_path)
+                row.source_path, row.frames_until = "", None
+                row.save(update_fields=["source_path", "frames_until"])
+            if expired:
+                transaction.on_commit(lambda: [discard_later(f) for f in expired])
+        if expired:
+            logger.info("review_media_frames_expired", count=len(expired))
         counts = []
         for status, stale in (
             (Status.PROCESSING, {"started_at__lt": now - STALE_PROCESSING}),
@@ -1049,4 +1146,4 @@ class ReviewMediaService:
         processing, queued = counts
         if processing or queued:
             logger.warning("review_media_swept", processing=processing, queued=queued)
-        return processing + queued + len(abandoned)
+        return processing + queued + len(abandoned) + len(expired)

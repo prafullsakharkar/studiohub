@@ -119,15 +119,16 @@ describe.skipIf(!live.media)('colour-managed review copies against a live backen
     expect(project.review_view).toBe('Un-tone-mapped');
     cleanup();
 
-    expect(await reviewCopiesApi.get(project.id)).toEqual({ review_burn_ins: false, out_of_date: 0, sequences_out_of_date: 1, colour_out_of_date: 1 });
+    expect(await reviewCopiesApi.get(project.id)).toMatchObject({ review_burn_ins: false, out_of_date: 0, sequences_out_of_date: 1, colour_out_of_date: 1 });
     render(tree(<ReviewCopiesNotice project={project} />));
     const notice = await screen.findByRole('region', { name: 'Review copies' }, { timeout: 20000 });
     expect(notice.textContent).toContain('1 image sequence was made with other settings.');
-    expect(within(notice).queryByRole('button', { name: 'Remake them' })).toBeNull();
+    // RP-16: its frames are kept, so it could be remade; here the frames are sent again instead
+    expect(notice.textContent).toContain('1 can be remade while its frames are kept.');
     cleanup();
 
     const again = await uploadSequence();
     expect(again.probe?.ocio).toMatchObject({ input: 'ACEScg', view: 'Un-tone-mapped' });
-    expect(await reviewCopiesApi.get(project.id)).toEqual({ review_burn_ins: false, out_of_date: 0, sequences_out_of_date: 0, colour_out_of_date: 0 });
+    expect(await reviewCopiesApi.get(project.id)).toMatchObject({ review_burn_ins: false, out_of_date: 0, sequences_out_of_date: 0, colour_out_of_date: 0, differing: [] });
   }, 240000);
 });

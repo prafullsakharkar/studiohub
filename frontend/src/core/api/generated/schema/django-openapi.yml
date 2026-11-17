@@ -19261,8 +19261,8 @@ paths:
   /api/v1/projects/{uuid}/review-copies/:
     get:
       operationId: v1_projects_review_copies_retrieve
-      description: How many review copies differ from the project's burn-in switch
-        (C-RP-38).
+      description: The review copies made with other settings than the project has
+        now (C-RP-38, C-RP-42).
       parameters:
       - in: path
         name: uuid
@@ -19282,11 +19282,46 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReviewCopies'
           description: ''
+  /api/v1/projects/{uuid}/review-copies/keep/:
+    post:
+      operationId: v1_projects_review_copies_keep_create
+      description: Keep differing copies that cannot be remade as they are (C-RP-43).
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCopiesKeep'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReviewCopiesKeep'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewCopiesKeep'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewCopiesKept'
+          description: ''
   /api/v1/projects/{uuid}/review-copies/remake/:
     post:
       operationId: v1_projects_review_copies_remake_create
-      description: Remake every movie copy whose burn-ins differ from the project's
-        switch (C-RP-38).
+      description: Remake every differing copy that can be remade (C-RP-38; sequences,
+        C-RP-41).
       parameters:
       - in: path
         name: uuid
@@ -57641,7 +57676,7 @@ components:
           nullable: true
     ReviewCopies:
       type: object
-      description: '``GET projects/{id}/review-copies/`` (C-RP-38).'
+      description: '``GET projects/{id}/review-copies/`` (C-RP-38, C-RP-40, C-RP-42).'
       properties:
         review_burn_ins:
           type: boolean
@@ -57651,11 +57686,40 @@ components:
           type: integer
         colour_out_of_date:
           type: integer
+        differing:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewCopyDiffering'
+        differing_more:
+          type: integer
       required:
       - colour_out_of_date
+      - differing
+      - differing_more
       - out_of_date
       - review_burn_ins
       - sequences_out_of_date
+    ReviewCopiesKeep:
+      type: object
+      description: '``POST projects/{id}/review-copies/keep/`` (C-RP-43): the copies
+        to keep as they are.'
+      properties:
+        review_media_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 100
+          minItems: 1
+      required:
+      - review_media_ids
+    ReviewCopiesKept:
+      type: object
+      properties:
+        kept:
+          type: integer
+      required:
+      - kept
     ReviewCopiesRemade:
       type: object
       description: '``POST projects/{id}/review-copies/remake/`` (C-RP-38).'
@@ -57673,6 +57737,64 @@ components:
       - skipped_busy
       - skipped_missing
       - skipped_sequence
+    ReviewCopyDiffering:
+      type: object
+      description: One copy made with other settings than its project has now (C-RP-42).
+      properties:
+        review_media_id:
+          type: string
+          format: uuid
+        kind:
+          enum:
+          - movie
+          - still
+          - sequence
+          type: string
+          description: |-
+            * `movie` - Movie
+            * `still` - Still
+            * `sequence` - Sequence
+          x-spec-enum-id: d14480ac0544b0b1
+        version:
+          $ref: '#/components/schemas/ReviewCopyVersion'
+        record_code:
+          type: string
+        remakable:
+          type: boolean
+        frames_until:
+          type: string
+          format: date-time
+          nullable: true
+        why:
+          type: array
+          items:
+            enum:
+            - burn_ins
+            - colour
+            type: string
+            description: |-
+              * `burn_ins` - burn_ins
+              * `colour` - colour
+            x-spec-enum-id: 458845222793aa7d
+      required:
+      - frames_until
+      - kind
+      - record_code
+      - remakable
+      - review_media_id
+      - version
+      - why
+    ReviewCopyVersion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+      required:
+      - code
+      - id
     ReviewCreate:
       type: object
       description: Base serializer for write operations.
@@ -58066,6 +58188,11 @@ components:
         color_space:
           type: string
           readOnly: true
+        frames_until:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
       required:
       - attempts
       - color_space
@@ -58075,6 +58202,7 @@ components:
       - filmstrip_tiles
       - filmstrip_url
       - finished_at
+      - frames_until
       - id
       - kind
       - links_expire_at

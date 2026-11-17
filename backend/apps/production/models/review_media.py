@@ -16,6 +16,7 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class ReviewMedia(models.Model):
@@ -103,6 +104,12 @@ class ReviewMedia(models.Model):
     burn_in_date = models.DateField(null=True, blank=True)
     # RP-15 (C-RP-40): the colour space the upload named; blank = the project's rule (EXR frames only).
     color_space = models.CharField(max_length=100, blank=True, default="")
+    # RP-16 (C-RP-41): until when a ready sequence's frames are kept to remake it (a remake keeps the
+    # original's); null for movies, stills and sequences whose frames went at once.
+    frames_until = models.DateTimeField(null=True, blank=True)
+    # RP-16 (C-RP-43): the settings a copy that could not be remade was kept as it is against
+    # ({"burn_ins", "ocio"}); it counts as matching while the project's settings are these.
+    kept_for = models.JSONField(null=True, blank=True)
 
     class Meta:
         db_table = "production_review_media"
@@ -137,6 +144,16 @@ class ReviewMedia(models.Model):
         if self.first_frame is None or self.last_frame is None:
             return 0
         return self.last_frame - self.first_frame + 1
+
+    @property
+    def frames_kept(self) -> bool:
+        """Whether this sequence still has its frames, so its copy can be remade (RP-16, C-RP-41)."""
+        return bool(
+            self.kind == self.Kind.SEQUENCE
+            and self.source_path
+            and self.frames_until is not None
+            and self.frames_until > timezone.now()
+        )
 
     @property
     def directory(self) -> str:

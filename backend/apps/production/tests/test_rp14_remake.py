@@ -167,6 +167,11 @@ def _ready(user, version, monkeypatch, capture, **kind) -> ReviewMedia:
     return media
 
 
+def _counts(body: dict) -> dict:
+    """The copies read's counts (C-RP-38, C-RP-40), without RP-16's list of the copies."""
+    return {k: v for k, v in body.items() if k not in ("differing", "differing_more")}
+
+
 def _ready_sequence(user, version, monkeypatch, capture) -> ReviewMedia:
     api = _api(user)
     resp = api.post(
@@ -281,8 +286,9 @@ class TestRemakeOne:
         assert ReviewMedia.objects.filter(version=version, status=Status.QUEUED).count() == 1
 
     def test_a_sequence_is_told_to_upload_its_frames_again(
-        self, editor, version, queued, monkeypatch, django_capture_on_commit_callbacks
+        self, editor, version, queued, monkeypatch, settings, django_capture_on_commit_callbacks
     ):
+        settings.REVIEW_MEDIA_SEQUENCE_KEEP_DAYS = 0  # RP-12's rule, which RP-16 keeps for 0
         media = _ready_sequence(editor, version, monkeypatch, django_capture_on_commit_callbacks)
         resp = _remake(editor, media)
         assert resp.status_code == 400
@@ -449,7 +455,7 @@ class TestProjectCopies:
         _ready(_user(other, *EDITOR), _version(other, "OTH_V1"), monkeypatch, cap)
         self._switch(other)
 
-        body = self._copies(producer, project).json()
+        body = _counts(self._copies(producer, project).json())
         assert body == {
             "review_burn_ins": False,
             "out_of_date": 0,
@@ -457,7 +463,7 @@ class TestProjectCopies:
             "colour_out_of_date": 0,
         }
         self._switch(project)
-        body = self._copies(producer, project).json()
+        body = _counts(self._copies(producer, project).json())
         assert body == {
             "review_burn_ins": True,
             "out_of_date": 2,
@@ -467,7 +473,7 @@ class TestProjectCopies:
         ReviewMedia.objects.filter(pk=movie.pk).update(probe={**movie.probe, "burn_ins": True})
         assert self._copies(producer, project).json()["out_of_date"] == 1
         self._switch(project, on=False)
-        body = self._copies(producer, project).json()
+        body = _counts(self._copies(producer, project).json())
         assert body == {
             "review_burn_ins": False,
             "out_of_date": 1,
@@ -486,6 +492,7 @@ class TestProjectCopies:
         django_capture_on_commit_callbacks,
     ):
         cap = django_capture_on_commit_callbacks
+        settings.REVIEW_MEDIA_SEQUENCE_KEEP_DAYS = 0  # RP-12's rule, which RP-16 keeps for 0
         first = _ready(editor, _version(project, "RPF_V1"), monkeypatch, cap)
         busy_version = _version(project, "RPF_V2")
         busy = _ready(editor, busy_version, monkeypatch, cap)
