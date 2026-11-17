@@ -19258,6 +19258,54 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProjectList'
           description: ''
+  /api/v1/projects/{uuid}/review-copies/:
+    get:
+      operationId: v1_projects_review_copies_retrieve
+      description: How many review copies differ from the project's burn-in switch
+        (C-RP-38).
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewCopies'
+          description: ''
+  /api/v1/projects/{uuid}/review-copies/remake/:
+    post:
+      operationId: v1_projects_review_copies_remake_create
+      description: Remake every movie copy whose burn-ins differ from the project's
+        switch (C-RP-38).
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewCopiesRemade'
+          description: ''
   /api/v1/projects/{uuid}/statistics/:
     get:
       operationId: v1_projects_statistics_retrieve
@@ -20857,6 +20905,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReviewMediaFramesResult'
+          description: ''
+  /api/v1/review-media/{id}/remake/:
+    post:
+      operationId: v1_review_media_remake_create
+      description: A new copy of a ready movie or still from its kept upload (C-RP-37).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewMedia'
           description: ''
   /api/v1/review-media/{id}/retry/:
     post:
@@ -57467,6 +57539,37 @@ components:
           type: string
           format: uuid
           nullable: true
+    ReviewCopies:
+      type: object
+      description: '``GET projects/{id}/review-copies/`` (C-RP-38).'
+      properties:
+        review_burn_ins:
+          type: boolean
+        out_of_date:
+          type: integer
+        sequences_out_of_date:
+          type: integer
+      required:
+      - out_of_date
+      - review_burn_ins
+      - sequences_out_of_date
+    ReviewCopiesRemade:
+      type: object
+      description: '``POST projects/{id}/review-copies/remake/`` (C-RP-38).'
+      properties:
+        queued:
+          type: integer
+        skipped_busy:
+          type: integer
+        skipped_sequence:
+          type: integer
+        skipped_missing:
+          type: integer
+      required:
+      - queued
+      - skipped_busy
+      - skipped_missing
+      - skipped_sequence
     ReviewCreate:
       type: object
       description: Base serializer for write operations.
@@ -57852,6 +57955,11 @@ components:
           format: date-time
           nullable: true
           readOnly: true
+        remake_of:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
       required:
       - attempts
       - created_by
@@ -57866,6 +57974,7 @@ components:
       - probe
       - proxy_url
       - queued_at
+      - remake_of
       - sequence
       - source_name
       - source_size

@@ -2,7 +2,8 @@
 
 Status: **accepted** (planned 2026-11-13 as review-pipeline RP-5; approved by the owner the same day: "go ahead", every
 recommendation of Q-RP-24 to Q-RP-31). **Amended by RP-12** (2026-11-16, Q-RP-51 to Q-RP-56 = A): image sequences and
-burn-ins, see "Amendment: image sequences and burn-ins" below · Plan and contracts: `docs/review-pipeline/PLAN.md` (RP-5),
+burn-ins, see "Amendment: image sequences and burn-ins" below. **Amended by RP-14** (2026-11-17, Q-RP-63 to Q-RP-67 = A):
+remaking a copy from its kept upload, see "Amendment: remaking copies" below · Plan and contracts: `docs/review-pipeline/PLAN.md` (RP-5),
 `docs/review-pipeline/CONTRACTS.md` (C-RP-19 to C-RP-22) · Evidence: `docs/review-pipeline/rp-5-verification.md`
 
 ## Context
@@ -115,8 +116,25 @@ Evidence: `docs/review-pipeline/rp-12-verification.md`.
    filter graph. A font that cannot be read gives a copy without burn-ins (logged), not a failed job.
 6. **Frames do not stay.** A sequence's frames are deleted once its copy is ready; a failed job keeps them for a retry.
 
+## Amendment: remaking copies (review-pipeline RP-14)
+
+Plan and contracts: `docs/review-pipeline/PLAN.md` (RP-14), `docs/review-pipeline/CONTRACTS.md` (C-RP-37, C-RP-38).
+Evidence: `docs/review-pipeline/rp-14-verification.md`.
+
+1. **A remake is a new row.** `POST review-media/{id}/remake/` takes the version's ready movie or still and queues a new
+   row whose upload is a hard link to the kept one (a copy where a link cannot be made), made in the request on the
+   same media volume as an upload. The remade row stays `ready` and shown until the new one is ready, then is
+   superseded and its folder deleted as before; the link keeps the upload alive. Nothing new reaches ffmpeg: the job
+   is the same job, on our own file.
+2. **A sequence cannot be remade.** Its frames are gone once its copy is ready (point 6 above stands).
+3. **The burn-in date is fixed when a copy is first made** (`burn_in_date`, set as processing starts) and carried by
+   its remakes, so remaking does not date old work today.
+4. **A project's copies.** `GET projects/{id}/review-copies/` counts the ready copies whose burn-ins differ from the
+   switch; `POST .../remake/` remakes the movies among them (`project.update`). Nothing is remade automatically.
+5. **No slates** (Q-RP-63): a slate inside the copy would shift every frame number that comments and drawings store.
+
 ## Not decided here
 
-- Colour management (OCIO) and per-project LUTs, audio-only files, HDR. *(Sequences and burn-ins: RP-12, above.)*
+- Colour management (OCIO) and per-project LUTs, audio-only files, HDR, slates. *(Sequences and burn-ins: RP-12; remaking: RP-14, above.)*
 - Moving review media to object storage (it uses the media volume like attachments).
 - Live review sessions (RP-8).

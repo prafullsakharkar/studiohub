@@ -16,5 +16,6 @@ class ReviewMediaFinished(DomainEvent):
     A review media row reached ``ready`` or ``failed``.
 
     Payload: ``review_media_id``, ``version_id``, ``project_id``, ``status`` (``ready`` or
-    ``failed``), ``error_code`` (``""`` when ready), ``created_by_id`` (or ``None``).
+    ``failed``), ``error_code`` (``""`` when ready), ``created_by_id`` (or ``None``), ``remake``
+    (whether the row remakes an earlier copy, RP-14 C-RP-37).
     """

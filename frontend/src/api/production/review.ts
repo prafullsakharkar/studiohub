@@ -139,6 +139,27 @@ export interface ReviewMedia {
   started_at: string | null;
   finished_at: string | null;
   created_by: { id: string; name: string } | null;
+  /** The copy this row remakes (RP-14, C-RP-37), or null: a remake keeps that copy shown until it is ready. */
+  remake_of: string | null;
+}
+
+/**
+ * A project's review copies against its burn-in switch (RP-14, C-RP-38), pinned to
+ * docs/sync/samples/production/_review_remake_flow.json. `out_of_date` counts the movies that can be remade; a sequence's
+ * frames are gone once its copy is ready, so `sequences_out_of_date` can only be fixed by uploading the frames again.
+ */
+export interface ReviewCopies {
+  review_burn_ins: boolean;
+  out_of_date: number;
+  sequences_out_of_date: number;
+}
+
+/** What `POST projects/{id}/review-copies/remake/` did (C-RP-38). */
+export interface ReviewCopiesRemade {
+  queued: number;
+  skipped_busy: number;
+  skipped_sequence: number;
+  skipped_missing: number;
 }
 
 /** A job the worker has not finished: the version is refetched while one exists. */
@@ -237,6 +258,21 @@ export const reviewMediaApi = {
   },
   /** Queue the sequence once every frame is in (202); 400 naming the missing frames otherwise. */
   complete: (id: string) => apiClient.post<ReviewMedia>(`${V1}/review-media/${id}/complete/`, {}),
+  /**
+   * Remake a ready movie or still from its kept upload (RP-14, C-RP-37): the rights of `upload`; 202 with a new queued
+   * row (`remake_of` set) while the copy stays shown; 400 for a sequence, a row that is not ready or an upload that is
+   * gone (the reason in `detail`); 409 `review_media_busy` / `review_media_disabled`.
+   */
+  remake: (id: string) => apiClient.post<ReviewMedia>(`${V1}/review-media/${id}/remake/`, {}),
+};
+
+/** A project's review copies against its burn-in switch (RP-14, C-RP-38). */
+export const reviewCopiesApi = {
+  keys: { all: ['production', 'review-copies'] as const, of: (projectId: string) => ['production', 'review-copies', projectId] as const },
+  /** `project.view` with full internal access (404 otherwise). */
+  get: (projectId: string, signal?: AbortSignal) => apiClient.get<ReviewCopies>(`${V1}/projects/${projectId}/review-copies/`, { signal }),
+  /** `project.update`: remakes every movie that differs, each on its own; 200 with what it did. */
+  remake: (projectId: string) => apiClient.post<ReviewCopiesRemade>(`${V1}/projects/${projectId}/review-copies/remake/`, {}),
 };
 
 export interface VersionInput {
