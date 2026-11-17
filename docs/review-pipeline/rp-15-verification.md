@@ -1,6 +1,6 @@
 # RP-15 verification: colour management for review copies
 
-Built 2026-11-17 on `feature/rp-15-colour-management`, off `develop` at `73570a2e` (v4.11.0), with every recommendation of Q-RP-68 to Q-RP-72 ([DECISIONS.md](DECISIONS.md#rp-15-answers)). Committed `ae0c6dde`; not merged. Contracts C-RP-39 and C-RP-40 ([CONTRACTS.md](CONTRACTS.md#rp-15-colour-management-for-review-copies)); decision record [ADR-0041](../adr/ADR-0041-review-colour-management.md).
+Built 2026-11-17 on `feature/rp-15-colour-management`, off `develop` at `73570a2e` (v4.11.0), with every recommendation of Q-RP-68 to Q-RP-72 ([DECISIONS.md](DECISIONS.md#rp-15-answers)). Committed `ae0c6dde`; merged into `develop` (`19b07186`) and `main` (`67e1cab6`), released in v4.12.0. Contracts C-RP-39 and C-RP-40 ([CONTRACTS.md](CONTRACTS.md#rp-15-colour-management-for-review-copies)); decision record [ADR-0041](../adr/ADR-0041-review-colour-management.md).
 
 ## What was built
 
