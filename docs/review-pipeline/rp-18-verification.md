@@ -1,6 +1,6 @@
 # RP-18 verification: review copies before approval
 
-Built 2026-11-18 on `feature/rp-18-auto-review-copies`, off `develop` at `04b11f9e` (v4.14.0), with every recommendation of Q-RP-82 to Q-RP-86 ([DECISIONS.md](DECISIONS.md#rp-18-answers)). Committed `bfaf6466` (not merged, not pushed). Contracts C-RP-47 to C-RP-49 ([CONTRACTS.md](CONTRACTS.md#rp-18-review-copies-before-approval)). New [ADR-0043](../adr/ADR-0043-review-copies-by-path-from-the-project-folder.md) (a path from a request, bounded by the project's review folder), which amends [ADR-0042](../adr/ADR-0042-review-media-from-studio-storage.md) (a note added there).
+Built 2026-11-18 on `feature/rp-18-auto-review-copies`, off `develop` at `04b11f9e` (v4.14.0), with every recommendation of Q-RP-82 to Q-RP-86 ([DECISIONS.md](DECISIONS.md#rp-18-answers)). Committed `bfaf6466`; merged into `develop` (`bf1ea85c`) and `main` (`cb002b08`), released in v4.15.0. CI was green on both on the first push. Contracts C-RP-47 to C-RP-49 ([CONTRACTS.md](CONTRACTS.md#rp-18-review-copies-before-approval)). New [ADR-0043](../adr/ADR-0043-review-copies-by-path-from-the-project-folder.md) (a path from a request, bounded by the project's review folder), which amends [ADR-0042](../adr/ADR-0042-review-media-from-studio-storage.md) (a note added there).
 
 Why: RP-17 reads copies only from registered published files, and only published versions have those; publishing needs approval. So those copies arrived after the review they were for (rp-17-verification item 8).
 
@@ -105,7 +105,7 @@ Why: RP-17 reads copies only from registered published files, and only published
 ## Not done
 
 - Nothing automatic on the server (Q-RP-85): render farms call the route ([docs/api/review-copies-from-storage.md](../api/review-copies-from-storage.md)).
-- Not merged or pushed. Left out of the commit, as before: `docs/sync/tools/run_role_smoke.sh`, `docs/sync/phase-34-verification.md`, `frontend/src/test/live/newScreens.live.test.tsx`, `spikes/`, `scripts/ATOM API.yaml`.
+- Left out of the commit, as before: `docs/sync/tools/run_role_smoke.sh`, `docs/sync/phase-34-verification.md`, `frontend/src/test/live/newScreens.live.test.tsx`, `spikes/`, `scripts/ATOM API.yaml`.
 
 ## Files
 
