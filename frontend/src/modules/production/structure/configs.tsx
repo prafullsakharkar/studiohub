@@ -84,6 +84,10 @@ export const projectsFormConfig: DirectoryFormConfig<Project> = {
     { kind: 'checkbox', name: 'review_burn_ins', label: 'Burn the shot, version and frame number into review copies' },
     { kind: 'entity', textValue: true, name: 'review_view', label: 'Review view', render: (p) => <ReviewColourSelect field="review_view" value={p.value} onChange={p.onChange} error={p.error} /> },
     { kind: 'entity', textValue: true, name: 'review_look', label: 'Review look', render: (p) => <ReviewColourSelect field="review_look" value={p.value} onChange={p.onChange} error={p.error} /> },
+    // RP-18 (C-RP-47): where the studio's renders lie, so a version still in review can have its copy read by path. Read
+    // and written only with project.update, set once the project exists; both blank switches it off.
+    { kind: 'text', name: 'review_source_root', label: 'Review folder: storage root', permission: MANAGE_PROJECT, onlyOnEdit: true, hint: 'A storage root the server reads, for example STUDIO.' },
+    { kind: 'text', name: 'review_source_folder', label: 'Review folder: folder on the root', permission: MANAGE_PROJECT, onlyOnEdit: true, hint: 'Where the renders lie, for example shows/alpha/renders. Review copies can be read from under it before approval.' },
     // Read and written only with project.view_budget (CR-55): hidden, it is never sent.
     { kind: 'number', name: 'budget_usd', label: 'Budget (USD)', permission: 'project.view_budget' },
   ],

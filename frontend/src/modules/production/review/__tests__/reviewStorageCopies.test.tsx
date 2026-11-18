@@ -94,8 +94,8 @@ describe('a copy read from a published file (C-RP-44, C-RP-46)', () => {
   });
 
   it('an upload says nothing about storage', () => {
-    expect(storageText({ ...copy(fromMovie), published_file_id: null, storage_readable: false })).toBeNull();
-    expect(canRemake({ ...copy(fromMovie), published_file_id: null, storage_readable: false })).toBe(true);
+    expect(storageText({ ...copy(fromMovie), source: 'upload', published_file_id: null, storage_readable: false })).toBeNull();
+    expect(canRemake({ ...copy(fromMovie), source: 'upload', published_file_id: null, storage_readable: false })).toBe(true);
   });
 
   it('a file the worker could not read fails with the server’s sentence and can be retried', () => {
@@ -167,7 +167,8 @@ describe("the project's list (C-RP-46)", () => {
     expect(differingText(sequence)).toBe('burn-ins differ · its published file can no longer be read');
     expect(differingText(movie)).toBe('burn-ins differ · can be remade from its published file');
     expect(remadeText(flow.remake_after_revoke_200.body as Parameters<typeof remadeText>[0])).toBe(
-      'Remaking 1 review copy. 1 left: their published files can no longer be read.',
+      // RP-18: copies read by path count here too, so the sentence names studio storage, not published files
+      'Remaking 1 review copy. 1 left: their files on studio storage can no longer be read.',
     );
   });
 });

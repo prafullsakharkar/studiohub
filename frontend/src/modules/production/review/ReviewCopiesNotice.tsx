@@ -35,17 +35,23 @@ export function outOfDateText(c: ReviewCopies): string {
 export function sequencesText(c: ReviewCopies): string {
   const n = c.sequences_out_of_date;
   const listed = c.differing.filter((row) => row.kind === 'sequence');
-  const uploaded = listed.filter((row) => row.published_file_id === null);
-  const stored = listed.filter((row) => row.published_file_id !== null);
+  const uploaded = listed.filter((row) => row.source === 'upload');
+  const stored = listed.filter((row) => row.source === 'published_file');
+  // RP-18 (C-RP-49): read by path from the project's review folder
+  const byPath = listed.filter((row) => row.source === 'storage_path');
+  const inFolder = byPath.filter((row) => row.remakable).length;
+  const moved = byPath.length - inFolder;
   const kept = uploaded.filter((row) => row.remakable).length;
   const gone = uploaded.length - kept;
   const readable = stored.filter((row) => row.remakable).length;
   const unreadable = stored.length - readable;
   const parts = [`${sequences(n)} ${n === 1 ? 'was' : 'were'} made with other settings.`];
   if (readable > 0) parts.push(`${formatNumber(readable)} can be remade from ${readable === 1 ? 'its published file' : 'their published files'}.`);
+  if (inFolder > 0) parts.push(`${formatNumber(inFolder)} can be remade from the project's review folder.`);
   if (kept > 0) parts.push(`${formatNumber(kept)} can be remade while ${kept === 1 ? 'its frames are' : 'their frames are'} kept.`);
   if (gone > 0) parts.push(`${formatNumber(gone)} no longer ${gone === 1 ? 'has its' : 'have their'} frames: upload them again, or keep the copies as they are.`);
   if (unreadable > 0) parts.push(`${formatNumber(unreadable)} can no longer read ${unreadable === 1 ? 'its published file' : 'their published files'}: keep the copies as they are, or make them from another file.`);
+  if (moved > 0) parts.push(`${formatNumber(moved)} can no longer read ${moved === 1 ? 'its render' : 'their renders'} from the project's review folder: keep the copies as they are, or make them again.`);
   return parts.join(' ');
 }
 
@@ -55,7 +61,7 @@ export function remadeText(r: ReviewCopiesRemade): string {
   if (r.skipped_busy) parts.push(`${formatNumber(r.skipped_busy)} left: their version already has a copy being made.`);
   if (r.skipped_sequence) parts.push(`${formatNumber(r.skipped_sequence)} left: the frames of those sequences are no longer kept.`);
   if (r.skipped_missing) parts.push(`${formatNumber(r.skipped_missing)} left: the uploaded file is gone; upload it again.`);
-  if (r.skipped_storage) parts.push(`${formatNumber(r.skipped_storage)} left: their published files can no longer be read.`);
+  if (r.skipped_storage) parts.push(`${formatNumber(r.skipped_storage)} left: their files on studio storage can no longer be read.`);
   return parts.join(' ');
 }
 
@@ -65,7 +71,8 @@ const WHY_TEXT: Record<string, string> = { burn_ins: 'burn-ins', colour: 'colour
 export function differingText(row: ReviewCopyDiffering): string {
   const why = WHY_TEXT[row.why.join(',')] ?? row.why.join(', ');
   let state = 'can be remade';
-  if (row.published_file_id !== null) state = row.remakable ? 'can be remade from its published file' : 'its published file can no longer be read';
+  if (row.source === 'published_file') state = row.remakable ? 'can be remade from its published file' : 'its published file can no longer be read';
+  else if (row.source === 'storage_path') state = row.remakable ? "can be remade from the project's review folder" : "its render is no longer in the project's review folder";
   else if (!row.remakable) state = row.kind === 'sequence' ? 'frames no longer kept' : 'the uploaded file is gone';
   else if (row.frames_until) state = `frames kept until ${formatDateTime(row.frames_until)}`;
   return `${why} differ · ${state}`;

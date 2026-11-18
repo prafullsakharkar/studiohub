@@ -13,6 +13,7 @@ import { notify } from '@/core/notifications/notify';
 import { Button } from '@/shared/components/Button';
 import { choicesOf } from './ReviewColourSelect';
 import { ReviewFromPublishedFile } from './ReviewFromPublishedFile';
+import { ReviewFromStorage } from './ReviewFromStorage';
 import { partsOf, planSequence, SEQUENCE_EXTENSIONS } from './sequenceFrames';
 
 /** What the file picker offers; the server decides (by the first bytes and the extension) and answers 400 on `file`. */
@@ -67,30 +68,37 @@ export function copyNotes(media: ReviewMedia): string[] {
 
 /**
  * Whether a ready copy can be remade: from its upload, a sequence from its frames while they are kept (RP-16, C-RP-41),
- * a copy read from a published file while that file can still be read (RP-17, C-RP-46).
+ * a copy read from a published file while that file can still be read (RP-17, C-RP-46), a copy read by path while its
+ * render is still in the project's review folder (RP-18, C-RP-49).
  */
 export function canRemake(media: ReviewMedia): boolean {
-  if (media.published_file_id !== null) return media.storage_readable;
+  if (media.source !== 'upload') return media.storage_readable;
   return media.kind !== 'sequence' || media.frames_until !== null;
 }
 
 /** Where a remake reads from, for its button's title. */
 function remakeSource(media: ReviewMedia): string {
-  if (media.published_file_id !== null) return 'published file on studio storage';
+  if (media.source === 'published_file') return 'published file on studio storage';
+  if (media.source === 'storage_path') return "render in the project's review folder";
   return media.kind === 'sequence' ? 'kept frames' : 'uploaded file';
 }
 
-/** A copy read from a published file (RP-17, C-RP-44, C-RP-46); null for an upload. */
+/** A copy read from studio storage (RP-17, C-RP-44, C-RP-46; RP-18, C-RP-49); null for an upload. */
 export function storageText(media: ReviewMedia): string | null {
-  if (media.published_file_id === null) return null;
+  if (media.source === 'upload') return null;
+  if (media.source === 'storage_path') {
+    return media.storage_readable
+      ? "Read from the project's review folder on studio storage; it can be remade while the render is there"
+      : "Its render is no longer in the project's review folder, or the server no longer reads its storage root";
+  }
   return media.storage_readable
     ? 'Read from its published file on studio storage; it can be remade at any time'
     : 'Its published file can no longer be read: it was revoked, or the server no longer reads its storage root';
 }
 
-/** How long a sequence's frames are kept (C-RP-41); null for a movie or still, and for a copy read from a published file. */
+/** How long a sequence's frames are kept (C-RP-41); null for a movie or still, and for a copy read from studio storage. */
 export function framesText(media: ReviewMedia): string | null {
-  if (media.kind !== 'sequence' || media.published_file_id !== null) return null;
+  if (media.kind !== 'sequence' || media.source !== 'upload') return null;
   return media.frames_until ? `Frames kept until ${formatDateTime(media.frames_until)}` : 'Frames no longer kept';
 }
 
@@ -205,6 +213,8 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
                 )}
                 .
               </>
+            ) : current && current.source === 'storage_path' ? (
+              `${KIND_TEXT[current.kind]} made by the server from ${current.source_name}, read from studio storage.`
             ) : current ? (
               `${KIND_TEXT[current.kind]} made by the server from ${current.source_name} (${sizeText(current.source_size)}).`
             ) : (
@@ -248,6 +258,7 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
               Choose frames
             </Button>
             {canReadFiles && <ReviewFromPublishedFile versionId={version.id} colorSpace={colorSpace} disabled={busy !== null || running || unfinished !== null} run={act} />}
+            <ReviewFromStorage version={version} colorSpace={colorSpace} disabled={busy !== null || running || unfinished !== null} run={act} />
             {current && canRemake(current) && (
               <Button
                 size="sm"
@@ -336,7 +347,7 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
           <span>
             {job.source_name}: {job.error_message}
             {job.remake_of && current ? ' The remake failed; the current copy stays.' : ''}
-            {job.attempts >= MAX_ATTEMPTS ? (job.published_file_id !== null ? ' Make the copy again from the published file.' : ' Upload the file again.') : ''}
+            {job.attempts >= MAX_ATTEMPTS ? (job.source === 'published_file' ? ' Make the copy again from the published file.' : job.source === 'storage_path' ? ' Make the copy again from studio storage.' : ' Upload the file again.') : ''}
           </span>
           {canManage && job.attempts < MAX_ATTEMPTS && (
             <Button size="sm" variant="outline" disabled={busy !== null} onClick={() => void act('Retrying…', () => reviewMediaApi.retry(job.id))}>
