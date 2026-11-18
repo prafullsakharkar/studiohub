@@ -1,5 +1,6 @@
 """
-Review media reads (docs/review-pipeline/CONTRACTS.md C-RP-19, C-RP-21; C-RP-38, RP-14; C-RP-40, RP-15).
+Review media reads (docs/review-pipeline/CONTRACTS.md C-RP-19, C-RP-21; C-RP-38, RP-14; C-RP-40, RP-15;
+C-RP-53, RP-20).
 
 A row is read through its version: whoever reads the version (``GET versions/{id}/``'s narrowing,
 client and vendor members included) reads its review media, and nobody else.
@@ -125,6 +126,26 @@ class ReviewMediaSelector(ProductionBaseSelector):
             return None, "colour_config_unavailable"
 
     @staticmethod
+    def grade_for(
+        project: Any, shot_grade: Any, *, managed: bool
+    ) -> tuple[dict[str, Any] | None, str | None]:
+        """
+        The grade a copy is made with now (RP-20, C-RP-53), or ``None`` and why not.
+
+        Only a colour-managed copy (``managed``: it has an OpenColorIO transform) of a shot with a
+        grade gets it, and only while the project's ``review_grades`` is on (Q-RP-95). Why not:
+        ``None`` when it gets none, ``no_grading_space`` when the config has no log ``color_timing``
+        space to apply it in (Q-RP-94), ``colour_config_unavailable`` when the config cannot be read.
+        """
+        if not managed or not project.review_grades or not shot_grade:
+            return None, None
+        try:
+            space = colour.grading_space()
+        except colour.ColourUnavailable:
+            return None, "colour_config_unavailable"
+        return (shot_grade, None) if space else (None, "no_grading_space")
+
+    @staticmethod
     def colour_options() -> dict[str, Any]:
         """``GET review-media/colour/`` (C-RP-39); ``available`` false when the config cannot be read."""
         try:
@@ -150,13 +171,14 @@ class ReviewMediaSelector(ProductionBaseSelector):
     @classmethod
     def differences(cls, project: Any) -> dict[Any, list[str]]:
         """
-        Each differing copy's id and why: ``burn_ins`` and/or ``colour``.
+        Each differing copy's id and why: ``burn_ins``, ``colour`` and/or ``grade``.
 
         Burn-ins (C-RP-38): movie and sequence copies whose burn-ins are not ``review_burn_ins``; a
         row without ``burn_ins`` counts as without, and stills never carry burn-ins. Colour (C-RP-40):
         any copy whose ``probe.ocio`` is not the transform it would be made with now; a row without
-        ``ocio`` counts as made without one. A copy kept as it is against the settings the project has
-        now does not differ (C-RP-43).
+        ``ocio`` counts as made without one. Grade (RP-20, C-RP-53): any copy whose ``probe.grade`` is
+        not the grade it would be made with now; a row without ``grade`` counts as made without one. A
+        copy kept as it is against the settings the project has now does not differ (C-RP-43).
         """
         with_burn_ins = Q(probe__burn_ins=True)
         # spelled out: a negated key lookup would drop the rows made before RP-12, which lack the key
@@ -171,8 +193,11 @@ class ReviewMediaSelector(ProductionBaseSelector):
         why: dict[Any, list[str]] = {}
         for row_id in burn_ins - kept:
             why.setdefault(row_id, []).append("burn_ins")
-        for row_id in set(cls._colour_differing(project, live)) - kept:
+        colour_ids, grade_ids = cls._colour_differing(project, live)
+        for row_id in set(colour_ids) - kept:
             why.setdefault(row_id, []).append("colour")
+        for row_id in set(grade_ids) - kept:
+            why.setdefault(row_id, []).append("grade")
         return why
 
     @staticmethod
@@ -184,25 +209,31 @@ class ReviewMediaSelector(ProductionBaseSelector):
         )
 
     @classmethod
-    def _colour_differing(cls, project: Any, live: QuerySet[ReviewMedia]) -> list[Any]:
+    def _colour_differing(
+        cls, project: Any, live: QuerySet[ReviewMedia]
+    ) -> tuple[list[Any], list[Any]]:
         """
-        The ids of ``live`` copies whose ``probe.ocio`` is not what they would be made with now.
+        The ids of ``live`` copies whose ``probe.ocio`` is not what they would be made with now, and
+        of those whose ``probe.grade`` is not (RP-20).
 
         While the config cannot be read, what a copy would be made with is not known, so no copy
         counts: a passing outage must not offer to remake managed copies without their transform.
         """
         targets: dict[tuple[str, str, str], tuple[dict[str, str] | None, str | None]] = {}
-        ids = []
-        for row_id, kind, container, named, probe in live.values_list(
-            "pk", "kind", "source_container", "color_space", "probe"
+        colour_ids, grade_ids = [], []
+        for row_id, kind, container, named, probe, shot_grade in live.values_list(
+            "pk", "kind", "source_container", "color_space", "probe", "version__shot__grade"
         ):
             target, why = cls._target_json(project, targets, kind, container, named)
             if why == "colour_config_unavailable":
                 continue
-            recorded = probe.get("ocio") if isinstance(probe, dict) else None
-            if recorded != target:
-                ids.append(row_id)
-        return ids
+            recorded = probe if isinstance(probe, dict) else {}
+            if recorded.get("ocio") != target:
+                colour_ids.append(row_id)
+            grade, why = cls.grade_for(project, shot_grade, managed=target is not None)
+            if why != "colour_config_unavailable" and recorded.get("grade") != grade:
+                grade_ids.append(row_id)
+        return colour_ids, grade_ids
 
     @classmethod
     def _target_json(
@@ -226,14 +257,21 @@ class ReviewMediaSelector(ProductionBaseSelector):
         """The ids of ``live`` copies kept as they are against the settings ``project`` has now."""
         cache: dict[tuple[str, str, str], tuple[dict[str, str] | None, str | None]] = {}
         ids = []
-        for row_id, kind, container, named, kept in live.filter(kept_for__isnull=False).values_list(
-            "pk", "kind", "source_container", "color_space", "kept_for"
+        for row_id, kind, container, named, kept, shot_grade in live.filter(
+            kept_for__isnull=False
+        ).values_list(
+            "pk", "kind", "source_container", "color_space", "kept_for", "version__shot__grade"
         ):
             if not isinstance(kept, dict) or kept.get("burn_ins") != bool(project.review_burn_ins):
                 continue
             target, why = cls._target_json(project, cache, kind, container, named)
             # while the config cannot be read colour does not count (above), so neither does it here
-            if why == "colour_config_unavailable" or kept.get("ocio") == target:
+            if why == "colour_config_unavailable":
+                ids.append(row_id)
+                continue
+            # RP-20: a copy kept before grades counts as kept without one
+            grade, _ = cls.grade_for(project, shot_grade, managed=target is not None)
+            if kept.get("ocio") == target and kept.get("grade") == grade:
                 ids.append(row_id)
         return ids
 
@@ -245,9 +283,12 @@ class ReviewMediaSelector(ProductionBaseSelector):
         )
         if why == "colour_config_unavailable":
             return None
+        shot = row.version.shot if row.version.shot_id else None  # pyright: ignore[reportAttributeAccessIssue]
+        grade, _ = cls.grade_for(project, getattr(shot, "grade", None), managed=made is not None)
         return {
             "burn_ins": bool(project.review_burn_ins),
             "ocio": made.as_json() if made is not None else None,
+            "grade": grade,
         }
 
     @staticmethod
@@ -314,6 +355,9 @@ class ReviewMediaSelector(ProductionBaseSelector):
             "sequences_out_of_date": sequences,
             # RP-15: how many of them (sequences included) differ in colour, burn-ins aside
             "colour_out_of_date": sum("colour" in reasons for reasons in why.values()),
+            # RP-20 (C-RP-53): how many differ in their grade
+            "review_grades": bool(project.review_grades),
+            "grade_out_of_date": sum("grade" in reasons for reasons in why.values()),
             # RP-16 (C-RP-42): which ones, the oldest first
             "differing": differing,
             "differing_more": more,

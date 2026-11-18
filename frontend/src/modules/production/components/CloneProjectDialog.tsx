@@ -42,6 +42,7 @@ export const CloneProjectDialog: React.FC<{ project: Project; onClose: () => voi
       color_space: project.color_space,
       approve_task_on_version_approval: project.approve_task_on_version_approval,
       review_burn_ins: project.review_burn_ins,
+      review_grades: project.review_grades, // RP-20 (C-RP-53): a review switch, kept like the burn-ins
       ...(project.client_id ? { client_id: project.client_id } : {}),
     };
     const cloned = await projectsApi.create(settings);

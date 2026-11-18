@@ -54,6 +54,11 @@ export interface Shot {
   client_approved: boolean;
   /** `{layout, animation, fx, lighting, comp}` → stage status. */
   pipeline: Record<string, string>;
+  /** RP-20 (C-RP-52): the shot's grade, its ASC CDL, applied to review copies while the project's `review_grades` is on. */
+  grade: ShotGrade | null;
+  /** The file and correction the grade was imported from, e.g. `reel1.ccc (SH010)`; blank when typed. */
+  grade_source: string;
+  grade_updated_at: string | null;
   project_id: string;
   project_code: string;
   sequence_id: string | null;
@@ -63,6 +68,41 @@ export interface Shot {
   created_at: string;
   updated_at: string;
 }
+/**
+ * A shot's grade, its ASC CDL (RP-20, C-RP-52): red, green and blue each. Slope 0 to 10, offset -1 to 1, power above 0
+ * up to 10, saturation 0 to 10; the server keeps six decimal places.
+ */
+export interface ShotGrade {
+  slope: [number, number, number];
+  offset: [number, number, number];
+  power: [number, number, number];
+  saturation: number;
+}
+
+/** One correction of an imported file matched to a shot (C-RP-54). `id` is the correction's id in the file. */
+export interface GradeImportMatch {
+  id: string;
+  shot: { id: string; code: string };
+  old: ShotGrade | null;
+  new: ShotGrade;
+}
+
+/**
+ * `POST projects/{id}/grades/import/` (RP-20, C-RP-54), pinned to docs/sync/samples/production/_shot_grades_flow.json.
+ * Only shots the caller may update are matched; a shot they cannot see is `unmatched`.
+ */
+export interface GradeImport {
+  dry_run: boolean;
+  file_name: string;
+  corrections: number;
+  matched: GradeImportMatch[];
+  unchanged: Omit<GradeImportMatch, 'old' | 'new'>[];
+  unmatched: string[];
+  invalid: { id: string; field: string; message: string }[];
+  /** How many shots were written: 0 on a dry run. */
+  applied: number;
+}
+
 export interface ShotInput {
   project: string;
   code: string;
@@ -77,6 +117,8 @@ export interface ShotInput {
   frame_out?: number;
   handle_frames?: number;
   assigned_artist?: string | null;
+  /** RP-20: edit only; null clears it. 400 on `grade` naming the part out of range. */
+  grade?: ShotGrade | null;
 }
 
 /** `GET /shots/{id}/assets/`: a bare array. */
@@ -130,6 +172,16 @@ export const shotsApi = {
   linkAsset: (id: string, input: { asset_id: string; quantity?: number; notes?: string }) => apiClient.post<ShotAssetLink>(`${V1}/shots/${id}/assets/`, input),
   updateAssetLink: (id: string, assetId: string, patch: { quantity?: number; notes?: string }) => apiClient.patch<ShotAssetLink>(`${V1}/shots/${id}/assets/${assetId}/`, patch),
   unlinkAsset: (id: string, assetId: string) => apiClient.delete<void>(`${V1}/shots/${id}/assets/${assetId}/`),
+  /**
+   * RP-20 (C-RP-54): the shots' grades from a client's `.cc`, `.ccc` or `.cdl` file (1 MiB at most); `shot.update`. A dry
+   * run unless `dryRun` is false, which writes every matched shot or none. 400 on `file` for a file that cannot be read.
+   */
+  importGrades: (projectId: string, file: File, dryRun: boolean) => {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('dry_run', dryRun ? 'true' : 'false');
+    return apiClient.upload<GradeImport>(`${V1}/projects/${projectId}/grades/import/`, form);
+  },
 };
 
 // ---------------------------------------------------------------------------------------------- assets

@@ -1,6 +1,7 @@
 import type React from 'react';
 import type { Shot } from '@/api/production/work';
 import { DetailGrid } from '@/modules/directory/workspace/DetailGrid';
+import { gradeText } from '@/modules/production/work/ShotGradeField';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { safeWebUrl } from '@/shared/utils/safeUrl';
 
@@ -25,6 +26,8 @@ export const ShotOverview: React.FC<{ shot: Shot }> = ({ shot }) => {
           { label: 'Current version', value: shot.current_version },
           { label: 'Supervisor approved', value: shot.supervisor_approved ? 'Yes' : 'No' },
           { label: 'Client approved', value: shot.client_approved ? 'Yes' : 'No' },
+          // RP-20 (C-RP-52): the grade review copies are made with while the project applies grades
+          { label: 'Grade (ASC CDL)', value: shot.grade ? `${gradeText(shot.grade)}${shot.grade_source ? ` · from ${shot.grade_source}` : ' · typed'}` : 'None' },
           { label: 'Video', value: video ? <a href={video} target="_blank" rel="noopener noreferrer" className="text-indigo-300 hover:underline">Open</a> : null },
         ]}
       />

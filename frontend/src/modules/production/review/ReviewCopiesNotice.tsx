@@ -21,6 +21,8 @@ const sequences = (n: number) => `${formatNumber(n)} image ${n === 1 ? 'sequence
 /** The sentence about the movies and stills that differ from the project's settings (C-RP-38; colour, RP-15). */
 export function outOfDateText(c: ReviewCopies): string {
   const verb = c.out_of_date === 1 ? 'was' : 'were';
+  // RP-20 (C-RP-53): shots' grades
+  if (c.grade_out_of_date > 0) return `${copies(c.out_of_date)} ${verb} made with other shot grades, colour or burn-in settings than the project has now.`;
   if (c.colour_out_of_date > 0) return `${copies(c.out_of_date)} ${verb} made with other colour or burn-in settings than the project has now.`;
   return c.review_burn_ins
     ? `${copies(c.out_of_date)} ${verb} made without burn-ins; the project now adds them.`
@@ -65,11 +67,17 @@ export function remadeText(r: ReviewCopiesRemade): string {
   return parts.join(' ');
 }
 
-const WHY_TEXT: Record<string, string> = { burn_ins: 'burn-ins', colour: 'colour', 'burn_ins,colour': 'burn-ins and colour' };
+const WHY_TEXT: Record<ReviewCopyDiffering['why'][number], string> = { burn_ins: 'burn-ins', colour: 'colour', grade: 'grade' };
+
+/** What differs: `burn-ins`, `burn-ins and colour`, `burn-ins, colour and grade` (the shot's, RP-20). */
+const whyText = (why: ReviewCopyDiffering['why']): string => {
+  const parts = why.map((reason) => WHY_TEXT[reason] ?? reason);
+  return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : (parts[0] ?? '');
+};
 
 /** One listed copy (C-RP-42): what differs, and whether it can be remade. */
 export function differingText(row: ReviewCopyDiffering): string {
-  const why = WHY_TEXT[row.why.join(',')] ?? row.why.join(', ');
+  const why = whyText(row.why);
   let state = 'can be remade';
   if (row.source === 'published_file') state = row.remakable ? 'can be remade from its published file' : 'its published file can no longer be read';
   else if (row.source === 'storage_path') state = row.remakable ? "can be remade from the project's review folder" : "its render is no longer in the project's review folder";

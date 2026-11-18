@@ -68,6 +68,7 @@ export function wireValue(field: FieldDef, value: string | boolean): unknown {
   if (field.kind === 'checkbox') return value;
   if (field.kind === 'json') return value === '' ? (field.shape === 'array' ? [] : {}) : JSON.parse(String(value));
   if (field.kind === 'multi-entity') return splitIds(value);
+  if (field.kind === 'entity' && field.jsonValue) return value === '' ? null : JSON.parse(String(value));
   if (value === '') return field.kind === 'number' || field.kind === 'date' || field.kind === 'datetime' || (field.kind === 'entity' && !field.textValue) ? null : '';
   if (field.kind === 'datetime') return fromLocalInput(String(value));
   return field.kind === 'number' ? Number(value) : value;
@@ -80,6 +81,7 @@ export const fromRow = (fields: ReadonlyArray<FieldDef>, row: Record<string, unk
       if (f.kind === 'json') return [f.name, value === null || value === undefined ? '' : JSON.stringify(value, null, 2)];
       if (f.kind === 'datetime') return [f.name, typeof value === 'string' ? toLocalInput(value) : ''];
       if (f.kind === 'multi-entity') return [f.name, Array.isArray(value) ? joinIds(value) : ''];
+      if (f.kind === 'entity' && f.jsonValue) return [f.name, value === null || value === undefined ? '' : JSON.stringify(value)];
       return [f.name, f.kind === 'checkbox' ? Boolean(value) : value === null || value === undefined ? '' : String(value)];
     })
   );

@@ -94,14 +94,14 @@ describe('C-RP-40: how a copy’s colour is made', () => {
 
   it('another view: the sequence and the named movie differ; both are remade (the sequence from its kept frames, RP-16)', () => {
     const none = { differing: [], differing_more: 0 };
-    expect(flow.copies_matching.body).toEqual({ review_burn_ins: false, out_of_date: 0, sequences_out_of_date: 0, colour_out_of_date: 0, ...none });
+    expect(flow.copies_matching.body).toEqual({ review_burn_ins: false, review_grades: false, out_of_date: 0, sequences_out_of_date: 0, colour_out_of_date: 0, grade_out_of_date: 0, ...none });
     expect(flow.copies_other_view.body).toMatchObject({ review_burn_ins: false, out_of_date: 1, sequences_out_of_date: 1, colour_out_of_date: 2 });
     expect((flow.copies_other_view.body.differing as { kind: string; why: string[] }[]).map((row) => [row.kind, row.why])).toEqual([
       ['sequence', ['colour']],
       ['movie', ['colour']],
     ]);
     expect(flow.remake_all_200.body).toEqual({ queued: 2, skipped_busy: 0, skipped_sequence: 0, skipped_missing: 0, skipped_storage: 0 });
-    expect(flow.copies_after_remake.body).toEqual({ review_burn_ins: false, out_of_date: 0, sequences_out_of_date: 0, colour_out_of_date: 0, ...none });
+    expect(flow.copies_after_remake.body).toEqual({ review_burn_ins: false, review_grades: false, out_of_date: 0, sequences_out_of_date: 0, colour_out_of_date: 0, grade_out_of_date: 0, ...none });
     const remade = (flow.version_movie_remade.body as Version).review_media;
     expect(remade?.probe?.ocio).toMatchObject({ input: 'ACEScct', view: 'Un-tone-mapped' });
     expect(remade?.color_space).toBe('ACEScct');

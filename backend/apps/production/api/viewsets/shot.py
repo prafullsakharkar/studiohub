@@ -1,3 +1,4 @@
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
@@ -119,6 +120,13 @@ class ShotViewSet(
 
     def prepare_update(self, instance, data):
         self._enforce_episode_sequence_chain(data, project=instance.project, instance=instance)
+        # RP-20 (C-RP-52): a typed grade is no longer the imported one; the same grade changes nothing
+        if "grade" in data:
+            if data["grade"] == instance.grade:
+                del data["grade"]
+            else:
+                data["grade_source"] = ""
+                data["grade_updated_at"] = timezone.now()
 
     def _enforce_episode_sequence_chain(self, data, *, project, instance=None):
         """The episode/sequence chain of a shot (D-12; ``validators/episodic.py``)."""

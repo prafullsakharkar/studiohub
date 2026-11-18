@@ -7,6 +7,15 @@ from apps.production.api.serializers.shot.current_version import ShotCurrentVers
 from apps.production.models import Shot
 
 
+class ShotGradeSerializer(serializers.Serializer[Any]):
+    """A shot's grade, its ASC CDL (RP-20, C-RP-52): three numbers per channel, red, green, blue."""
+
+    slope = serializers.ListField(child=serializers.FloatField(), min_length=3, max_length=3)
+    offset = serializers.ListField(child=serializers.FloatField(), min_length=3, max_length=3)
+    power = serializers.ListField(child=serializers.FloatField(), min_length=3, max_length=3)
+    saturation = serializers.FloatField()
+
+
 class ShotSerializer(ShotCurrentVersionMixin, BaseReadSerializer[Any]):  # pyright: ignore[reportUnsafeMultipleInheritance]
     project_id = serializers.UUIDField(read_only=True)
     show_id = serializers.UUIDField(read_only=True, allow_null=True)
@@ -18,6 +27,8 @@ class ShotSerializer(ShotCurrentVersionMixin, BaseReadSerializer[Any]):  # pyrig
     assigned_artist_id = serializers.UUIDField(read_only=True, allow_null=True)
     assigned_artist_name = serializers.SerializerMethodField()
     pipeline = serializers.JSONField(read_only=True)
+    # RP-20 (C-RP-52): the shot's ASC CDL, or null
+    grade = ShotGradeSerializer(read_only=True, allow_null=True)
 
     class Meta:
         model = Shot
@@ -47,6 +58,9 @@ class ShotSerializer(ShotCurrentVersionMixin, BaseReadSerializer[Any]):  # pyrig
             "supervisor_approved",
             "client_approved",
             "pipeline",
+            "grade",
+            "grade_source",
+            "grade_updated_at",
             "created_at",
             "updated_at",
         )

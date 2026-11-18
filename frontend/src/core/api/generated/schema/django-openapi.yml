@@ -19224,6 +19224,37 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProjectList'
           description: ''
+  /api/v1/projects/{uuid}/grades/import/:
+    post:
+      operationId: v1_projects_grades_import_create
+      description: |-
+        Shot grades from a client's .cc, .ccc or .cdl file; a dry run unless ``dry_run`` is false
+        (RP-20, C-RP-54). Only the shots the caller may update are matched (CR-46).
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GradeImportRequest'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradeImport'
+          description: ''
   /api/v1/projects/{uuid}/restore/:
     post:
       operationId: v1_projects_restore_create
@@ -39519,6 +39550,106 @@ components:
           format: email
       required:
       - email
+    GradeImport:
+      type: object
+      properties:
+        dry_run:
+          type: boolean
+        file_name:
+          type: string
+        corrections:
+          type: integer
+        matched:
+          type: array
+          items:
+            $ref: '#/components/schemas/GradeImportMatched'
+        unchanged:
+          type: array
+          items:
+            $ref: '#/components/schemas/GradeImportUnchanged'
+        unmatched:
+          type: array
+          items:
+            type: string
+        invalid:
+          type: array
+          items:
+            $ref: '#/components/schemas/GradeImportInvalid'
+        applied:
+          type: integer
+      required:
+      - applied
+      - corrections
+      - dry_run
+      - file_name
+      - invalid
+      - matched
+      - unchanged
+      - unmatched
+    GradeImportInvalid:
+      type: object
+      properties:
+        id:
+          type: string
+        field:
+          type: string
+        message:
+          type: string
+      required:
+      - field
+      - id
+      - message
+    GradeImportMatched:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The correction's id in the file.
+        shot:
+          $ref: '#/components/schemas/GradeImportShot'
+        old:
+          allOf:
+          - $ref: '#/components/schemas/ShotGrade'
+          nullable: true
+        new:
+          $ref: '#/components/schemas/ShotGrade'
+      required:
+      - id
+      - new
+      - old
+      - shot
+    GradeImportRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: uri
+        dry_run:
+          type: boolean
+          default: true
+      required:
+      - file
+    GradeImportShot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+      required:
+      - code
+      - id
+    GradeImportUnchanged:
+      type: object
+      properties:
+        id:
+          type: string
+        shot:
+          $ref: '#/components/schemas/GradeImportShot'
+      required:
+      - id
+      - shot
     Group:
       type: object
       description: Base serializer for Identity models.
@@ -46893,6 +47024,11 @@ components:
         review_look:
           type: string
           maxLength: 100
+        review_grades:
+          type: boolean
+          description: When on, colour-managed review copies of a shot's versions
+            carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53).
+            Off by default.
         review_source_root:
           type: string
           maxLength: 50
@@ -47865,6 +48001,18 @@ components:
           type: boolean
         pipeline:
           readOnly: true
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/ShotGrade'
+          readOnly: true
+          nullable: true
+        grade_source:
+          type: string
+          maxLength: 255
+        grade_updated_at:
+          type: string
+          format: date-time
+          nullable: true
         created_at:
           type: string
           format: date-time
@@ -47973,6 +48121,8 @@ components:
           type: boolean
         pipeline:
           description: Pipeline stage statuses
+        grade:
+          nullable: true
     PatchedShowUpdate:
       type: object
       description: Update serializer for shows.
@@ -55273,6 +55423,11 @@ components:
         review_look:
           type: string
           maxLength: 100
+        review_grades:
+          type: boolean
+          description: When on, colour-managed review copies of a shot's versions
+            carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53).
+            Off by default.
         start_date:
           type: string
           format: date
@@ -55423,6 +55578,11 @@ components:
         review_look:
           type: string
           maxLength: 100
+        review_grades:
+          type: boolean
+          description: When on, colour-managed review copies of a shot's versions
+            carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53).
+            Off by default.
         review_source_root:
           type: string
           maxLength: 50
@@ -55615,6 +55775,11 @@ components:
         review_look:
           type: string
           maxLength: 100
+        review_grades:
+          type: boolean
+          description: When on, colour-managed review copies of a shot's versions
+            carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53).
+            Off by default.
         review_source_root:
           type: string
           maxLength: 50
@@ -56245,6 +56410,11 @@ components:
         review_look:
           type: string
           maxLength: 100
+        review_grades:
+          type: boolean
+          description: When on, colour-managed review copies of a shot's versions
+            carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53).
+            Off by default.
         review_source_root:
           type: string
           maxLength: 50
@@ -57800,6 +57970,10 @@ components:
           type: integer
         colour_out_of_date:
           type: integer
+        review_grades:
+          type: boolean
+        grade_out_of_date:
+          type: integer
         differing:
           type: array
           items:
@@ -57810,8 +57984,10 @@ components:
       - colour_out_of_date
       - differing
       - differing_more
+      - grade_out_of_date
       - out_of_date
       - review_burn_ins
+      - review_grades
       - sequences_out_of_date
     ReviewCopiesKeep:
       type: object
@@ -57903,11 +58079,13 @@ components:
             enum:
             - burn_ins
             - colour
+            - grade
             type: string
             description: |-
               * `burn_ins` - burn_ins
               * `colour` - colour
-            x-spec-enum-id: 458845222793aa7d
+              * `grade` - grade
+            x-spec-enum-id: 4e0b6fd20c07d245
       required:
       - frames_until
       - kind
@@ -58507,6 +58685,23 @@ components:
             * `colour_config_unavailable` - colour_config_unavailable
           x-spec-enum-id: a712adc02d690526
           nullable: true
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/ShotGrade'
+          nullable: true
+        grade_source:
+          type: string
+        grade_skipped:
+          enum:
+          - no_grading_space
+          - colour_config_unavailable
+          - null
+          type: string
+          description: |-
+            * `no_grading_space` - no_grading_space
+            * `colour_config_unavailable` - colour_config_unavailable
+          x-spec-enum-id: 1761c6dea4c09cac
+          nullable: true
       required:
       - burn_ins
       - colour
@@ -58515,6 +58710,9 @@ components:
       - first_frame
       - fps
       - frames
+      - grade
+      - grade_skipped
+      - grade_source
       - has_audio
       - height
       - last_frame
@@ -60085,6 +60283,18 @@ components:
           type: boolean
         pipeline:
           readOnly: true
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/ShotGrade'
+          readOnly: true
+          nullable: true
+        grade_source:
+          type: string
+          maxLength: 255
+        grade_updated_at:
+          type: string
+          format: date-time
+          nullable: true
         created_at:
           type: string
           format: date-time
@@ -60104,6 +60314,7 @@ components:
       - current_version_id
       - episode_id
       - frame_count
+      - grade
       - id
       - pipeline
       - project_code
@@ -60113,6 +60324,40 @@ components:
       - show_id
       - updated_at
       - uuid
+    ShotGrade:
+      type: object
+      description: 'A shot''s grade, its ASC CDL (RP-20, C-RP-52): three numbers per
+        channel, red, green, blue.'
+      properties:
+        slope:
+          type: array
+          items:
+            type: number
+            format: double
+          maxItems: 3
+          minItems: 3
+        offset:
+          type: array
+          items:
+            type: number
+            format: double
+          maxItems: 3
+          minItems: 3
+        power:
+          type: array
+          items:
+            type: number
+            format: double
+          maxItems: 3
+          minItems: 3
+        saturation:
+          type: number
+          format: double
+      required:
+      - offset
+      - power
+      - saturation
+      - slope
     ShotList:
       type: object
       description: Base serializer for read operations.
@@ -60229,6 +60474,18 @@ components:
           type: boolean
         pipeline:
           readOnly: true
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/ShotGrade'
+          readOnly: true
+          nullable: true
+        grade_source:
+          type: string
+          maxLength: 255
+        grade_updated_at:
+          type: string
+          format: date-time
+          nullable: true
         created_at:
           type: string
           format: date-time
@@ -60248,6 +60505,7 @@ components:
       - current_version_id
       - episode_id
       - frame_count
+      - grade
       - id
       - pipeline
       - project_code
@@ -60355,6 +60613,8 @@ components:
           type: boolean
         pipeline:
           description: Pipeline stage statuses
+        grade:
+          nullable: true
       required:
       - code
       - current_version

@@ -83,6 +83,7 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
       }
       if (!touched(field) && !(!editing && searchParams.get(field.name) !== null)) continue;
       if (!isVisible(field, values)) continue;
+      if (!editing && field.onlyOnEdit) continue; // never registered on a new record: it holds no value to send
       if (!editing && values[field.name] === '' && field.kind !== 'checkbox') continue; // leave optional blanks to the server defaults
       if (editing && config.immutableOnEdit?.includes(field.name)) continue;
       const wire = wireValue(field, values[field.name]);

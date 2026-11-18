@@ -3,7 +3,7 @@ import { getApiBaseUrl } from '@/api/client/config';
 import { resourceApi } from '@/api/masterdata/resource';
 import { createQueryKeys } from '@/shared/data/queryKeys';
 import { listFetcher } from '@/shared/data/listing';
-import type { StatusHistoryRow } from './work';
+import type { ShotGrade, StatusHistoryRow } from './work';
 
 /**
  * Production review: versions, reviews, playlists, media, workflows and automation rules. Row types are pinned
@@ -97,6 +97,12 @@ export interface ReviewMediaProbe {
   ocio: ReviewMediaColour | null;
   /** Why a transform that was due was left out: the copy was then made by RP-12's rule. Null otherwise. */
   colour_skipped: 'unknown_colour_space' | 'colour_config_unavailable' | null;
+  /** The shot's grade the copy was made with (RP-20, C-RP-53), or null; applied in the config's grading space. */
+  grade: ShotGrade | null;
+  /** The file and correction the grade was imported from, e.g. `reel1.ccc (SH010)`; blank when typed or none. */
+  grade_source: string;
+  /** Why a grade that was due was left out: the config has no grading space, or could not be read. Null otherwise. */
+  grade_skipped: 'no_grading_space' | 'colour_config_unavailable' | null;
 }
 
 /** How a copy's colour was made (C-RP-40): names from the studio's OpenColorIO config, never a server path. */
@@ -204,6 +210,9 @@ export interface ReviewCopies {
   sequences_out_of_date: number;
   /** How many of them (sequences included) were made with other colour settings than the project has now (RP-15). */
   colour_out_of_date: number;
+  /** RP-20 (C-RP-53): whether shots' grades are applied, and how many copies were made with another grade. */
+  review_grades: boolean;
+  grade_out_of_date: number;
   /** The first 100 of them, oldest first (RP-16, C-RP-42). */
   differing: ReviewCopyDiffering[];
   /** How many more differ than `differing` lists. */
@@ -211,7 +220,7 @@ export interface ReviewCopies {
 }
 
 /** Why a copy differs from its project's settings now (C-RP-42). */
-export type ReviewCopyDifference = 'burn_ins' | 'colour';
+export type ReviewCopyDifference = 'burn_ins' | 'colour' | 'grade';
 
 /** One copy made with other settings than its project has now (RP-16, C-RP-42). */
 export interface ReviewCopyDiffering {

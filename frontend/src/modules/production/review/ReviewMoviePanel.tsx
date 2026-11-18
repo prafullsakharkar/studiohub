@@ -48,6 +48,12 @@ const COLOUR_SKIPPED: Record<NonNullable<NonNullable<ReviewMedia['probe']>['colo
   colour_config_unavailable: "colour not managed: the studio's colour config could not be read",
 };
 
+/** Why a shot's grade that was due was left out (RP-20, C-RP-53). */
+const GRADE_SKIPPED: Record<NonNullable<NonNullable<ReviewMedia['probe']>['grade_skipped']>, string> = {
+  no_grading_space: "not graded: the studio's colour config has no grading space (color_timing)",
+  colour_config_unavailable: "not graded: the shot's grade could not be applied with the studio's colour config",
+};
+
 /** How a copy's colour was made (RP-15, C-RP-40), e.g. `ACEScg → sRGB - Display, ACES 2.0 - SDR 100 nits (Rec.709)`. */
 export function colourText(media: ReviewMedia): string | null {
   const o = media.probe?.ocio;
@@ -61,6 +67,9 @@ export function copyNotes(media: ReviewMedia): string[] {
   const colour = colourText(media);
   if (colour) notes.push(colour);
   if (media.probe?.colour_skipped) notes.push(COLOUR_SKIPPED[media.probe.colour_skipped]);
+  // RP-20 (C-RP-53): the shot's grade, applied in the grading space before the view
+  if (media.probe?.grade) notes.push(media.probe.grade_source ? `Graded with the shot's CDL from ${media.probe.grade_source}` : "Graded with the shot's CDL");
+  if (media.probe?.grade_skipped) notes.push(GRADE_SKIPPED[media.probe.grade_skipped]);
   if (media.probe?.colour === 'srgb_from_linear') notes.push('EXR shown as sRGB from linear light; not for colour approval');
   if (media.probe?.burn_ins) notes.push('With burn-ins');
   return notes;
