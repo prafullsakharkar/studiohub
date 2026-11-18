@@ -144,8 +144,8 @@ class NotificationSources:
     @staticmethod
     def version(version_id: Any) -> dict[str, Any] | None:
         """
-        The live version ``version_id``: ``project_id``, ``artist_id`` and the assignee of its live
-        task; ``None`` if it is gone.
+        The live version ``version_id``: ``project_id``, ``artist_id``, its ``status``, and the
+        assignee and (RP-19, C-RP-50) the reviewer of its live task; ``None`` if it is gone.
         """
         ids = _uuids([version_id])
         version = Version.objects.filter(pk=ids[0]).select_related("task").first() if ids else None
@@ -156,6 +156,8 @@ class NotificationSources:
             "project_id": str(version.project_id),  # pyright: ignore[reportAttributeAccessIssue]
             "artist_id": _sid(version.artist_id),  # pyright: ignore[reportAttributeAccessIssue]
             "task_assignee_id": _sid(task.assignee_id) if task else None,  # pyright: ignore[reportAttributeAccessIssue]
+            "task_reviewer_id": _sid(task.reviewer_id) if task else None,  # pyright: ignore[reportAttributeAccessIssue]
+            "status": version.status,
         }
 
     @staticmethod

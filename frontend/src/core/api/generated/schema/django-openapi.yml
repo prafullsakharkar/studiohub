@@ -12129,6 +12129,7 @@ paths:
           - review_invited
           - review_media_failed
           - review_media_ready
+          - review_media_to_review
           - review_verdict
           - task_assigned
           - task_status
@@ -41809,6 +41810,7 @@ components:
           - published_file_revoked
           - milestone_due
           - milestone_completed
+          - review_media_to_review
           type: string
           description: |-
             * `note_created` - A note on your work
@@ -41830,7 +41832,8 @@ components:
             * `published_file_revoked` - A file you depend on was revoked
             * `milestone_due` - A milestone is due or overdue
             * `milestone_completed` - Your milestone was completed
-          x-spec-enum-id: e14a9bc75db694bc
+            * `review_media_to_review` - A copy is ready for you to review
+          x-spec-enum-id: dcef7448255fa414
           readOnly: true
         created_at:
           type: string
@@ -50039,6 +50042,7 @@ components:
             - published_file_revoked
             - milestone_due
             - milestone_completed
+            - review_media_to_review
             type: string
             description: |-
               * `note_created` - note_created
@@ -50058,7 +50062,8 @@ components:
               * `published_file_revoked` - published_file_revoked
               * `milestone_due` - milestone_due
               * `milestone_completed` - milestone_completed
-            x-spec-enum-id: fc52128799f7e44b
+              * `review_media_to_review` - review_media_to_review
+            x-spec-enum-id: 5fe5ac3a71eca3c8
         mutable_kinds:
           type: array
           items:
@@ -50080,6 +50085,7 @@ components:
             - published_file_revoked
             - milestone_due
             - milestone_completed
+            - review_media_to_review
             type: string
             description: |-
               * `note_created` - note_created
@@ -50099,7 +50105,8 @@ components:
               * `published_file_revoked` - published_file_revoked
               * `milestone_due` - milestone_due
               * `milestone_completed` - milestone_completed
-            x-spec-enum-id: fc52128799f7e44b
+              * `review_media_to_review` - review_media_to_review
+            x-spec-enum-id: 5fe5ac3a71eca3c8
       required:
       - mutable_kinds
       - muted_kinds

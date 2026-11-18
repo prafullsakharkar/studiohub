@@ -312,3 +312,16 @@ A copy **read by path** is one made from a render named relative to its project'
 Notes on the contract:
 - **Nothing happens on its own** (Q-RP-85). A render farm or a publish tool calls the route with a personal access token carrying the artist's rights: [docs/api/review-copies-from-storage.md](../api/review-copies-from-storage.md).
 - **`render_unreadable`, not `storage_unreadable`.** The plan reused RP-17's code; its message names "the published file", which is wrong for a path copy, so a new code was added.
+
+## RP-19 Copy ready to review
+
+Approved 2026-11-18 with every recommendation of Q-RP-87 to Q-RP-91 ([DECISIONS.md](DECISIONS.md#rp-19-answers)). Paths are under `/api/v1/`. C-RP-50 adds a kind to C-RP-23's list and recipients to C-RP-24's review-media row; C-RP-51 adds that kind to C-RP-30's preferences. No route, permission code, setting or event field is added; one migration (`notifications` `0004`, the kind's choices only). The trust model does not change, so there is no ADR.
+
+| ID | Applies to | Before | After |
+|---|---|---|---|
+| C-RP-50 | C-RP-23's `kind`; C-RP-24's review-media notifications; C-RP-37's remake rule | A ready or failed review copy tells only its row's `created_by` (`review_media_ready`, `review_media_failed`); a remade copy that becomes ready tells nobody. | **New kind `review_media_to_review`**, target the version, `data` `{}`, `actor` `null` (the worker made the copy). The inbox's `kind` filter accepts it.<br>**A ready copy that is not a remake** tells: the row's `created_by` and the version's `artist`, `review_media_ready`; the `reviewer` of the version's live task, `review_media_to_review`, unless the version is `Approved` or `Archived` when the event is handled. The task's reviewer is read then, not when the copy was asked for. A version without a task, or a task without a reviewer or deleted, tells no reviewer, and nobody stands in for them.<br>**A failed copy** (a remake included) tells the row's `created_by` and the version's `artist`, `review_media_failed` with its `error_code`; never the reviewer.<br>**A remade copy that becomes ready** still tells nobody.<br>**One row per person per copy:** someone who matches several roles gets the first one in the order creator, artist, reviewer. A reviewer who made the copy, or is the artist, gets `review_media_ready` only. C-RP-24's rules hold: never the actor, only active people, only those who may open the version, and never a muted kind. |
+| C-RP-51 | `GET`/`PUT notifications/preferences/` (C-RP-30) | `mutable_kinds` lists every kind but `note_mention` and `review_invited`. | `mutable_kinds` also lists `review_media_to_review` (last), and it can be muted like the others. |
+
+Notes on the contract:
+- **"The reviewer" is the task's field.** `Task.reviewer` is set in the task form; the version page does not show it. A review's lead reviewer and participants are told by RP-11's kinds once a review holds the version.
+- **The client is not told.** `review_media_to_review` follows the version's reach (C-RP-24): a reviewer who cannot open the version, an external member outside its show for example, gets no row.

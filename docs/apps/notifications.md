@@ -61,6 +61,11 @@ publishing and scheduling through their `notification_sources.py` only, never th
   and the people whose work the version is (`publish_finished`). A revoked file tells its creator, the creators of
   the files built from it and the people of the unsent deliveries holding its version (`published_file_revoked`). A
   milestone completed by someone else tells its creator (`milestone_completed`).
+- **Review copies (RP-6, C-RP-24; RP-19, C-RP-50).** `ReviewMediaFinished` (published by the media worker) tells
+  the row's creator and the version's artist `review_media_ready` or `review_media_failed`. A ready copy that is not
+  a remake also tells the reviewer of the version's task `review_media_to_review`, unless the version is Approved
+  or Archived; the reviewer is read from the task when the event is handled. A failure never tells the reviewer; a
+  remake that becomes ready tells nobody. Someone in several roles gets one row, the first kind they match.
 - **Milestone reminders (C-RP-36).** Beat runs `notifications.milestone_reminders` hourly at minute 20
   (`services/reminders.py`). "Today" is the date in the default work calendar's time zone (UTC without one). A
   milestone not completed, due today or tomorrow (`due`) or in the last 7 days (`overdue`), reminds its creator and,

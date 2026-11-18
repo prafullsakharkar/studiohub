@@ -627,6 +627,8 @@ MUTABLE = [
     "published_file_revoked",
     "milestone_due",
     "milestone_completed",
+    # RP-19 (C-RP-50, Q-RP-91): the reviewer's kind can be muted too
+    "review_media_to_review",
 ]
 
 

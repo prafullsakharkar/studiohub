@@ -35,6 +35,8 @@ export const NOTIFICATION_KINDS = [
   'published_file_revoked',
   'milestone_due',
   'milestone_completed',
+  // RP-19 (C-RP-50): to the reviewer of the version's task
+  'review_media_to_review',
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 

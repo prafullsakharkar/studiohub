@@ -39,6 +39,9 @@ export function describeNotification(n: Notification): string {
       return `${who} moved your version ${target} ${moved}`;
     case 'review_media_ready':
       return `The review movie of ${target} is ready`;
+    case 'review_media_to_review':
+      // RP-19 (C-RP-50): the reviewer of the version's task; nobody acted, the worker finished the copy
+      return `${target} is ready for you to review`;
     case 'review_media_failed':
       return `The review movie of ${target} failed: ${MEDIA_FAILURES[n.data.error_code ?? ''] ?? 'it could not be processed'}`;
     case 'review_decision':
@@ -70,9 +73,12 @@ export function describeNotification(n: Notification): string {
 
 /**
  * Where a row leads. A note opens the Notes tab of the record it is about (its first link), or the project's;
- * a task its page; a version its page (the Media tab for a review movie); a review its page (RP-11, C-RP-28);
+ * a task its page; a version its page (the Media tab for a review copy, RP-19 included); a review its page (RP-11, C-RP-28);
  * a delivery, a publish job and a published file their pages, a milestone its project's Schedule tab (RP-13, C-RP-34).
  */
+/** The kinds about a version's review copy, which open its Media tab (RP-6; RP-19). */
+const MEDIA_KINDS: ReadonlySet<string> = new Set(['review_media_ready', 'review_media_failed', 'review_media_to_review']);
+
 export function notificationPath(n: Notification): string {
   const { target, record, project } = n;
   if (target.type === 'review') return `/reviews/${target.id}`;
@@ -82,7 +88,7 @@ export function notificationPath(n: Notification): string {
   if (target.type === 'milestone') return `/projects/${project.id}/schedule`;
   if (target.type === 'task') return `/tasks/${target.id}`;
   if (target.type === 'version') {
-    return n.kind === 'review_media_ready' || n.kind === 'review_media_failed' ? `/versions/${target.id}?tab=media` : `/versions/${target.id}`;
+    return MEDIA_KINDS.has(n.kind) ? `/versions/${target.id}?tab=media` : `/versions/${target.id}`;
   }
   switch (record?.type) {
     case 'Shot':
