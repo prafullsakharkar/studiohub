@@ -3,7 +3,7 @@
 Status: **accepted** (planned 2026-11-13 as review-pipeline RP-5; approved by the owner the same day: "go ahead", every
 recommendation of Q-RP-24 to Q-RP-31). **Amended by RP-12** (2026-11-16, Q-RP-51 to Q-RP-56 = A): image sequences and
 burn-ins, see "Amendment: image sequences and burn-ins" below. **Amended by RP-14** (2026-11-17, Q-RP-63 to Q-RP-67 = A):
-remaking a copy from its kept upload, see "Amendment: remaking copies" below. **Colour** of review copies (RP-15, 2026-11-17): [ADR-0041](ADR-0041-review-colour-management.md). **Amended by RP-16** (2026-11-17, Q-RP-73 to Q-RP-76 = A): a sequence's frames are kept for a while, see "Amendment: keeping a sequence's frames" below · Plan and contracts: `docs/review-pipeline/PLAN.md` (RP-5),
+remaking a copy from its kept upload, see "Amendment: remaking copies" below. **Colour** of review copies (RP-15, 2026-11-17): [ADR-0041](ADR-0041-review-colour-management.md). **Amended by RP-16** (2026-11-17, Q-RP-73 to Q-RP-76 = A): a sequence's frames are kept for a while, see "Amendment: keeping a sequence's frames" below. **Amended by RP-17** (2026-11-18, Q-RP-77 to Q-RP-81 = A): copies read from studio storage, see "Amendment: copies from studio storage" below and [ADR-0042](ADR-0042-review-media-from-studio-storage.md) · Plan and contracts: `docs/review-pipeline/PLAN.md` (RP-5),
 `docs/review-pipeline/CONTRACTS.md` (C-RP-19 to C-RP-22) · Evidence: `docs/review-pipeline/rp-5-verification.md`
 
 ## Context
@@ -150,6 +150,18 @@ Evidence: `docs/review-pipeline/rp-16-verification.md`.
    settings of the moment (`kept_for`: the burn-in switch and the colour transform). It counts again once those change.
    Nothing is deleted or remade by keeping.
 4. **Nothing reaches ffmpeg that did not before**: a remade sequence is the same job, on our own files.
+
+## Amendment: copies from studio storage (review-pipeline RP-17)
+
+Plan and contracts: `docs/review-pipeline/PLAN.md` (RP-17), `docs/review-pipeline/CONTRACTS.md` (C-RP-44 to C-RP-46).
+The trust model: [ADR-0042](ADR-0042-review-media-from-studio-storage.md). Evidence: `docs/review-pipeline/rp-17-verification.md`.
+
+1. **A second source.** A copy can be made from a registered published file instead of an upload. The job's input is
+   links in the row's own folder to the file where it lies; ffmpeg reads them as it reads an upload, with the same
+   arguments, caps and time limit.
+2. **Nothing is kept, nothing is written to storage.** The links go when the job ends. A copy from storage is remade by
+   reading the file again, so it has no `frames_until` and the RP-16 window does not apply.
+3. **A new failure, `storage_unreadable`,** for a file that is gone, changed or out of reach when the job runs.
 
 ## Not decided here
 

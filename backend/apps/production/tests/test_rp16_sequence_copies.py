@@ -277,6 +277,7 @@ class TestRemakingASequence:
             "skipped_busy": 0,
             "skipped_sequence": 1,
             "skipped_missing": 0,
+            "skipped_storage": 0,  # RP-17 (C-RP-46)
         }
         assert ReviewMedia.objects.filter(remake_of=kept).exists()
         assert not ReviewMedia.objects.filter(remake_of=gone).exists()
@@ -314,6 +315,7 @@ class TestWhichDiffer:
             "record_code": "RPS_V1_SHOT",
             "remakable": True,
             "frames_until": None,
+            "published_file_id": None,  # RP-17 (C-RP-46): an upload
             "why": ["burn_ins"],
         }
         assert listed[1]["remakable"] is True and listed[1]["frames_until"] is not None

@@ -91,7 +91,7 @@ describe("the project's list (C-RP-42)", () => {
     expect(differingText(first)).toBe('burn-ins differ · frames no longer kept');
     expect(differingText(second)).toMatch(/^burn-ins differ · frames kept until /);
     expect(differingText(third)).toBe('burn-ins differ · can be remade');
-    expect(remadeText({ queued: 1, skipped_busy: 0, skipped_sequence: 1, skipped_missing: 0 })).toBe(
+    expect(remadeText({ queued: 1, skipped_busy: 0, skipped_sequence: 1, skipped_missing: 0, skipped_storage: 0 })).toBe(
       'Remaking 1 review copy. 1 left: the frames of those sequences are no longer kept.',
     );
   });

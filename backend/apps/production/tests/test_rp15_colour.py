@@ -523,6 +523,7 @@ class TestCopies:
             "skipped_busy": 0,
             "skipped_sequence": 1,
             "skipped_missing": 0,
+            "skipped_storage": 0,  # RP-17 (C-RP-46)
         }
         made = ReviewMedia.objects.get(remake_of=named)
         assert made.color_space == "ACEScct"

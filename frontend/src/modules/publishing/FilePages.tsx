@@ -3,11 +3,13 @@ import type React from 'react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { serverMessage } from '@/api/errors/serverMessage';
+import { reviewMediaApi, versionsApi } from '@/api/production/review';
 import { publishedFilesApi } from '@/api/publishing/publishing';
 import type { BulkRegisterResult, FileDependencyRow, PublishedFile, PublishedFileInput } from '@/api/publishing/publishing';
 import { fileActionsFrom } from '@/api/publishing/publishingFlow';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
+import { useCan } from '@/core/permissions/useCan';
 import { formatBytes, formatWhen } from '@/modules/deliveries/format';
 import { Button } from '@/shared/components/Button';
 import { ActionBar } from './ActionBar';
@@ -68,6 +70,48 @@ const FileDependencies: React.FC<{ file: PublishedFile }> = ({ file }) => {
 };
 
 /** One registered file: where it is, its checksum, its state, and the lifecycle actions the caller may take. */
+/**
+ * Make the review copy of the file's version from this file, read where it lies on studio storage (RP-17, C-RP-44).
+ * Shown to holders of `version.update` or `version.create`; the server also checks that a `version.create` holder is the
+ * version's artist (C-RP-26), and says why a file cannot be used (`review_copy_refusal`).
+ */
+export const MakeReviewCopy: React.FC<{ file: PublishedFile }> = ({ file }) => {
+  const queryClient = useQueryClient();
+  const canUpdate = useCan('version.update');
+  const canCreate = useCan('version.create');
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  if (!canUpdate && !canCreate) return null;
+  if (file.review_copy_refusal) {
+    return <p className="text-[11px] text-slate-500">No review copy from this file: {file.review_copy_refusal}</p>;
+  }
+  const make = async () => {
+    setBusy(true);
+    setProblem(null);
+    try {
+      await reviewMediaApi.fromPublishedFile(file.id);
+      notify.success("The version's review copy is being made from this file.");
+      await queryClient.invalidateQueries({ queryKey: versionsApi.keys.all });
+    } catch (error) {
+      setProblem(serverMessage(error));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="flex flex-col items-start sm:items-end gap-1">
+      <Button size="sm" variant="outline" disabled={busy} title="The server reads this file where it lies and makes the version's review copy from it" onClick={() => void make()}>
+        {busy ? 'Queuing…' : 'Make review copy'}
+      </Button>
+      {problem && (
+        <p role="alert" className="text-[11px] text-rose-300">
+          {problem}
+        </p>
+      )}
+    </div>
+  );
+};
+
 export const PublishedFilePage: React.FC = () => {
   const { fileId = '' } = useParams();
   const queryClient = useQueryClient();
@@ -104,6 +148,7 @@ export const PublishedFilePage: React.FC = () => {
                     await queryClient.invalidateQueries({ queryKey: publishedFilesApi.keys.all });
                   }}
                 />
+                <MakeReviewCopy file={file} />
               </div>
             </div>
             {file.status === 'Revoked' && <p className="rounded-lg border border-rose-500/30 bg-rose-500/5 p-3 text-xs text-rose-300">This file was revoked{file.revoke_reason ? `: ${file.revoke_reason}` : '.'} It cannot be delivered, and its path cannot be registered again.</p>}

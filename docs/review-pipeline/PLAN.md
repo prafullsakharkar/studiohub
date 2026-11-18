@@ -1096,3 +1096,87 @@ Frames deleted at ready with a window set; the sweep discarding frames before th
 ### Gates
 
 ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, notifications, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green (no dependency change, so Containers and the dependency audit should not run).
+
+## RP-17 Review copies from studio storage
+
+**Status:** planned 2026-11-18; answered the same day (Q-RP-77 to Q-RP-81 = A, [DECISIONS.md](DECISIONS.md#rp-17-answers)); built 2026-11-18, committed as d06c0572 ([rp-17-verification.md](rp-17-verification.md)). Branch `feature/rp-17-studio-storage-frames`, off `develop` at `63afd57c` (v4.13.0).
+
+**Goal.** A review copy can be made from a file the pipeline has already published, read where it lies on studio storage, instead of uploading it through the browser. A 20 GiB EXR sequence is no longer sent over HTTP. A copy made this way can be remade at any time, because its source is never deleted.
+
+### Why (what is there today)
+
+- **Every review copy starts as an upload** (RP-5, RP-12): a movie or still in one request (up to `REVIEW_MEDIA_MAX_BYTES`), or a sequence in parts of 50 frames (up to `REVIEW_MEDIA_SEQUENCE_MAX_BYTES`, 20 GiB). The frames are written under `MEDIA_ROOT/review_media/`, although the studio already has them on its own storage.
+- **RP-16 keeps uploaded frames for 14 days** only so that a sequence can be remade. That costs up to 20 GiB per sequence on the media volume, and after 14 days the sequence can no longer be remade.
+- **Studio storage is already described and partly readable.**
+  - `publishing.StorageRoot` names each root. `PublishedFile` registers a file or a sequence under a root by relative path, with its frame range, SHA-256 and status (Registered, Deprecated, Revoked). A registered file never changes (DOM-PUB-02).
+  - `PUBLISHING_STORAGE_MOUNTS` (`{"<root code>": "<directory>"}`, empty by default) says which roots a server can read; checksum verification (`publishing.tasks.verify`) reads only those.
+  - `publishing.domain.paths` already refuses unsafe relative paths (`normalize_relative_path`), finds each frame of a sequence pattern (`frame_file_name`), and joins a path to a mount refusing anything that leaves it, symbolic links included (`resolve_mount`).
+- **The media worker reads only `MEDIA_ROOT`.** `celery-media` mounts `media_volume` alone (`compose.prod.yml`). Its sequence input is a folder `source/` of frames named `frame.%08d.<ext>` (`sequence.stored_pattern`).
+- **Import direction:** publishing imports production (its FK to `Version`, production selectors); production never imports publishing. RP-17 keeps it that way.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 17.1 | **Shared path rules.** Move the pure functions `normalize_relative_path`, `frame_file_name`, `is_sequence_pattern` and `resolve_mount` to `apps/core/utils/paths.py`, which has no domain knowledge. `publishing.domain.paths` re-exports them, so its callers and tests do not change. The media worker uses the same checks as checksum verification. | `apps/core/utils/paths.py`, `apps/publishing/domain/paths.py` |
+| 17.2 | **The row remembers a storage source** (Q-RP-77). `ReviewMedia` gains `storage_root` (root code, `""` for an upload), `storage_path` (the registered relative path, a sequence pattern for a sequence) and `published_file_id` (UUID, null, indexed; no FK, so production does not depend on publishing). Migration production `0014`, additive. The row's shape gains `published_file_id`; `source_name` is the file's name (the last path segment), with the range for a sequence. The path itself is not on the row, which is readable with `version.view` alone. | `models/review_media.py`, `api/serializers/review_media.py` |
+| 17.3 | **Open a copy from a registered file** (Q-RP-77 to Q-RP-80). New `POST publishing/files/{id}/review-copy/`, body `{"color_space"?}`. The file must be in the caller's reach (`publishing.view` and the files' narrowing; a 404 otherwise). The caller must be allowed to manage the review copy of the file's version (C-RP-26). Refused with a 400 on `detail`, one sentence each: review media switched off; the file Revoked; its role not `main` or `proxy`; its checksum `mismatch` or `missing` (Q-RP-79); its root not in `PUBLISHING_STORAGE_MOUNTS` (names the root code, never a directory); its extension not a movie, still or frame format the worker reads; a sequence of more than `REVIEW_MEDIA_MAX_FRAMES` frames. 409 `review_media_busy` while the version has a copy in flight. A publishing service validates the file and calls a new `ReviewMediaService.open_from_storage(...)` with plain values; the row is `queued` and enqueued as an upload is. Audit `review_media_from_storage`. | `publishing/services/review_copy.py` (new), `publishing/api/viewsets/file.py`, `production/services/review_media.py` |
+| 17.4 | **The worker reads the file where it lies** (Q-RP-78). For a row with a storage source, `process` builds `<folder>/source/` before running ffmpeg. For a sequence, each frame gets a symbolic link `frame.%08d.<ext>` to its real path. For a movie or still, `source.<ext>` gets one link. Each target is resolved with `resolve_mount` (inside the root's directory, symbolic links followed and checked), must be a regular file, and must start with its format's signature (as uploaded frames are sniffed). A missing or refused frame fails the job with `source_missing`, and the log carries the row id and frame number, never a path. The link folder is removed when the job ends; `rmtree` removes the links, never their targets. Nothing is ever written under a mount, which the checklist requires to be mounted read-only. Byte caps do not apply because nothing is stored; the frame cap and the job's time limit (27 minutes) do. | `production/services/review_media.py`, `transcode/sequence.py` |
+| 17.5 | **Remake and revoke** (Q-RP-81). A copy with a storage source can be remade (C-RP-37) and is remade by the project remake (C-RP-38) at any time: the new row copies the storage fields and the worker reads the file again. `frames_until` stays `null` for these rows. `remakable` (C-RP-42) is true while the root is listed and the file not revoked. Revoking a file (`PublishedFileService.revoke`) clears the storage fields of copies made from it. They stay shown but cannot be remade, so they can be kept as they are (C-RP-43); a copy of it still in flight fails with `source_missing`. Revoking calls production directly, in the same transaction. | `production/services/review_media.py`, `production/selectors/review_media.py`, `publishing/services/files.py` |
+| 17.6 | **Frontend.** The review movie panel gains **From a published file** next to Upload: a picker of the version's files that can be used (`GET publishing/files/?version_id=`, role main or proxy, not revoked), each showing its path, frames and checksum state, with the colour-space choice as for uploads. The published file page gains **Make review copy** for whoever may. The panel says "From published file <name>" on a copy made this way and links to the file for those holding `publishing.view`. There is no Remake refusal for these copies. Typed API from captured responses. | `frontend/src/api/`, `modules/production/review/`, `modules/publishing/` |
+| 17.7 | **Capture, live, docs.** Capture tool and sample on real ffmpeg, with a temporary directory as a mounted root: an EXR sequence and a movie made from registered files; a remake; a revoke; the refusals, including a path through a symbolic link that leaves the root. A live file. CONTRACTS (C-RP-44 to C-RP-46), DECISIONS, **ADR-0042** (the media worker reads studio storage, read-only, only registered paths under listed roots), ADR-0040 amended, the pre-deploy checklist (the migration, the read-only mounts into `celery-media`, the same directories in every container that lists them), `rp-17-verification.md`. | `docs/sync/`, `docs/review-pipeline/`, `docs/adr/`, `docs/07-deployment/` |
+
+### Questions before RP-17 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-77 | What can a review copy be read from? | A: a **registered published file** (role `main` or `proxy`, not Revoked), placed on that file's own version. B: any path under a listed root, typed in by the user. C: A, and also a path that is not registered yet. | **A**. Registration already decides that a path belongs to a version of a project, refuses unsafe paths, and freezes the record. The worker then reads only what the studio has declared, and the copy can name its source. B and C let anyone who can upload a review copy make the worker read any file under a root. |
+| Q-RP-78 | Which roots may the media worker read, and where is that set? | A: the roots in **`PUBLISHING_STORAGE_MOUNTS`**, one setting for "which roots the servers can read", mounted read-only into `celery-media`. B: a separate `REVIEW_MEDIA_STORAGE_MOUNTS`. | **A**. One list of what the servers read, as checksum verification uses already. Each container mounts only what it needs, so the web container needs no mount for review copies: it only checks that the root is listed. B is two lists of the same directories, which can disagree. |
+| Q-RP-79 | Is the checksum checked? | A: a file whose checksum is `mismatch` or `missing` is refused; `declared` and `verified` are accepted; nothing is hashed in the request or the job. B: the job hashes the file first and refuses on a mismatch, so every frame is read twice. C: no check. | **A**. Verification already records what is known, and RP-17 respects it. Hashing 20 GiB before every copy doubles the job for little: the worker reads what is there, and a later verification still flags a changed file. |
+| Q-RP-80 | Are copies made automatically when a file is registered? | A: no: by hand on the version page or the file's page, and by pipeline tools through the same route (a personal access token). B: a project switch that makes a copy of every registered `main` movie or sequence. | **A**. A publish often registers several files per version (main, proxy, sidecars), and choosing which one is reviewed is the artist's or the tool's call. B can come later, once studios show which file they pick. |
+| Q-RP-81 | What happens to copies made from a file that is then revoked? | A: they stay, as the record of what was reviewed, but can no longer be remade; one in flight fails. B: they are removed with the file. | **A**. A revoked file "must not be used" from now on, but notes and drawings were made on the copy and stay readable. Removing it would hide the review history. |
+
+Also decided in the plan, without a question:
+- **No new permission code.** Making a copy needs reach of the file (`publishing.view`) and the right to manage the version's review copy (C-RP-26). Artists hold both for their own versions.
+- **Uploads stay.** Movies and sequences can still be uploaded, as before, for anything not on studio storage (client material, a quick test).
+- **RP-16's keep window stays** for uploaded sequences. Copies from storage need none.
+- **Paths do not leak.** Refusals name a root by code; logs carry ids and frame numbers; the review row carries the file's id and name, not its path.
+- **Deprecated files can be used.** Deprecated means superseded, not wrong; Revoked is refused.
+
+### Not in RP-17
+
+- Automatic copies on registration (Q-RP-80 B).
+- Reading paths that are not registered; object storage.
+- Writing anything to studio storage (copies, proxies, thumbnails stay on the media volume).
+- Notifications about copies; per-shot grades (CDL); P3 and HDR copies.
+
+### Tests (targeted, test database)
+
+- **17.1:** the moved functions behave as before (the publishing path tests run unchanged against the re-export).
+- **17.2:** the migration; the row shape (`published_file_id`, `source_name`, no path).
+- **17.3:**
+  - a copy opened from a registered sequence and from a movie;
+  - each refusal (switched off, revoked, wrong role, checksum mismatch and missing, root not listed, extension, too many frames, busy);
+  - a file out of reach is a 404 identical to an unknown id;
+  - rights as C-RP-26 (the version's artist with `version.create`, `version.update`);
+  - the audit entry.
+- **17.4:**
+  - the job makes a copy from a sequence and a movie under a temporary root;
+  - a frame through a symbolic link leaving the root fails the job and nothing outside is read;
+  - a missing frame fails it;
+  - a frame with the wrong signature fails it;
+  - removing the link folder leaves the targets;
+  - nothing is created under the root.
+- **17.5:**
+  - a storage copy is remade, and is remade by the project remake, without a window;
+  - revoking clears the storage fields, the copy stays, remake is refused, keep is accepted;
+  - a copy in flight fails;
+  - unlisting the root makes it not remakable.
+
+### Mutation checks
+
+`resolve_mount` not called on a frame (a link leaving the root accepted); the signature not checked; the link folder removed by following links; a revoked file accepted; `mismatch` accepted; a root that is not listed accepted; the revoke not clearing the storage fields; a storage copy given a keep window; the path put on the row.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, publishing, notifications, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green (no dependency change, so Containers and the dependency audit should not run).

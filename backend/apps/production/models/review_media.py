@@ -8,6 +8,9 @@ A version has at most one row in flight (uploading, queued or processing) and on
 older rows stay as ``superseded`` or ``removed``, without files, for the audit trail. A remake
 (RP-14, C-RP-37) is a new row that links to the kept upload of the copy it remakes. A sequence's
 frames arrive in parts while the row is ``uploading`` and are stored as ``source/frame.<n>.<ext>``.
+A copy made from a registered published file (RP-17, C-RP-44) has no upload: it names the file's
+storage root and relative path, and the worker reads the file where it lies, through links it makes
+for each job and removes afterwards (ADR-0042).
 """
 
 from __future__ import annotations
@@ -40,6 +43,10 @@ class ReviewMedia(models.Model):
         TRANSCODE_FAILED = "transcode_failed", "The review copy could not be made."
         TIMEOUT = "timeout", "Processing took too long and was stopped."
         SOURCE_MISSING = "source_missing", "The uploaded file is no longer on the server."
+        STORAGE_UNREADABLE = (
+            "storage_unreadable",
+            "The published file could not be read from studio storage.",
+        )
 
     #: statuses of a job that has not finished (a sequence still arriving counts)
     IN_FLIGHT = (Status.UPLOADING, Status.QUEUED, Status.PROCESSING)
@@ -110,6 +117,13 @@ class ReviewMedia(models.Model):
     # RP-16 (C-RP-43): the settings a copy that could not be remade was kept as it is against
     # ({"burn_ins", "ocio"}); it counts as matching while the project's settings are these.
     kept_for = models.JSONField(null=True, blank=True)
+    # RP-17 (C-RP-44): a copy read from a registered published file. ``storage_root`` is the root's
+    # code and ``storage_path`` the registered relative path (a frame pattern for a sequence); both
+    # are blank for an upload, and cleared when the file is revoked (C-RP-46). ``published_file_id``
+    # names the file (no foreign key: production does not depend on publishing) and stays.
+    storage_root = models.CharField(max_length=50, blank=True, default="")
+    storage_path = models.CharField(max_length=1024, blank=True, default="")
+    published_file_id = models.UUIDField(null=True, blank=True, db_index=True)
 
     class Meta:
         db_table = "production_review_media"
@@ -154,6 +168,11 @@ class ReviewMedia(models.Model):
             and self.frames_until is not None
             and self.frames_until > timezone.now()
         )
+
+    @property
+    def from_storage(self) -> bool:
+        """Whether this copy is read from a published file that can still be read (RP-17, C-RP-44)."""
+        return bool(self.storage_root and self.storage_path)
 
     @property
     def directory(self) -> str:
