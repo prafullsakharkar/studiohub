@@ -1099,7 +1099,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-17 Review copies from studio storage
 
-**Status:** planned 2026-11-18; answered the same day (Q-RP-77 to Q-RP-81 = A, [DECISIONS.md](DECISIONS.md#rp-17-answers)); built 2026-11-18, committed as d06c0572 ([rp-17-verification.md](rp-17-verification.md)). Branch `feature/rp-17-studio-storage-frames`, off `develop` at `63afd57c` (v4.13.0).
+**Status:** planned 2026-11-18; answered the same day (Q-RP-77 to Q-RP-81 = A, [DECISIONS.md](DECISIONS.md#rp-17-answers)); committed `d06c0572`, merged into `develop` and `main`, released in v4.14.0 ([rp-17-verification.md](rp-17-verification.md)). Branch `feature/rp-17-studio-storage-frames`, off `develop` at `63afd57c` (v4.13.0).
 
 **Goal.** A review copy can be made from a file the pipeline has already published, read where it lies on studio storage, instead of uploading it through the browser. A 20 GiB EXR sequence is no longer sent over HTTP. A copy made this way can be remade at any time, because its source is never deleted.
 

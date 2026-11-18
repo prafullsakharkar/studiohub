@@ -1,6 +1,6 @@
 # RP-17 verification: review copies from studio storage
 
-Built 2026-11-18 on `feature/rp-17-studio-storage-frames`, off `develop` at `63afd57c` (v4.13.0), with every recommendation of Q-RP-77 to Q-RP-81 ([DECISIONS.md](DECISIONS.md#rp-17-answers)). Committed as `d06c0572`; not merged. Contracts C-RP-44 to C-RP-46 ([CONTRACTS.md](CONTRACTS.md#rp-17-review-copies-from-studio-storage)). New [ADR-0042](../adr/ADR-0042-review-media-from-studio-storage.md) (the media worker reads studio storage). [ADR-0040](../adr/ADR-0040-review-media-processing.md) amended ("copies from studio storage").
+Built 2026-11-18 on `feature/rp-17-studio-storage-frames`, off `develop` at `63afd57c` (v4.13.0), with every recommendation of Q-RP-77 to Q-RP-81 ([DECISIONS.md](DECISIONS.md#rp-17-answers)). Committed `d06c0572`; merged into `develop` (`b312f437`) and `main` (`e2d9a19e`), released in v4.14.0. CI was green on both on the first push. Contracts C-RP-44 to C-RP-46 ([CONTRACTS.md](CONTRACTS.md#rp-17-review-copies-from-studio-storage)). New [ADR-0042](../adr/ADR-0042-review-media-from-studio-storage.md) (the media worker reads studio storage). [ADR-0040](../adr/ADR-0040-review-media-processing.md) amended ("copies from studio storage").
 
 ## What was built
 
