@@ -24,6 +24,13 @@ PROBE_DEFAULTS = {
     "colour_skipped": None,
 }
 
+#: RP-18 (C-RP-49): where a copy is read from
+SOURCES = (
+    ("upload", "upload"),
+    ("published_file", "published_file"),
+    ("storage_path", "storage_path"),
+)
+
 
 class ReviewMediaColourSerializer(serializers.Serializer[Any]):
     """How a copy's colour was made (C-RP-40): the config's names, never a path."""
@@ -85,6 +92,8 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
     frames_until = serializers.SerializerMethodField()
     published_file_id = serializers.UUIDField(read_only=True, allow_null=True)
     storage_readable = serializers.SerializerMethodField()
+    #: RP-18 (C-RP-49): where the copy is read from
+    source = serializers.ChoiceField(choices=SOURCES, read_only=True)  # pyright: ignore[reportAssignmentType]  # DRF pops declared fields; Field.source is unrelated
 
     class Meta:
         model = ReviewMedia
@@ -95,6 +104,7 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
             "queued_at", "started_at", "finished_at", "created_by",
             "proxy_url", "thumbnail_url", "filmstrip_url", "filmstrip_tiles", "links_expire_at",
             "remake_of", "color_space", "frames_until", "published_file_id", "storage_readable",
+            "source",
         )  # fmt: skip
         read_only_fields = fields
 
@@ -110,8 +120,9 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
     @extend_schema_field(serializers.BooleanField())
     def get_storage_readable(self, obj: ReviewMedia) -> bool:
         """RP-17 (C-RP-44, C-RP-46): a copy read from a published file that can still be read, so it can
-        be remade; ``false`` for uploads, revoked files and roots the server no longer reads."""
-        return obj.published_file_id is not None and ReviewMediaSelector.remakable(obj)
+        be remade; ``false`` for uploads, revoked files and roots the server no longer reads. RP-18
+        (C-RP-49): a copy read by path while it is still in the project's review folder."""
+        return obj.storage_copy and ReviewMediaSelector.remakable(obj)
 
     @extend_schema_field(ReviewMediaProbeSerializer(allow_null=True))
     def get_probe(self, obj: ReviewMedia) -> dict[str, Any] | None:
@@ -185,6 +196,22 @@ class ReviewMediaSequenceOpenSerializer(serializers.Serializer[Any]):
     color_space = serializers.CharField(max_length=100, required=False, allow_blank=True)
 
 
+class ReviewMediaFromStorageSerializer(serializers.Serializer[Any]):
+    """``POST versions/{id}/review-media/from-storage/`` (RP-18, C-RP-48): a render in the project's
+    review folder. ``path`` is relative to the folder; a frame pattern needs both frames."""
+
+    path = serializers.CharField(max_length=1024, trim_whitespace=False)
+    first_frame = serializers.IntegerField(required=False, allow_null=True)
+    last_frame = serializers.IntegerField(required=False, allow_null=True)
+    color_space = serializers.CharField(max_length=100, required=False, allow_blank=True)
+
+    def to_internal_value(self, data: Any) -> dict[str, Any]:
+        unknown = sorted(set(getattr(data, "keys", lambda: [])()) - set(self.fields))
+        if unknown:
+            raise serializers.ValidationError({name: ["Unknown field."] for name in unknown})
+        return super().to_internal_value(data)
+
+
 class ReviewMediaFramesSerializer(serializers.Serializer[Any]):
     """``POST review-media/{id}/frames/``: up to 50 files under ``frames`` (C-RP-31)."""
 
@@ -215,6 +242,7 @@ class ReviewCopyDifferingSerializer(serializers.Serializer[Any]):
     remakable = serializers.BooleanField()
     frames_until = serializers.DateTimeField(allow_null=True)
     published_file_id = serializers.UUIDField(allow_null=True)
+    source = serializers.ChoiceField(choices=SOURCES)  # pyright: ignore[reportAssignmentType]  # DRF pops declared fields; Field.source is unrelated
     why = serializers.ListField(child=serializers.ChoiceField(choices=["burn_ins", "colour"]))
 
 

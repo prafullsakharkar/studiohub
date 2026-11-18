@@ -1099,7 +1099,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-17 Review copies from studio storage
 
-**Status:** planned 2026-11-18; answered the same day (Q-RP-77 to Q-RP-81 = A, [DECISIONS.md](DECISIONS.md#rp-17-answers)); built 2026-11-18, committed as d06c0572 ([rp-17-verification.md](rp-17-verification.md)). Branch `feature/rp-17-studio-storage-frames`, off `develop` at `63afd57c` (v4.13.0).
+**Status:** planned 2026-11-18; answered the same day (Q-RP-77 to Q-RP-81 = A, [DECISIONS.md](DECISIONS.md#rp-17-answers)); committed `d06c0572`, merged into `develop` and `main`, released in v4.14.0 ([rp-17-verification.md](rp-17-verification.md)). Branch `feature/rp-17-studio-storage-frames`, off `develop` at `63afd57c` (v4.13.0).
 
 **Goal.** A review copy can be made from a file the pipeline has already published, read where it lies on studio storage, instead of uploading it through the browser. A 20 GiB EXR sequence is no longer sent over HTTP. A copy made this way can be remade at any time, because its source is never deleted.
 
@@ -1180,3 +1180,65 @@ Also decided in the plan, without a question:
 ### Gates
 
 ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, publishing, notifications, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green (no dependency change, so Containers and the dependency audit should not run).
+
+## RP-18 Review copies before approval
+
+**Status:** planned 2026-11-18; answered the same day (Q-RP-82 to Q-RP-86 = A, [DECISIONS.md](DECISIONS.md#rp-18-answers)); built the same day, committed as `bfaf6466` ([rp-18-verification.md](rp-18-verification.md)). Branch `feature/rp-18-auto-review-copies`, off `develop` at `04b11f9e` (v4.14.0).
+
+**Goal.** A version that is still in review gets its review copy from its render on studio storage, by path, without an upload and without being published first. A render-farm tool can ask for it as soon as a render finishes.
+
+### Why (what is there today)
+
+- **RP-17 helps only after approval.** It reads only registered published files. Registration refuses an unpublished version ("Unknown or unpublished version.", `PublishedFileService.register`), and only an `Approved` version can be published (`VersionService.publish_version`); nothing else sets `is_published`. In the usual flow (render, review, approve, publish, register), the copy that review needs is still uploaded. This was found while planning RP-18: its first proposal, automatic copies on registration (Q-RP-80 B), would have fired at the same late point.
+- **The worker side exists.** RP-17's row fields (`storage_root`, `storage_path`), the per-job links checked with `resolve_mount` and the format's leading bytes, `_unlink_storage`, `storage_unreadable` and remaking from storage all work for a row without `published_file_id`.
+- **Nothing bounds a path today.** Path templates (RP-4) are per file type, optional, and enforce only when switched on. Storage roots name whole studio volumes, shared by every project. [ADR-0042](../adr/ADR-0042-review-media-from-studio-storage.md) decision 1 says the worker reads "a `PublishedFile` id, never a path from a request". RP-18 changes that, so it needs a new ADR.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 18.1 | **The project's review folder** (Q-RP-83, Q-RP-86). `Project` gains `review_source_root` (a root code, blank = off) and `review_source_folder` (a relative folder, normalized with `normalize_relative_path`, required when the root is set, never the whole root). Written with `project.update`; the root must be listed in `PUBLISHING_STORAGE_MOUNTS` (production checks the setting, it does not import publishing). Migration production `0015`, additive. The project shape gains both, for those who may change the project only. | `models/project.py`, `api/serializers/project/`, `services/project.py` |
+| 18.2 | **Open a copy from a path** (Q-RP-82, Q-RP-84). New `POST versions/{id}/review-media/from-storage/`, body `{"path", "first_frame"?, "last_frame"?, "color_space"?}`. `path` is relative to the project's folder (a sequence pattern needs the range). The upload's rights (C-RP-26), 409s and colour rules apply. 400 on `path` when the project has no review folder, the path is unsafe, leaves the folder, or is not a format the worker reads; 400 on the range as for a sequence upload. Stored as RP-17's storage source (`published_file_id` null) and queued. Audit `review_media_from_path`. | `production/services/review_media.py`, `production/api/viewsets/version.py` |
+| 18.3 | **The worker checks the folder again.** At run time a path copy must still lie under the project's current folder on a listed root, else `storage_unreadable` with reason `outside_folder`. Otherwise RP-17's reading is unchanged. | `production/services/review_media.py` |
+| 18.4 | **Remaking.** A path copy is remade by reading the path again, at any time, while it is still inside the project's folder and the root is listed. The row gains `source` (`upload`, `published_file`, `storage_path`); `storage_readable` covers path copies. Changing or clearing the project's folder makes older path copies not remakable; they can be kept as they are (C-RP-43). | `services/`, `selectors/review_media.py`, `api/serializers/review_media.py` |
+| 18.5 | **Frontend.** The project's review settings gain the root and folder (for `project.update`). The review movie panel gains **From studio storage** when the project has a folder: a path field shown under `<root>:<folder>/`, the frame range prefilled from the version's frames for a pattern, and the colour-space choice. The copy reads "Read from studio storage: <file name>". Remake follows `storage_readable`. | `frontend/src/api/`, `modules/production/` |
+| 18.6 | **For pipeline tools.** `docs/api/` gains a page with the request a render-farm tool sends after a render, using a personal access token with the artist's rights, and what each answer means. | `docs/api/` |
+| 18.7 | **Capture, live, docs.** Capture tool and sample on real ffmpeg with a temporary root: a sequence and a movie of an unpublished version, a remake, a path through a symbolic link leaving the folder, a folder changed afterwards, the refusals. A live file. CONTRACTS (C-RP-47 to C-RP-49), DECISIONS, **ADR-0043** (amends ADR-0042: paths from a request, bounded by the project's folder), the pre-deploy checklist, `rp-18-verification.md`. | `docs/` |
+
+### Questions before RP-18 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-82 | Where does an unpublished version's source come from? | A: a **path in the request**, stored on the review row as RP-17's storage source; the version stays unpublished and nothing is registered. B: let files be **registered to unpublished versions**, then use RP-17 as it is. C: a new production "review source" record that tools register, then a copy from it. | **A**. It reuses everything RP-17 built and changes no publishing rule. B breaks "a registered file is published output", which deliveries, the loader and dependencies rely on (DOM-PUB-02). C adds a record that holds the same two fields as the row. |
+| Q-RP-83 | Which paths may be named? | A: only paths **under a folder the project declares** (one root and folder per project, set by whoever may change the project), checked in the request and again by the worker. B: paths that match one of the project's path templates. C: any path on a listed root. | **A**. Roots are shared by every project, so C would let an editor of one project see another project's renders as a review copy. B depends on templates that are optional and per file type. A is one setting, and `resolve_mount` already refuses links that leave it. |
+| Q-RP-84 | How is a sequence's frame range known? | A: **the caller gives it** with the pattern; the panel prefills the version's frame range; missing frames fail the job. B: the worker lists the folder and takes the frames it finds. | **A**. The web container has no storage mount (ADR-0042), so it cannot look. B makes the range a surprise: a partial render would make a short copy that looks finished. |
+| Q-RP-85 | Is anything automatic on the server? | A: **no**: the render-farm tool calls the route when a render finishes (a personal access token with the artist's rights), documented in WP 18.6. B: the server also sweeps the project's folder for new renders. | **A**. Only the farm knows when a render is complete; a sweep would read half-written frames and would need the web side to read storage. |
+| Q-RP-86 | Who sees the project's folder and the paths? | A: the folder is in the project shape **only for those who may change the project**; review rows show the file name only; refusals never name a directory. B: every project reader sees the folder. | **A**. It keeps RP-17's rule that paths do not leak, which matters for client accounts that read projects. The artist types a path relative to the folder, which the panel shows as `<root>:<folder>/` only to those who may change it; others see "the project's review folder". |
+
+Also decided in the plan, without a question:
+- **No new permission code.** The route needs the upload's rights (C-RP-26).
+- **Uploads and RP-17 stay.** Once a version is published, its registered files can still be used.
+- **Nothing is written to storage**, and the worker's mounts stay read-only (ADR-0042).
+- **A changed folder is not retroactive for the files**, only for remakes: copies already made stay shown.
+
+### Not in RP-18
+
+- Automatic copies on registration (Q-RP-80 B); watching folders (Q-RP-85 B).
+- Registering files to unpublished versions (Q-RP-82 B).
+- Folders per department or per file type; several folders per project.
+- Writing to studio storage; object storage; notifications about copies.
+
+### Tests (targeted, test database)
+
+- **18.1:** the migration; the project writes (a root not listed, an unsafe folder, a folder without a root, clearing both); who sees the fields.
+- **18.2:** a sequence and a movie of an unpublished version are queued; each refusal (no folder, unsafe path, `..`, absolute path, outside the folder, extension, range missing or too long, busy, switched off); the rights; the audit; no path in the row or the answer.
+- **18.3:** a link inside the folder that leads out is refused; a folder changed after queuing fails the job with `outside_folder`; the log has no path.
+- **18.4:** a path copy is remade and remade by the project remake; after the folder changes it is not remakable and can be kept; `source` for the three kinds.
+
+### Mutation checks
+
+The folder check skipped in the request; the folder check skipped in the worker; a path ending in `..` accepted; the project's root not required to be listed; the range taken from the disk; the folder shown to project readers; a path copy kept remakable after the folder changes; the path put on the row.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, publishing, notifications, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green.

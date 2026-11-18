@@ -42,7 +42,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.audit.models import AuditLog
 from apps.core.events import default_event_bus
-from apps.core.utils.paths import PathRuleError, frame_file_name, resolve_mount
+from apps.core.utils.paths import PathRuleError, frame_file_name, is_sequence_pattern, resolve_mount
 from apps.production.events.review_media import ReviewMediaFinished
 from apps.production.exceptions import ReviewMediaBusy, ReviewMediaDisabled
 from apps.production.models import Project, ReviewMedia, Version
@@ -50,6 +50,7 @@ from apps.production.selectors.review_media import ReviewMediaSelector
 from apps.production.transcode import colour, detect
 from apps.production.transcode import ffmpeg as commands
 from apps.production.transcode import sequence as frames
+from apps.production.validators import review_source
 from apps.production.validators.colour import validate_upload_colour
 
 logger = structlog.get_logger(__name__)
@@ -212,6 +213,11 @@ REMAKE_REFUSALS = {
         "The published file of this copy can no longer be read: it was revoked, or the server "
         "no longer reads its storage root."
     ),
+    # RP-18 (C-RP-49)
+    "storage_path": (
+        "The render of this copy can no longer be read: it is not in the project's review folder "
+        "any more, or the server no longer reads its storage root."
+    ),
 }
 KEEP_UNAVAILABLE = "The studio's colour config cannot be read, so copies cannot be kept now."
 
@@ -228,11 +234,13 @@ def _keep_frames_until(row: ReviewMedia, now: Any) -> Any:
 
 @dataclasses.dataclass(frozen=True)
 class StorageSource:
-    """A registered published file to read a copy from (RP-17, C-RP-44), as publishing hands it over."""
+    """A place on studio storage to read a copy from: a registered published file as publishing
+    hands it over (RP-17, C-RP-44), or a render in the project's review folder (RP-18, C-RP-48,
+    ``published_file_id`` None)."""
 
     #: the storage root's code, as in ``PUBLISHING_STORAGE_MOUNTS``
     root: str
-    #: the registered relative path; a frame pattern (``%04d``, ``####``) for a sequence
+    #: the relative path on the root (the folder included); a frame pattern for a sequence
     path: str
     published_file_id: Any
     first_frame: int | None = None
@@ -471,14 +479,16 @@ class ReviewMediaService:
                     created_by=actor if getattr(actor, "pk", None) else None,
                 )
                 media.save()
+                by_path = source.published_file_id is None
                 _audit(
                     actor=actor,
                     version=version,
-                    operation="review_media_from_storage",
+                    operation="review_media_from_path" if by_path else "review_media_from_storage",
                     media=media,
                     action=AuditLog.ACTION_CREATE,
                     description=(
-                        f"Review {media.kind} of version {version.code} queued from a published file."
+                        f"Review {media.kind} of version {version.code} queued from "
+                        + ("the project's review folder." if by_path else "a published file.")
                     ),
                 )
                 media_id = media.pk
@@ -486,6 +496,59 @@ class ReviewMediaService:
         except IntegrityError as error:
             raise ReviewMediaBusy() from error
         return media
+
+    @classmethod
+    def open_from_path(
+        cls,
+        *,
+        actor: Any,
+        version: Version,
+        path: Any,
+        first_frame: int | None = None,
+        last_frame: int | None = None,
+        color_space: str = "",
+    ) -> ReviewMedia:
+        """Queue a copy of ``version`` read from a render in its project's review folder (RP-18,
+        C-RP-48). ``path`` is relative to the folder; a frame pattern needs the range (Q-RP-84).
+
+        The version may be unpublished: nothing is registered (Q-RP-82). Every refusal is a 400 on
+        one field and never names a directory (Q-RP-86).
+        """
+        _require_enabled()
+        project = version.project
+        joined = review_source.full_path(project, path)
+        pattern = is_sequence_pattern(joined)
+        given = first_frame is not None or last_frame is not None
+        if pattern and (first_frame is None or last_frame is None):
+            raise ValidationError(
+                {"first_frame": ["A frame pattern needs first_frame and last_frame."]}
+            )
+        if not pattern and given:
+            raise ValidationError(
+                {"path": ["A frame range needs a frame pattern in the file name (%04d or ####)."]}
+            )
+        if pattern:
+            assert first_frame is not None and last_frame is not None
+            if first_frame < 0 or last_frame < first_frame:
+                raise ValidationError(
+                    {"last_frame": ["The range runs from first_frame up to last_frame, from 0."]}
+                )
+        problem = storage_problem(joined, first_frame, last_frame)
+        if problem:
+            raise ValidationError({"path": [problem]})
+        root, _folder = review_source.project_folder(project) or ("", "")
+        return cls.open_from_storage(
+            actor=actor,
+            version=version,
+            source=StorageSource(
+                root=root,
+                path=joined,
+                published_file_id=None,
+                first_frame=first_frame if pattern else None,
+                last_frame=last_frame if pattern else None,
+            ),
+            color_space=color_space,
+        )
 
     @staticmethod
     def forget_storage(published_file_id: Any) -> int:
@@ -537,7 +600,7 @@ class ReviewMediaService:
                 counts["skipped_sequence"] += 1
             elif problem == "missing":
                 counts["skipped_missing"] += 1
-            elif problem == "storage":
+            elif problem in ("storage", "storage_path"):  # RP-18 (C-RP-49): either source
                 counts["skipped_storage"] += 1
         return counts
 
@@ -604,9 +667,15 @@ class ReviewMediaService:
                 if row.status != Status.READY:
                     return None, "not_ready"
                 sequence = row.kind == ReviewMedia.Kind.SEQUENCE
-                stored = row.published_file_id is not None
-                if stored and not (row.from_storage and storage_readable(row.storage_root)):
+                stored = row.storage_copy
+                if row.source == "published_file" and not (
+                    row.from_storage and storage_readable(row.storage_root)
+                ):
                     return None, "storage"
+                if row.source == "storage_path" and not review_source.path_still_readable(
+                    row.version.project, row.storage_root, row.storage_path
+                ):
+                    return None, "storage_path"
                 if sequence and not stored and not row.frames_kept:
                     return None, "sequence"
                 if ReviewMedia.objects.filter(
@@ -972,7 +1041,7 @@ class ReviewMediaService:
             media.burn_in_date = media.burn_in_date or media.started_at.date()
             media.save(update_fields=["status", "started_at", "attempts", "burn_in_date"])
 
-        stored = media.published_file_id is not None
+        stored = media.storage_copy
         try:
             source = cls._storage_input(media) if stored else cls._input(media)
         except _Failed as failure:
@@ -1006,7 +1075,13 @@ class ReviewMediaService:
         leaves it (symbolic links included) or is not a regular file whose leading bytes are its
         format, and given a symbolic link in the row's folder that ffmpeg reads. Raises ``_Failed``
         with ``storage_unreadable``; the log names the row and the frame, never a path.
+
+        A render read by path (RP-18, C-RP-48) is resolved under the project's *current* review
+        folder instead of the whole root, so a link that leaves the folder is refused too, and a
+        folder changed since the copy was asked for fails it (``render_unreadable``).
         """
+        by_path = media.source == "storage_path"
+        code = Code.RENDER_UNREADABLE if by_path else Code.STORAGE_UNREADABLE
 
         def refuse(reason: str, frame: int | None = None) -> _Failed:
             logger.warning(
@@ -1015,13 +1090,25 @@ class ReviewMediaService:
                 reason=reason,
                 frame=frame,
             )
-            return _Failed(Code.STORAGE_UNREADABLE)
+            return _Failed(code)
 
         if not media.from_storage:
             raise refuse("revoked")
         mount = settings.PUBLISHING_STORAGE_MOUNTS.get(media.storage_root.upper())
         if not mount:
             raise refuse("root_not_read")
+        storage_path = media.storage_path
+        if by_path:
+            project = Project.objects.filter(pk=media.project_id).first()  # pyright: ignore[reportAttributeAccessIssue]
+            if not review_source.path_still_readable(project, media.storage_root, storage_path):
+                raise refuse("outside_folder")
+            review_folder = (review_source.project_folder(project) or ("", ""))[1]
+            try:
+                # the folder itself must lie on the root, even when it is a link
+                mount = str(resolve_mount(mount, review_folder))
+            except PathRuleError as error:
+                raise refuse("outside_root") from error
+            storage_path = storage_path[len(review_folder) + 1 :]
 
         def resolve(relative: str, frame: int | None = None) -> tuple[Path, bytes]:
             try:
@@ -1044,7 +1131,7 @@ class ReviewMediaService:
                 links = folder / "source"
                 links.mkdir(parents=True, exist_ok=True)
                 for number in range(media.first_frame, media.last_frame + 1):
-                    real, head = resolve(frame_file_name(media.storage_path, number), number)
+                    real, head = resolve(frame_file_name(storage_path, number), number)
                     if frames.sniff(head) != frame_format:
                         raise refuse("content", number)
                     os.symlink(real, links / frames.stored_name(number, media.sequence_extension))
@@ -1056,7 +1143,7 @@ class ReviewMediaService:
                     linear=frame_format.linear,
                 )
             container = detect.CONTAINERS.get(media.source_container)
-            real, head = resolve(media.storage_path)
+            real, head = resolve(storage_path)
             if container is None or detect.sniff(head) != container:
                 raise refuse("content")
             link = folder / f"source.{detect.extension_of(media.storage_path)}"
@@ -1311,7 +1398,7 @@ class ReviewMediaService:
                 # C-RP-41: uploaded frames are kept for a while to remake the copy, else they go now
                 # (Q-RP-56); a copy read from a published file keeps nothing (C-RP-45).
                 # C-RP-32: an unset range is filled.
-                if row.published_file_id is None:
+                if not row.storage_copy:
                     row.frames_until = _keep_frames_until(row, row.finished_at)
                     if row.frames_until is None and row.source_path:
                         older_folders.append(row.source_path)

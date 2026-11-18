@@ -47,6 +47,11 @@ class ReviewMedia(models.Model):
             "storage_unreadable",
             "The published file could not be read from studio storage.",
         )
+        # RP-18 (C-RP-48): a copy read by path from the project's review folder
+        RENDER_UNREADABLE = (
+            "render_unreadable",
+            "The render could not be read from the project's review folder on studio storage.",
+        )
 
     #: statuses of a job that has not finished (a sequence still arriving counts)
     IN_FLIGHT = (Status.UPLOADING, Status.QUEUED, Status.PROCESSING)
@@ -121,6 +126,8 @@ class ReviewMedia(models.Model):
     # code and ``storage_path`` the registered relative path (a frame pattern for a sequence); both
     # are blank for an upload, and cleared when the file is revoked (C-RP-46). ``published_file_id``
     # names the file (no foreign key: production does not depend on publishing) and stays.
+    # RP-18 (C-RP-47): a copy read by path from the project's review folder has both storage fields
+    # (``storage_path`` the full path on the root, the folder included) and no ``published_file_id``.
     storage_root = models.CharField(max_length=50, blank=True, default="")
     storage_path = models.CharField(max_length=1024, blank=True, default="")
     published_file_id = models.UUIDField(null=True, blank=True, db_index=True)
@@ -171,8 +178,23 @@ class ReviewMedia(models.Model):
 
     @property
     def from_storage(self) -> bool:
-        """Whether this copy is read from a published file that can still be read (RP-17, C-RP-44)."""
+        """Whether this copy still names a place on studio storage to read (RP-17, C-RP-44; RP-18)."""
         return bool(self.storage_root and self.storage_path)
+
+    @property
+    def source(self) -> str:
+        """Where the copy is read from (C-RP-49): ``published_file`` (RP-17, even once revoked),
+        ``storage_path`` (RP-18, the project's review folder) or ``upload``."""
+        if self.published_file_id is not None:
+            return "published_file"
+        if self.from_storage:
+            return "storage_path"
+        return "upload"
+
+    @property
+    def storage_copy(self) -> bool:
+        """Whether the copy is read from studio storage, not from an upload (RP-17, RP-18)."""
+        return self.source != "upload"
 
     @property
     def directory(self) -> str:

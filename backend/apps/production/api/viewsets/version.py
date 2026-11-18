@@ -13,6 +13,7 @@ from apps.production.api.serializers.actions import (
     validated,
 )
 from apps.production.api.serializers.review_media import (
+    ReviewMediaFromStorageSerializer,
     ReviewMediaSequenceOpenSerializer,
     ReviewMediaSerializer,
     ReviewMediaUploadSerializer,
@@ -67,6 +68,8 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
         # C-RP-26: reach decides the 404; require_manage_review_media the 403
         "upload_review_media": (VersionPermissions.VIEW,),
         "open_review_sequence": (VersionPermissions.VIEW,),
+        # RP-18 (C-RP-48): as an upload
+        "review_media_from_storage": (VersionPermissions.VIEW,),
     }
 
     search_fields = ("code", "version_number", "entity_code")
@@ -231,3 +234,22 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
         )
         data = ReviewMediaSerializer(row, context={"request": request}).data
         return Response(data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        request=ReviewMediaFromStorageSerializer,
+        responses={202: ReviewMediaSerializer},
+    )
+    @action(detail=True, methods=["post"], url_path="review-media/from-storage")
+    def review_media_from_storage(self, request, *args, **kwargs):
+        """Make the review copy from a render in the project's review folder (RP-18, C-RP-48, 202)."""
+        version = self.get_object()
+        require_manage_review_media(request, version)  # C-RP-26
+        if not settings.REVIEW_MEDIA_ENABLED:
+            raise ReviewMediaDisabled()
+        body = ReviewMediaFromStorageSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        row = ReviewMediaService.open_from_path(
+            actor=request.user, version=version, **body.validated_data
+        )
+        data = ReviewMediaSerializer(row, context={"request": request}).data
+        return Response(data, status=status.HTTP_202_ACCEPTED)

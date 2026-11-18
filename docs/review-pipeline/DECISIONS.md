@@ -150,7 +150,8 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-14 Review copies: remaking and slates | planned in [PLAN.md](PLAN.md#rp-14-review-copies-remaking-and-slates); answered (Q-RP-63 to Q-RP-67 = A); committed `10fedb13`, merged into `develop` and `main`, released in v4.11.0 ([rp-14-verification.md](rp-14-verification.md)) |
 | RP-15 Colour management for review copies | planned in [PLAN.md](PLAN.md#rp-15-colour-management-for-review-copies); answered (Q-RP-68 to Q-RP-72 = A); committed `ae0c6dde`, merged into `develop` and `main`, released in v4.12.0 ([rp-15-verification.md](rp-15-verification.md)) |
 | RP-16 Sequence copies after a settings change | planned in [PLAN.md](PLAN.md#rp-16-sequence-copies-after-a-settings-change); answered (Q-RP-73 to Q-RP-76 = A); committed `eb5cb64d`, merged into `develop` and `main`, released in v4.13.0 ([rp-16-verification.md](rp-16-verification.md)) |
-| RP-17 Review copies from studio storage | planned in [PLAN.md](PLAN.md#rp-17-review-copies-from-studio-storage); answered (Q-RP-77 to Q-RP-81 = A); built 2026-11-18, committed as d06c0572 ([rp-17-verification.md](rp-17-verification.md)) |
+| RP-17 Review copies from studio storage | planned in [PLAN.md](PLAN.md#rp-17-review-copies-from-studio-storage); answered (Q-RP-77 to Q-RP-81 = A); committed `d06c0572`, merged into `develop` and `main`, released in v4.14.0 ([rp-17-verification.md](rp-17-verification.md)) |
+| RP-18 Review copies before approval | planned in [PLAN.md](PLAN.md#rp-18-review-copies-before-approval); answered (Q-RP-82 to Q-RP-86 = A); built, committed as `bfaf6466` ([rp-18-verification.md](rp-18-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
@@ -200,3 +201,15 @@ The owner took every recommendation of [PLAN.md, RP-17 questions](PLAN.md#questi
 | Q-RP-79 | **A** | A file whose checksum is `mismatch` or `missing` is refused; `declared` and `verified` are accepted; nothing is hashed. |
 | Q-RP-80 | **A** | No automatic copies: they are made by hand, or by pipeline tools through the same route. |
 | Q-RP-81 | **A** | Copies made from a file that is then revoked stay, but cannot be remade; one in flight fails. |
+
+## RP-18 answers
+
+The owner took every recommendation of [PLAN.md, RP-18 questions](PLAN.md#questions-before-rp-18-starts) on 2026-11-18 ("Build with all A").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-82 | **A** | An unpublished version's copy is read from a path given in the request, stored on the review row as a storage source. Nothing is registered and the version stays unpublished. |
+| Q-RP-83 | **A** | Only paths under the project's review folder (one root and folder, set by whoever may change the project), checked in the request and again by the worker. |
+| Q-RP-84 | **A** | The caller gives a sequence's frame range; the panel prefills the version's frames; missing frames fail the job. |
+| Q-RP-85 | **A** | Nothing automatic on the server: the render-farm tool calls the route when a render finishes. |
+| Q-RP-86 | **A** | The folder is shown only to those who may change the project; review rows show the file name only; refusals never name a directory. |

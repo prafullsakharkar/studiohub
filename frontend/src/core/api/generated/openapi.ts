@@ -13295,6 +13295,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/versions/{uuid}/review-media/from-storage/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Make the review copy from a render in the project's review folder (RP-18, C-RP-48, 202). */
+        post: operations["v1_versions_review_media_from_storage_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/versions/{uuid}/review-media/sequence/": {
         parameters: {
             query?: never;
@@ -20680,6 +20697,8 @@ export interface components {
             review_burn_ins?: boolean;
             review_view?: string;
             review_look?: string;
+            review_source_root?: string;
+            review_source_folder?: string;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25202,6 +25221,8 @@ export interface components {
             review_burn_ins?: boolean;
             review_view?: string;
             review_look?: string;
+            review_source_root?: string;
+            review_source_folder?: string;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25289,6 +25310,8 @@ export interface components {
             review_burn_ins?: boolean;
             review_view?: string;
             review_look?: string;
+            review_source_root?: string;
+            review_source_folder?: string;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25572,6 +25595,8 @@ export interface components {
             review_burn_ins?: boolean;
             review_view?: string;
             review_look?: string;
+            review_source_root?: string;
+            review_source_folder?: string;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -26414,6 +26439,13 @@ export interface components {
             frames_until: string | null;
             /** Format: uuid */
             published_file_id: string | null;
+            /**
+             * @description * `upload` - upload
+             *     * `published_file` - published_file
+             *     * `storage_path` - storage_path
+             * @enum {string}
+             */
+            source: "upload" | "published_file" | "storage_path";
             why: ("burn_ins" | "colour")[];
         };
         /** @description ``POST publishing/files/{id}/review-copy/`` (RP-17, C-RP-44): the colour space, as for an upload. */
@@ -26575,9 +26607,10 @@ export interface components {
              *     * `timeout` - Processing took too long and was stopped.
              *     * `source_missing` - The uploaded file is no longer on the server.
              *     * `storage_unreadable` - The published file could not be read from studio storage.
+             *     * `render_unreadable` - The render could not be read from the project's review folder on studio storage.
              * @enum {string}
              */
-            readonly error_code: "probe_failed" | "unsupported_stream" | "transcode_failed" | "timeout" | "source_missing" | "storage_unreadable";
+            readonly error_code: "probe_failed" | "unsupported_stream" | "transcode_failed" | "timeout" | "source_missing" | "storage_unreadable" | "render_unreadable";
             readonly error_message: string;
             readonly attempts: number;
             /** Format: date-time */
@@ -26601,6 +26634,13 @@ export interface components {
             /** Format: uuid */
             readonly published_file_id: string | null;
             readonly storage_readable: boolean;
+            /**
+             * @description * `upload` - upload
+             *     * `published_file` - published_file
+             *     * `storage_path` - storage_path
+             * @enum {string}
+             */
+            readonly source: "upload" | "published_file" | "storage_path";
         };
         /** @description How a copy's colour was made (C-RP-40): the config's names, never a path. */
         ReviewMediaColour: {
@@ -26618,6 +26658,16 @@ export interface components {
             frames_received: number;
             frames_expected: number;
             missing_frames: number[];
+        };
+        /**
+         * @description ``POST versions/{id}/review-media/from-storage/`` (RP-18, C-RP-48): a render in the project's
+         *     review folder. ``path`` is relative to the folder; a frame pattern needs both frames.
+         */
+        ReviewMediaFromStorage: {
+            path: string;
+            first_frame?: number | null;
+            last_frame?: number | null;
+            color_space?: string;
         };
         ReviewMediaProbe: {
             width: number;
@@ -56227,6 +56277,33 @@ export interface operations {
         requestBody: {
             content: {
                 "multipart/form-data": components["schemas"]["ReviewMediaUpload"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewMedia"];
+                };
+            };
+        };
+    };
+    v1_versions_review_media_from_storage_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewMediaFromStorage"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReviewMediaFromStorage"];
+                "multipart/form-data": components["schemas"]["ReviewMediaFromStorage"];
             };
         };
         responses: {

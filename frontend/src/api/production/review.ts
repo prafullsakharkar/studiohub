@@ -121,6 +121,15 @@ export interface ReviewMediaSequence {
 }
 
 /** The answer to one part of a sequence's frames (C-RP-31). */
+/** The body of `POST versions/{id}/review-media/from-storage/` (RP-18, C-RP-48). */
+export interface ReviewFromStorageInput {
+  /** Relative to the project's review folder; a frame pattern for a sequence. */
+  path: string;
+  first_frame?: number;
+  last_frame?: number;
+  color_space?: string;
+}
+
 export interface ReviewMediaFramesResult {
   frames_received: number;
   frames_expected: number;
@@ -172,10 +181,16 @@ export interface ReviewMedia {
   published_file_id: string | null;
   /**
    * True while that file can still be read (not revoked, its storage root read by the server), so the copy can be
-   * remade at any time; false for an upload (C-RP-46).
+   * remade at any time; false for an upload (C-RP-46). RP-18 (C-RP-49): for a copy read by path, true while its render
+   * is still in the project's review folder and its root is read.
    */
   storage_readable: boolean;
+  /** Where the copy is read from (RP-18, C-RP-49): an upload, a published file, or a render in the review folder. */
+  source: ReviewMediaSource;
 }
+
+/** RP-18 (C-RP-49). */
+export type ReviewMediaSource = 'upload' | 'published_file' | 'storage_path';
 
 /**
  * A project's review copies made with other settings than it has now (RP-14, C-RP-38; colour, RP-15; the list, RP-16,
@@ -211,6 +226,8 @@ export interface ReviewCopyDiffering {
   frames_until: string | null;
   /** The published file it was read from (RP-17, C-RP-46), or null for an upload. */
   published_file_id: string | null;
+  /** Where it is read from (RP-18, C-RP-49). */
+  source: ReviewMediaSource;
   why: ReviewCopyDifference[];
 }
 
@@ -368,6 +385,14 @@ export const reviewMediaApi = {
    */
   fromPublishedFile: (fileId: string, colorSpace = '') =>
     apiClient.post<ReviewMedia>(`${V1}/publishing/files/${fileId}/review-copy/`, colorSpace ? { color_space: colorSpace } : {}),
+  /**
+   * A copy read from a render in the project's review folder, for a version still in review (RP-18, C-RP-48): the rights
+   * of `upload`; 202 with the queued row. `path` is relative to the folder; a frame pattern (`%04d`, `####`) needs both
+   * frames. 400 on `path` (no folder, its root not read, an unsafe or unknown path), `first_frame`/`last_frame` (the
+   * range) or `color_space`; refusals never name a directory. 409 as `upload`.
+   */
+  fromStorage: (versionId: string, body: ReviewFromStorageInput) =>
+    apiClient.post<ReviewMedia>(`${V1}/versions/${versionId}/review-media/from-storage/`, body),
   /** What the studio's colour config offers (RP-15, C-RP-39): `project.view`. */
   colourOptions: (signal?: AbortSignal) => apiClient.get<ReviewColourOptions>(`${V1}/review-media/colour/`, { signal }),
   colourOptionsKey: ['production', 'review-colour'] as const,

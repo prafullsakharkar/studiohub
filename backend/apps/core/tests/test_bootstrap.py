@@ -275,7 +275,8 @@ class TestFreshInitialMigrations:
             # review view and look on projects and an upload's colour space on review media (RP-15,
             # WP 15.2); its 0013 how long a sequence's frames are kept and what a copy was kept as it
             # is against (RP-16, WP 16.1 and 16.4); its 0014 the published file a copy is read from
-            # (RP-17, WP 17.2).
+            # (RP-17, WP 17.2); its 0015 a project's review folder on studio storage (RP-18,
+            # WP 18.1).
             # notifications' 0002 adds the review kinds and preferences (RP-11), its 0003 the delivery,
             # publishing and milestone kinds (RP-13, WP 13.3), on a table deployed databases already hold.
             limit = {
@@ -283,7 +284,7 @@ class TestFreshInitialMigrations:
                 "deliveries": 3,
                 "identity": 4,
                 "notifications": 3,
-                "production": 14,
+                "production": 15,
             }.get(app, 2)
             assert len(names) <= limit, (app, names)
 

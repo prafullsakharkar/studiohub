@@ -27,7 +27,7 @@ const WIDE_KINDS: ReadonlySet<string> = new Set(['textarea', 'json', 'multi-enti
 export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, editing, immutableOnEdit, register, control, errors, clearServerError, projectCode, grid = false }) => {
   const err = (name: string) => (errors[name]?.message as string | undefined) ?? undefined;
   const values = useWatch({ control }) as Values;
-  const shown = fields.filter((field) => isVisible(field, values) && !(editing && field.onlyOnCreate));
+  const shown = fields.filter((field) => isVisible(field, values) && !(editing && field.onlyOnCreate) && !(!editing && field.onlyOnEdit));
   const nodes = shown.map((field) => {
     const readOnly = editing && immutableOnEdit?.includes(field.name);
     const id = `f-${field.name}`;

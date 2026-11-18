@@ -33631,6 +33631,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReviewMedia'
           description: ''
+  /api/v1/versions/{uuid}/review-media/from-storage/:
+    post:
+      operationId: v1_versions_review_media_from_storage_create
+      description: Make the review copy from a render in the project's review folder
+        (RP-18, C-RP-48, 202).
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewMediaFromStorage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReviewMediaFromStorage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewMediaFromStorage'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewMedia'
+          description: ''
   /api/v1/versions/{uuid}/review-media/sequence/:
     post:
       operationId: v1_versions_review_media_sequence_create
@@ -46854,6 +46890,12 @@ components:
         review_look:
           type: string
           maxLength: 100
+        review_source_root:
+          type: string
+          maxLength: 50
+        review_source_folder:
+          type: string
+          maxLength: 512
         start_date:
           type: string
           format: date
@@ -55374,6 +55416,12 @@ components:
         review_look:
           type: string
           maxLength: 100
+        review_source_root:
+          type: string
+          maxLength: 50
+        review_source_folder:
+          type: string
+          maxLength: 512
         start_date:
           type: string
           format: date
@@ -55560,6 +55608,12 @@ components:
         review_look:
           type: string
           maxLength: 100
+        review_source_root:
+          type: string
+          maxLength: 50
+        review_source_folder:
+          type: string
+          maxLength: 512
         start_date:
           type: string
           format: date
@@ -56184,6 +56238,12 @@ components:
         review_look:
           type: string
           maxLength: 100
+        review_source_root:
+          type: string
+          maxLength: 50
+        review_source_folder:
+          type: string
+          maxLength: 512
         start_date:
           type: string
           format: date
@@ -57819,6 +57879,17 @@ components:
           type: string
           format: uuid
           nullable: true
+        source:
+          enum:
+          - upload
+          - published_file
+          - storage_path
+          type: string
+          description: |-
+            * `upload` - upload
+            * `published_file` - published_file
+            * `storage_path` - storage_path
+          x-spec-enum-id: 3976fbac6aacb5f6
         why:
           type: array
           items:
@@ -57837,6 +57908,7 @@ components:
       - record_code
       - remakable
       - review_media_id
+      - source
       - version
       - why
     ReviewCopyFromFile:
@@ -58191,6 +58263,7 @@ components:
           - timeout
           - source_missing
           - storage_unreadable
+          - render_unreadable
           type: string
           description: |-
             * `probe_failed` - The file could not be read.
@@ -58199,7 +58272,8 @@ components:
             * `timeout` - Processing took too long and was stopped.
             * `source_missing` - The uploaded file is no longer on the server.
             * `storage_unreadable` - The published file could not be read from studio storage.
-          x-spec-enum-id: ec7418d3f5769f83
+            * `render_unreadable` - The render could not be read from the project's review folder on studio storage.
+          x-spec-enum-id: 0c3b4269a41eb331
           readOnly: true
         error_message:
           type: string
@@ -58267,6 +58341,18 @@ components:
         storage_readable:
           type: boolean
           readOnly: true
+        source:
+          enum:
+          - upload
+          - published_file
+          - storage_path
+          type: string
+          description: |-
+            * `upload` - upload
+            * `published_file` - published_file
+            * `storage_path` - storage_path
+          x-spec-enum-id: 3976fbac6aacb5f6
+          readOnly: true
       required:
       - attempts
       - color_space
@@ -58286,6 +58372,7 @@ components:
       - queued_at
       - remake_of
       - sequence
+      - source
       - source_name
       - source_size
       - started_at
@@ -58340,6 +58427,26 @@ components:
       - frames_expected
       - frames_received
       - missing_frames
+    ReviewMediaFromStorage:
+      type: object
+      description: |-
+        ``POST versions/{id}/review-media/from-storage/`` (RP-18, C-RP-48): a render in the project's
+        review folder. ``path`` is relative to the folder; a frame pattern needs both frames.
+      properties:
+        path:
+          type: string
+          maxLength: 1024
+        first_frame:
+          type: integer
+          nullable: true
+        last_frame:
+          type: integer
+          nullable: true
+        color_space:
+          type: string
+          maxLength: 100
+      required:
+      - path
     ReviewMediaProbe:
       type: object
       properties:
