@@ -9,7 +9,8 @@ export interface LiveInfo {
   /** A project the supervisor, producer, lead and artist belong to, with published versions that have registered files. */
   dlv: { project: string; versions: Array<{ id: string; code: string; version_number: string }> };
   /** With SYNC_LIVE_MEDIA=1 (RP-10): review media is on, a thread processes queued rows, and this movie (and, RP-12, this folder of EXR frames) can be uploaded. */
-  media?: { movie: string; sequence: string } | null;
+  /** RP-17: `studio` names a storage root the worker reads, with those frames and that movie at registered paths. */
+  media?: { movie: string; sequence: string; studio?: { root: string; sequence: string; movie: string } } | null;
 }
 
 export const live: LiveInfo = JSON.parse(fs.readFileSync(process.env.SYNC_LIVE_INFO as string, 'utf8'));

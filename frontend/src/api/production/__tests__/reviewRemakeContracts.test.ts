@@ -68,7 +68,7 @@ describe('C-RP-38: a project’s copies', () => {
   });
 
   it('remakes the movies, counts the sequence, and is for project writers only (an artist reads the counts)', () => {
-    expect(flow.remake_all_200.body).toEqual({ queued: 1, skipped_busy: 0, skipped_sequence: 1, skipped_missing: 0 });
+    expect(flow.remake_all_200.body).toEqual({ queued: 1, skipped_busy: 0, skipped_sequence: 1, skipped_missing: 0, skipped_storage: 0 });
     expect(flow.copies_by_artist.status).toBe(200);
     expect(flow.remake_all_by_artist_403.status).toBe(403);
     expect((flow.version_two_remade.body as Version).review_media?.remake_of).not.toBeNull();

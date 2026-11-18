@@ -115,6 +115,8 @@ class TestResponsesCarryNoLinks:
         "created_at", "created_by_id",
         # review-pipeline RP-4, C-RP-16: counts of the dependency links, never the linked paths.
         "upstream_count", "downstream_count",
+        # review-pipeline RP-17, C-RP-44: why a review copy cannot be read from it (a sentence or null).
+        "review_copy_refusal",
     }  # fmt: skip
     FORBIDDEN = (
         "http://",

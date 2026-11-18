@@ -25,6 +25,7 @@ class PublishedFileSerializer(serializers.ModelSerializer[PublishedFile]):
     created_by_id = serializers.UUIDField(read_only=True)
     upstream_count = serializers.SerializerMethodField()
     downstream_count = serializers.SerializerMethodField()
+    review_copy_refusal = serializers.SerializerMethodField()
 
     class Meta:
         model = PublishedFile
@@ -50,8 +51,18 @@ class PublishedFileSerializer(serializers.ModelSerializer[PublishedFile]):
             "created_by_id",
             "upstream_count",
             "downstream_count",
+            "review_copy_refusal",
         )
         read_only_fields = fields
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_review_copy_refusal(self, obj: PublishedFile) -> str | None:
+        """RP-17 (C-RP-44): why a review copy cannot be read from this file, or ``null`` when it can.
+
+        Whether the caller may manage the version's review copy is not part of it (the route decides)."""
+        from apps.publishing.services.review_copy import refusal
+
+        return refusal(obj)
 
     def get_file_type(self, obj: PublishedFile) -> str:
         return obj.file_type.code if obj.file_type else ""
@@ -114,6 +125,20 @@ class DeprecateSerializer(serializers.Serializer[Any]):
 class RestoreSerializer(serializers.Serializer[Any]):
     # Only needed to leave Revoked (needs publishing.status.override).
     override_reason = serializers.CharField(required=False, allow_blank=True, max_length=1000)
+
+
+class ReviewCopyFromFileSerializer(serializers.Serializer[Any]):
+    """``POST publishing/files/{id}/review-copy/`` (RP-17, C-RP-44): the colour space, as for an upload."""
+
+    color_space = serializers.CharField(
+        required=False, allow_blank=True, max_length=100, default=""
+    )
+
+    def to_internal_value(self, data: Any) -> Any:
+        unknown = sorted(set(getattr(data, "keys", lambda: [])()) - set(self.fields))
+        if unknown:
+            raise serializers.ValidationError({name: ["Unknown field."] for name in unknown})
+        return super().to_internal_value(data)
 
 
 class RevokeSerializer(serializers.Serializer[Any]):

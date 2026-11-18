@@ -17,6 +17,7 @@ from apps.core.api.viewsets.platform_crud import PlatformReadViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
 from apps.masterdata.selectors.catalog import MasterFileTypeSelector
+from apps.production.api.serializers.review_media import ReviewMediaSerializer
 from apps.production.selectors.asset import AssetSelector
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.shot import ShotSelector
@@ -34,6 +35,7 @@ from apps.publishing.api.serializers.file import (
     ResolvedPathSerializer,
     ResolvePathQuerySerializer,
     RestoreSerializer,
+    ReviewCopyFromFileSerializer,
     RevokeSerializer,
 )
 from apps.publishing.constants.permissions import PublishPermissions
@@ -41,6 +43,7 @@ from apps.publishing.domain.templates import TemplateError
 from apps.publishing.models import PublishedFile
 from apps.publishing.selectors.files import PublishedFileSelector
 from apps.publishing.services.files import PublishedFileService
+from apps.publishing.services.review_copy import make_review_copy
 from apps.publishing.services.templates import resolve as resolve_template
 
 _ENTITY_SELECTORS = {"shot": ShotSelector, "asset": AssetSelector, "task": TaskSelector}
@@ -71,6 +74,8 @@ class PublishedFileViewSet(PlatformReadViewSet):  # pyright: ignore[reportMissin
         "dependencies": (PublishPermissions.VIEW,),
         "loader": (PublishPermissions.VIEW,),
         "resolve_path": (PublishPermissions.VIEW,),
+        # RP-17 (C-RP-44): reach of the file; the version's review-copy right is checked in the service
+        "review_copy": (PublishPermissions.VIEW,),
     }
 
     ordering_fields = ("created_at", "relative_path", "status")
@@ -155,6 +160,23 @@ class PublishedFileViewSet(PlatformReadViewSet):  # pyright: ignore[reportMissin
             reason=body.validated_data["reason"],
         )
         return Response(self._present(file))
+
+    @extend_schema(request=ReviewCopyFromFileSerializer, responses={202: ReviewMediaSerializer})
+    @action(detail=True, methods=["post"], url_path="review-copy")
+    def review_copy(self, request, *args, **kwargs):
+        """Queue a review copy of the file's version, read from this file on studio storage (C-RP-44)."""
+        body = ReviewCopyFromFileSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        media = make_review_copy(
+            actor=request.user,
+            request=request,
+            file=self.get_object(),
+            color_space=body.validated_data.get("color_space", ""),
+        )
+        return Response(
+            ReviewMediaSerializer(media, context=self.get_serializer_context()).data,
+            status=status.HTTP_202_ACCEPTED,
+        )
 
     @extend_schema(responses={200: DependenciesSerializer})
     @action(detail=True, methods=["get"], url_path="dependencies")

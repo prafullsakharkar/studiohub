@@ -165,6 +165,16 @@ export interface ReviewMedia {
    * and once the frames are gone (then the frames must be uploaded again).
    */
   frames_until: string | null;
+  /**
+   * The published file this copy was read from on studio storage (RP-17, C-RP-44), or null for an upload. The path is
+   * not on the row: the file's own page shows it to whoever reads published files.
+   */
+  published_file_id: string | null;
+  /**
+   * True while that file can still be read (not revoked, its storage root read by the server), so the copy can be
+   * remade at any time; false for an upload (C-RP-46).
+   */
+  storage_readable: boolean;
 }
 
 /**
@@ -199,6 +209,8 @@ export interface ReviewCopyDiffering {
   remakable: boolean;
   /** Until when a sequence's frames are kept; null otherwise. */
   frames_until: string | null;
+  /** The published file it was read from (RP-17, C-RP-46), or null for an upload. */
+  published_file_id: string | null;
   why: ReviewCopyDifference[];
 }
 
@@ -238,6 +250,8 @@ export interface ReviewCopiesRemade {
   skipped_busy: number;
   skipped_sequence: number;
   skipped_missing: number;
+  /** Copies read from a published file that can no longer be read: revoked, or its root not read (RP-17, C-RP-46). */
+  skipped_storage: number;
 }
 
 /** A job the worker has not finished: the version is refetched while one exists. */
@@ -347,6 +361,13 @@ export const reviewMediaApi = {
    * `review_media_busy` / `review_media_disabled`.
    */
   remake: (id: string) => apiClient.post<ReviewMedia>(`${V1}/review-media/${id}/remake/`, {}),
+  /**
+   * A copy read from a registered published file where it lies on studio storage (RP-17, C-RP-44): `publishing.view`
+   * and the rights of `upload` on the file's version; 202 with the queued row on that version. 400 on `detail` when
+   * the file cannot be used (its `review_copy_refusal` says why), 404 for a file out of reach, 409 as `upload`.
+   */
+  fromPublishedFile: (fileId: string, colorSpace = '') =>
+    apiClient.post<ReviewMedia>(`${V1}/publishing/files/${fileId}/review-copy/`, colorSpace ? { color_space: colorSpace } : {}),
   /** What the studio's colour config offers (RP-15, C-RP-39): `project.view`. */
   colourOptions: (signal?: AbortSignal) => apiClient.get<ReviewColourOptions>(`${V1}/review-media/colour/`, { signal }),
   colourOptionsKey: ['production', 'review-colour'] as const,

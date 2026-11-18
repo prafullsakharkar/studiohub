@@ -5,26 +5,26 @@
       "upstream": [
         {
           "file_type": "ABC",
-          "id": "8b286261-ae8f-426d-b45d-ed19b334efe6",
+          "id": "45847c29-0224-4280-ae8e-8375a3d64353",
           "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
           "role": "main",
           "status": "Revoked",
           "storage_root": "PROJECTS",
           "version_code": "RPD_SH0010_COMP_V001",
-          "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+          "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
         }
       ]
     },
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "dec49869-00c4-4bc2-a370-c615ef521e17"
+      "X-Request-ID": "ee4de845-d7e7-4c78-b632-86247e9584d4"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/publishing/files/d168950b-0972-4c8f-b49b-a6d82385ac5b/dependencies/"
+      "path": "/api/v1/publishing/files/ab7520b8-f6de-468f-8625-4c04f2fadf4c/dependencies/"
     },
     "status": 200
   },
@@ -36,13 +36,13 @@
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "07e29bec-c64f-4532-9702-8e08c66b46c9"
+      "X-Request-ID": "fdc7aae0-1745-4d38-9ed6-acf43fd60106"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/publishing/files/501a6411-0466-4855-a84e-713a290a9611/dependencies/"
+      "path": "/api/v1/publishing/files/fd4f0e31-8676-40b9-a72c-0d11fc524c5c/dependencies/"
     },
     "status": 200
   },
@@ -52,26 +52,26 @@
       "upstream": [
         {
           "file_type": "ABC",
-          "id": "8b286261-ae8f-426d-b45d-ed19b334efe6",
+          "id": "45847c29-0224-4280-ae8e-8375a3d64353",
           "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
           "role": "main",
           "status": "Registered",
           "storage_root": "PROJECTS",
           "version_code": "RPD_SH0010_COMP_V001",
-          "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+          "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
         }
       ]
     },
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "a1a41244-c91c-43c8-9439-6c74af8cc166"
+      "X-Request-ID": "9d81a846-21c7-4975-b16a-d2ced53dce34"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/publishing/files/d168950b-0972-4c8f-b49b-a6d82385ac5b/dependencies/"
+      "path": "/api/v1/publishing/files/ab7520b8-f6de-468f-8625-4c04f2fadf4c/dependencies/"
     },
     "status": 200
   },
@@ -80,13 +80,13 @@
       "downstream": [
         {
           "file_type": "EXR",
-          "id": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
+          "id": "ab7520b8-f6de-468f-8625-4c04f2fadf4c",
           "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
           "role": "main",
           "status": "Registered",
           "storage_root": "PROJECTS",
           "version_code": "RPD_SH0010_COMP_V001",
-          "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+          "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
         }
       ],
       "upstream": []
@@ -94,13 +94,13 @@
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "4ee4c98b-76c9-4896-951f-96dc0b7d3ca7"
+      "X-Request-ID": "57ed2ea7-3821-4af6-aac0-b4c954deb5f6"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/publishing/files/8b286261-ae8f-426d-b45d-ed19b334efe6/dependencies/"
+      "path": "/api/v1/publishing/files/45847c29-0224-4280-ae8e-8375a3d64353/dependencies/"
     },
     "status": 200
   },
@@ -108,16 +108,17 @@
     "body": {
       "checksum_checked_at": null,
       "checksum_state": "declared",
-      "created_at": "2026-11-12T18:41:14.869266Z",
-      "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+      "created_at": "2026-11-18T05:07:25.551381Z",
+      "created_by_id": "088d6cf9-f954-475b-bbc2-38f8c1554ef1",
       "downstream_count": 0,
       "export_job_id": null,
       "file_type": "EXR",
       "frame_end": 1096,
       "frame_start": 1001,
-      "id": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
-      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "id": "ab7520b8-f6de-468f-8625-4c04f2fadf4c",
+      "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
       "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+      "review_copy_refusal": "The server does not read the storage root PROJECTS.",
       "revoke_reason": "",
       "role": "main",
       "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -126,18 +127,18 @@
       "status_changed_at": null,
       "storage_root": "PROJECTS",
       "upstream_count": 1,
-      "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
     },
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "0ebd77c4-a922-4429-8231-dbf02c244196"
+      "X-Request-ID": "d481d778-3ad3-4705-8048-17be6608d8b3"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/publishing/files/d168950b-0972-4c8f-b49b-a6d82385ac5b/"
+      "path": "/api/v1/publishing/files/ab7520b8-f6de-468f-8625-4c04f2fadf4c/"
     },
     "status": 200
   },
@@ -150,16 +151,17 @@
         {
           "checksum_checked_at": null,
           "checksum_state": "declared",
-          "created_at": "2026-11-12T18:41:14.829997Z",
-          "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+          "created_at": "2026-11-18T05:07:25.497990Z",
+          "created_by_id": "088d6cf9-f954-475b-bbc2-38f8c1554ef1",
           "downstream_count": 1,
           "export_job_id": null,
           "file_type": "ABC",
           "frame_end": null,
           "frame_start": null,
-          "id": "8b286261-ae8f-426d-b45d-ed19b334efe6",
-          "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+          "id": "45847c29-0224-4280-ae8e-8375a3d64353",
+          "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
           "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
+          "review_copy_refusal": "The server does not read the storage root PROJECTS.",
           "revoke_reason": "",
           "role": "main",
           "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -168,21 +170,22 @@
           "status_changed_at": null,
           "storage_root": "PROJECTS",
           "upstream_count": 0,
-          "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+          "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
         },
         {
           "checksum_checked_at": null,
           "checksum_state": "declared",
-          "created_at": "2026-11-12T18:41:14.869266Z",
-          "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+          "created_at": "2026-11-18T05:07:25.551381Z",
+          "created_by_id": "088d6cf9-f954-475b-bbc2-38f8c1554ef1",
           "downstream_count": 0,
           "export_job_id": null,
           "file_type": "EXR",
           "frame_end": 1096,
           "frame_start": 1001,
-          "id": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
-          "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+          "id": "ab7520b8-f6de-468f-8625-4c04f2fadf4c",
+          "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
           "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+          "review_copy_refusal": "The server does not read the storage root PROJECTS.",
           "revoke_reason": "",
           "role": "main",
           "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -191,49 +194,50 @@
           "status_changed_at": null,
           "storage_root": "PROJECTS",
           "upstream_count": 1,
-          "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+          "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
         }
       ]
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "b163391e-01d0-4485-b2e6-107ab7358461"
+      "X-Request-ID": "e3de56dd-dec7-43b9-a4e3-1f087947a52d"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": {
-        "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e"
+        "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c"
       },
       "path": "/api/v1/publishing/files/"
     },
     "status": 200
   },
   "ids": {
-    "downstream": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
-    "project": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
-    "shot": "0f15329a-7bb3-4eb4-87e8-eda104e5695f",
-    "task": "563b5829-9c03-499d-ac64-82ce316f4045",
-    "upstream": "8b286261-ae8f-426d-b45d-ed19b334efe6",
-    "v1": "d02587d9-b1db-4324-bd4d-ef4faf317c37",
-    "v2": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+    "downstream": "ab7520b8-f6de-468f-8625-4c04f2fadf4c",
+    "project": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
+    "shot": "149f84ae-7301-410f-925d-cd7a3727b871",
+    "task": "91f32375-d8fa-4da6-8fbd-d2e17ba9d314",
+    "upstream": "45847c29-0224-4280-ae8e-8375a3d64353",
+    "v1": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3",
+    "v2": "3c83e7c3-e110-4715-a4f8-292a898ecd76"
   },
   "loader_approved": {
     "body": [
       {
         "checksum_checked_at": null,
         "checksum_state": "declared",
-        "created_at": "2026-11-12T18:41:14.869266Z",
-        "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+        "created_at": "2026-11-18T05:07:25.551381Z",
+        "created_by_id": "088d6cf9-f954-475b-bbc2-38f8c1554ef1",
         "downstream_count": 0,
         "export_job_id": null,
         "file_type": "EXR",
         "frame_end": 1096,
         "frame_start": 1001,
-        "id": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
-        "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+        "id": "ab7520b8-f6de-468f-8625-4c04f2fadf4c",
+        "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
         "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+        "review_copy_refusal": "The server does not read the storage root PROJECTS.",
         "revoke_reason": "",
         "role": "main",
         "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -243,30 +247,30 @@
         "storage_root": "PROJECTS",
         "task": {
           "code": "RPD_T_COMP",
-          "id": "563b5829-9c03-499d-ac64-82ce316f4045"
+          "id": "91f32375-d8fa-4da6-8fbd-d2e17ba9d314"
         },
         "upstream_count": 1,
         "version": {
           "code": "RPD_SH0010_COMP_V001",
-          "id": "d02587d9-b1db-4324-bd4d-ef4faf317c37",
+          "id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3",
           "is_hero": true,
           "status": "Approved",
           "version_index": 1
         },
-        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
       }
     ],
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "dabe1d42-389b-4cb5-9fd3-37002e929f55"
+      "X-Request-ID": "8a4d9d43-6a31-4c51-bad2-ca5c1d647630"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": {
         "file_type": "EXR",
-        "shot": "0f15329a-7bb3-4eb4-87e8-eda104e5695f",
+        "shot": "149f84ae-7301-410f-925d-cd7a3727b871",
         "which": "approved"
       },
       "path": "/api/v1/publishing/files/loader/"
@@ -278,16 +282,17 @@
       {
         "checksum_checked_at": null,
         "checksum_state": "declared",
-        "created_at": "2026-11-12T18:41:14.829997Z",
-        "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+        "created_at": "2026-11-18T05:07:25.497990Z",
+        "created_by_id": "088d6cf9-f954-475b-bbc2-38f8c1554ef1",
         "downstream_count": 1,
         "export_job_id": null,
         "file_type": "ABC",
         "frame_end": null,
         "frame_start": null,
-        "id": "8b286261-ae8f-426d-b45d-ed19b334efe6",
-        "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+        "id": "45847c29-0224-4280-ae8e-8375a3d64353",
+        "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
         "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
+        "review_copy_refusal": "The server does not read the storage root PROJECTS.",
         "revoke_reason": "",
         "role": "main",
         "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -297,31 +302,32 @@
         "storage_root": "PROJECTS",
         "task": {
           "code": "RPD_T_COMP",
-          "id": "563b5829-9c03-499d-ac64-82ce316f4045"
+          "id": "91f32375-d8fa-4da6-8fbd-d2e17ba9d314"
         },
         "upstream_count": 0,
         "version": {
           "code": "RPD_SH0010_COMP_V001",
-          "id": "d02587d9-b1db-4324-bd4d-ef4faf317c37",
+          "id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3",
           "is_hero": true,
           "status": "Approved",
           "version_index": 1
         },
-        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
       },
       {
         "checksum_checked_at": null,
         "checksum_state": "declared",
-        "created_at": "2026-11-12T18:41:14.869266Z",
-        "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+        "created_at": "2026-11-18T05:07:25.551381Z",
+        "created_by_id": "088d6cf9-f954-475b-bbc2-38f8c1554ef1",
         "downstream_count": 0,
         "export_job_id": null,
         "file_type": "EXR",
         "frame_end": 1096,
         "frame_start": 1001,
-        "id": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
-        "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+        "id": "ab7520b8-f6de-468f-8625-4c04f2fadf4c",
+        "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
         "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+        "review_copy_refusal": "The server does not read the storage root PROJECTS.",
         "revoke_reason": "",
         "role": "main",
         "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -331,29 +337,29 @@
         "storage_root": "PROJECTS",
         "task": {
           "code": "RPD_T_COMP",
-          "id": "563b5829-9c03-499d-ac64-82ce316f4045"
+          "id": "91f32375-d8fa-4da6-8fbd-d2e17ba9d314"
         },
         "upstream_count": 1,
         "version": {
           "code": "RPD_SH0010_COMP_V001",
-          "id": "d02587d9-b1db-4324-bd4d-ef4faf317c37",
+          "id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3",
           "is_hero": true,
           "status": "Approved",
           "version_index": 1
         },
-        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
       }
     ],
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "dd718deb-d0a6-42c1-9218-28f0a2b4988a"
+      "X-Request-ID": "73979e30-03d2-4c06-9da1-a061f8d062b5"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": {
-        "task": "563b5829-9c03-499d-ac64-82ce316f4045",
+        "task": "91f32375-d8fa-4da6-8fbd-d2e17ba9d314",
         "which": "hero"
       },
       "path": "/api/v1/publishing/files/loader/"
@@ -365,16 +371,17 @@
       {
         "checksum_checked_at": null,
         "checksum_state": "declared",
-        "created_at": "2026-11-12T18:41:15.108856Z",
-        "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+        "created_at": "2026-11-18T05:07:25.747014Z",
+        "created_by_id": "088d6cf9-f954-475b-bbc2-38f8c1554ef1",
         "downstream_count": 0,
         "export_job_id": null,
         "file_type": "EXR",
         "frame_end": 1096,
         "frame_start": 1001,
-        "id": "501a6411-0466-4855-a84e-713a290a9611",
-        "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+        "id": "fd4f0e31-8676-40b9-a72c-0d11fc524c5c",
+        "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
         "relative_path": "RPD/RPD_SH0010/comp/v002/render.%04d.exr",
+        "review_copy_refusal": "The server does not read the storage root PROJECTS.",
         "revoke_reason": "",
         "role": "main",
         "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -384,30 +391,30 @@
         "storage_root": "PROJECTS",
         "task": {
           "code": "RPD_T_COMP",
-          "id": "563b5829-9c03-499d-ac64-82ce316f4045"
+          "id": "91f32375-d8fa-4da6-8fbd-d2e17ba9d314"
         },
         "upstream_count": 0,
         "version": {
           "code": "RPD_SH0010_COMP_V002",
-          "id": "43492b4d-34e8-417a-98cd-f561f6cf5f37",
+          "id": "3c83e7c3-e110-4715-a4f8-292a898ecd76",
           "is_hero": false,
           "status": "Pending Review",
           "version_index": 2
         },
-        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+        "version_id": "3c83e7c3-e110-4715-a4f8-292a898ecd76"
       }
     ],
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "c99593c6-5db8-4b60-b9bd-3bca292b2fa0"
+      "X-Request-ID": "d2c907a8-27af-476a-878d-56a214aa38d8"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": {
         "file_type": "EXR",
-        "shot": "0f15329a-7bb3-4eb4-87e8-eda104e5695f"
+        "shot": "149f84ae-7301-410f-925d-cd7a3727b871"
       },
       "path": "/api/v1/publishing/files/loader/"
     },
@@ -420,13 +427,13 @@
       ],
       "error": {
         "code": "validation_error",
-        "request_id": "b1e55a7c-1fb0-4619-afd7-6a6fd91dc07a"
+        "request_id": "2757b79d-89f9-4a90-9d59-022615aeeec8"
       }
     },
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "b1e55a7c-1fb0-4619-afd7-6a6fd91dc07a"
+      "X-Request-ID": "2757b79d-89f9-4a90-9d59-022615aeeec8"
     },
     "request": {
       "body": null,
@@ -443,13 +450,13 @@
       "detail": "Resource not found.",
       "error": {
         "code": "not_found",
-        "request_id": "72ef0967-7bed-4549-a8c0-d414cae5748d"
+        "request_id": "56207756-7731-47cd-b08f-e83ad02b7eb4"
       }
     },
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "72ef0967-7bed-4549-a8c0-d414cae5748d"
+      "X-Request-ID": "56207756-7731-47cd-b08f-e83ad02b7eb4"
     },
     "request": {
       "body": null,
@@ -465,16 +472,17 @@
     "body": {
       "checksum_checked_at": null,
       "checksum_state": "declared",
-      "created_at": "2026-11-12T18:41:15.554258Z",
-      "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+      "created_at": "2026-11-18T05:07:26.134516Z",
+      "created_by_id": "088d6cf9-f954-475b-bbc2-38f8c1554ef1",
       "downstream_count": 0,
       "export_job_id": null,
       "file_type": "EXR",
       "frame_end": 1096,
       "frame_start": 1001,
-      "id": "a9c153ca-5f03-480a-a9a5-ed7ac17d7d7d",
-      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "id": "d38349c9-76ea-4186-b5bc-ff241f6ecfc3",
+      "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
       "relative_path": "RPD/RPD_SQ010/RPD_SH0010/RPD_T_COMP/v002/denoised.%04d.exr",
+      "review_copy_refusal": "The server does not read the storage root PROJECTS.",
       "revoke_reason": "",
       "role": "main",
       "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -483,12 +491,12 @@
       "status_changed_at": null,
       "storage_root": "PROJECTS",
       "upstream_count": 0,
-      "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+      "version_id": "3c83e7c3-e110-4715-a4f8-292a898ecd76"
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "5e73e0a6-881c-40aa-9d52-dbe8a4f66bb8"
+      "X-Request-ID": "0c7f6a38-3f53-417d-aa57-4df0dde2cc47"
     },
     "request": {
       "body": {
@@ -499,7 +507,7 @@
         "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
         "size_bytes": 2048,
         "storage_root": "PROJECTS",
-        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+        "version_id": "3c83e7c3-e110-4715-a4f8-292a898ecd76"
       },
       "method": "POST",
       "params": null,
@@ -511,7 +519,7 @@
     "body": {
       "error": {
         "code": "validation_error",
-        "request_id": "cdbb3aea-fe72-4e6d-97f6-2c1524ce0771"
+        "request_id": "37b73283-f1d0-457d-b548-0b0340e8c570"
       },
       "relative_path": [
         "Does not match the path template: RPD/RPD_SQ010/RPD_SH0010/RPD_T_COMP/v002/{name}.%04d.exr"
@@ -520,7 +528,7 @@
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "cdbb3aea-fe72-4e6d-97f6-2c1524ce0771"
+      "X-Request-ID": "37b73283-f1d0-457d-b548-0b0340e8c570"
     },
     "request": {
       "body": {
@@ -531,7 +539,7 @@
         "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
         "size_bytes": 2048,
         "storage_root": "PROJECTS",
-        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+        "version_id": "3c83e7c3-e110-4715-a4f8-292a898ecd76"
       },
       "method": "POST",
       "params": null,
@@ -543,16 +551,16 @@
     "body": {
       "error": {
         "code": "validation_error",
-        "request_id": "b44dbd60-6b5f-49d7-936b-6f1167247efd"
+        "request_id": "83f64ab2-0d50-4bd9-8ec7-bc0c6513619b"
       },
       "upstream_ids": [
-        "The upstream file is revoked: 8b286261-ae8f-426d-b45d-ed19b334efe6"
+        "The upstream file is revoked: 45847c29-0224-4280-ae8e-8375a3d64353"
       ]
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "b44dbd60-6b5f-49d7-936b-6f1167247efd"
+      "X-Request-ID": "83f64ab2-0d50-4bd9-8ec7-bc0c6513619b"
     },
     "request": {
       "body": {
@@ -561,9 +569,9 @@
         "size_bytes": 2048,
         "storage_root": "PROJECTS",
         "upstream_ids": [
-          "8b286261-ae8f-426d-b45d-ed19b334efe6"
+          "45847c29-0224-4280-ae8e-8375a3d64353"
         ],
-        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
       },
       "method": "POST",
       "params": null,
@@ -575,16 +583,17 @@
     "body": {
       "checksum_checked_at": null,
       "checksum_state": "declared",
-      "created_at": "2026-11-12T18:41:14.829997Z",
-      "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+      "created_at": "2026-11-18T05:07:25.497990Z",
+      "created_by_id": "088d6cf9-f954-475b-bbc2-38f8c1554ef1",
       "downstream_count": 0,
       "export_job_id": null,
       "file_type": "ABC",
       "frame_end": null,
       "frame_start": null,
-      "id": "8b286261-ae8f-426d-b45d-ed19b334efe6",
-      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "id": "45847c29-0224-4280-ae8e-8375a3d64353",
+      "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
       "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
+      "review_copy_refusal": "The server does not read the storage root PROJECTS.",
       "revoke_reason": "",
       "role": "main",
       "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -593,12 +602,12 @@
       "status_changed_at": null,
       "storage_root": "PROJECTS",
       "upstream_count": 0,
-      "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "cfea78d6-28a7-410d-8bd6-38275acb7a5b"
+      "X-Request-ID": "0a66d611-4170-450e-a6e4-39854dec8234"
     },
     "request": {
       "body": {
@@ -607,7 +616,7 @@
         "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
         "size_bytes": 2048,
         "storage_root": "PROJECTS",
-        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
       },
       "method": "POST",
       "params": null,
@@ -619,7 +628,7 @@
     "body": {
       "error": {
         "code": "validation_error",
-        "request_id": "e5f37cd8-d797-4e26-8c59-0661a240fe81"
+        "request_id": "6488063d-46d3-49a3-9573-b470c5a91c30"
       },
       "upstream_ids": [
         "A file is listed twice."
@@ -628,7 +637,7 @@
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "e5f37cd8-d797-4e26-8c59-0661a240fe81"
+      "X-Request-ID": "6488063d-46d3-49a3-9573-b470c5a91c30"
     },
     "request": {
       "body": {
@@ -637,10 +646,10 @@
         "size_bytes": 2048,
         "storage_root": "PROJECTS",
         "upstream_ids": [
-          "8b286261-ae8f-426d-b45d-ed19b334efe6",
-          "8b286261-ae8f-426d-b45d-ed19b334efe6"
+          "45847c29-0224-4280-ae8e-8375a3d64353",
+          "45847c29-0224-4280-ae8e-8375a3d64353"
         ],
-        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
       },
       "method": "POST",
       "params": null,
@@ -652,7 +661,7 @@
     "body": {
       "error": {
         "code": "validation_error",
-        "request_id": "4f1f7a3e-45dc-4432-b12a-d9079d78aadf"
+        "request_id": "7139d19d-9361-47b1-a734-f4989362185c"
       },
       "upstream_ids": [
         "Unknown upstream file: 00000000-0000-4000-8000-000000000001"
@@ -661,7 +670,7 @@
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "4f1f7a3e-45dc-4432-b12a-d9079d78aadf"
+      "X-Request-ID": "7139d19d-9361-47b1-a734-f4989362185c"
     },
     "request": {
       "body": {
@@ -672,7 +681,7 @@
         "upstream_ids": [
           "00000000-0000-4000-8000-000000000001"
         ],
-        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
       },
       "method": "POST",
       "params": null,
@@ -684,16 +693,17 @@
     "body": {
       "checksum_checked_at": null,
       "checksum_state": "declared",
-      "created_at": "2026-11-12T18:41:15.108856Z",
-      "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+      "created_at": "2026-11-18T05:07:25.747014Z",
+      "created_by_id": "088d6cf9-f954-475b-bbc2-38f8c1554ef1",
       "downstream_count": 0,
       "export_job_id": null,
       "file_type": "EXR",
       "frame_end": 1096,
       "frame_start": 1001,
-      "id": "501a6411-0466-4855-a84e-713a290a9611",
-      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "id": "fd4f0e31-8676-40b9-a72c-0d11fc524c5c",
+      "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
       "relative_path": "RPD/RPD_SH0010/comp/v002/render.%04d.exr",
+      "review_copy_refusal": "The server does not read the storage root PROJECTS.",
       "revoke_reason": "",
       "role": "main",
       "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -702,12 +712,12 @@
       "status_changed_at": null,
       "storage_root": "PROJECTS",
       "upstream_count": 0,
-      "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+      "version_id": "3c83e7c3-e110-4715-a4f8-292a898ecd76"
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "0191172b-7372-4c30-a849-8656478c22f3"
+      "X-Request-ID": "fc49cc88-ea27-468c-a32d-ff457a834eb0"
     },
     "request": {
       "body": {
@@ -718,7 +728,7 @@
         "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
         "size_bytes": 2048,
         "storage_root": "PROJECTS",
-        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+        "version_id": "3c83e7c3-e110-4715-a4f8-292a898ecd76"
       },
       "method": "POST",
       "params": null,
@@ -730,16 +740,17 @@
     "body": {
       "checksum_checked_at": null,
       "checksum_state": "declared",
-      "created_at": "2026-11-12T18:41:14.869266Z",
-      "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+      "created_at": "2026-11-18T05:07:25.551381Z",
+      "created_by_id": "088d6cf9-f954-475b-bbc2-38f8c1554ef1",
       "downstream_count": 0,
       "export_job_id": null,
       "file_type": "EXR",
       "frame_end": 1096,
       "frame_start": 1001,
-      "id": "d168950b-0972-4c8f-b49b-a6d82385ac5b",
-      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "id": "ab7520b8-f6de-468f-8625-4c04f2fadf4c",
+      "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
       "relative_path": "RPD/RPD_SH0010/comp/v001/render.%04d.exr",
+      "review_copy_refusal": "The server does not read the storage root PROJECTS.",
       "revoke_reason": "",
       "role": "main",
       "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -748,12 +759,12 @@
       "status_changed_at": null,
       "storage_root": "PROJECTS",
       "upstream_count": 1,
-      "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "f6e1660b-a92b-4b6c-b233-433cfb633a4d"
+      "X-Request-ID": "eef3aa13-e627-471b-bccd-25144bf135fd"
     },
     "request": {
       "body": {
@@ -765,9 +776,9 @@
         "size_bytes": 2048,
         "storage_root": "PROJECTS",
         "upstream_ids": [
-          "8b286261-ae8f-426d-b45d-ed19b334efe6"
+          "45847c29-0224-4280-ae8e-8375a3d64353"
         ],
-        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
       },
       "method": "POST",
       "params": null,
@@ -780,20 +791,20 @@
       "detail": "No path template applies to this file type and role.",
       "error": {
         "code": "not_found",
-        "request_id": "057fddd4-311c-4914-b699-26f54ed84453"
+        "request_id": "47dfa337-6717-4e5f-9f70-70cfc7f48ad8"
       }
     },
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "057fddd4-311c-4914-b699-26f54ed84453"
+      "X-Request-ID": "47dfa337-6717-4e5f-9f70-70cfc7f48ad8"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": {
         "file_type": "ABC",
-        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+        "version_id": "3c83e7c3-e110-4715-a4f8-292a898ecd76"
       },
       "path": "/api/v1/publishing/files/resolve-path/"
     },
@@ -805,19 +816,19 @@
       "pattern": "{project}/{sequence}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
       "relative_path": "RPD/RPD_SQ010/RPD_SH0010/RPD_T_COMP/v002/{name}.%04d.exr",
       "storage_root": "PROJECTS",
-      "template_id": "5899016a-c6d8-4ddd-b285-c10912ec05bd"
+      "template_id": "41b0dcee-2261-455e-8cb3-297811fa64a3"
     },
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "236b69f7-6f85-4ce3-a296-0f26e70972de"
+      "X-Request-ID": "31696c6c-9234-4bbb-9e3a-abc1328bf1de"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": {
         "file_type": "EXR",
-        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+        "version_id": "3c83e7c3-e110-4715-a4f8-292a898ecd76"
       },
       "path": "/api/v1/publishing/files/resolve-path/"
     },
@@ -829,19 +840,19 @@
       "pattern": "{project}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
       "relative_path": "RPD/RPD_SH0010/RPD_T_COMP/v002/{name}.%04d.exr",
       "storage_root": "PROJECTS",
-      "template_id": "28d89d8c-212b-4e2d-8b10-f013ae987cd9"
+      "template_id": "bccce701-996a-475a-b0d8-29c54dfe6e9e"
     },
     "headers": {
       "Allow": "GET, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "8773d647-c235-4543-a30a-75ba1b8c0fb5"
+      "X-Request-ID": "f4389a70-f561-4b49-bb49-e2c134079ce0"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": {
         "file_type": "EXR",
-        "version_id": "43492b4d-34e8-417a-98cd-f561f6cf5f37"
+        "version_id": "3c83e7c3-e110-4715-a4f8-292a898ecd76"
       },
       "path": "/api/v1/publishing/files/resolve-path/"
     },
@@ -852,13 +863,13 @@
       "detail": "This path is already registered with different content.",
       "error": {
         "code": "path_already_registered",
-        "request_id": "0121936d-1fff-4a64-8502-1cc5cc66193b"
+        "request_id": "8de1a98a-4408-4461-a3a8-51fa2545b0ae"
       }
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "0121936d-1fff-4a64-8502-1cc5cc66193b"
+      "X-Request-ID": "8de1a98a-4408-4461-a3a8-51fa2545b0ae"
     },
     "request": {
       "body": {
@@ -869,7 +880,7 @@
         "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
         "size_bytes": 2048,
         "storage_root": "PROJECTS",
-        "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+        "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
       },
       "method": "POST",
       "params": null,
@@ -881,30 +892,31 @@
     "body": {
       "checksum_checked_at": null,
       "checksum_state": "declared",
-      "created_at": "2026-11-12T18:41:14.829997Z",
-      "created_by_id": "9314d275-0c28-4bfb-a754-8a0a98c6bb24",
+      "created_at": "2026-11-18T05:07:25.497990Z",
+      "created_by_id": "088d6cf9-f954-475b-bbc2-38f8c1554ef1",
       "downstream_count": 1,
       "export_job_id": null,
       "file_type": "ABC",
       "frame_end": null,
       "frame_start": null,
-      "id": "8b286261-ae8f-426d-b45d-ed19b334efe6",
-      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "id": "45847c29-0224-4280-ae8e-8375a3d64353",
+      "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
       "relative_path": "RPD/RPD_SH0010/anim/v001/cache.abc",
+      "review_copy_refusal": "This file was revoked; a review copy cannot be made from it.",
       "revoke_reason": "Wrong cache",
       "role": "main",
       "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "size_bytes": 2048,
       "status": "Revoked",
-      "status_changed_at": "2026-11-12T18:41:15.642005Z",
+      "status_changed_at": "2026-11-18T05:07:26.222896Z",
       "storage_root": "PROJECTS",
       "upstream_count": 0,
-      "version_id": "d02587d9-b1db-4324-bd4d-ef4faf317c37"
+      "version_id": "ce5d3c8e-bfee-4ad5-b68c-b95e17356dc3"
     },
     "headers": {
       "Allow": "POST, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "7bc0588f-bbee-40ef-98db-36049a9457a8"
+      "X-Request-ID": "43b63c1f-395d-41c7-a0aa-83e0c39815a2"
     },
     "request": {
       "body": {
@@ -912,7 +924,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/publishing/files/8b286261-ae8f-426d-b45d-ed19b334efe6/revoke/"
+      "path": "/api/v1/publishing/files/45847c29-0224-4280-ae8e-8375a3d64353/revoke/"
     },
     "status": 200
   },
@@ -920,7 +932,7 @@
     "body": {
       "error": {
         "code": "validation_error",
-        "request_id": "059ca495-c401-4ba9-9e2c-fd9e01343841"
+        "request_id": "3050f4fc-a2ce-41fe-83af-6ba258319774"
       },
       "pattern": [
         "Unknown token {shoot}."
@@ -929,7 +941,7 @@
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "059ca495-c401-4ba9-9e2c-fd9e01343841"
+      "X-Request-ID": "3050f4fc-a2ce-41fe-83af-6ba258319774"
     },
     "request": {
       "body": {
@@ -948,13 +960,13 @@
       "detail": "You do not have permission to perform this action.",
       "error": {
         "code": "permission_denied",
-        "request_id": "1927b90a-6d62-47fe-a768-84eaaea39e01"
+        "request_id": "ef900f50-5197-4cf6-acac-3f197c77bff0"
       }
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "1927b90a-6d62-47fe-a768-84eaaea39e01"
+      "X-Request-ID": "ef900f50-5197-4cf6-acac-3f197c77bff0"
     },
     "request": {
       "body": {
@@ -975,13 +987,13 @@
       ],
       "error": {
         "code": "validation_error",
-        "request_id": "9363a475-bfd9-4af8-9db1-5f0d04e15fcc"
+        "request_id": "ee505959-f719-4869-b755-4b0fd27fe8d2"
       }
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "9363a475-bfd9-4af8-9db1-5f0d04e15fcc"
+      "X-Request-ID": "ee505959-f719-4869-b755-4b0fd27fe8d2"
     },
     "request": {
       "body": {
@@ -997,28 +1009,28 @@
   },
   "template_create_project_enforcing": {
     "body": {
-      "created_at": "2026-11-12T18:41:15.409207Z",
+      "created_at": "2026-11-18T05:07:26.004736Z",
       "enforce": true,
       "file_type": "EXR",
-      "id": "5899016a-c6d8-4ddd-b285-c10912ec05bd",
+      "id": "41b0dcee-2261-455e-8cb3-297811fa64a3",
       "is_active": true,
       "pattern": "{project}/{sequence}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
-      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
       "role": "main",
       "storage_root": "PROJECTS",
-      "updated_at": "2026-11-12T18:41:15.409217Z"
+      "updated_at": "2026-11-18T05:07:26.004746Z"
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "299b484b-c1fe-4ef0-ae22-c270c5544a61"
+      "X-Request-ID": "a7baf5f6-c284-4644-a81a-03d0675cd73c"
     },
     "request": {
       "body": {
         "enforce": true,
         "file_type": "EXR",
         "pattern": "{project}/{sequence}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
-        "project": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+        "project": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
         "storage_root": "PROJECTS"
       },
       "method": "POST",
@@ -1029,21 +1041,21 @@
   },
   "template_create_studio": {
     "body": {
-      "created_at": "2026-11-12T18:41:15.306151Z",
+      "created_at": "2026-11-18T05:07:25.910273Z",
       "enforce": false,
       "file_type": "EXR",
-      "id": "28d89d8c-212b-4e2d-8b10-f013ae987cd9",
+      "id": "bccce701-996a-475a-b0d8-29c54dfe6e9e",
       "is_active": true,
       "pattern": "{project}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
       "project_id": null,
       "role": "main",
       "storage_root": "PROJECTS",
-      "updated_at": "2026-11-12T18:41:15.306167Z"
+      "updated_at": "2026-11-18T05:07:25.910288Z"
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "b17cb297-2fd4-420d-911b-b70c2acab749"
+      "X-Request-ID": "8fdbaa74-b9d5-4166-bd24-caa3cb163001"
     },
     "request": {
       "body": {
@@ -1062,39 +1074,39 @@
       "detail": "Method \"DELETE\" not allowed.",
       "error": {
         "code": "method_not_allowed",
-        "request_id": "d581d270-1efd-4608-a240-9dd5001e3f03"
+        "request_id": "d359b239-3854-4fbc-b25f-8f18e1fe7961"
       }
     },
     "headers": {
       "Allow": "GET, PATCH, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "d581d270-1efd-4608-a240-9dd5001e3f03"
+      "X-Request-ID": "d359b239-3854-4fbc-b25f-8f18e1fe7961"
     },
     "request": {
       "body": null,
       "method": "DELETE",
       "params": null,
-      "path": "/api/v1/publishing/path-templates/5899016a-c6d8-4ddd-b285-c10912ec05bd/"
+      "path": "/api/v1/publishing/path-templates/41b0dcee-2261-455e-8cb3-297811fa64a3/"
     },
     "status": 405
   },
   "template_patch_enforce_off": {
     "body": {
-      "created_at": "2026-11-12T18:41:15.409207Z",
+      "created_at": "2026-11-18T05:07:26.004736Z",
       "enforce": false,
       "file_type": "EXR",
-      "id": "5899016a-c6d8-4ddd-b285-c10912ec05bd",
+      "id": "41b0dcee-2261-455e-8cb3-297811fa64a3",
       "is_active": true,
       "pattern": "{project}/{sequence}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
-      "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+      "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
       "role": "main",
       "storage_root": "PROJECTS",
-      "updated_at": "2026-11-12T18:41:15.599003Z"
+      "updated_at": "2026-11-18T05:07:26.180628Z"
     },
     "headers": {
       "Allow": "GET, PATCH, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "4069a918-3ada-4bd3-9890-06786384e08c"
+      "X-Request-ID": "101f2655-48ae-4b06-880f-36c66e2a7df8"
     },
     "request": {
       "body": {
@@ -1102,7 +1114,7 @@
       },
       "method": "PATCH",
       "params": null,
-      "path": "/api/v1/publishing/path-templates/5899016a-c6d8-4ddd-b285-c10912ec05bd/"
+      "path": "/api/v1/publishing/path-templates/41b0dcee-2261-455e-8cb3-297811fa64a3/"
     },
     "status": 200
   },
@@ -1110,7 +1122,7 @@
     "body": {
       "error": {
         "code": "validation_error",
-        "request_id": "3a6c10c4-8bf5-469f-8692-e3cb798191f9"
+        "request_id": "5e80b854-3678-4fcb-8099-d41d166f9a65"
       },
       "role": [
         "Cannot be changed. Retire this template and create another."
@@ -1119,7 +1131,7 @@
     "headers": {
       "Allow": "GET, PATCH, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "3a6c10c4-8bf5-469f-8692-e3cb798191f9"
+      "X-Request-ID": "5e80b854-3678-4fcb-8099-d41d166f9a65"
     },
     "request": {
       "body": {
@@ -1127,7 +1139,7 @@
       },
       "method": "PATCH",
       "params": null,
-      "path": "/api/v1/publishing/path-templates/5899016a-c6d8-4ddd-b285-c10912ec05bd/"
+      "path": "/api/v1/publishing/path-templates/41b0dcee-2261-455e-8cb3-297811fa64a3/"
     },
     "status": 400
   },
@@ -1138,35 +1150,35 @@
       "previous": null,
       "results": [
         {
-          "created_at": "2026-11-12T18:41:15.409207Z",
+          "created_at": "2026-11-18T05:07:26.004736Z",
           "enforce": true,
           "file_type": "EXR",
-          "id": "5899016a-c6d8-4ddd-b285-c10912ec05bd",
+          "id": "41b0dcee-2261-455e-8cb3-297811fa64a3",
           "is_active": true,
           "pattern": "{project}/{sequence}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
-          "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+          "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
           "role": "main",
           "storage_root": "PROJECTS",
-          "updated_at": "2026-11-12T18:41:15.409217Z"
+          "updated_at": "2026-11-18T05:07:26.004746Z"
         },
         {
-          "created_at": "2026-11-12T18:41:15.306151Z",
+          "created_at": "2026-11-18T05:07:25.910273Z",
           "enforce": false,
           "file_type": "EXR",
-          "id": "28d89d8c-212b-4e2d-8b10-f013ae987cd9",
+          "id": "bccce701-996a-475a-b0d8-29c54dfe6e9e",
           "is_active": true,
           "pattern": "{project}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
           "project_id": null,
           "role": "main",
           "storage_root": "PROJECTS",
-          "updated_at": "2026-11-12T18:41:15.306167Z"
+          "updated_at": "2026-11-18T05:07:25.910288Z"
         }
       ]
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "6dda61c4-ae12-4184-85d7-592aaf3e765f"
+      "X-Request-ID": "79d5ee19-e906-4cb1-9952-d6f4065b1a8c"
     },
     "request": {
       "body": null,
@@ -1183,29 +1195,29 @@
       "previous": null,
       "results": [
         {
-          "created_at": "2026-11-12T18:41:15.409207Z",
+          "created_at": "2026-11-18T05:07:26.004736Z",
           "enforce": true,
           "file_type": "EXR",
-          "id": "5899016a-c6d8-4ddd-b285-c10912ec05bd",
+          "id": "41b0dcee-2261-455e-8cb3-297811fa64a3",
           "is_active": true,
           "pattern": "{project}/{sequence}/{shot}/{task}/v{version:03}/{name}.{frame}.{ext}",
-          "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e",
+          "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c",
           "role": "main",
           "storage_root": "PROJECTS",
-          "updated_at": "2026-11-12T18:41:15.409217Z"
+          "updated_at": "2026-11-18T05:07:26.004746Z"
         }
       ]
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
       "Content-Type": "application/json",
-      "X-Request-ID": "d6355872-0b1a-4270-bef5-539fc74459d9"
+      "X-Request-ID": "9d83603f-8f83-4a6a-bea8-936124c7e9c4"
     },
     "request": {
       "body": null,
       "method": "GET",
       "params": {
-        "project_id": "e14f7468-ffe2-43c1-afd2-8ac0b42efa3e"
+        "project_id": "3a325766-c9b9-4af9-8a8b-0af2f66d2d9c"
       },
       "path": "/api/v1/publishing/path-templates/"
     },

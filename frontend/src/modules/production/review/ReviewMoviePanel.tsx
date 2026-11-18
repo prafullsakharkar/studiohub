@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
 import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { reviewMediaApi, reviewMediaInFlight, versionsApi } from '@/api/production/review';
 import type { ReviewMedia, Version } from '@/api/production/review';
 import { serverMessage } from '@/api/errors/serverMessage';
@@ -11,6 +12,7 @@ import { useCan } from '@/core/permissions/useCan';
 import { notify } from '@/core/notifications/notify';
 import { Button } from '@/shared/components/Button';
 import { choicesOf } from './ReviewColourSelect';
+import { ReviewFromPublishedFile } from './ReviewFromPublishedFile';
 import { partsOf, planSequence, SEQUENCE_EXTENSIONS } from './sequenceFrames';
 
 /** What the file picker offers; the server decides (by the first bytes and the extension) and answers 400 on `file`. */
@@ -63,14 +65,32 @@ export function copyNotes(media: ReviewMedia): string[] {
   return notes;
 }
 
-/** Whether a ready copy can be remade: from its upload, or a sequence from its frames while they are kept (RP-16, C-RP-41). */
+/**
+ * Whether a ready copy can be remade: from its upload, a sequence from its frames while they are kept (RP-16, C-RP-41),
+ * a copy read from a published file while that file can still be read (RP-17, C-RP-46).
+ */
 export function canRemake(media: ReviewMedia): boolean {
+  if (media.published_file_id !== null) return media.storage_readable;
   return media.kind !== 'sequence' || media.frames_until !== null;
 }
 
-/** How long a sequence's frames are kept (C-RP-41); null for a movie or still. */
+/** Where a remake reads from, for its button's title. */
+function remakeSource(media: ReviewMedia): string {
+  if (media.published_file_id !== null) return 'published file on studio storage';
+  return media.kind === 'sequence' ? 'kept frames' : 'uploaded file';
+}
+
+/** A copy read from a published file (RP-17, C-RP-44, C-RP-46); null for an upload. */
+export function storageText(media: ReviewMedia): string | null {
+  if (media.published_file_id === null) return null;
+  return media.storage_readable
+    ? 'Read from its published file on studio storage; it can be remade at any time'
+    : 'Its published file can no longer be read: it was revoked, or the server no longer reads its storage root';
+}
+
+/** How long a sequence's frames are kept (C-RP-41); null for a movie or still, and for a copy read from a published file. */
 export function framesText(media: ReviewMedia): string | null {
-  if (media.kind !== 'sequence') return null;
+  if (media.kind !== 'sequence' || media.published_file_id !== null) return null;
   return media.frames_until ? `Frames kept until ${formatDateTime(media.frames_until)}` : 'Frames no longer kept';
 }
 
@@ -96,6 +116,8 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
   const canCreate = useCan('version.create');
   const { user } = useCurrentUser();
   const canManage = canUpdate || (canCreate && Boolean(user?.id) && version.artist_id === user?.id);
+  // RP-17 (C-RP-44): reading the version's published files needs publishing.view
+  const canReadFiles = useCan('publishing.view');
   const queryClient = useQueryClient();
   const input = useRef<HTMLInputElement>(null);
   const folderInput = useRef<HTMLInputElement>(null);
@@ -171,9 +193,23 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
         <div>
           <h2 className="text-sm font-semibold text-slate-200">Review movie</h2>
           <p className="text-[11px] text-slate-500">
-            {current
-              ? `${KIND_TEXT[current.kind]} made by the server from ${current.source_name} (${sizeText(current.source_size)}).`
-              : 'Upload a movie, a still or an image sequence (EXR, DPX, TIFF, PNG, JPEG): the server makes a copy every browser can play.'}
+            {current && current.published_file_id !== null ? (
+              <>
+                {KIND_TEXT[current.kind]} made by the server from the published file{' '}
+                {canReadFiles ? (
+                  <Link to={`/publishing/files/${current.published_file_id}`} className="text-cyan-300 hover:underline">
+                    {current.source_name}
+                  </Link>
+                ) : (
+                  current.source_name
+                )}
+                .
+              </>
+            ) : current ? (
+              `${KIND_TEXT[current.kind]} made by the server from ${current.source_name} (${sizeText(current.source_size)}).`
+            ) : (
+              'Upload a movie, a still or an image sequence (EXR, DPX, TIFF, PNG, JPEG), or read one the version published: the server makes a copy every browser can play.'
+            )}
           </p>
         </div>
         {canManage && (
@@ -211,12 +247,13 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
             <Button size="sm" variant="ghost" disabled={busy !== null || running || unfinished !== null} onClick={() => framesInput.current?.click()}>
               Choose frames
             </Button>
+            {canReadFiles && <ReviewFromPublishedFile versionId={version.id} colorSpace={colorSpace} disabled={busy !== null || running || unfinished !== null} run={act} />}
             {current && canRemake(current) && (
               <Button
                 size="sm"
                 variant="outline"
                 disabled={busy !== null || running || unfinished !== null}
-                title={`Make the copy again from the ${current.kind === 'sequence' ? 'kept frames' : 'uploaded file'}, with the project's burn-in and colour settings`}
+                title={`Make the copy again from the ${remakeSource(current)}, with the project's burn-in and colour settings`}
                 onClick={() =>
                   void act('Remaking…', async () => {
                     await reviewMediaApi.remake(current.id);
@@ -246,6 +283,12 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
             <div>
               <dt className="sr-only">Notes</dt>
               <dd className="text-slate-400">{copyNotes(current).join(' · ')}</dd>
+            </div>
+          )}
+          {storageText(current) && (
+            <div>
+              <dt className="sr-only">Source</dt>
+              <dd className="text-slate-400">{storageText(current)}</dd>
             </div>
           )}
           {framesText(current) && (
@@ -293,7 +336,7 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
           <span>
             {job.source_name}: {job.error_message}
             {job.remake_of && current ? ' The remake failed; the current copy stays.' : ''}
-            {job.attempts >= MAX_ATTEMPTS ? ' Upload the file again.' : ''}
+            {job.attempts >= MAX_ATTEMPTS ? (job.published_file_id !== null ? ' Make the copy again from the published file.' : ' Upload the file again.') : ''}
           </span>
           {canManage && job.attempts < MAX_ATTEMPTS && (
             <Button size="sm" variant="outline" disabled={busy !== null} onClick={() => void act('Retrying…', () => reviewMediaApi.retry(job.id))}>

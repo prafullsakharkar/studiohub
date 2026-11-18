@@ -28,17 +28,24 @@ export function outOfDateText(c: ReviewCopies): string {
 }
 
 /**
- * The sentence about the sequences that differ (C-RP-38; RP-16, C-RP-41): which of the listed ones can still be remade
- * from their kept frames, and which can only be uploaded again or kept as they are.
+ * The sentence about the sequences that differ (C-RP-38; RP-16, C-RP-41; RP-17, C-RP-46): which of the listed ones can
+ * still be remade, from their kept frames or from their published files, and which can only be uploaded again or kept as
+ * they are.
  */
 export function sequencesText(c: ReviewCopies): string {
   const n = c.sequences_out_of_date;
   const listed = c.differing.filter((row) => row.kind === 'sequence');
-  const gone = listed.filter((row) => !row.remakable).length;
-  const kept = listed.length - gone;
+  const uploaded = listed.filter((row) => row.published_file_id === null);
+  const stored = listed.filter((row) => row.published_file_id !== null);
+  const kept = uploaded.filter((row) => row.remakable).length;
+  const gone = uploaded.length - kept;
+  const readable = stored.filter((row) => row.remakable).length;
+  const unreadable = stored.length - readable;
   const parts = [`${sequences(n)} ${n === 1 ? 'was' : 'were'} made with other settings.`];
+  if (readable > 0) parts.push(`${formatNumber(readable)} can be remade from ${readable === 1 ? 'its published file' : 'their published files'}.`);
   if (kept > 0) parts.push(`${formatNumber(kept)} can be remade while ${kept === 1 ? 'its frames are' : 'their frames are'} kept.`);
   if (gone > 0) parts.push(`${formatNumber(gone)} no longer ${gone === 1 ? 'has its' : 'have their'} frames: upload them again, or keep the copies as they are.`);
+  if (unreadable > 0) parts.push(`${formatNumber(unreadable)} can no longer read ${unreadable === 1 ? 'its published file' : 'their published files'}: keep the copies as they are, or make them from another file.`);
   return parts.join(' ');
 }
 
@@ -48,6 +55,7 @@ export function remadeText(r: ReviewCopiesRemade): string {
   if (r.skipped_busy) parts.push(`${formatNumber(r.skipped_busy)} left: their version already has a copy being made.`);
   if (r.skipped_sequence) parts.push(`${formatNumber(r.skipped_sequence)} left: the frames of those sequences are no longer kept.`);
   if (r.skipped_missing) parts.push(`${formatNumber(r.skipped_missing)} left: the uploaded file is gone; upload it again.`);
+  if (r.skipped_storage) parts.push(`${formatNumber(r.skipped_storage)} left: their published files can no longer be read.`);
   return parts.join(' ');
 }
 
@@ -57,7 +65,8 @@ const WHY_TEXT: Record<string, string> = { burn_ins: 'burn-ins', colour: 'colour
 export function differingText(row: ReviewCopyDiffering): string {
   const why = WHY_TEXT[row.why.join(',')] ?? row.why.join(', ');
   let state = 'can be remade';
-  if (!row.remakable) state = row.kind === 'sequence' ? 'frames no longer kept' : 'the uploaded file is gone';
+  if (row.published_file_id !== null) state = row.remakable ? 'can be remade from its published file' : 'its published file can no longer be read';
+  else if (!row.remakable) state = row.kind === 'sequence' ? 'frames no longer kept' : 'the uploaded file is gone';
   else if (row.frames_until) state = `frames kept until ${formatDateTime(row.frames_until)}`;
   return `${why} differ · ${state}`;
 }

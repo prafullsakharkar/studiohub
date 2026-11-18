@@ -8,6 +8,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from apps.production.models import ReviewMedia
+from apps.production.selectors.review_media import ReviewMediaSelector
 from apps.production.services import review_media_links
 from apps.production.transcode import sequence as frames
 
@@ -82,6 +83,8 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
     links_expire_at = serializers.SerializerMethodField()
     remake_of = serializers.UUIDField(source="remake_of_id", read_only=True, allow_null=True)
     frames_until = serializers.SerializerMethodField()
+    published_file_id = serializers.UUIDField(read_only=True, allow_null=True)
+    storage_readable = serializers.SerializerMethodField()
 
     class Meta:
         model = ReviewMedia
@@ -91,7 +94,7 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
             "error_code", "error_message", "attempts",
             "queued_at", "started_at", "finished_at", "created_by",
             "proxy_url", "thumbnail_url", "filmstrip_url", "filmstrip_tiles", "links_expire_at",
-            "remake_of", "color_space", "frames_until",
+            "remake_of", "color_space", "frames_until", "published_file_id", "storage_readable",
         )  # fmt: skip
         read_only_fields = fields
 
@@ -103,6 +106,12 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
             if obj.frames_kept
             else None
         )
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_storage_readable(self, obj: ReviewMedia) -> bool:
+        """RP-17 (C-RP-44, C-RP-46): a copy read from a published file that can still be read, so it can
+        be remade; ``false`` for uploads, revoked files and roots the server no longer reads."""
+        return obj.published_file_id is not None and ReviewMediaSelector.remakable(obj)
 
     @extend_schema_field(ReviewMediaProbeSerializer(allow_null=True))
     def get_probe(self, obj: ReviewMedia) -> dict[str, Any] | None:
@@ -205,6 +214,7 @@ class ReviewCopyDifferingSerializer(serializers.Serializer[Any]):
     record_code = serializers.CharField(allow_blank=True)
     remakable = serializers.BooleanField()
     frames_until = serializers.DateTimeField(allow_null=True)
+    published_file_id = serializers.UUIDField(allow_null=True)
     why = serializers.ListField(child=serializers.ChoiceField(choices=["burn_ins", "colour"]))
 
 
@@ -241,6 +251,7 @@ class ReviewCopiesRemadeSerializer(serializers.Serializer[Any]):
     skipped_busy = serializers.IntegerField()
     skipped_sequence = serializers.IntegerField()
     skipped_missing = serializers.IntegerField()
+    skipped_storage = serializers.IntegerField()
 
 
 class ReviewColourSpaceSerializer(serializers.Serializer[Any]):
