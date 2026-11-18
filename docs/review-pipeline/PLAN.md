@@ -1183,7 +1183,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-18 Review copies before approval
 
-**Status:** planned 2026-11-18; answered the same day (Q-RP-82 to Q-RP-86 = A, [DECISIONS.md](DECISIONS.md#rp-18-answers)); built the same day, committed as `bfaf6466` ([rp-18-verification.md](rp-18-verification.md)). Branch `feature/rp-18-auto-review-copies`, off `develop` at `04b11f9e` (v4.14.0).
+**Status:** planned 2026-11-18; answered the same day (Q-RP-82 to Q-RP-86 = A, [DECISIONS.md](DECISIONS.md#rp-18-answers)); committed `bfaf6466`, merged into `develop` and `main`, released in v4.15.0 ([rp-18-verification.md](rp-18-verification.md)). Branch `feature/rp-18-auto-review-copies`, off `develop` at `04b11f9e` (v4.14.0).
 
 **Goal.** A version that is still in review gets its review copy from its render on studio storage, by path, without an upload and without being published first. A render-farm tool can ask for it as soon as a render finishes.
 
@@ -1242,3 +1242,61 @@ The folder check skipped in the request; the folder check skipped in the worker;
 ### Gates
 
 ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, publishing, notifications, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green.
+
+## RP-19 Copy ready to review
+
+**Status:** planned 2026-11-18; answered the same day (Q-RP-87 to Q-RP-91 = A, [DECISIONS.md](DECISIONS.md#rp-19-answers)); built the same day, committed `d17c3ccd` ([rp-19-verification.md](rp-19-verification.md)). Branch `feature/rp-19-copy-notifications`, off `develop` at `fb63b0ba` (v4.15.0).
+
+**Goal.** When a version's review copy is ready, the person who reviews that work is told, with a link to the copy. The version's artist is told too when someone else made the copy. With RP-18, a farm render of a version still in review then reaches its reviewer without anyone passing it on.
+
+### Why (what is there today)
+
+- **Only the person who made the copy is told.** `ReviewMediaFinishedHandler` (`notifications/events/handlers.py`) sends `review_media_ready` or `review_media_failed` to the row's `created_by` (RP-6, C-RP-24). That is the uploader, the caller of RP-17's or RP-18's route, or the owner of a render farm's token. A remake that becomes ready tells nobody (Q-RP-67).
+- **The artist misses copies made for them.** When a coordinator, a producer's project remake or a farm account that is not the artist makes the copy, the version's artist hears nothing.
+- **Nobody reviewing is told.** No notification goes to a reviewer when a copy arrives. `VERSION_STATUS` goes to the version's artist and the task's assignee; review kinds start only once a review exists (RP-11).
+- **The data exists.** `Task.reviewer` (a user, nullable) is set in the task form and exposed as `reviewer_id`. A version belongs to a task (`Version.task`, nullable). `NotificationSources.version()` already returns the artist and the task's assignee; it can return the reviewer too. `FanoutService` already drops the actor, inactive people, muted kinds and anyone who may not open the version.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 19.1 | **The new kind** (Q-RP-91). `Kind.REVIEW_MEDIA_TO_REVIEW` = `review_media_to_review`, "A copy is ready for you to review"; target the version, `data` `{}`. Mutable. Migration notifications `0004` (the kind's choices only). | `notifications/constants.py`, `notifications/migrations/` |
+| 19.2 | **Who is told** (Q-RP-87, Q-RP-88, Q-RP-89, Q-RP-90). `NotificationSources.version()` gains `task_reviewer_id`; the event payload is unchanged. On a **ready** copy that is not a remake: the row's creator `review_media_ready` (as today), the version's artist `review_media_ready`, the task's reviewer `review_media_to_review`, but only while the version is not `Approved` or `Archived`. On a **failed** copy: the creator and the version's artist `review_media_failed`; never the reviewer. A remake that becomes ready still tells nobody; a failed remake tells its creator and the artist. One row per person per event: if the reviewer is also the creator or the artist, they get `review_media_ready`, not both. | `notifications/events/handlers.py`, `production/selectors/notification_sources.py` |
+| 19.3 | **Frontend.** The kind's label in the inbox ("Copy to review") and in notification preferences (the server's `mutable_kinds` lists it). The row reads "<version> is ready for you to review" and links to the version's Media tab, as the other review-media kinds do. Types, keys, describe text. | `frontend/src/api/notifications/`, `modules/notifications/` |
+| 19.4 | **Capture, live, docs.** Recapture the notifications samples affected (the new kind in `mutable_kinds`). A capture of the three recipients for a farm-made path copy (RP-18's route). A live file. CONTRACTS (C-RP-50, C-RP-51), DECISIONS, the pre-deploy checklist, `rp-19-verification.md`. | `docs/` |
+
+### Questions before RP-19 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-87 | Who is "the reviewer" of a version? | A: **the reviewer of the version's task** (`Task.reviewer`); a version with no task, or a task with no reviewer, tells no reviewer. B: as A, falling back to the **project's supervisor**. C: as A, plus the lead reviewer of any open review that already holds the version. | **A**. It is the one field that names who reviews this work, and the task form already sets it. B sends the supervisor of a large show every copy of every version not otherwise covered, and muting is all or nothing per kind, so it would end in a mute. C is already covered once a review exists: its people get the review kinds (RP-11). |
+| Q-RP-88 | Which ready copies tell the reviewer? | A: **the first copy of a version's source** (an upload, a published file or a path), not a remake, and only while the version is not `Approved` or `Archived`. B: every ready copy, remakes included. | **A**. A remake shows the same work with other burn-ins or colour (Q-RP-67), and a copy of an approved or archived version is not waiting for anyone. A replaced upload counts as a new source and tells the reviewer again. |
+| Q-RP-89 | Is the reviewer told when a copy fails? | A: **no**: failures go to whoever made the copy and to the artist, who can fix them. B: yes, with `review_media_failed`. | **A**. The reviewer cannot act on a failed copy; telling them is noise. |
+| Q-RP-90 | Which of the artist's side is told? | A: **the version's artist**, with the existing `review_media_ready` / `review_media_failed`, when someone else made the copy. B: the artist and the task's assignee (as `version_status` does). C: nobody new. | **A**. The artist is the person whose work it is. The assignee is usually the artist; when not, they still see the version's status kinds. |
+| Q-RP-91 | Can the new kind be muted? | A: **yes**, like every kind not addressed by name. B: no, like `note_mention` and `review_invited`, as a request for action. | **A**. It is not a request with a deadline; a reviewer who follows the review queue instead can turn it off. |
+
+Also decided in the plan, without a question:
+- **No new permission code, no new setting, no change to the event.** The handler reads the task's reviewer when the event is handled, so a reviewer changed between queuing and ready is the one told.
+- **The reach rule stays.** A reviewer who may not open the version (an external member outside its reach) is not told (C-RP-24).
+- **Nothing else changes in how copies are made.**
+
+### Not in RP-19
+
+- E-mail or any channel outside StudioHub; digests.
+- A reviewer field on versions; review queues or assignment rules.
+- Telling reviewers about status changes (`version_status` stays the artist's and assignee's).
+- Downloading a copy, slates, per-shot grades (CDL), automatic copies on registration.
+
+### Tests (targeted, test database)
+
+- **19.1:** the migration; the kind is in `mutable_kinds` and can be muted.
+- **19.2:** a ready upload tells the creator and the task's reviewer; a farm-made path copy (RP-18) tells the farm account's owner, the artist and the reviewer, once each; a reviewer who made the copy gets `review_media_ready` only; no task, no reviewer, an `Approved` or `Archived` version: no `review_media_to_review`; a remake that becomes ready tells nobody; a failure tells the creator and the artist, never the reviewer; a muted kind is not written; a reviewer outside the version's reach is not told; the reviewer read at handling time.
+- **19.3:** the label, the text, the link, the preferences list (from captured samples).
+
+### Mutation checks
+
+The reviewer told on a remake; the reviewer told on a failure; the reviewer told for an approved version; the artist not told when someone else made the copy; two rows for a reviewer who made the copy; the reviewer read from the event instead of at handling time; the new kind unmutable.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (notifications, production, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green.

@@ -17767,9 +17767,10 @@ export interface components {
              *     * `published_file_revoked` - A file you depend on was revoked
              *     * `milestone_due` - A milestone is due or overdue
              *     * `milestone_completed` - Your milestone was completed
+             *     * `review_media_to_review` - A copy is ready for you to review
              * @enum {string}
              */
-            readonly kind: "note_created" | "note_mention" | "note_reply" | "note_status" | "task_assigned" | "task_status" | "version_status" | "review_media_ready" | "review_media_failed" | "review_decision" | "review_invited" | "review_verdict" | "review_comment" | "delivery_status" | "delivery_client_answer" | "publish_finished" | "published_file_revoked" | "milestone_due" | "milestone_completed";
+            readonly kind: "note_created" | "note_mention" | "note_reply" | "note_status" | "task_assigned" | "task_status" | "version_status" | "review_media_ready" | "review_media_failed" | "review_decision" | "review_invited" | "review_verdict" | "review_comment" | "delivery_status" | "delivery_client_answer" | "publish_finished" | "published_file_revoked" | "milestone_due" | "milestone_completed" | "review_media_to_review";
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -22511,8 +22512,8 @@ export interface components {
         };
         /** @description What the caller muted, and every kind that can be muted (C-RP-30). */
         Preferences: {
-            muted_kinds: ("note_created" | "note_reply" | "note_status" | "task_assigned" | "task_status" | "version_status" | "review_media_ready" | "review_media_failed" | "review_decision" | "review_verdict" | "review_comment" | "delivery_status" | "delivery_client_answer" | "publish_finished" | "published_file_revoked" | "milestone_due" | "milestone_completed")[];
-            mutable_kinds: ("note_created" | "note_reply" | "note_status" | "task_assigned" | "task_status" | "version_status" | "review_media_ready" | "review_media_failed" | "review_decision" | "review_verdict" | "review_comment" | "delivery_status" | "delivery_client_answer" | "publish_finished" | "published_file_revoked" | "milestone_due" | "milestone_completed")[];
+            muted_kinds: ("note_created" | "note_reply" | "note_status" | "task_assigned" | "task_status" | "version_status" | "review_media_ready" | "review_media_failed" | "review_decision" | "review_verdict" | "review_comment" | "delivery_status" | "delivery_client_answer" | "publish_finished" | "published_file_revoked" | "milestone_due" | "milestone_completed" | "review_media_to_review")[];
+            mutable_kinds: ("note_created" | "note_reply" | "note_status" | "task_assigned" | "task_status" | "version_status" | "review_media_ready" | "review_media_failed" | "review_decision" | "review_verdict" | "review_comment" | "delivery_status" | "delivery_client_answer" | "publish_finished" | "published_file_revoked" | "milestone_due" | "milestone_completed" | "review_media_to_review")[];
         };
         /** @description The kinds to mute; the service refuses an unknown kind or one that cannot be muted. */
         PreferencesWrite: {
@@ -39400,7 +39401,7 @@ export interface operations {
     v1_notifications_list: {
         parameters: {
             query?: {
-                kind?: "delivery_client_answer" | "delivery_status" | "milestone_completed" | "milestone_due" | "note_created" | "note_mention" | "note_reply" | "note_status" | "publish_finished" | "published_file_revoked" | "review_comment" | "review_decision" | "review_invited" | "review_media_failed" | "review_media_ready" | "review_verdict" | "task_assigned" | "task_status" | "version_status";
+                kind?: "delivery_client_answer" | "delivery_status" | "milestone_completed" | "milestone_due" | "note_created" | "note_mention" | "note_reply" | "note_status" | "publish_finished" | "published_file_revoked" | "review_comment" | "review_decision" | "review_invited" | "review_media_failed" | "review_media_ready" | "review_media_to_review" | "review_verdict" | "task_assigned" | "task_status" | "version_status";
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
                 /** @description A page number within the paginated result set. */

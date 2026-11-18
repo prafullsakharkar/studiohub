@@ -15,7 +15,12 @@ from apps.core.events.handlers import DomainEventHandler
 from apps.core.logging.logger import get_logger
 from apps.deliveries.constants import workflow as delivery_flow
 from apps.deliveries.selectors.notification_sources import DeliveryNotificationSources
-from apps.notifications.constants import REVIEW_DECISIONS, Kind, TargetType
+from apps.notifications.constants import (
+    REVIEW_DECISIONS,
+    SETTLED_VERSION_STATUSES,
+    Kind,
+    TargetType,
+)
 from apps.notifications.services.fanout import FanoutService, merge
 from apps.production.selectors.notification_sources import NotificationSources
 from apps.publishing.selectors.notification_sources import PublishingNotificationSources
@@ -184,22 +189,29 @@ class StatusChangedHandler(_Handler):
 
 
 class ReviewMediaFinishedHandler(_Handler):
-    """A review movie is ready or failed: the person who uploaded it (or asked for the remake).
+    """A review copy is ready or failed (RP-6, C-RP-24; RP-19, C-RP-50).
 
-    A remake that becomes ready tells nobody: the copy is the same work (Q-RP-67, C-RP-37).
+    Whoever made it (the uploader, or the caller of a copy from storage or of the remake) and the
+    version's artist get ``review_media_ready`` or ``review_media_failed`` (Q-RP-90). A ready copy
+    that is not a remake also tells the reviewer of the version's task, read now, with
+    ``review_media_to_review``, unless the version is approved or archived (Q-RP-87, Q-RP-88); a
+    failure never does (Q-RP-89). One row per person: the first kind they match. A remake that
+    becomes ready tells nobody: the copy is the same work (Q-RP-67, C-RP-37).
     """
 
     def notify(self, payload):
         failed = payload.get("status") == "failed"
         if payload.get("remake") and not failed:
             return
+        version = NotificationSources.version(payload["version_id"])
+        if version is None:
+            return
+        own = Kind.REVIEW_MEDIA_FAILED if failed else Kind.REVIEW_MEDIA_READY
+        groups = [([payload.get("created_by_id"), version["artist_id"]], own)]
+        if not failed and version["status"] not in SETTLED_VERSION_STATUSES:
+            groups.append(([version["task_reviewer_id"]], Kind.REVIEW_MEDIA_TO_REVIEW))
         FanoutService.notify(
-            kinds=merge(
-                (
-                    [payload.get("created_by_id")],
-                    Kind.REVIEW_MEDIA_FAILED if failed else Kind.REVIEW_MEDIA_READY,
-                )
-            ),
+            kinds=merge(*groups),
             actor_id=None,
             project_id=payload["project_id"],
             target_type=TargetType.VERSION,

@@ -21,6 +21,9 @@ const reviewRows = (key: string): Notification[] => reviewFlow[key].body.results
 /** RP-13 (C-RP-34 to C-RP-36): docs/sync/samples/notifications/_pipeline_notifications_flow.json (test_capture_pipeline_notifications.py). */
 const pipelineFlow = loadSample<Record<string, Captured>>('notifications/_pipeline_notifications_flow.json');
 const pipelineRows = (key: string): Notification[] => pipelineFlow[key].body.results;
+/** RP-19 (C-RP-50, C-RP-51): docs/sync/samples/notifications/_copy_to_review_flow.json (test_capture_copy_to_review.py). */
+const copyFlow = loadSample<Record<string, Captured>>('notifications/_copy_to_review_flow.json');
+const copyRows = (key: string): Notification[] => copyFlow[key].body.results;
 const PIPELINE_LISTS = ['producer_list', 'supervisor_list', 'coordinator_list', 'td_list', 'artist_list'];
 const sorted = (o: object) => Object.keys(o).sort();
 
@@ -45,7 +48,7 @@ describe('C-RP-23: the row shape', () => {
   });
 
   it('the kinds and target types the frontend lists are the server’s, and every kind was captured', () => {
-    const all = [...rows('artist_list'), ...rows('lead_list'), ...rows('supervisor_list'), ...reviewRows('artist_list'), ...reviewRows('lead_list'), ...reviewRows('supervisor_list'), ...reviewRows('client_list'), ...PIPELINE_LISTS.flatMap(pipelineRows)];
+    const all = [...rows('artist_list'), ...rows('lead_list'), ...rows('supervisor_list'), ...reviewRows('artist_list'), ...reviewRows('lead_list'), ...reviewRows('supervisor_list'), ...reviewRows('client_list'), ...PIPELINE_LISTS.flatMap(pipelineRows), ...copyRows('supervisor_list'), ...copyRows('artist_list')];
     for (const n of all) {
       expect(NOTIFICATION_KINDS).toContain(n.kind);
       expect(NOTIFICATION_TARGET_TYPES).toContain(n.target.type);
@@ -288,5 +291,36 @@ describe('C-RP-34 and C-RP-35: delivery, publishing and milestone rows', () => {
     const { mutable_kinds } = pipelineFlow.producer_preferences.body;
     for (const kind of ['delivery_status', 'delivery_client_answer', 'publish_finished', 'published_file_revoked', 'milestone_due', 'milestone_completed']) expect(mutable_kinds).toContain(kind);
     expect(pipelineFlow.producer_mute_delivery_status.body.muted_kinds).toEqual(['delivery_status', 'milestone_due']);
+  });
+});
+
+describe('RP-19: a copy ready to review (C-RP-50, C-RP-51)', () => {
+  const summary = (key: string) => copyRows(key).map((n) => [n.kind, n.target.type, n.target.code, n.data, n.actor]);
+
+  it('the reviewer of the task hears once of the first copy: not of the remake, the failure or the approved version', () => {
+    expect(summary('supervisor_list')).toEqual([['review_media_to_review', 'version', 'RPR_SH010_COMP_V003', {}, null]]);
+    expect(summary('supervisor_to_review_only')).toEqual(summary('supervisor_list'));
+    for (const n of copyRows('supervisor_list')) {
+      expect(sorted(n)).toEqual(sorted(NOTIFICATION_KEYS));
+      expect(sorted(n.target)).toEqual(sorted(NOTIFICATIONTARGET_KEYS));
+    }
+  });
+
+  it('the version’s artist hears of a copy someone else made, ready or failed, as does whoever made it', () => {
+    const expected = [
+      ['review_media_ready', 'version', 'RPR_SH020_COMP_V003', {}, null],
+      ['review_media_failed', 'version', 'RPR_SH010_COMP_V003', { error_code: 'render_unreadable' }, null],
+      ['review_media_ready', 'version', 'RPR_SH010_COMP_V003', {}, null],
+    ];
+    expect(summary('artist_list')).toEqual(expected);
+    expect(summary('farm_list')).toEqual(expected);
+  });
+
+  it('the new kind can be muted, and a muted reviewer gets no row for the next copy', () => {
+    expect(copyFlow.supervisor_preferences.body.mutable_kinds).toContain('review_media_to_review');
+    expect(copyFlow.supervisor_preferences.body.mutable_kinds).toEqual(NOTIFICATION_KINDS.filter((k) => k !== 'note_mention' && k !== 'review_invited'));
+    expect(copyFlow.supervisor_mute_200.body.muted_kinds).toEqual(['review_media_to_review']);
+    expect(summary('supervisor_list_after_mute')).toEqual(summary('supervisor_list'));
+    expect(copyRows('artist_list_after_mute').map((n) => n.target.code)[0]).toBe('RPR_SH030_COMP_V003');
   });
 });
