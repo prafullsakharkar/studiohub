@@ -2,11 +2,16 @@ from django.db import transaction
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
 from apps.identity.models import Role
 from apps.production.api.filtersets.project import ProjectFilterSet
+from apps.production.api.serializers.grade import (
+    GradeImportRequestSerializer,
+    GradeImportSerializer,
+)
 from apps.production.api.serializers.project.create import ProjectCreateSerializer
 from apps.production.api.serializers.project.detail import ProjectDetailSerializer
 from apps.production.api.serializers.project.list import ProjectListSerializer
@@ -19,14 +24,15 @@ from apps.production.api.serializers.review_media import (
 )
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.constants import ProjectWorkflowType
-from apps.production.constants.permissions import ProjectPermissions
-from apps.production.models import Episode
+from apps.production.constants.permissions import ProjectPermissions, ShotPermissions
+from apps.production.models import Episode, Shot
 from apps.production.permissions.checks import has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.dashboard import ProjectDashboardSelector
 from apps.production.selectors.delivery_figures import delivery_figures
 from apps.production.selectors.project import ProjectSelector
 from apps.production.selectors.review_media import ReviewMediaSelector
+from apps.production.services.grade_import import GradeImportService
 from apps.production.services.project import ProjectService
 from apps.production.services.project_scoped import ProjectMembershipService
 from apps.production.services.review_media import ReviewMediaService
@@ -62,6 +68,8 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         "review_copies": (ProjectPermissions.VIEW,),
         "remake_review_copies": (ProjectPermissions.UPDATE,),
         "keep_review_copies": (ProjectPermissions.UPDATE,),
+        # RP-20 (C-RP-54): grades are the shots', so importing them needs the shot write
+        "import_grades": (ShotPermissions.UPDATE,),
         # check_existence / existence_check stay unmapped on purpose: this viewset has no
         # _existence_items_from_request, so mapping them would turn a 403 into a 500.
     }
@@ -190,3 +198,30 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
             actor=request.user, project=instance, ids=body.validated_data["review_media_ids"]
         )
         return Response(ReviewCopiesKeptSerializer(kept).data)
+
+    @extend_schema(
+        request={"multipart/form-data": GradeImportRequestSerializer},
+        responses={200: GradeImportSerializer},
+    )
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="grades/import",
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def import_grades(self, request, *args, **kwargs):
+        """Shot grades from a client's .cc, .ccc or .cdl file; a dry run unless ``dry_run`` is false
+        (RP-20, C-RP-54). Only the shots the caller may update are matched (CR-46)."""
+        instance = self.get_object()
+        body = GradeImportRequestSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        answer = GradeImportService.import_file(
+            actor=request.user,
+            project=instance,
+            upload=body.validated_data["file"],
+            dry_run=body.validated_data["dry_run"],
+            scope=ProductionBaseSelector.scope_by_project_membership(
+                Shot.objects.all(), request=request
+            ),
+        )
+        return Response(GradeImportSerializer(answer).data)

@@ -45,7 +45,7 @@ from apps.core.events import default_event_bus
 from apps.core.utils.paths import PathRuleError, frame_file_name, is_sequence_pattern, resolve_mount
 from apps.production.events.review_media import ReviewMediaFinished
 from apps.production.exceptions import ReviewMediaBusy, ReviewMediaDisabled
-from apps.production.models import Project, ReviewMedia, Version
+from apps.production.models import Project, ReviewMedia, Shot, Version
 from apps.production.selectors.review_media import ReviewMediaSelector
 from apps.production.transcode import colour, detect
 from apps.production.transcode import ffmpeg as commands
@@ -1249,7 +1249,7 @@ class ReviewMediaService:
             )
             raise _Failed(Code.UNSUPPORTED_STREAM)
 
-        target, skipped = cls._prepare_colour(media, work)
+        target, skipped, grading = cls._prepare_colour(media, work)
         if target is not None:
             source = dataclasses.replace(source, colour=True)
         linear = isinstance(source, commands.SequenceInput) and source.linear and not source.colour
@@ -1259,6 +1259,8 @@ class ReviewMediaService:
             "colour": "ocio" if target else ("srgb_from_linear" if linear else "as_stored"),
             "ocio": target.as_json() if target else None,
             "colour_skipped": skipped,
+            # RP-20 (C-RP-53): ``grade``, ``grade_source`` and ``grade_skipped``
+            **grading,
             "burn_ins": cls._prepare_burn_in(media, work),
         }
 
@@ -1296,36 +1298,76 @@ class ReviewMediaService:
                 raise _Failed(Code.TRANSCODE_FAILED)
         return probe, made, extra
 
-    @staticmethod
-    def _prepare_colour(media: ReviewMedia, work: Path) -> tuple[colour.Target | None, str | None]:
-        """Put the copy's LUT into ``work`` (C-RP-40); its transform, or ``None`` and why not.
+    @classmethod
+    def _prepare_colour(
+        cls, media: ReviewMedia, work: Path
+    ) -> tuple[colour.Target | None, str | None, dict[str, Any]]:
+        """Put the copy's LUT into ``work`` (C-RP-40); its transform, or ``None`` and why not, and
+        what the probe records of the shot's grade (RP-20, C-RP-53).
 
         A colour space the config does not know, or a config that cannot be read, leaves the copy
         made as before RP-15 (logged and recorded in ``colour_skipped``), rather than without a copy.
         """
-        project = Project.objects.only("color_space", "review_view", "review_look").get(
-            pk=media.project_id  # pyright: ignore[reportAttributeAccessIssue]
-        )
+        project = Project.objects.only(
+            "color_space", "review_view", "review_look", "review_grades"
+        ).get(pk=media.project_id)  # pyright: ignore[reportAttributeAccessIssue]
         target, skipped = ReviewMediaSelector.colour_target(
             project,
             kind=media.kind,
             container=media.source_container,
             color_space=media.color_space,
         )
-        if target is not None:
+        grading: dict[str, Any] = {"grade": None, "grade_source": "", "grade_skipped": None}
+        if target is None:
+            if skipped:
+                logger.warning(
+                    "review_media_colour_skipped", review_media_id=str(media.pk), reason=skipped
+                )
+            return target, skipped, grading
+        if project.review_grades:
+            grading = cls._prepare_grade(media, project, target, work)
+        if grading["grade"] is not None:
+            return target, skipped, grading
+        try:
+            lut = colour.lut_for(target, _media_root() / settings.REVIEW_MEDIA_DIR / LUT_FOLDER)
+            shutil.copyfile(lut, work / commands.COLOUR_LUT)
+        except (colour.ColourUnavailable, OSError) as error:
+            logger.error(
+                "review_media_colour_failed", review_media_id=str(media.pk), error=str(error)
+            )
+            return None, "colour_config_unavailable", {**grading, "grade_skipped": None}
+        return target, skipped, grading
+
+    @staticmethod
+    def _prepare_grade(
+        media: ReviewMedia, project: Project, target: colour.Target, work: Path
+    ) -> dict[str, Any]:
+        """Bake the copy's LUT with its shot's grade into ``work`` (Q-RP-94); what the probe records.
+
+        Baked for this job only and removed with ``work`` (a graded LUT is per shot and large). A
+        config without a grading space, or a bake that fails, leaves the copy made without the
+        grade (logged, ``grade_skipped``), rather than without a copy.
+        """
+        shot = (
+            Shot.objects.filter(versions=media.version_id)  # pyright: ignore[reportAttributeAccessIssue]
+            .values("grade", "grade_source")
+            .first()
+        )
+        grade, why = ReviewMediaSelector.grade_for(
+            project, shot["grade"] if shot else None, managed=True
+        )
+        if grade is not None:
             try:
-                lut = colour.lut_for(target, _media_root() / settings.REVIEW_MEDIA_DIR / LUT_FOLDER)
-                shutil.copyfile(lut, work / commands.COLOUR_LUT)
+                colour.write_graded_lut(target, grade, work / commands.COLOUR_LUT)
+                return {"grade": grade, "grade_source": shot["grade_source"], "grade_skipped": None}  # pyright: ignore[reportOptionalSubscript]
             except (colour.ColourUnavailable, OSError) as error:
                 logger.error(
-                    "review_media_colour_failed", review_media_id=str(media.pk), error=str(error)
+                    "review_media_grade_failed", review_media_id=str(media.pk), error=str(error)
                 )
-                return None, "colour_config_unavailable"
-        elif skipped:
-            logger.warning(
-                "review_media_colour_skipped", review_media_id=str(media.pk), reason=skipped
-            )
-        return target, skipped
+                why = "colour_config_unavailable"
+        if why:
+            logger.warning("review_media_grade_skipped", review_media_id=str(media.pk), reason=why)
+        return {"grade": None, "grade_source": "", "grade_skipped": why}
 
     @staticmethod
     def _prepare_burn_in(media: ReviewMedia, work: Path) -> bool:

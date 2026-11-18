@@ -35,6 +35,7 @@ class ProjectCreateSerializer(ProjectColourMixin, BudgetGatedMixin, BaseWriteSer
             "review_burn_ins",
             "review_view",
             "review_look",
+            "review_grades",
             "start_date",
             "delivery_date",
             "thumbnail_url",

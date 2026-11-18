@@ -16,11 +16,16 @@ const firstRow = (key: string): Record<string, unknown> => {
   return body.results?.[0] ?? body.items?.[0] ?? body;
 };
 const count = (key: string): number => flow[key].body.count;
+/**
+ * RP-20 added the shot's grade (C-RP-52). This flow was captured in Phase 6 and its tool predates CR-49's code prefixes,
+ * so the shot's keys are pinned to RP-20's capture; this flow's shot has every other key.
+ */
+const grades = loadSample<Record<string, Captured>>('production/_shot_grades_flow.json');
+const RP20_SHOT_KEYS = ['grade', 'grade_source', 'grade_updated_at'];
 
 
 describe('work row types match the captured responses', () => {
   it.each([
-    ['Shot', 'shots_list', SHOT_KEYS],
     ['Asset', 'assets_list', ASSET_KEYS],
     ['Task', 'tasks_list', TASK_KEYS],
     ['Timelog', 'timelogs_list_own', TIMELOG_KEYS],
@@ -30,6 +35,12 @@ describe('work row types match the captured responses', () => {
     ['StatusHistoryRow', 'shots_status_history', STATUSHISTORYROW_KEYS],
   ])('%s', (_label, sample, expected) => {
     expect(Object.keys(firstRow(sample)).sort()).toEqual(Object.keys(expected).sort());
+  });
+
+  it('Shot', () => {
+    expect(Object.keys(grades.shot_no_grade.body).sort()).toEqual(Object.keys(SHOT_KEYS).sort());
+    const before = Object.keys(SHOT_KEYS).filter((k) => !RP20_SHOT_KEYS.includes(k));
+    expect(Object.keys(firstRow('shots_list')).sort()).toEqual(before.sort());
   });
 
   it('TemplateItem', () => {

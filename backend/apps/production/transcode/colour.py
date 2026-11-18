@@ -188,19 +188,33 @@ def _shaper(input_space: str) -> str | None:
     The config's ``color_timing`` role (ACEScct in the ACES configs), when it is log encoded.
     Input that is already log or display encoded is sampled as it is.
     """
-    cfg = config()
-    space = cfg.getColorSpace(input_space)
+    space = config().getColorSpace(input_space)
     if space is None or str(space.getEncoding()) != "scene-linear":
         return None
-    timing = cfg.getColorSpace("color_timing")
+    return grading_space()
+
+
+def grading_space() -> str | None:
+    """The config's grading space: its ``color_timing`` role when log encoded (ACEScct), or ``None``.
+
+    RP-20 (Q-RP-94): a shot's ASC CDL is applied there, as in the DI. Raises ``ColourUnavailable``.
+    """
+    timing = config().getColorSpace("color_timing")
     if timing is not None and str(timing.getEncoding()) == "log":
         return str(timing.getName())
     return None
 
 
+#: the look a grade is baked as; a name no studio config uses
+GRADE_LOOK = "studiohub_shot_grade"
+
+
 @lru_cache(maxsize=32)
 def _bake(source: str, input_space: str, display_name: str, view: str, look: str) -> str:
-    cfg = _config(source)
+    return _bake_with(_config(source), input_space, display_name, view, look)
+
+
+def _bake_with(cfg: Any, input_space: str, display_name: str, view: str, look: str) -> str:
     baker = OCIO.Baker()
     baker.setConfig(cfg)
     baker.setFormat("cinespace")
@@ -237,3 +251,32 @@ def lut_for(target_: Target, folder: Path) -> Path:
     partial.write_text(text, encoding="ascii")
     os.replace(partial, path)  # whole or absent, also with two workers baking at once
     return path
+
+
+def write_graded_lut(target_: Target, grade: dict[str, Any], path: Path) -> None:
+    """Bake ``target_`` with ``grade`` applied in the grading space first, into ``path``.
+
+    RP-20 (C-RP-53, Q-RP-94): the grade is a look in the config's grading space, before the
+    project's look, as in the DI. Each graded LUT is about 7.5 MB, one per shot, so it is baked for
+    the job and never cached (the job's folder is removed with it). Raises ``ColourUnavailable``,
+    also when the config has no grading space.
+    """
+    try:
+        space = grading_space()
+        if space is None:
+            raise ColourUnavailable("the config has no log color_timing space")
+        # A copy of the studio's config: the cached one is shared and must not gain the look.
+        cfg = OCIO.Config.CreateFromStream(config().serialize())
+        cdl = OCIO.CDLTransform()
+        cdl.setSlope(list(grade["slope"]))
+        cdl.setOffset(list(grade["offset"]))
+        cdl.setPower(list(grade["power"]))
+        cdl.setSat(float(grade["saturation"]))
+        cfg.addLook(OCIO.Look(name=GRADE_LOOK, processSpace=space, transform=cdl))
+        looks_ = ", ".join(name for name in (GRADE_LOOK, target_.look) if name)
+        text = _bake_with(cfg, target_.input, target_.display, target_.view, looks_)
+    except ColourUnavailable:
+        raise
+    except Exception as error:
+        raise ColourUnavailable(str(error)[:200]) from error
+    path.write_text(text, encoding="ascii")

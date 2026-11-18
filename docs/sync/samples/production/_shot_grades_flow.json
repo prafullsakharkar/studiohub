@@ -1,0 +1,1449 @@
+{
+  "copies_after_remake": {
+    "body": {
+      "colour_out_of_date": 0,
+      "differing": [],
+      "differing_more": 0,
+      "grade_out_of_date": 0,
+      "out_of_date": 0,
+      "review_burn_ins": false,
+      "review_grades": true,
+      "sequences_out_of_date": 0
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/review-copies/"
+    },
+    "status": 200
+  },
+  "copies_matching": {
+    "body": {
+      "colour_out_of_date": 0,
+      "differing": [],
+      "differing_more": 0,
+      "grade_out_of_date": 0,
+      "out_of_date": 0,
+      "review_burn_ins": false,
+      "review_grades": true,
+      "sequences_out_of_date": 0
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/review-copies/"
+    },
+    "status": 200
+  },
+  "copies_other_grade": {
+    "body": {
+      "colour_out_of_date": 0,
+      "differing": [
+        {
+          "frames_until": "2026-12-02T15:27:00.858136Z",
+          "kind": "sequence",
+          "published_file_id": null,
+          "record_code": "RPG_SH0010",
+          "remakable": true,
+          "review_media_id": "41ee6897-9bf1-4a9b-a8fc-06c7e61b97e8",
+          "source": "upload",
+          "version": {
+            "code": "RPG_SH0010_COMP_V001",
+            "id": "69a7d9cb-c6e7-4b18-8031-b297e1522a9e"
+          },
+          "why": [
+            "grade"
+          ]
+        }
+      ],
+      "differing_more": 0,
+      "grade_out_of_date": 1,
+      "out_of_date": 0,
+      "review_burn_ins": false,
+      "review_grades": true,
+      "sequences_out_of_date": 1
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/review-copies/"
+    },
+    "status": 200
+  },
+  "copies_switch_off": {
+    "body": {
+      "colour_out_of_date": 0,
+      "differing": [],
+      "differing_more": 0,
+      "grade_out_of_date": 0,
+      "out_of_date": 0,
+      "review_burn_ins": false,
+      "review_grades": false,
+      "sequences_out_of_date": 0
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/review-copies/"
+    },
+    "status": 200
+  },
+  "ids": {
+    "first": "69a7d9cb-c6e7-4b18-8031-b297e1522a9e",
+    "graded": "41ee6897-9bf1-4a9b-a8fc-06c7e61b97e8",
+    "movie": "66f4388f-ef3b-433e-8fc6-1988746c4847",
+    "project": "a366d068-6875-4f7a-840f-2304555f9d75",
+    "second": "6c80d7ae-3b8a-44fd-a737-4cdf60e44218",
+    "shots": {
+      "1": "e8a33482-70e8-4438-af31-3810de49eccf",
+      "2": "5a41fefc-1263-433a-8a25-1658270afe72",
+      "3": "3e1d1ee7-7873-4467-8e31-b8a23a495a2b"
+    },
+    "third": "3070f8a7-44fd-45b1-858d-bbdf88ba59cc"
+  },
+  "import_again_200": {
+    "body": {
+      "applied": 0,
+      "corrections": 5,
+      "dry_run": true,
+      "file_name": "reel1.ccc",
+      "invalid": [
+        {
+          "field": "saturation",
+          "id": "RPG_SH0040",
+          "message": "saturation must be from 0 up to 10."
+        }
+      ],
+      "matched": [],
+      "unchanged": [
+        {
+          "id": "SH0010",
+          "shot": {
+            "code": "RPG_SH0010",
+            "id": "e8a33482-70e8-4438-af31-3810de49eccf"
+          }
+        },
+        {
+          "id": "RPG_SH0020",
+          "shot": {
+            "code": "RPG_SH0020",
+            "id": "5a41fefc-1263-433a-8a25-1658270afe72"
+          }
+        },
+        {
+          "id": "SH0030",
+          "shot": {
+            "code": "RPG_SH0030",
+            "id": "3e1d1ee7-7873-4467-8e31-b8a23a495a2b"
+          }
+        }
+      ],
+      "unmatched": [
+        "SH9990"
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "file": "reel1.ccc"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/grades/import/"
+    },
+    "status": 200
+  },
+  "import_apply_200": {
+    "body": {
+      "applied": 2,
+      "corrections": 5,
+      "dry_run": false,
+      "file_name": "reel1.ccc",
+      "invalid": [
+        {
+          "field": "saturation",
+          "id": "RPG_SH0040",
+          "message": "saturation must be from 0 up to 10."
+        }
+      ],
+      "matched": [
+        {
+          "id": "SH0010",
+          "new": {
+            "offset": [
+              0.01,
+              0.0,
+              -0.01
+            ],
+            "power": [
+              1.0,
+              1.0,
+              1.05
+            ],
+            "saturation": 0.9,
+            "slope": [
+              1.1,
+              1.0,
+              0.9
+            ]
+          },
+          "old": null,
+          "shot": {
+            "code": "RPG_SH0010",
+            "id": "e8a33482-70e8-4438-af31-3810de49eccf"
+          }
+        },
+        {
+          "id": "RPG_SH0020",
+          "new": {
+            "offset": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "power": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "saturation": 0.8,
+            "slope": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "old": null,
+          "shot": {
+            "code": "RPG_SH0020",
+            "id": "5a41fefc-1263-433a-8a25-1658270afe72"
+          }
+        }
+      ],
+      "unchanged": [
+        {
+          "id": "SH0030",
+          "shot": {
+            "code": "RPG_SH0030",
+            "id": "3e1d1ee7-7873-4467-8e31-b8a23a495a2b"
+          }
+        }
+      ],
+      "unmatched": [
+        "SH9990"
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "dry_run": "false",
+        "file": "reel1.ccc"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/grades/import/"
+    },
+    "status": 200
+  },
+  "import_artist_403": {
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied"
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "file": "reel1.ccc"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/grades/import/"
+    },
+    "status": 403
+  },
+  "import_doctype_400": {
+    "body": {
+      "error": {
+        "code": "validation_error"
+      },
+      "file": [
+        "The file declares a document type, which CDL files never need."
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "file": "evil.cc"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/grades/import/"
+    },
+    "status": 400
+  },
+  "import_dry_run_200": {
+    "body": {
+      "applied": 0,
+      "corrections": 5,
+      "dry_run": true,
+      "file_name": "reel1.ccc",
+      "invalid": [
+        {
+          "field": "saturation",
+          "id": "RPG_SH0040",
+          "message": "saturation must be from 0 up to 10."
+        }
+      ],
+      "matched": [
+        {
+          "id": "SH0010",
+          "new": {
+            "offset": [
+              0.01,
+              0.0,
+              -0.01
+            ],
+            "power": [
+              1.0,
+              1.0,
+              1.05
+            ],
+            "saturation": 0.9,
+            "slope": [
+              1.1,
+              1.0,
+              0.9
+            ]
+          },
+          "old": null,
+          "shot": {
+            "code": "RPG_SH0010",
+            "id": "e8a33482-70e8-4438-af31-3810de49eccf"
+          }
+        },
+        {
+          "id": "RPG_SH0020",
+          "new": {
+            "offset": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "power": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "saturation": 0.8,
+            "slope": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "old": null,
+          "shot": {
+            "code": "RPG_SH0020",
+            "id": "5a41fefc-1263-433a-8a25-1658270afe72"
+          }
+        }
+      ],
+      "unchanged": [
+        {
+          "id": "SH0030",
+          "shot": {
+            "code": "RPG_SH0030",
+            "id": "3e1d1ee7-7873-4467-8e31-b8a23a495a2b"
+          }
+        }
+      ],
+      "unmatched": [
+        "SH9990"
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "file": "reel1.ccc"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/grades/import/"
+    },
+    "status": 200
+  },
+  "import_other_file_400": {
+    "body": {
+      "error": {
+        "code": "validation_error"
+      },
+      "file": [
+        "Choose a .cc, .ccc or .cdl file."
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "file": "reel1.xml"
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/grades/import/"
+    },
+    "status": 400
+  },
+  "project_default": {
+    "body": {
+      "approve_task_on_version_approval": false,
+      "approved_shots": 0,
+      "aspect_ratio": "2.39:1",
+      "budget_usd": "0.00",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "client_id": "",
+      "client_name": "",
+      "code": "RPG",
+      "color_space": "ACEScg",
+      "coordinator_id": null,
+      "coordinator_name": "",
+      "created_at": "2026-11-18T15:26:56.635702Z",
+      "delivery_date": null,
+      "description": "",
+      "fps": "24.000",
+      "id": "a366d068-6875-4f7a-840f-2304555f9d75",
+      "in_progress_shots": 0,
+      "name": "Shot grades",
+      "project_code": "RPG",
+      "resolution": "4096x2160 (4K DCI)",
+      "review_burn_ins": false,
+      "review_grades": false,
+      "review_look": "",
+      "review_source_folder": "",
+      "review_source_root": "",
+      "review_view": "",
+      "start_date": null,
+      "status": "In Progress",
+      "supervisor_id": null,
+      "supervisor_name": "",
+      "thumbnail_url": "",
+      "total_assets": 0,
+      "total_shots": 0,
+      "type": "Feature Film",
+      "updated_at": "2026-11-18T15:26:56.635709Z",
+      "uuid": "a366d068-6875-4f7a-840f-2304555f9d75",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": [],
+      "workflow_type": "standard"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/"
+    },
+    "status": 200
+  },
+  "project_grades_on": {
+    "body": {
+      "approve_task_on_version_approval": false,
+      "approved_shots": 0,
+      "aspect_ratio": "2.39:1",
+      "budget_usd": "0.00",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "client_id": "",
+      "client_name": "",
+      "code": "RPG",
+      "color_space": "ACEScg",
+      "coordinator_id": null,
+      "coordinator_name": "",
+      "created_at": "2026-11-18T15:26:56.635702Z",
+      "delivery_date": null,
+      "description": "",
+      "fps": "24.000",
+      "id": "a366d068-6875-4f7a-840f-2304555f9d75",
+      "in_progress_shots": 0,
+      "name": "Shot grades",
+      "project_code": "RPG",
+      "resolution": "4096x2160 (4K DCI)",
+      "review_burn_ins": false,
+      "review_grades": true,
+      "review_look": "",
+      "review_source_folder": "",
+      "review_source_root": "",
+      "review_view": "",
+      "start_date": null,
+      "status": "In Progress",
+      "supervisor_id": null,
+      "supervisor_name": "",
+      "thumbnail_url": "",
+      "total_assets": 0,
+      "total_shots": 0,
+      "type": "Feature Film",
+      "updated_at": "2026-11-18T15:26:57.853162Z",
+      "uuid": "a366d068-6875-4f7a-840f-2304555f9d75",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": [],
+      "workflow_type": "standard"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/"
+    },
+    "status": 200
+  },
+  "project_switch_on_200": {
+    "body": {
+      "approve_task_on_version_approval": false,
+      "aspect_ratio": "2.39:1",
+      "budget_usd": "0.00",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "client_id": "",
+      "client_name": "",
+      "code": "RPG",
+      "color_space": "ACEScg",
+      "coordinator": null,
+      "delivery_date": null,
+      "description": "",
+      "fps": "24.000",
+      "name": "Shot grades",
+      "resolution": "4096x2160 (4K DCI)",
+      "review_burn_ins": false,
+      "review_grades": true,
+      "review_look": "",
+      "review_source_folder": "",
+      "review_source_root": "",
+      "review_view": "",
+      "start_date": null,
+      "status": "In Progress",
+      "supervisor": null,
+      "thumbnail_url": "",
+      "type": "Feature Film",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": []
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "review_grades": true
+      },
+      "method": "PATCH",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/"
+    },
+    "status": 200
+  },
+  "remake_all_200": {
+    "body": {
+      "queued": 1,
+      "skipped_busy": 0,
+      "skipped_missing": 0,
+      "skipped_sequence": 0,
+      "skipped_storage": 0
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "POST",
+      "params": null,
+      "path": "/api/v1/projects/a366d068-6875-4f7a-840f-2304555f9d75/review-copies/remake/"
+    },
+    "status": 200
+  },
+  "shot_grade_200": {
+    "body": {
+      "assigned_artist": null,
+      "client_approved": false,
+      "code": "RPG_SH0030",
+      "current_version": "v001",
+      "current_version_id": "3070f8a7-44fd-45b1-858d-bbdf88ba59cc",
+      "description": "",
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "grade": {
+        "offset": [
+          0.0,
+          0.0,
+          0.005
+        ],
+        "power": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "saturation": 1.1,
+        "slope": [
+          0.95,
+          1.0,
+          1.08
+        ]
+      },
+      "handle_frames": 8,
+      "name": "Shot 3",
+      "pipeline": {
+        "animation": "Not Started",
+        "comp": "Not Started",
+        "fx": "Not Started",
+        "layout": "Not Started",
+        "lighting": "Not Started"
+      },
+      "sequence_code": "RPG_SQ010",
+      "status": "Not Started",
+      "supervisor_approved": false,
+      "thumbnail_url": "",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "grade": {
+          "offset": [
+            0,
+            0,
+            0.005
+          ],
+          "power": [
+            1,
+            1,
+            1
+          ],
+          "saturation": 1.1,
+          "slope": [
+            0.95,
+            1,
+            1.08
+          ]
+        }
+      },
+      "method": "PATCH",
+      "params": null,
+      "path": "/api/v1/shots/3e1d1ee7-7873-4467-8e31-b8a23a495a2b/"
+    },
+    "status": 200
+  },
+  "shot_grade_bad_400": {
+    "body": {
+      "error": {
+        "code": "validation_error"
+      },
+      "grade": [
+        "slope must be three numbers: red, green and blue."
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "grade": {
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "power": [
+            0,
+            1,
+            1
+          ],
+          "saturation": 1,
+          "slope": [
+            1,
+            1
+          ]
+        }
+      },
+      "method": "PATCH",
+      "params": null,
+      "path": "/api/v1/shots/3e1d1ee7-7873-4467-8e31-b8a23a495a2b/"
+    },
+    "status": 400
+  },
+  "shot_imported": {
+    "body": {
+      "assigned_artist_id": null,
+      "assigned_artist_name": "",
+      "client_approved": false,
+      "code": "RPG_SH0010",
+      "created_at": "2026-11-18T15:26:57.294807Z",
+      "current_version": "v001",
+      "current_version_id": "69a7d9cb-c6e7-4b18-8031-b297e1522a9e",
+      "description": "",
+      "episode_id": null,
+      "frame_count": 100,
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "grade": {
+        "offset": [
+          0.01,
+          0.0,
+          -0.01
+        ],
+        "power": [
+          1.0,
+          1.0,
+          1.05
+        ],
+        "saturation": 0.9,
+        "slope": [
+          1.1,
+          1.0,
+          0.9
+        ]
+      },
+      "grade_source": "reel1.ccc (SH0010)",
+      "grade_updated_at": "2026-11-18T15:26:57.659251Z",
+      "handle_frames": 8,
+      "id": "e8a33482-70e8-4438-af31-3810de49eccf",
+      "name": "Shot 1",
+      "pipeline": {
+        "animation": "Not Started",
+        "comp": "Not Started",
+        "fx": "Not Started",
+        "layout": "Not Started",
+        "lighting": "Not Started"
+      },
+      "project_code": "RPG",
+      "project_id": "a366d068-6875-4f7a-840f-2304555f9d75",
+      "sequence_code": "RPG_SQ010",
+      "sequence_id": "8006a146-9cde-41cd-a529-48edc131a2c9",
+      "show_id": null,
+      "status": "Not Started",
+      "supervisor_approved": false,
+      "thumbnail_url": "",
+      "updated_at": "2026-11-18T15:26:57.661651Z",
+      "uuid": "e8a33482-70e8-4438-af31-3810de49eccf",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/shots/e8a33482-70e8-4438-af31-3810de49eccf/"
+    },
+    "status": 200
+  },
+  "shot_no_grade": {
+    "body": {
+      "assigned_artist_id": null,
+      "assigned_artist_name": "",
+      "client_approved": false,
+      "code": "RPG_SH0030",
+      "created_at": "2026-11-18T15:26:57.444881Z",
+      "current_version": "v001",
+      "current_version_id": "3070f8a7-44fd-45b1-858d-bbdf88ba59cc",
+      "description": "",
+      "episode_id": null,
+      "frame_count": 100,
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "grade": null,
+      "grade_source": "",
+      "grade_updated_at": null,
+      "handle_frames": 8,
+      "id": "3e1d1ee7-7873-4467-8e31-b8a23a495a2b",
+      "name": "Shot 3",
+      "pipeline": {
+        "animation": "Not Started",
+        "comp": "Not Started",
+        "fx": "Not Started",
+        "layout": "Not Started",
+        "lighting": "Not Started"
+      },
+      "project_code": "RPG",
+      "project_id": "a366d068-6875-4f7a-840f-2304555f9d75",
+      "sequence_code": "RPG_SQ010",
+      "sequence_id": "8006a146-9cde-41cd-a529-48edc131a2c9",
+      "show_id": null,
+      "status": "Not Started",
+      "supervisor_approved": false,
+      "thumbnail_url": "",
+      "updated_at": "2026-11-18T15:26:57.444889Z",
+      "uuid": "3e1d1ee7-7873-4467-8e31-b8a23a495a2b",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/shots/3e1d1ee7-7873-4467-8e31-b8a23a495a2b/"
+    },
+    "status": 200
+  },
+  "shot_regrade_200": {
+    "body": {
+      "assigned_artist": null,
+      "client_approved": false,
+      "code": "RPG_SH0010",
+      "current_version": "v001",
+      "current_version_id": "69a7d9cb-c6e7-4b18-8031-b297e1522a9e",
+      "description": "",
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "grade": {
+        "offset": [
+          0.02,
+          0.0,
+          -0.02
+        ],
+        "power": [
+          1.0,
+          1.0,
+          1.1
+        ],
+        "saturation": 0.85,
+        "slope": [
+          1.2,
+          1.0,
+          0.85
+        ]
+      },
+      "handle_frames": 8,
+      "name": "Shot 1",
+      "pipeline": {
+        "animation": "Not Started",
+        "comp": "Not Started",
+        "fx": "Not Started",
+        "layout": "Not Started",
+        "lighting": "Not Started"
+      },
+      "sequence_code": "RPG_SQ010",
+      "status": "Not Started",
+      "supervisor_approved": false,
+      "thumbnail_url": "",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": {
+        "grade": {
+          "offset": [
+            0.02,
+            0,
+            -0.02
+          ],
+          "power": [
+            1,
+            1,
+            1.1
+          ],
+          "saturation": 0.85,
+          "slope": [
+            1.2,
+            1.0,
+            0.85
+          ]
+        }
+      },
+      "method": "PATCH",
+      "params": null,
+      "path": "/api/v1/shots/e8a33482-70e8-4438-af31-3810de49eccf/"
+    },
+    "status": 200
+  },
+  "shot_typed": {
+    "body": {
+      "assigned_artist_id": null,
+      "assigned_artist_name": "",
+      "client_approved": false,
+      "code": "RPG_SH0030",
+      "created_at": "2026-11-18T15:26:57.444881Z",
+      "current_version": "v001",
+      "current_version_id": "3070f8a7-44fd-45b1-858d-bbdf88ba59cc",
+      "description": "",
+      "episode_id": null,
+      "frame_count": 100,
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "grade": {
+        "offset": [
+          0.0,
+          0.0,
+          0.005
+        ],
+        "power": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "saturation": 1.1,
+        "slope": [
+          0.95,
+          1.0,
+          1.08
+        ]
+      },
+      "grade_source": "",
+      "grade_updated_at": "2026-11-18T15:26:57.559183Z",
+      "handle_frames": 8,
+      "id": "3e1d1ee7-7873-4467-8e31-b8a23a495a2b",
+      "name": "Shot 3",
+      "pipeline": {
+        "animation": "Not Started",
+        "comp": "Not Started",
+        "fx": "Not Started",
+        "layout": "Not Started",
+        "lighting": "Not Started"
+      },
+      "project_code": "RPG",
+      "project_id": "a366d068-6875-4f7a-840f-2304555f9d75",
+      "sequence_code": "RPG_SQ010",
+      "sequence_id": "8006a146-9cde-41cd-a529-48edc131a2c9",
+      "show_id": null,
+      "status": "Not Started",
+      "supervisor_approved": false,
+      "thumbnail_url": "",
+      "updated_at": "2026-11-18T15:26:57.561364Z",
+      "uuid": "3e1d1ee7-7873-4467-8e31-b8a23a495a2b",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/shots/3e1d1ee7-7873-4467-8e31-b8a23a495a2b/"
+    },
+    "status": 200
+  },
+  "version_movie_not_graded": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPG_SH0020_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-18T15:26:57.427860Z",
+      "department": "",
+      "end_frame": 1004,
+      "entity_code": "RPG_SH0020",
+      "entity_id": "5a41fefc-1263-433a-8a25-1658270afe72",
+      "entity_name": "Shot 2",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "6c80d7ae-3b8a-44fd-a737-4cdf60e44218",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPG",
+      "project_id": "a366d068-6875-4f7a-840f-2304555f9d75",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "",
+        "created_by": {
+          "id": "965797a9-29dd-4a48-932f-eb7993cc28ed",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 24,
+        "filmstrip_url": "/api/v1/review-media/66f4388f-ef3b-433e-8fc6-1988746c4847/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-18T15:27:02.263998Z",
+        "frames_until": null,
+        "id": "66f4388f-ef3b-433e-8fc6-1988746c4847",
+        "kind": "movie",
+        "links_expire_at": "2026-11-18T16:27:02.336090Z",
+        "probe": {
+          "burn_ins": false,
+          "colour": "as_stored",
+          "colour_skipped": null,
+          "duration_seconds": 1.0,
+          "first_frame": null,
+          "fps": 24.0,
+          "frames": 24,
+          "grade": null,
+          "grade_skipped": null,
+          "grade_source": "",
+          "has_audio": false,
+          "height": 360,
+          "last_frame": null,
+          "ocio": null,
+          "video_codec": "h264",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/66f4388f-ef3b-433e-8fc6-1988746c4847/proxy/?token=SAMPLE",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T15:27:01.200729Z",
+        "remake_of": null,
+        "sequence": null,
+        "source": "upload",
+        "source_name": "graded.mp4",
+        "source_size": 90524,
+        "started_at": "2026-11-18T15:27:01.211231Z",
+        "status": "ready",
+        "storage_readable": false,
+        "thumbnail_url": "/api/v1/review-media/66f4388f-ef3b-433e-8fc6-1988746c4847/thumbnail/?token=SAMPLE",
+        "version_id": "6c80d7ae-3b8a-44fd-a737-4cdf60e44218"
+      },
+      "review_media_job": null,
+      "shot_id": "5a41fefc-1263-433a-8a25-1658270afe72",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "f4ffd94e-bb08-4ef6-9a51-0a964275efc7",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-18T15:26:57.427867Z",
+      "uuid": "6c80d7ae-3b8a-44fd-a737-4cdf60e44218",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/6c80d7ae-3b8a-44fd-a737-4cdf60e44218/"
+    },
+    "status": 200
+  },
+  "version_sequence_graded": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPG_SH0010_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-18T15:26:57.367769Z",
+      "department": "",
+      "end_frame": 1004,
+      "entity_code": "RPG_SH0010",
+      "entity_id": "e8a33482-70e8-4438-af31-3810de49eccf",
+      "entity_name": "Shot 1",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "69a7d9cb-c6e7-4b18-8031-b297e1522a9e",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPG",
+      "project_id": "a366d068-6875-4f7a-840f-2304555f9d75",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "",
+        "created_by": {
+          "id": "965797a9-29dd-4a48-932f-eb7993cc28ed",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 4,
+        "filmstrip_url": "/api/v1/review-media/41ee6897-9bf1-4a9b-a8fc-06c7e61b97e8/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-18T15:27:00.858136Z",
+        "frames_until": "2026-12-02T15:27:00.858136Z",
+        "id": "41ee6897-9bf1-4a9b-a8fc-06c7e61b97e8",
+        "kind": "sequence",
+        "links_expire_at": "2026-11-18T16:27:01.054492Z",
+        "probe": {
+          "burn_ins": false,
+          "colour": "ocio",
+          "colour_skipped": null,
+          "duration_seconds": 0.167,
+          "first_frame": 1001,
+          "fps": 24.0,
+          "frames": 4,
+          "grade": {
+            "offset": [
+              0.01,
+              0.0,
+              -0.01
+            ],
+            "power": [
+              1.0,
+              1.0,
+              1.05
+            ],
+            "saturation": 0.9,
+            "slope": [
+              1.1,
+              1.0,
+              0.9
+            ]
+          },
+          "grade_skipped": null,
+          "grade_source": "reel1.ccc (SH0010)",
+          "has_audio": false,
+          "height": 360,
+          "last_frame": 1004,
+          "ocio": {
+            "config": "studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+            "display": "sRGB - Display",
+            "input": "ACEScg",
+            "look": "",
+            "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
+          },
+          "video_codec": "exr",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/41ee6897-9bf1-4a9b-a8fc-06c7e61b97e8/proxy/?token=SAMPLE",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T15:26:58.004089Z",
+        "remake_of": null,
+        "sequence": {
+          "extension": "exr",
+          "first_frame": 1001,
+          "frames_received": 4,
+          "last_frame": 1004,
+          "name": "rpg_comp"
+        },
+        "source": "upload",
+        "source_name": "rpg_comp.[1001-1004].exr",
+        "source_size": 11083808,
+        "started_at": "2026-11-18T15:26:58.014760Z",
+        "status": "ready",
+        "storage_readable": false,
+        "thumbnail_url": "/api/v1/review-media/41ee6897-9bf1-4a9b-a8fc-06c7e61b97e8/thumbnail/?token=SAMPLE",
+        "version_id": "69a7d9cb-c6e7-4b18-8031-b297e1522a9e"
+      },
+      "review_media_job": null,
+      "shot_id": "e8a33482-70e8-4438-af31-3810de49eccf",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "ea3a406c-df95-4794-8fa5-3fe276d24e60",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-18T15:26:57.367780Z",
+      "uuid": "69a7d9cb-c6e7-4b18-8031-b297e1522a9e",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/69a7d9cb-c6e7-4b18-8031-b297e1522a9e/"
+    },
+    "status": 200
+  },
+  "version_sequence_no_grading_space": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPG_SH0030_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-18T15:26:57.475983Z",
+      "department": "",
+      "end_frame": 1004,
+      "entity_code": "RPG_SH0030",
+      "entity_id": "3e1d1ee7-7873-4467-8e31-b8a23a495a2b",
+      "entity_name": "Shot 3",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "3070f8a7-44fd-45b1-858d-bbdf88ba59cc",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPG",
+      "project_id": "a366d068-6875-4f7a-840f-2304555f9d75",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "",
+        "created_by": {
+          "id": "965797a9-29dd-4a48-932f-eb7993cc28ed",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 4,
+        "filmstrip_url": "/api/v1/review-media/5924478e-cbf7-4c8e-a971-31a98f36e011/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-18T15:27:08.622178Z",
+        "frames_until": "2026-12-02T15:27:08.622178Z",
+        "id": "5924478e-cbf7-4c8e-a971-31a98f36e011",
+        "kind": "sequence",
+        "links_expire_at": "2026-11-18T16:27:08.694644Z",
+        "probe": {
+          "burn_ins": false,
+          "colour": "ocio",
+          "colour_skipped": null,
+          "duration_seconds": 0.167,
+          "first_frame": 1001,
+          "fps": 24.0,
+          "frames": 4,
+          "grade": null,
+          "grade_skipped": "no_grading_space",
+          "grade_source": "",
+          "has_audio": false,
+          "height": 360,
+          "last_frame": 1004,
+          "ocio": {
+            "config": "studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+            "display": "sRGB - Display",
+            "input": "ACEScg",
+            "look": "",
+            "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
+          },
+          "video_codec": "exr",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/5924478e-cbf7-4c8e-a971-31a98f36e011/proxy/?token=SAMPLE",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T15:27:05.544320Z",
+        "remake_of": null,
+        "sequence": {
+          "extension": "exr",
+          "first_frame": 1001,
+          "frames_received": 4,
+          "last_frame": 1004,
+          "name": "rpg_comp"
+        },
+        "source": "upload",
+        "source_name": "rpg_comp.[1001-1004].exr",
+        "source_size": 11083808,
+        "started_at": "2026-11-18T15:27:05.557267Z",
+        "status": "ready",
+        "storage_readable": false,
+        "thumbnail_url": "/api/v1/review-media/5924478e-cbf7-4c8e-a971-31a98f36e011/thumbnail/?token=SAMPLE",
+        "version_id": "3070f8a7-44fd-45b1-858d-bbdf88ba59cc"
+      },
+      "review_media_job": null,
+      "shot_id": "3e1d1ee7-7873-4467-8e31-b8a23a495a2b",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "1199461e-aa5e-4ee0-bee2-884599d54c6f",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-18T15:26:57.475990Z",
+      "uuid": "3070f8a7-44fd-45b1-858d-bbdf88ba59cc",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/3070f8a7-44fd-45b1-858d-bbdf88ba59cc/"
+    },
+    "status": 200
+  },
+  "version_sequence_regraded": {
+    "body": {
+      "artist_id": null,
+      "artist_name": "",
+      "asset_id": null,
+      "changelog": "",
+      "code": "RPG_SH0010_COMP_V001",
+      "color_space": "ACEScg",
+      "created_at": "2026-11-18T15:26:57.367769Z",
+      "department": "",
+      "end_frame": 1004,
+      "entity_code": "RPG_SH0010",
+      "entity_id": "e8a33482-70e8-4438-af31-3810de49eccf",
+      "entity_name": "Shot 1",
+      "entity_type": "Shot",
+      "file_path": "",
+      "file_size_mb": "0.00",
+      "fps": "24.000",
+      "frame_range": "",
+      "id": "69a7d9cb-c6e7-4b18-8031-b297e1522a9e",
+      "is_archived": false,
+      "is_hero": false,
+      "is_published": false,
+      "notes": "",
+      "project_code": "RPG",
+      "project_id": "a366d068-6875-4f7a-840f-2304555f9d75",
+      "published_at": null,
+      "published_by_id": null,
+      "publishing_info": {},
+      "resolution": "4096x2160",
+      "review_media": {
+        "attempts": 1,
+        "color_space": "",
+        "created_by": {
+          "id": "965797a9-29dd-4a48-932f-eb7993cc28ed",
+          "name": "user@example.test"
+        },
+        "error_code": "",
+        "error_message": "",
+        "filmstrip_tiles": 4,
+        "filmstrip_url": "/api/v1/review-media/e7bb76b2-639a-4e7a-985e-f25e28994823/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-18T15:27:05.306522Z",
+        "frames_until": "2026-12-02T15:27:00.858136Z",
+        "id": "e7bb76b2-639a-4e7a-985e-f25e28994823",
+        "kind": "sequence",
+        "links_expire_at": "2026-11-18T16:27:05.394635Z",
+        "probe": {
+          "burn_ins": false,
+          "colour": "ocio",
+          "colour_skipped": null,
+          "duration_seconds": 0.167,
+          "first_frame": 1001,
+          "fps": 24.0,
+          "frames": 4,
+          "grade": {
+            "offset": [
+              0.02,
+              0.0,
+              -0.02
+            ],
+            "power": [
+              1.0,
+              1.0,
+              1.1
+            ],
+            "saturation": 0.85,
+            "slope": [
+              1.2,
+              1.0,
+              0.85
+            ]
+          },
+          "grade_skipped": null,
+          "grade_source": "",
+          "has_audio": false,
+          "height": 360,
+          "last_frame": 1004,
+          "ocio": {
+            "config": "studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+            "display": "sRGB - Display",
+            "input": "ACEScg",
+            "look": "",
+            "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
+          },
+          "video_codec": "exr",
+          "width": 640
+        },
+        "proxy_url": "/api/v1/review-media/e7bb76b2-639a-4e7a-985e-f25e28994823/proxy/?token=SAMPLE",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T15:27:02.486617Z",
+        "remake_of": "41ee6897-9bf1-4a9b-a8fc-06c7e61b97e8",
+        "sequence": {
+          "extension": "exr",
+          "first_frame": 1001,
+          "frames_received": 4,
+          "last_frame": 1004,
+          "name": "rpg_comp"
+        },
+        "source": "upload",
+        "source_name": "rpg_comp.[1001-1004].exr",
+        "source_size": 11083808,
+        "started_at": "2026-11-18T15:27:02.498378Z",
+        "status": "ready",
+        "storage_readable": false,
+        "thumbnail_url": "/api/v1/review-media/e7bb76b2-639a-4e7a-985e-f25e28994823/thumbnail/?token=SAMPLE",
+        "version_id": "69a7d9cb-c6e7-4b18-8031-b297e1522a9e"
+      },
+      "review_media_job": null,
+      "shot_id": "e8a33482-70e8-4438-af31-3810de49eccf",
+      "source_file_url": "",
+      "start_frame": 1001,
+      "status": "Pending Review",
+      "tags": [],
+      "task_id": "ea3a406c-df95-4794-8fa5-3fe276d24e60",
+      "thumbnail_url": "",
+      "updated_at": "2026-11-18T15:26:57.367780Z",
+      "uuid": "69a7d9cb-c6e7-4b18-8031-b297e1522a9e",
+      "version_index": 1,
+      "version_number": "v001",
+      "video_url": ""
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "request": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/api/v1/versions/69a7d9cb-c6e7-4b18-8031-b297e1522a9e/"
+    },
+    "status": 200
+  }
+}

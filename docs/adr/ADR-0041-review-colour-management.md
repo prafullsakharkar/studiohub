@@ -66,7 +66,17 @@ It carries the ASWF built-in configs (`ocio://…`), so no config file has to be
 - The web image can read the config, so a studio config must be mounted into the web container as well as `celery-media`.
 - The LUT approximates the transform: a 129³ cube would halve the worst error on extreme HDR greens, at four times the size
   (cube size is a constant, `transcode/colour.py`).
-- Only the sRGB display (Q-RP-70): no P3 or HDR copies, no 10-bit copies, no per-shot grades (CDL).
+- Only the sRGB display (Q-RP-70): no P3 or HDR copies, no 10-bit copies. Per-shot grades came with RP-20 (below).
+
+## Note: per-shot grades (review-pipeline RP-20, 2026-11-18)
+
+A shot's ASC CDL (C-RP-52 to C-RP-54) is baked into the same LUT, as a look in the config's grading space (its
+`color_timing` role when log encoded, ACEScct in the ACES configs) before the project's look, as in the DI (Q-RP-94). Only
+while the project's `review_grades` is on, and only for copies this ADR already transforms (Q-RP-95). The grade is added to
+a copy of the config (`Config.CreateFromStream(config.serialize())`); the shared config is never changed. A graded LUT is
+per shot and about 7.5 MB, so it is baked into the job's folder and removed with it, not cached: about 0.5 s per job. A
+config without a log `color_timing` space makes the copy without the grade (`grade_skipped`). The decisions above and the
+trust model are unchanged, so this is a note, not a new ADR.
 
 ## When to revisit
 

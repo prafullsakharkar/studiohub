@@ -461,6 +461,8 @@ class TestProjectCopies:
             "out_of_date": 0,
             "sequences_out_of_date": 0,
             "colour_out_of_date": 0,
+            "review_grades": False,  # RP-20 (C-RP-53)
+            "grade_out_of_date": 0,
         }
         self._switch(project)
         body = _counts(self._copies(producer, project).json())
@@ -469,6 +471,8 @@ class TestProjectCopies:
             "out_of_date": 2,
             "sequences_out_of_date": 1,
             "colour_out_of_date": 0,
+            "review_grades": False,  # RP-20 (C-RP-53)
+            "grade_out_of_date": 0,
         }
         ReviewMedia.objects.filter(pk=movie.pk).update(probe={**movie.probe, "burn_ins": True})
         assert self._copies(producer, project).json()["out_of_date"] == 1
@@ -479,6 +483,8 @@ class TestProjectCopies:
             "out_of_date": 1,
             "sequences_out_of_date": 0,
             "colour_out_of_date": 0,
+            "review_grades": False,  # RP-20 (C-RP-53)
+            "grade_out_of_date": 0,
         }
 
     def test_remake_the_ones_that_differ(

@@ -74,6 +74,13 @@ class Project(EntityModel):
     # OpenColorIO config's, for its sRGB display.
     review_view = models.CharField(max_length=100, blank=True, default="")
     review_look = models.CharField(max_length=100, blank=True, default="")
+    review_grades = models.BooleanField(
+        default=False,
+        help_text=(
+            "When on, colour-managed review copies of a shot's versions carry the shot's grade, its "
+            "ASC CDL (review pipeline RP-20, C-RP-53). Off by default."
+        ),
+    )
     # RP-18 (C-RP-47, Q-RP-83): where on studio storage this project's renders may be read from for
     # review copies of versions still in review. ``review_source_root`` is a storage root's code (as in
     # ``PUBLISHING_STORAGE_MOUNTS``), ``review_source_folder`` a relative folder on it; both blank = off.

@@ -36,6 +36,8 @@ export interface Project {
   review_view: string;
   /** RP-15 (C-RP-39): the look applied with the view; blank = none. */
   review_look: string;
+  /** RP-20 (C-RP-53): colour-managed review copies carry their shot's grade (ASC CDL). Off by default. */
+  review_grades: boolean;
   /**
    * RP-18 (C-RP-47): the storage root and the folder on it where the studio's renders lie, so a version still in review
    * can have its copy read by path; both blank = off. Only for those who may change the project (`project.update`); left
@@ -84,6 +86,7 @@ export interface ProjectInput {
   /** RP-15: each must be a name the studio's colour config knows (400 otherwise); `color_space` too, once changed. */
   review_view?: string;
   review_look?: string;
+  review_grades?: boolean;
   /** RP-18: the root must be one the server reads; the folder a relative folder on it (400 otherwise). Both blank = off. */
   review_source_root?: string;
   review_source_folder?: string;

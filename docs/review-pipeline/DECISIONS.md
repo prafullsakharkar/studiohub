@@ -153,6 +153,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-17 Review copies from studio storage | planned in [PLAN.md](PLAN.md#rp-17-review-copies-from-studio-storage); answered (Q-RP-77 to Q-RP-81 = A); committed `d06c0572`, merged into `develop` and `main`, released in v4.14.0 ([rp-17-verification.md](rp-17-verification.md)) |
 | RP-18 Review copies before approval | planned in [PLAN.md](PLAN.md#rp-18-review-copies-before-approval); answered (Q-RP-82 to Q-RP-86 = A); committed `bfaf6466`, merged into `develop` and `main`, released in v4.15.0 ([rp-18-verification.md](rp-18-verification.md)) |
 | RP-19 Copy ready to review | planned in [PLAN.md](PLAN.md#rp-19-copy-ready-to-review); answered (Q-RP-87 to Q-RP-91 = A); committed `d17c3ccd`, merged into `develop` and `main`, released in v4.16.0 ([rp-19-verification.md](rp-19-verification.md)) |
+| RP-20 Per-shot grades on review copies | planned in [PLAN.md](PLAN.md#rp-20-per-shot-grades-on-review-copies); answered (Q-RP-92 to Q-RP-96 = A); committed `10f16b62` ([rp-20-verification.md](rp-20-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
@@ -226,3 +227,16 @@ The owner took every recommendation of [PLAN.md, RP-19 questions](PLAN.md#questi
 | Q-RP-89 | **A** | The reviewer is never told about a failed copy. |
 | Q-RP-90 | **A** | The version's artist gets `review_media_ready` or `review_media_failed` when someone else made the copy; the task's assignee does not. |
 | Q-RP-91 | **A** | `review_media_to_review` can be muted. |
+
+## RP-20 answers
+
+The owner took every recommendation of [PLAN.md, RP-20 questions](PLAN.md#questions-before-rp-20-starts) on 2026-11-18 ("all A").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-92 | **A** | A grade lives on the shot; every version of the shot gets it. No per-version grade. |
+| Q-RP-93 | **A** | Grades are typed on the shot, or imported from a client's `.cc`, `.ccc` or `.cdl` file on the project, matched to shot codes, with a dry run first. |
+| Q-RP-94 | **A** | The grade is applied in the config's grading space (`color_timing`, ACEScct in the ACES configs), before the project's look. |
+| Q-RP-95 | **A** | Only colour-managed copies get it, and only while the project's switch is on (off by default). |
+| Q-RP-96 | **A** | Copies made with another grade are counted in the review-copies notice (reason `grade`) and remade by the project remake, not automatically. |
+

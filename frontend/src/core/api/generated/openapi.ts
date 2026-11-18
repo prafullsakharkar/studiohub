@@ -7243,6 +7243,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{uuid}/grades/import/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Shot grades from a client's .cc, .ccc or .cdl file; a dry run unless ``dry_run`` is false
+         *     (RP-20, C-RP-54). Only the shots the caller may update are matched (CR-46).
+         */
+        post: operations["v1_projects_grades_import_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{uuid}/restore/": {
         parameters: {
             query?: never;
@@ -16496,6 +16516,43 @@ export interface components {
             /** Format: email */
             email: string;
         };
+        GradeImport: {
+            dry_run: boolean;
+            file_name: string;
+            corrections: number;
+            matched: components["schemas"]["GradeImportMatched"][];
+            unchanged: components["schemas"]["GradeImportUnchanged"][];
+            unmatched: string[];
+            invalid: components["schemas"]["GradeImportInvalid"][];
+            applied: number;
+        };
+        GradeImportInvalid: {
+            id: string;
+            field: string;
+            message: string;
+        };
+        GradeImportMatched: {
+            /** @description The correction's id in the file. */
+            id: string;
+            shot: components["schemas"]["GradeImportShot"];
+            old: components["schemas"]["ShotGrade"] | null;
+            new: components["schemas"]["ShotGrade"];
+        };
+        GradeImportRequest: {
+            /** Format: uri */
+            file: string;
+            /** @default true */
+            dry_run: boolean;
+        };
+        GradeImportShot: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+        };
+        GradeImportUnchanged: {
+            id: string;
+            shot: components["schemas"]["GradeImportShot"];
+        };
         /** @description Base serializer for Identity models. */
         Group: {
             /**
@@ -20698,6 +20755,8 @@ export interface components {
             review_burn_ins?: boolean;
             review_view?: string;
             review_look?: string;
+            /** @description When on, colour-managed review copies of a shot's versions carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53). Off by default. */
+            review_grades?: boolean;
             review_source_root?: string;
             review_source_folder?: string;
             /** Format: date */
@@ -21287,6 +21346,10 @@ export interface components {
             supervisor_approved?: boolean;
             client_approved?: boolean;
             readonly pipeline?: unknown;
+            readonly grade?: components["schemas"]["ShotGrade"] | null;
+            grade_source?: string;
+            /** Format: date-time */
+            grade_updated_at?: string | null;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -21344,6 +21407,7 @@ export interface components {
             client_approved?: boolean;
             /** @description Pipeline stage statuses */
             pipeline?: unknown;
+            grade?: unknown;
         };
         /** @description Update serializer for shows. */
         PatchedShowUpdate: {
@@ -25145,6 +25209,8 @@ export interface components {
             review_burn_ins?: boolean;
             review_view?: string;
             review_look?: string;
+            /** @description When on, colour-managed review copies of a shot's versions carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53). Off by default. */
+            review_grades?: boolean;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25222,6 +25288,8 @@ export interface components {
             review_burn_ins?: boolean;
             review_view?: string;
             review_look?: string;
+            /** @description When on, colour-managed review copies of a shot's versions carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53). Off by default. */
+            review_grades?: boolean;
             review_source_root?: string;
             review_source_folder?: string;
             /** Format: date */
@@ -25311,6 +25379,8 @@ export interface components {
             review_burn_ins?: boolean;
             review_view?: string;
             review_look?: string;
+            /** @description When on, colour-managed review copies of a shot's versions carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53). Off by default. */
+            review_grades?: boolean;
             review_source_root?: string;
             review_source_folder?: string;
             /** Format: date */
@@ -25596,6 +25666,8 @@ export interface components {
             review_burn_ins?: boolean;
             review_view?: string;
             review_look?: string;
+            /** @description When on, colour-managed review copies of a shot's versions carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53). Off by default. */
+            review_grades?: boolean;
             review_source_root?: string;
             review_source_folder?: string;
             /** Format: date */
@@ -26404,6 +26476,8 @@ export interface components {
             out_of_date: number;
             sequences_out_of_date: number;
             colour_out_of_date: number;
+            review_grades: boolean;
+            grade_out_of_date: number;
             differing: components["schemas"]["ReviewCopyDiffering"][];
             differing_more: number;
         };
@@ -26447,7 +26521,7 @@ export interface components {
              * @enum {string}
              */
             source: "upload" | "published_file" | "storage_path";
-            why: ("burn_ins" | "colour")[];
+            why: ("burn_ins" | "colour" | "grade")[];
         };
         /** @description ``POST publishing/files/{id}/review-copy/`` (RP-17, C-RP-44): the colour space, as for an upload. */
         ReviewCopyFromFile: {
@@ -26697,6 +26771,14 @@ export interface components {
              * @enum {string|null}
              */
             colour_skipped: "unknown_colour_space" | "colour_config_unavailable" | null;
+            grade: components["schemas"]["ShotGrade"] | null;
+            grade_source: string;
+            /**
+             * @description * `no_grading_space` - no_grading_space
+             *     * `colour_config_unavailable` - colour_config_unavailable
+             * @enum {string|null}
+             */
+            grade_skipped: "no_grading_space" | "colour_config_unavailable" | null;
         };
         ReviewMediaSequence: {
             name: string;
@@ -27529,6 +27611,10 @@ export interface components {
             supervisor_approved?: boolean;
             client_approved?: boolean;
             readonly pipeline: unknown;
+            readonly grade: components["schemas"]["ShotGrade"] | null;
+            grade_source?: string;
+            /** Format: date-time */
+            grade_updated_at?: string | null;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -27539,6 +27625,14 @@ export interface components {
              * @description Last update timestamp.
              */
             readonly updated_at: string;
+        };
+        /** @description A shot's grade, its ASC CDL (RP-20, C-RP-52): three numbers per channel, red, green, blue. */
+        ShotGrade: {
+            slope: number[];
+            offset: number[];
+            power: number[];
+            /** Format: double */
+            saturation: number;
         };
         /** @description Base serializer for read operations. */
         ShotList: {
@@ -27590,6 +27684,10 @@ export interface components {
             supervisor_approved?: boolean;
             client_approved?: boolean;
             readonly pipeline: unknown;
+            readonly grade: components["schemas"]["ShotGrade"] | null;
+            grade_source?: string;
+            /** Format: date-time */
+            grade_updated_at?: string | null;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -27647,6 +27745,7 @@ export interface components {
             client_approved?: boolean;
             /** @description Pipeline stage statuses */
             pipeline?: unknown;
+            grade?: unknown;
         };
         /** @description Create serializer accepting the frontend Show contract. */
         ShowCreate: {
@@ -46216,6 +46315,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectList"];
+                };
+            };
+        };
+    };
+    v1_projects_grades_import_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["GradeImportRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GradeImport"];
                 };
             };
         };
