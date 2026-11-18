@@ -89,6 +89,12 @@ class Shot(EntityModel):
         help_text="Pipeline stage statuses",
     )
 
+    # RP-20 (C-RP-52, Q-RP-92): the shot's grade, its ASC CDL (``validators/grade.py``); null = none.
+    # ``grade_source`` names the file and correction it was imported from, blank when typed.
+    grade = models.JSONField(null=True, blank=True, default=None)
+    grade_source = models.CharField(max_length=255, blank=True, default="")
+    grade_updated_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         db_table = "production_shot"
         ordering = ("code",)

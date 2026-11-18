@@ -7,6 +7,7 @@ from typing import Any
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from apps.production.api.serializers.shot.base import ShotGradeSerializer
 from apps.production.models import ReviewMedia
 from apps.production.selectors.review_media import ReviewMediaSelector
 from apps.production.services import review_media_links
@@ -14,7 +15,7 @@ from apps.production.transcode import sequence as frames
 
 #: what the probe shows (``frame_rate``, the exact rational, stays internal)
 PROBE_KEYS = ("width", "height", "fps", "frames", "duration_seconds", "video_codec", "has_audio")
-#: added by RP-12 (C-RP-32) and RP-15 (C-RP-40), with what a row made before them answers
+#: added by RP-12 (C-RP-32), RP-15 (C-RP-40) and RP-20 (C-RP-53), with what a row made before them answers
 PROBE_DEFAULTS = {
     "first_frame": None,
     "last_frame": None,
@@ -22,6 +23,10 @@ PROBE_DEFAULTS = {
     "burn_ins": False,
     "ocio": None,
     "colour_skipped": None,
+    # RP-20 (C-RP-53)
+    "grade": None,
+    "grade_source": "",
+    "grade_skipped": None,
 }
 
 #: RP-18 (C-RP-49): where a copy is read from
@@ -57,6 +62,12 @@ class ReviewMediaProbeSerializer(serializers.Serializer[Any]):
     ocio = ReviewMediaColourSerializer(allow_null=True)
     colour_skipped = serializers.ChoiceField(
         choices=("unknown_colour_space", "colour_config_unavailable"), allow_null=True
+    )
+    #: RP-20 (C-RP-53): the shot's grade the copy was made with, where it came from, or why none
+    grade = ShotGradeSerializer(allow_null=True)
+    grade_source = serializers.CharField(allow_blank=True)
+    grade_skipped = serializers.ChoiceField(
+        choices=("no_grading_space", "colour_config_unavailable"), allow_null=True
     )
 
 
@@ -243,7 +254,9 @@ class ReviewCopyDifferingSerializer(serializers.Serializer[Any]):
     frames_until = serializers.DateTimeField(allow_null=True)
     published_file_id = serializers.UUIDField(allow_null=True)
     source = serializers.ChoiceField(choices=SOURCES)  # pyright: ignore[reportAssignmentType]  # DRF pops declared fields; Field.source is unrelated
-    why = serializers.ListField(child=serializers.ChoiceField(choices=["burn_ins", "colour"]))
+    why = serializers.ListField(
+        child=serializers.ChoiceField(choices=["burn_ins", "colour", "grade"])
+    )
 
 
 class ReviewCopiesSerializer(serializers.Serializer[Any]):
@@ -253,6 +266,9 @@ class ReviewCopiesSerializer(serializers.Serializer[Any]):
     out_of_date = serializers.IntegerField()
     sequences_out_of_date = serializers.IntegerField()
     colour_out_of_date = serializers.IntegerField()
+    #: RP-20 (C-RP-53)
+    review_grades = serializers.BooleanField()
+    grade_out_of_date = serializers.IntegerField()
     differing = ReviewCopyDifferingSerializer(many=True)
     differing_more = serializers.IntegerField()
 

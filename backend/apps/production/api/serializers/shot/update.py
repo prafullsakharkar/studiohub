@@ -10,6 +10,7 @@ from apps.production.api.serializers.common import (
 )
 from apps.production.api.serializers.shot.current_version import ShotCurrentVersionMixin
 from apps.production.models import Shot
+from apps.production.validators.grade import GradeError, clean_grade
 
 
 class ShotUpdateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
@@ -43,6 +44,9 @@ class ShotUpdateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
         source="show", write_only=True, required=False, allow_null=True
     )
 
+    # RP-20 (C-RP-52): the shot's ASC CDL; null clears it. Typing it blanks ``grade_source``.
+    grade = serializers.JSONField(required=False, allow_null=True)
+
     class Meta:
         model = Shot
         fields = (
@@ -65,5 +69,12 @@ class ShotUpdateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
             "supervisor_approved",
             "client_approved",
             "pipeline",
+            "grade",
         )
         read_only_fields = ("supervisor_approved", "sequence_code")
+
+    def validate_grade(self, value: Any) -> Any:
+        try:
+            return clean_grade(value)
+        except GradeError as error:
+            raise serializers.ValidationError(error.message) from error

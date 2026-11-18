@@ -285,7 +285,7 @@ class TestFreshInitialMigrations:
                 "deliveries": 3,
                 "identity": 4,
                 "notifications": 4,
-                "production": 15,
+                "production": 16,
             }.get(app, 2)
             assert len(names) <= limit, (app, names)
 

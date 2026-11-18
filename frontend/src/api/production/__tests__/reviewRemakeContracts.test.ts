@@ -59,7 +59,7 @@ describe('C-RP-38: a project’s copies', () => {
   });
 
   it('counts the movies and the sequences that differ from the switch, before and after remaking', () => {
-    expect(flow.copies_switch_off.body).toEqual({ review_burn_ins: false, out_of_date: 0, sequences_out_of_date: 0, colour_out_of_date: 0, differing: [], differing_more: 0 });
+    expect(flow.copies_switch_off.body).toEqual({ review_burn_ins: false, review_grades: false, out_of_date: 0, sequences_out_of_date: 0, colour_out_of_date: 0, grade_out_of_date: 0, differing: [], differing_more: 0 });
     expect(flow.copies_switch_on.body).toMatchObject({ review_burn_ins: true, out_of_date: 2, sequences_out_of_date: 1, colour_out_of_date: 0, differing_more: 0 });
     expect(flow.copies_switch_on.body.differing).toHaveLength(3);
     expect(flow.copies_after_one.body.out_of_date).toBe(1);

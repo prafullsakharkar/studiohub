@@ -633,6 +633,12 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
                     <span>Burn-ins on review copies</span>
                   </>
                 )}
+                {project.review_grades && (
+                  <>
+                    <span>•</span>
+                    <span>Shot grades on review copies</span>
+                  </>
+                )}
               </div>
             </div>
           </div>

@@ -1245,7 +1245,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-19 Copy ready to review
 
-**Status:** planned 2026-11-18; answered the same day (Q-RP-87 to Q-RP-91 = A, [DECISIONS.md](DECISIONS.md#rp-19-answers)); built the same day, committed `d17c3ccd` ([rp-19-verification.md](rp-19-verification.md)). Branch `feature/rp-19-copy-notifications`, off `develop` at `fb63b0ba` (v4.15.0).
+**Status:** planned 2026-11-18; answered the same day (Q-RP-87 to Q-RP-91 = A, [DECISIONS.md](DECISIONS.md#rp-19-answers)); committed `d17c3ccd`, merged into `develop` and `main`, released in v4.16.0 ([rp-19-verification.md](rp-19-verification.md)). Branch `feature/rp-19-copy-notifications`, off `develop` at `fb63b0ba` (v4.15.0).
 
 **Goal.** When a version's review copy is ready, the person who reviews that work is told, with a link to the copy. The version's artist is told too when someone else made the copy. With RP-18, a farm render of a version still in review then reaches its reviewer without anyone passing it on.
 
@@ -1300,3 +1300,72 @@ The reviewer told on a remake; the reviewer told on a failure; the reviewer told
 ### Gates
 
 ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (notifications, production, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green.
+
+## RP-20 Per-shot grades on review copies
+
+**Status:** planned 2026-11-18; answered the same day (Q-RP-92 to Q-RP-96 = A, [DECISIONS.md](DECISIONS.md#rp-20-answers)); built on `feature/rp-20-shot-grades`, off `develop` at `176c1ad3` (v4.16.0), committed `10f16b62` ([rp-20-verification.md](rp-20-verification.md)).
+
+**Goal.** A shot's grade (its ASC CDL: slope, offset and power per channel, and saturation) is applied to its versions' review copies, so supervisors judge comp against the graded picture, as in the DI and in the client's dailies. Grades are typed on the shot or imported from the client's `.cc`, `.ccc` or `.cdl` files; copies made with an older grade can be remade (RP-14, RP-15).
+
+### Why (what is there today)
+
+- **Every shot of a project looks the same.** RP-15 applies one transform per project: the input colour space, a view and an optional look (`transcode/colour.py`). A shot's own grade is applied nowhere, so a shot graded warm and dark in the DI shows neutral and bright in review. Per-shot grades have been left out of every colour phase since RP-15 ("Not in RP-15", RP-16, RP-17, RP-19) and are a known limit in each release since v4.12.0.
+- **Nothing holds a grade.** `Shot` has no colour field. `Version.color_space` is free text that nothing reads (RP-15). There is no route that takes a CDL file.
+- **The bake can carry it** (spike below). OpenColorIO applies a CDL as a look in the config's `color_timing` space (ACEScct in the ACES configs), and the existing `Baker` call bakes that look into the same LUT as the project's view.
+
+**Spike** (this host, `opencolorio` 2.6.0, the pinned ACES 2.0 studio config, ACEScg input, view "ACES 2.0 - SDR 100 nits (Rec.709)"). The grade was slope (1.1, 1.0, 0.9), offset (0.01, 0, −0.01), power (1, 1, 1.05) and saturation 0.9.
+- **Mid grey 0.18** shows as 89 without the grade and as (137, 86, 52) with it.
+- **The same values written as a `.cc` file**, read through OpenColorIO's `FileTransform`, give the identical result.
+- **Baking a LUT with the grade** takes 0.43 s, the same as without it. The LUT has the same 65³ cube and 4096-point shaper, and is 7.5 MB.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 20.1 | **The grade** (Q-RP-92, Q-RP-95). `Shot` gains `grade` (JSON, null = none): `slope` (3 numbers, 0 to 10), `offset` (3, −1 to 1), `power` (3, above 0 and up to 10) and `saturation` (0 to 10). It also gains `grade_source` (the file name and correction id it was imported from, or blank when typed) and `grade_updated_at`. Written through the shot's update (`shot.update`, the reach and narrowing of the single route); `null` clears it. The shot shape gains the three fields. `Project` gains `review_grades` (default false), written like `review_burn_ins`. Migration production `0016`, additive. | `models/shot.py`, `models/project.py`, `validators/grade.py`, shot and project serializers |
+| 20.2 | **Import from the client's files** (Q-RP-93). New `POST projects/{id}/grades/import/`, multipart: `file` (`.cc`, `.ccc` or `.cdl`, at most 1 MiB) and `dry_run` (default true). It is parsed with the standard library's `ElementTree` (Expat 2.6: entities are not expanded without limit and external ones are not fetched); a `DOCTYPE` is refused. Each `ColorCorrection` `id` is matched to a shot code, ignoring case, either alone or after the project's code and `_`. The answer lists `matched` (shot code, old and new grade), `unchanged`, `unmatched` ids, `invalid` corrections (with the field) and `skipped` (shots the caller may not update, by CR-46's narrowing). Without `dry_run` the matched shots are written in one transaction. At most 2,000 corrections per file. Audit `shot_grades_imported`. | `production/services/grade_import.py`, `api/viewsets/project.py`, `api/serializers/grade.py` |
+| 20.3 | **Processing** (Q-RP-94, Q-RP-95). When the project's `review_grades` is on, a colour-managed copy (one with an OpenColorIO target, RP-15) of a version whose shot has a grade gets it. The grade is applied as a look in the config's `color_timing` space, before the project's look. The LUT is baked per job into the job's folder and removed with it, so a project's shots do not leave one 7.5 MB file each; LUTs without a grade stay cached as today. `probe.ocio` gains `grade` (the values applied, or `null`). If the config has no log `color_timing` space, the copy is made without the grade and records `grade_skipped: "no_grading_space"`. Display-ready movies and asset versions are unchanged. | `production/transcode/colour.py`, `selectors/review_media.py`, `services/review_media.py` |
+| 20.4 | **Copies made with another grade** (Q-RP-96). C-RP-38's differences gain the reason `grade`: a ready copy whose `probe.ocio.grade` is not what it would be made with now, the switch included. The project remake remakes such movies and stills, and sequences while their frames are kept (RP-16). "Keep as they are" (C-RP-43) covers them. | `selectors/review_media.py`, `services/review_media.py` |
+| 20.5 | **Frontend.** The shot form gains **Grade (ASC CDL)**: slope, offset and power for R, G and B, saturation, and Clear; it shows where the grade came from. The project's review settings gain **Apply shot grades to review copies** and **Import grades…**. The import is a dialog: choose a file, see the dry run (matched, unchanged, unmatched, invalid, skipped), then Apply. The review movie panel says "Graded with the shot's CDL" (and from which file), or why not. The copies notice names the reason "made with another grade". | `frontend/src/api/production/`, `modules/production/`, `modules/shots/` |
+| 20.6 | **Capture, live, docs.** A capture on real ffmpeg with OpenColorIO: a typed grade, an import (dry run, apply, refusals, a `DOCTYPE`), an EXR sequence graded, a changed grade counted and remade, a config without `color_timing`. A live file. CONTRACTS (C-RP-52 to C-RP-54), DECISIONS, a note in ADR-0041 (grades as a look in the grading space; graded LUTs not cached), the pre-deploy checklist, `rp-20-verification.md`. | `docs/` |
+
+### Questions before RP-20 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-92 | Where does a grade live? | A: **on the shot**; every version of the shot gets it. B: on the shot, and a version may override it. C: on the version only. | **A**. A CDL comes per shot from the DI or the client, and every version of the shot is judged against the same grade. B adds a second place to look for a rare case; it can follow if supervisors ask. C would mean entering the grade again for every version. |
+| Q-RP-93 | How do grades get in? | A: **typed on the shot, and imported from `.cc`, `.ccc` and `.cdl` files** uploaded on the project, matched to shot codes, with a dry run first. B: typed only. C: read by the worker from a file next to each shot on studio storage. | **A**. Clients send grades as one collection for a reel, so typing 300 shots (B) would not happen. C ties grades to a folder convention per show and to the storage mount; an upload works for every studio. The dry run shows mismatched ids before anything changes, as bulk add does (CR-48). |
+| Q-RP-94 | Where in the transform is the grade applied? | A: **in the config's `color_timing` space** (ACEScct in the ACES configs), before the project's look. B: in the copy's input space. C: after the project's look. | **A**. ASC CDLs for ACES shows are made in ACEScct; applying them elsewhere gives a different picture from the DI. The config names that space as its `color_timing` role, so a studio config is followed too. |
+| Q-RP-95 | Which copies get the grade? | A: **colour-managed copies only** (an OpenColorIO target: EXR frames, or an upload naming a colour space), and only while the project's **switch is on, off by default**. B: as A, but always on when a shot has a grade. C: every copy, display-ready movies included. | **A**. A display-ready movie is often already graded, and grading it again would double the grade (C). With the switch off by default, nothing changes on upgrade until a project chooses it, and turning it off is the way back (B has none). |
+| Q-RP-96 | What happens to copies when a grade changes? | A: **they are counted** in the project's review-copies notice with the reason "grade" and **remade by the project remake** (movies, stills, and sequences while their frames are kept). B: remade automatically when a grade changes. | **A**. One import can change hundreds of grades. Remaking them all at once (B) would fill the media queue and replace copies under reviewers' notes without anyone choosing it. The notice and "Keep as they are" already handle colour and burn-in changes. |
+
+Also decided in the plan, without a question:
+- **No new permission code.**
+  - A shot's grade is written with `shot.update` and read with the shot.
+  - The import needs `shot.update`, and skips the shots the caller may not update.
+  - The project switch uses the project's write rights, as the burn-in switch does.
+- **No new dependency.** The parser is the standard library's; OpenColorIO is already there (RP-15).
+- **Graded LUTs are not cached.** One per shot would fill the media volume; a bake takes about 0.4 s per job.
+- **The trust model does not change**, so there is no new ADR, only a note in ADR-0041.
+
+### Not in RP-20
+
+- Grades per version (Q-RP-92 B) or per sequence; looks per shot.
+- Reading grades from EDLs (`*ASC_SOP` comments), ALEs or studio storage (Q-RP-93 C).
+- Exporting grades; showing the copy without its grade beside the graded one.
+- P3 and HDR copies; 10-bit copies; slates; downloading a copy.
+
+### Tests (targeted, test database)
+
+- **20.1:** the migration; the shot writes (each bound, three numbers each, `null` clears, unknown keys refused); the rights and narrowing; the switch.
+- **20.2:** each file kind; ids matched with and without the project's code; `unchanged`, `unmatched`, `invalid`, `skipped`; the dry run writes nothing; apply is atomic; the size and count caps; a `DOCTYPE`; a file that is not XML; the audit.
+- **20.3:** a graded EXR sequence (the LUT includes the grade, `probe.ocio.grade` recorded); switch off or no grade gives today's copy; a display-ready movie is never graded; a config without `color_timing` records `grade_skipped`; the graded LUT is gone after the job.
+- **20.4:** a changed grade, a cleared grade and the switch each count with reason `grade`; the remake applies the current grade; "Keep as they are".
+
+### Mutation checks
+
+The grade applied with the switch off; the grade applied to a display-ready movie; the grade applied in the input space; the graded LUT cached; the dry run writing; a `DOCTYPE` accepted; an id matched by prefix (`SH01` matching `SH010`); a shot the caller may not update written; the grade left out of the differences.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, notifications, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green.

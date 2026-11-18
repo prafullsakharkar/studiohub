@@ -8,6 +8,7 @@ import { Badge } from '@/shared/components/Badge';
 import { editFieldsAction } from '../bulk/editFields';
 import { shotBulkSpec } from '../bulk/specs';
 import { EpisodicOnly, episodeColumn, episodeFilter, useEpisodicProjectIds } from './episodic';
+import { ShotGradeField } from './ShotGradeField';
 import { StatusMenu } from './StatusMenu';
 import { EpisodePicker, MemberSelect, ProjectPicker, SequencePicker } from './pickers';
 
@@ -113,6 +114,8 @@ export const shotsFormFields: ReadonlyArray<FieldDef> = [
   { kind: 'number', name: 'handle_frames', label: 'Handle frames' },
   { kind: 'entity', name: 'assigned_artist', rowKey: 'assigned_artist_id', label: 'Artist', render: (p) => <MemberSelect projectId={String(p.values.project ?? '') || undefined} value={p.value} onChange={p.onChange} label="Artist" error={p.error} /> },
   { kind: 'textarea', name: 'description', label: 'Description' },
+  // RP-20 (C-RP-52): the shot's ASC CDL, applied to colour-managed review copies while the project's switch is on.
+  { kind: 'entity', name: 'grade', label: 'Grade (ASC CDL)', jsonValue: true, onlyOnEdit: true, render: (p) => <ShotGradeField value={p.value} onChange={p.onChange} error={p.error} /> },
 ];
 
 export const shotsFormConfig: DirectoryFormConfig<Shot> = {

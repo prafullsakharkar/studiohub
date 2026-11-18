@@ -339,6 +339,10 @@ class TestProcessing:
             # RP-15 (C-RP-40): a movie that names no colour space is not transformed
             "ocio": None,
             "colour_skipped": None,
+            # RP-20 (C-RP-53): nor graded
+            "grade": None,
+            "grade_source": "",
+            "grade_skipped": None,
         }
         folder = media.directory
         assert (media.proxy_path, media.thumbnail_path, media.filmstrip_path) == (
@@ -776,6 +780,9 @@ class TestServing:
                 "burn_ins",
                 "ocio",
                 "colour_skipped",
+                "grade",
+                "grade_source",
+                "grade_skipped",
             }
             assert current["filmstrip_tiles"] == 48
 
