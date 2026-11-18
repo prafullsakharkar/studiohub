@@ -149,7 +149,8 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-13 Notifications beyond reviews (deliveries, publishing, milestones) | planned in [PLAN.md](PLAN.md#rp-13-notifications-beyond-reviews-deliveries-publishing-milestones); answered (Q-RP-57 to Q-RP-62 = A); committed `88a24c4b`, merged into `develop` and `main`, released in v4.10.0 ([rp-13-verification.md](rp-13-verification.md)) |
 | RP-14 Review copies: remaking and slates | planned in [PLAN.md](PLAN.md#rp-14-review-copies-remaking-and-slates); answered (Q-RP-63 to Q-RP-67 = A); committed `10fedb13`, merged into `develop` and `main`, released in v4.11.0 ([rp-14-verification.md](rp-14-verification.md)) |
 | RP-15 Colour management for review copies | planned in [PLAN.md](PLAN.md#rp-15-colour-management-for-review-copies); answered (Q-RP-68 to Q-RP-72 = A); committed `ae0c6dde`, merged into `develop` and `main`, released in v4.12.0 ([rp-15-verification.md](rp-15-verification.md)) |
-| RP-16 Sequence copies after a settings change | planned in [PLAN.md](PLAN.md#rp-16-sequence-copies-after-a-settings-change); answered (Q-RP-73 to Q-RP-76 = A); built and committed as `eb5cb64d` ([rp-16-verification.md](rp-16-verification.md)) |
+| RP-16 Sequence copies after a settings change | planned in [PLAN.md](PLAN.md#rp-16-sequence-copies-after-a-settings-change); answered (Q-RP-73 to Q-RP-76 = A); committed `eb5cb64d`, merged into `develop` and `main`, released in v4.13.0 ([rp-16-verification.md](rp-16-verification.md)) |
+| RP-17 Review copies from studio storage | planned in [PLAN.md](PLAN.md#rp-17-review-copies-from-studio-storage); answered (Q-RP-77 to Q-RP-81 = A); built 2026-11-18, committed as d06c0572 ([rp-17-verification.md](rp-17-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
@@ -187,3 +188,15 @@ The owner took every recommendation of [PLAN.md, RP-16 questions](PLAN.md#questi
 | Q-RP-74 | **A** | A remake keeps the original's `frames_until`; it never keeps the frames longer. |
 | Q-RP-75 | **A** | The copies read lists the first 100 differing copies, oldest first, and how many more. |
 | Q-RP-76 | **A** | Copies that cannot be remade can be kept as they are by whoever may change the project; they count again once its burn-ins, colour space, view or look change. Movies cannot be kept, they can be remade. |
+
+## RP-17 answers
+
+The owner took every recommendation of [PLAN.md, RP-17 questions](PLAN.md#questions-before-rp-17-starts) on 2026-11-18 ("Build with all A").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-77 | **A** | A review copy can be read from a registered published file only (role `main` or `proxy`, not Revoked), and is placed on that file's own version. No typed paths. |
+| Q-RP-78 | **A** | The media worker reads the roots in `PUBLISHING_STORAGE_MOUNTS`, mounted read-only into `celery-media`. No second list. |
+| Q-RP-79 | **A** | A file whose checksum is `mismatch` or `missing` is refused; `declared` and `verified` are accepted; nothing is hashed. |
+| Q-RP-80 | **A** | No automatic copies: they are made by hand, or by pipeline tools through the same route. |
+| Q-RP-81 | **A** | Copies made from a file that is then revoked stay, but cannot be remade; one in flight fails. |

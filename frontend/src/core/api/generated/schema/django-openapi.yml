@@ -20268,6 +20268,43 @@ paths:
               schema:
                 $ref: '#/components/schemas/PublishedFile'
           description: ''
+  /api/v1/publishing/files/{uuid}/review-copy/:
+    post:
+      operationId: v1_publishing_files_review_copy_create
+      description: Queue a review copy of the file's version, read from this file
+        on studio storage (C-RP-44).
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCopyFromFile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReviewCopyFromFile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewCopyFromFile'
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewMedia'
+          description: ''
   /api/v1/publishing/files/{uuid}/revoke/:
     post:
       operationId: v1_publishing_files_revoke_create
@@ -39992,6 +40029,10 @@ components:
         downstream_count:
           type: integer
           readOnly: true
+        review_copy_refusal:
+          type: string
+          nullable: true
+          readOnly: true
         version:
           allOf:
           - $ref: '#/components/schemas/LoaderVersion'
@@ -40014,6 +40055,7 @@ components:
       - id
       - project_id
       - relative_path
+      - review_copy_refusal
       - revoke_reason
       - role
       - sha256
@@ -56803,6 +56845,10 @@ components:
         downstream_count:
           type: integer
           readOnly: true
+        review_copy_refusal:
+          type: string
+          nullable: true
+          readOnly: true
       required:
       - checksum_checked_at
       - checksum_state
@@ -56816,6 +56862,7 @@ components:
       - id
       - project_id
       - relative_path
+      - review_copy_refusal
       - revoke_reason
       - role
       - sha256
@@ -57732,11 +57779,14 @@ components:
           type: integer
         skipped_missing:
           type: integer
+        skipped_storage:
+          type: integer
       required:
       - queued
       - skipped_busy
       - skipped_missing
       - skipped_sequence
+      - skipped_storage
     ReviewCopyDiffering:
       type: object
       description: One copy made with other settings than its project has now (C-RP-42).
@@ -57765,6 +57815,10 @@ components:
           type: string
           format: date-time
           nullable: true
+        published_file_id:
+          type: string
+          format: uuid
+          nullable: true
         why:
           type: array
           items:
@@ -57779,11 +57833,21 @@ components:
       required:
       - frames_until
       - kind
+      - published_file_id
       - record_code
       - remakable
       - review_media_id
       - version
       - why
+    ReviewCopyFromFile:
+      type: object
+      description: '``POST publishing/files/{id}/review-copy/`` (RP-17, C-RP-44):
+        the colour space, as for an upload.'
+      properties:
+        color_space:
+          type: string
+          default: ''
+          maxLength: 100
     ReviewCopyVersion:
       type: object
       properties:
@@ -58126,6 +58190,7 @@ components:
           - transcode_failed
           - timeout
           - source_missing
+          - storage_unreadable
           type: string
           description: |-
             * `probe_failed` - The file could not be read.
@@ -58133,7 +58198,8 @@ components:
             * `transcode_failed` - The review copy could not be made.
             * `timeout` - Processing took too long and was stopped.
             * `source_missing` - The uploaded file is no longer on the server.
-          x-spec-enum-id: 6f788d7c97d53878
+            * `storage_unreadable` - The published file could not be read from studio storage.
+          x-spec-enum-id: ec7418d3f5769f83
           readOnly: true
         error_message:
           type: string
@@ -58193,6 +58259,14 @@ components:
           format: date-time
           nullable: true
           readOnly: true
+        published_file_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        storage_readable:
+          type: boolean
+          readOnly: true
       required:
       - attempts
       - color_space
@@ -58208,6 +58282,7 @@ components:
       - links_expire_at
       - probe
       - proxy_url
+      - published_file_id
       - queued_at
       - remake_of
       - sequence
@@ -58215,6 +58290,7 @@ components:
       - source_size
       - started_at
       - status
+      - storage_readable
       - thumbnail_url
       - version_id
     ReviewMediaColour:

@@ -158,6 +158,12 @@ export interface PublishedFile {
   /** How many files this one was built from, and how many were built from it (C-RP-16). */
   upstream_count: number;
   downstream_count: number;
+  /**
+   * Why a review copy cannot be read from this file (RP-17, C-RP-44): revoked, a thumbnail or sidecar, a wrong or
+   * missing checksum, a storage root the server does not read, a format the media worker does not read, review media
+   * switched off. Null when it can. Whether the caller may manage the version's review copy is not part of it.
+   */
+  review_copy_refusal: string | null;
 }
 
 /** One file in `GET files/{id}/dependencies/`: direct links only. */

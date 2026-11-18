@@ -11,6 +11,13 @@ frames for ``REVIEW_MEDIA_SEQUENCE_KEEP_DAYS`` once its copy is ready (``frames_
 deletes them (RP-16, C-RP-41; with 0 they go at once, as Q-RP-56 had it). A remake (RP-14, C-RP-37;
 sequences, RP-16) is a new row whose upload is a hard link to the kept upload, or to each kept frame, of
 the ready copy it remakes, so superseding that copy later cannot delete it.
+
+A copy made from a registered published file (RP-17, C-RP-44 to C-RP-46; ADR-0042) has no upload.
+Its row names the file's storage root and relative path. For each job the worker makes
+``source.<ext>``, or ``source/frame.<8 digits>.<ext>`` per frame, as symbolic links to the file's
+real location. Each link is resolved under the root's directory in ``PUBLISHING_STORAGE_MOUNTS``,
+refused outside it, and checked by its leading bytes. The links are removed when the job ends.
+Nothing is ever written under a root, and logs never carry a path.
 """
 
 from __future__ import annotations
@@ -35,6 +42,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.audit.models import AuditLog
 from apps.core.events import default_event_bus
+from apps.core.utils.paths import PathRuleError, frame_file_name, resolve_mount
 from apps.production.events.review_media import ReviewMediaFinished
 from apps.production.exceptions import ReviewMediaBusy, ReviewMediaDisabled
 from apps.production.models import Project, ReviewMedia, Version
@@ -116,6 +124,10 @@ def _media_root() -> Path:
 
 
 def _delete_folder(relative: str) -> None:
+    if not relative or not relative.startswith(f"{settings.REVIEW_MEDIA_DIR}/"):
+        # never the media root itself (an empty ``source_path``) or anything outside review media
+        logger.error("review_media_delete_refused", folder=relative)
+        return
     folder = _media_root() / relative
     shutil.rmtree(folder, ignore_errors=True)
 
@@ -196,6 +208,10 @@ REMAKE_REFUSALS = {
     "sequence": "The frames of this sequence are no longer kept. Upload the frames again.",
     "not_ready": "Only a ready review copy can be remade.",
     "missing": "The uploaded file is no longer on the server. Upload it again.",
+    "storage": (
+        "The published file of this copy can no longer be read: it was revoked, or the server "
+        "no longer reads its storage root."
+    ),
 }
 KEEP_UNAVAILABLE = "The studio's colour config cannot be read, so copies cannot be kept now."
 
@@ -208,6 +224,45 @@ def _keep_frames_until(row: ReviewMedia, now: Any) -> Any:
     # a remake keeps the original's time; a first copy starts it
     until = row.frames_until or now + timedelta(days=days)
     return until if until > now else None
+
+
+@dataclasses.dataclass(frozen=True)
+class StorageSource:
+    """A registered published file to read a copy from (RP-17, C-RP-44), as publishing hands it over."""
+
+    #: the storage root's code, as in ``PUBLISHING_STORAGE_MOUNTS``
+    root: str
+    #: the registered relative path; a frame pattern (``%04d``, ``####``) for a sequence
+    path: str
+    published_file_id: Any
+    first_frame: int | None = None
+    last_frame: int | None = None
+
+
+def storage_readable(root: str) -> bool:
+    """Whether the servers read storage root ``root`` (Q-RP-78: ``PUBLISHING_STORAGE_MOUNTS``)."""
+    return bool(root) and root.upper() in settings.PUBLISHING_STORAGE_MOUNTS
+
+
+def storage_problem(path: str, first_frame: int | None, last_frame: int | None) -> str | None:
+    """Why a copy cannot be read from a file with this path and range, one sentence, or ``None``.
+
+    The worker reads movies and stills as uploads (``detect``) and sequences of the frame formats
+    (``sequence``), at most ``REVIEW_MEDIA_MAX_FRAMES`` frames (C-RP-44). Checked before a row is made.
+    """
+    if not settings.REVIEW_MEDIA_ENABLED:
+        return "Review copies are switched off on this server."
+    extension = detect.extension_of(path.rsplit("/", 1)[-1])
+    if first_frame is not None and last_frame is not None:
+        if frames.format_for(extension) is None:
+            return f"Frames can be {', '.join(sorted(frames.EXTENSIONS))}; these frames are not."
+        if last_frame - first_frame + 1 > settings.REVIEW_MEDIA_MAX_FRAMES:
+            return f"A sequence has at most {settings.REVIEW_MEDIA_MAX_FRAMES} frames."
+        return None
+    if extension not in detect.ALLOWED_EXTENSIONS:
+        allowed = ", ".join(sorted(detect.ALLOWED_EXTENSIONS))
+        return f"A review copy is made from a movie, a still ({allowed}) or a sequence of frames."
+    return None
 
 
 def _require_enabled() -> None:
@@ -360,6 +415,89 @@ class ReviewMediaService:
             raise ReviewMediaBusy() from error
         return row
 
+    # ------------------------------------------------------------------ from studio storage (C-RP-44)
+
+    @classmethod
+    def open_from_storage(
+        cls, *, actor: Any, version: Version, source: StorageSource, color_space: str = ""
+    ) -> ReviewMedia:
+        """Queue a copy of ``version`` read from a registered published file (RP-17, C-RP-44).
+
+        Publishing has checked the file (its reach, status, role, checksum and root); this checks what
+        the worker can read and queues the job after commit. Nothing is copied: the worker reads the
+        file where it lies (``_storage_input``).
+        """
+        _require_enabled()
+        color_space = validate_upload_colour(color_space)
+        problem = storage_problem(source.path, source.first_frame, source.last_frame)
+        if problem:
+            raise ValidationError({"detail": [problem]})
+        name = source.path.rsplit("/", 1)[-1]
+        extension = detect.extension_of(name)
+        sequence = source.first_frame is not None and source.last_frame is not None
+        frame_format = frames.format_for(extension) if sequence else None
+        container = (
+            None
+            if sequence
+            else next((c for c in detect.CONTAINERS.values() if extension in c.extensions), None)
+        )
+        try:
+            with transaction.atomic():
+                Version.objects.select_for_update().filter(pk=version.pk).first()
+                if ReviewMedia.objects.filter(
+                    version=version, status__in=ReviewMedia.IN_FLIGHT
+                ).exists():
+                    raise ReviewMediaBusy()
+                media = ReviewMedia(
+                    project_id=version.project_id,  # pyright: ignore[reportAttributeAccessIssue]
+                    version=version,
+                    kind=ReviewMedia.Kind.SEQUENCE
+                    if sequence
+                    else (container.kind if container else ""),
+                    status=Status.QUEUED,
+                    source_name=(
+                        f"{name} [{source.first_frame}-{source.last_frame}]" if sequence else name
+                    )[:255],
+                    source_container=(frame_format.key if frame_format else "")
+                    or (container.key if container else ""),
+                    sequence_extension=extension if sequence else "",
+                    first_frame=source.first_frame if sequence else None,
+                    last_frame=source.last_frame if sequence else None,
+                    color_space=color_space,
+                    storage_root=source.root.upper(),
+                    storage_path=source.path,
+                    published_file_id=source.published_file_id,
+                    queued_at=timezone.now(),
+                    created_by=actor if getattr(actor, "pk", None) else None,
+                )
+                media.save()
+                _audit(
+                    actor=actor,
+                    version=version,
+                    operation="review_media_from_storage",
+                    media=media,
+                    action=AuditLog.ACTION_CREATE,
+                    description=(
+                        f"Review {media.kind} of version {version.code} queued from a published file."
+                    ),
+                )
+                media_id = media.pk
+                transaction.on_commit(lambda: enqueue(media_id))
+        except IntegrityError as error:
+            raise ReviewMediaBusy() from error
+        return media
+
+    @staticmethod
+    def forget_storage(published_file_id: Any) -> int:
+        """A published file was revoked (C-RP-46, Q-RP-81): copies made from it can no longer read it.
+
+        The copies stay shown, but cannot be remade (they can be kept as they are); a job still to run
+        fails with ``storage_unreadable``. Called by publishing inside the revoke's transaction.
+        """
+        return ReviewMedia.objects.filter(published_file_id=published_file_id).update(
+            storage_root="", storage_path=""
+        )
+
     # ------------------------------------------------------------------ remakes (C-RP-37, C-RP-38)
 
     @classmethod
@@ -378,10 +516,17 @@ class ReviewMediaService:
         """Remake every copy of ``project`` made with other settings than it has now (C-RP-38).
 
         Movies from their kept upload, sequences while their frames are kept (C-RP-41); a sequence
-        whose frames are gone is counted in ``skipped_sequence``.
+        whose frames are gone is counted in ``skipped_sequence``. Copies read from a published file
+        are read again (C-RP-46); one whose file can no longer be read counts in ``skipped_storage``.
         """
         _require_enabled()
-        counts = {"queued": 0, "skipped_busy": 0, "skipped_sequence": 0, "skipped_missing": 0}
+        counts = {
+            "queued": 0,
+            "skipped_busy": 0,
+            "skipped_sequence": 0,
+            "skipped_missing": 0,
+            "skipped_storage": 0,
+        }
         for row_id in ReviewMediaSelector.differing(project).values_list("pk", flat=True):
             made, problem = cls._remake(actor=actor, media_id=row_id)
             if made is not None:
@@ -392,6 +537,8 @@ class ReviewMediaService:
                 counts["skipped_sequence"] += 1
             elif problem == "missing":
                 counts["skipped_missing"] += 1
+            elif problem == "storage":
+                counts["skipped_storage"] += 1
         return counts
 
     @classmethod
@@ -441,7 +588,8 @@ class ReviewMediaService:
 
     @classmethod
     def _remake(cls, *, actor: Any, media_id: Any) -> tuple[ReviewMedia | None, str | None]:
-        """The new row, or ``None`` and why not: ``busy``, ``sequence``, ``not_ready`` or ``missing``."""
+        """The new row, or ``None`` and why not: ``busy``, ``sequence``, ``not_ready``, ``missing`` or
+        ``storage`` (a copy read from a published file that can no longer be read, C-RP-46)."""
         folder: str | None = None
         try:
             with transaction.atomic():
@@ -456,7 +604,10 @@ class ReviewMediaService:
                 if row.status != Status.READY:
                     return None, "not_ready"
                 sequence = row.kind == ReviewMedia.Kind.SEQUENCE
-                if sequence and not row.frames_kept:
+                stored = row.published_file_id is not None
+                if stored and not (row.from_storage and storage_readable(row.storage_root)):
+                    return None, "storage"
+                if sequence and not stored and not row.frames_kept:
                     return None, "sequence"
                 if ReviewMedia.objects.filter(
                     version_id=row.version_id,  # pyright: ignore[reportAttributeAccessIssue]
@@ -464,7 +615,9 @@ class ReviewMediaService:
                 ).exists():
                     return None, "busy"
                 source = _media_root() / row.source_path if row.source_path else None
-                if source is None or not (source.is_dir() if sequence else source.is_file()):
+                if not stored and (
+                    source is None or not (source.is_dir() if sequence else source.is_file())
+                ):
                     return None, "sequence" if sequence else "missing"
                 now = timezone.now()
                 made = ReviewMedia(
@@ -488,18 +641,25 @@ class ReviewMediaService:
                     # Q-RP-66: the original's date; a copy made before RP-14 dates from its row
                     burn_in_date=row.burn_in_date or row.queued_at.date(),
                     # Q-RP-74: a remake keeps the original's time, it does not start a new one
-                    frames_until=row.frames_until if sequence else None,
+                    frames_until=row.frames_until if sequence and not stored else None,
+                    # C-RP-46: read again from the same published file
+                    storage_root=row.storage_root,
+                    storage_path=row.storage_path,
+                    published_file_id=row.published_file_id,
                 )
                 made.save()
                 folder = made.directory
-                if sequence:
+                if stored or source is None:
+                    pass  # nothing to link: the worker reads the published file where it lies
+                elif sequence:
                     made.source_path = f"{folder}/source"
                     for frame in sorted(source.iterdir()):
                         cls._link(frame, _media_root() / made.source_path / frame.name)
                 else:
                     made.source_path = f"{folder}/source{source.suffix}"
                     cls._link(source, _media_root() / made.source_path)
-                made.save(update_fields=["source_path"])
+                if made.source_path:
+                    made.save(update_fields=["source_path"])
                 _audit(
                     actor=actor,
                     version=row.version,
@@ -812,7 +972,12 @@ class ReviewMediaService:
             media.burn_in_date = media.burn_in_date or media.started_at.date()
             media.save(update_fields=["status", "started_at", "attempts", "burn_in_date"])
 
-        source = cls._input(media)
+        stored = media.published_file_id is not None
+        try:
+            source = cls._storage_input(media) if stored else cls._input(media)
+        except _Failed as failure:
+            cls._unlink_storage(media)
+            return cls._fail(media, failure.code)
         if source is None:
             return cls._fail(media, Code.SOURCE_MISSING)
 
@@ -829,7 +994,94 @@ class ReviewMediaService:
             return cls._fail(media, Code.TIMEOUT)
         finally:
             shutil.rmtree(work, ignore_errors=True)
+            if stored:
+                cls._unlink_storage(media)
         return cls._finish(media, probe, made, extra)
+
+    @staticmethod
+    def _storage_input(media: ReviewMedia) -> commands.Input:
+        """How ffmpeg reads ``media``'s published file where it lies (C-RP-45, ADR-0042).
+
+        Each file (each frame of a sequence) is resolved under its root's directory, refused if it
+        leaves it (symbolic links included) or is not a regular file whose leading bytes are its
+        format, and given a symbolic link in the row's folder that ffmpeg reads. Raises ``_Failed``
+        with ``storage_unreadable``; the log names the row and the frame, never a path.
+        """
+
+        def refuse(reason: str, frame: int | None = None) -> _Failed:
+            logger.warning(
+                "review_media_storage_unreadable",
+                review_media_id=str(media.pk),
+                reason=reason,
+                frame=frame,
+            )
+            return _Failed(Code.STORAGE_UNREADABLE)
+
+        if not media.from_storage:
+            raise refuse("revoked")
+        mount = settings.PUBLISHING_STORAGE_MOUNTS.get(media.storage_root.upper())
+        if not mount:
+            raise refuse("root_not_read")
+
+        def resolve(relative: str, frame: int | None = None) -> tuple[Path, bytes]:
+            try:
+                real = resolve_mount(mount, relative)
+                if not real.is_file():
+                    raise refuse("missing", frame)
+                with real.open("rb") as handle:
+                    return real, handle.read(detect.HEAD_BYTES)
+            except PathRuleError as error:
+                raise refuse("outside_root", frame) from error
+            except OSError as error:
+                raise refuse("unreadable", frame) from error
+
+        folder = _media_root() / media.directory
+        try:
+            if media.kind == ReviewMedia.Kind.SEQUENCE:
+                frame_format = frames.FORMATS.get(media.source_container)
+                if frame_format is None or media.first_frame is None or media.last_frame is None:
+                    raise refuse("not_a_sequence")
+                links = folder / "source"
+                links.mkdir(parents=True, exist_ok=True)
+                for number in range(media.first_frame, media.last_frame + 1):
+                    real, head = resolve(frame_file_name(media.storage_path, number), number)
+                    if frames.sniff(head) != frame_format:
+                        raise refuse("content", number)
+                    os.symlink(real, links / frames.stored_name(number, media.sequence_extension))
+                return commands.SequenceInput(
+                    codec=frame_format.codec,
+                    pattern=f"../source/{frames.stored_pattern(media.sequence_extension)}",
+                    first=media.first_frame,
+                    frame_rate=_sequence_rate(media),
+                    linear=frame_format.linear,
+                )
+            container = detect.CONTAINERS.get(media.source_container)
+            real, head = resolve(media.storage_path)
+            if container is None or detect.sniff(head) != container:
+                raise refuse("content")
+            link = folder / f"source.{detect.extension_of(media.storage_path)}"
+            folder.mkdir(parents=True, exist_ok=True)
+            os.symlink(real, link)
+            return commands.MovieInput(container.demuxer, link)
+        except OSError as error:
+            raise refuse("unreadable") from error
+
+    @staticmethod
+    def _unlink_storage(media: ReviewMedia) -> None:
+        """Remove the links a job made to a published file; never what they point to (C-RP-45)."""
+        folder = _media_root() / media.directory
+        links = folder / "source"
+        if links.is_dir() and not links.is_symlink():
+            for link in links.iterdir():
+                if link.is_symlink():
+                    link.unlink()
+            try:
+                links.rmdir()
+            except OSError:
+                logger.warning("review_media_storage_links_left", review_media_id=str(media.pk))
+        for link in folder.glob("source.*"):
+            if link.is_symlink():
+                link.unlink()
 
     @staticmethod
     def _input(media: ReviewMedia) -> commands.Input | None:
@@ -1056,12 +1308,14 @@ class ReviewMediaService:
             row.error_code = ""
             row.finished_at = timezone.now()
             if row.kind == ReviewMedia.Kind.SEQUENCE:
-                # C-RP-41: the frames are kept for a while to remake the copy, else they go now
-                # (Q-RP-56); C-RP-32: an unset range is filled.
-                row.frames_until = _keep_frames_until(row, row.finished_at)
-                if row.frames_until is None:
-                    older_folders.append(row.source_path)
-                    row.source_path = ""
+                # C-RP-41: uploaded frames are kept for a while to remake the copy, else they go now
+                # (Q-RP-56); a copy read from a published file keeps nothing (C-RP-45).
+                # C-RP-32: an unset range is filled.
+                if row.published_file_id is None:
+                    row.frames_until = _keep_frames_until(row, row.finished_at)
+                    if row.frames_until is None and row.source_path:
+                        older_folders.append(row.source_path)
+                        row.source_path = ""
                 Version.objects.filter(
                     pk=row.version_id,  # pyright: ignore[reportAttributeAccessIssue]
                     start_frame__isnull=True,

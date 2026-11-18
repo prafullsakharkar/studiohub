@@ -24,7 +24,8 @@ It seeds (each exercises a different backend rule):
 With SYNC_LIVE_MEDIA=1 (review-pipeline RP-10, WP 10.6) review movies work too: REVIEW_MEDIA_ENABLED is on, files go to
 a temporary MEDIA_ROOT, and instead of a Celery worker a thread here processes each queued row by calling the worker's
 own function (ReviewMediaService.process) with the host's ffmpeg. live.json then names a two-second test movie
-and a folder of eight EXR frames ("media": {"movie": path, "sequence": folder}; RP-12). The harness only: nothing else runs review media without a worker.
+and a folder of eight EXR frames ("media": {"movie": path, "sequence": folder}; RP-12), and the same frames and movie on a
+studio storage root the worker reads ("studio": {"root": "LIVE", "sequence": pattern, "movie": path}; RP-17). The harness only: nothing else runs review media without a worker.
 Writes the connection details to $SYNC_LIVE_INFO, then keeps serving
 until $SYNC_LIVE_STOP exists (or 20 minutes pass; $SYNC_LIVE_MINUTES changes that).
 
@@ -39,6 +40,7 @@ from __future__ import annotations
 import json
 import os
 import queue
+import shutil
 import subprocess
 import threading
 import time
@@ -111,7 +113,24 @@ def _media_worker(settings, monkeypatch, tmp_path) -> dict:
          "-pix_fmt", "gbrpf32le", "-start_number", "1001", str(frames / "live_comp.%04d.exr")],
         check=True,
     )  # fmt: skip
-    return {"movie": str(movie), "sequence": str(frames)}
+    # RP-17 (WP 17.7): a studio storage root the worker reads (code LIVE), holding the same frames and movie where a
+    # pipeline would have published them; the live test registers them as published files and copies from there.
+    studio = tmp_path / "studio"
+    published = studio / "shots/live/comp/v001"
+    published.mkdir(parents=True)
+    for frame in sorted(frames.iterdir()):
+        shutil.copyfile(frame, published / frame.name)
+    shutil.copyfile(movie, published / "live_comp.mov")
+    settings.PUBLISHING_STORAGE_MOUNTS = {"LIVE": str(studio)}
+    return {
+        "movie": str(movie),
+        "sequence": str(frames),
+        "studio": {
+            "root": "LIVE",
+            "sequence": "shots/live/comp/v001/live_comp.%04d.exr",
+            "movie": "shots/live/comp/v001/live_comp.mov",
+        },
+    }
 
 
 @pytest.mark.django_db(transaction=True)

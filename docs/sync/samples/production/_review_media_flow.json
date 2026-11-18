@@ -1,14 +1,14 @@
 {
   "ids": {
-    "artist": "d89439cd-6458-429c-ac69-170118b24893",
-    "broken": "469ad399-584a-4111-853b-35d202df1c8a",
-    "colleague": "2fa0d5cf-73c6-4313-bbd2-b880c4f4c44c",
-    "movie": "bd5442c8-e2c6-46ae-8b05-69a1b29b61c5",
-    "own_version": "9867f672-4b52-4ae3-8daf-98a43a2c3d9e",
-    "project": "37612e11-1811-46e7-bf6d-c29eab53c415",
-    "shot": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
-    "task": "fd59486d-1abf-49c0-a80c-ee7f1bcf6848",
-    "version": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+    "artist": "7eae2e26-4770-4486-8bd5-aae9e42fb505",
+    "broken": "029a5cb1-6efb-466b-a440-39957f1ab70a",
+    "colleague": "85f00eee-e7a7-4e81-8630-9db95972e1ca",
+    "movie": "ca8057cf-e4d0-4597-9dde-f64826acc0ed",
+    "own_version": "19486b23-95db-4638-a4a7-57f6bcee9407",
+    "project": "1473a304-7c87-45c4-8a4c-4dc33d5dd85c",
+    "shot": "b513b60d-040e-4598-abf3-e05066f2955a",
+    "task": "8d01c869-f9be-4885-af76-3d28b6d1e014",
+    "version": "591e1f4e-6daa-4d19-8dda-7b7538977970"
   },
   "queued": 5,
   "remove_204": {
@@ -25,7 +25,7 @@
       "body": null,
       "method": "DELETE",
       "params": null,
-      "path": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/"
+      "path": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/"
     },
     "status": 204
   },
@@ -36,7 +36,7 @@
       ],
       "error": {
         "code": "validation_error",
-        "request_id": "acd607f5-c551-416b-bace-5408befddb2b"
+        "request_id": "3665efb4-cdc1-47a4-ba2a-4832b2c1f20b"
       }
     },
     "headers": {
@@ -49,7 +49,7 @@
       "body": null,
       "method": "DELETE",
       "params": null,
-      "path": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/"
+      "path": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/"
     },
     "status": 400
   },
@@ -58,7 +58,7 @@
       "detail": "You do not have permission to perform this action.",
       "error": {
         "code": "permission_denied",
-        "request_id": "01c6f89a-b720-4ca4-95df-44bc177e460f"
+        "request_id": "0580fe6f-6d21-47d8-a6d3-b216f577f72e"
       }
     },
     "headers": {
@@ -71,7 +71,7 @@
       "body": null,
       "method": "DELETE",
       "params": null,
-      "path": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/"
+      "path": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/"
     },
     "status": 403
   },
@@ -80,7 +80,7 @@
       "attempts": 1,
       "color_space": "",
       "created_by": {
-        "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+        "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
         "name": "user@example.test"
       },
       "error_code": "",
@@ -89,20 +89,22 @@
       "filmstrip_url": null,
       "finished_at": null,
       "frames_until": null,
-      "id": "469ad399-584a-4111-853b-35d202df1c8a",
+      "id": "029a5cb1-6efb-466b-a440-39957f1ab70a",
       "kind": "movie",
       "links_expire_at": null,
       "probe": null,
       "proxy_url": null,
-      "queued_at": "2026-11-17T13:11:47.263634Z",
+      "published_file_id": null,
+      "queued_at": "2026-11-18T05:14:04.864876Z",
       "remake_of": null,
       "sequence": null,
       "source_name": "comp_v002.mov",
       "source_size": 524,
       "started_at": null,
       "status": "queued",
+      "storage_readable": false,
       "thumbnail_url": null,
-      "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+      "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
     },
     "headers": {
       "Allow": "POST, OPTIONS",
@@ -114,7 +116,7 @@
       "body": null,
       "method": "POST",
       "params": null,
-      "path": "/api/v1/review-media/469ad399-584a-4111-853b-35d202df1c8a/retry/"
+      "path": "/api/v1/review-media/029a5cb1-6efb-466b-a440-39957f1ab70a/retry/"
     },
     "status": 202
   },
@@ -123,7 +125,7 @@
       "detail": "You do not have permission to perform this action.",
       "error": {
         "code": "permission_denied",
-        "request_id": "1b3e5a85-0ef4-488f-a9f8-bd3e5bd6e11a"
+        "request_id": "0dd82c0b-ec48-4919-b02a-8878a12d213a"
       }
     },
     "headers": {
@@ -136,7 +138,7 @@
       "body": null,
       "method": "POST",
       "params": null,
-      "path": "/api/v1/review-media/469ad399-584a-4111-853b-35d202df1c8a/retry/"
+      "path": "/api/v1/review-media/029a5cb1-6efb-466b-a440-39957f1ab70a/retry/"
     },
     "status": 403
   },
@@ -147,7 +149,7 @@
       ],
       "error": {
         "code": "validation_error",
-        "request_id": "c9ce45f9-6ebe-4df7-9750-c5a5fe419c6c"
+        "request_id": "790d2aa2-2165-4fb3-91f1-25077b7a1af6"
       }
     },
     "headers": {
@@ -160,7 +162,7 @@
       "body": null,
       "method": "POST",
       "params": null,
-      "path": "/api/v1/review-media/469ad399-584a-4111-853b-35d202df1c8a/retry/"
+      "path": "/api/v1/review-media/029a5cb1-6efb-466b-a440-39957f1ab70a/retry/"
     },
     "status": 400
   },
@@ -170,46 +172,48 @@
         "attempts": 2,
         "color_space": "",
         "created_by": {
-          "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+          "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
           "name": "user@example.test"
         },
         "error_code": "probe_failed",
         "error_message": "The file could not be read.",
         "filmstrip_tiles": 0,
         "filmstrip_url": null,
-        "finished_at": "2026-11-17T13:11:47.458476Z",
+        "finished_at": "2026-11-18T05:14:05.046929Z",
         "frames_until": null,
-        "id": "469ad399-584a-4111-853b-35d202df1c8a",
+        "id": "029a5cb1-6efb-466b-a440-39957f1ab70a",
         "kind": "movie",
         "links_expire_at": null,
         "probe": null,
         "proxy_url": null,
-        "queued_at": "2026-11-17T13:11:47.263634Z",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T05:14:04.864876Z",
         "remake_of": null,
         "sequence": null,
         "source_name": "comp_v002.mov",
         "source_size": 524,
-        "started_at": "2026-11-17T13:11:47.306390Z",
+        "started_at": "2026-11-18T05:14:04.902346Z",
         "status": "failed",
+        "storage_readable": false,
         "thumbnail_url": null,
-        "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+        "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
       },
       {
         "attempts": 1,
         "color_space": "",
         "created_by": {
-          "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+          "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
           "name": "user@example.test"
         },
         "error_code": "",
         "error_message": "",
         "filmstrip_tiles": 48,
-        "filmstrip_url": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/filmstrip/?token=SAMPLE",
-        "finished_at": "2026-11-17T13:11:46.685497Z",
+        "filmstrip_url": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-18T05:14:04.302445Z",
         "frames_until": null,
-        "id": "bd5442c8-e2c6-46ae-8b05-69a1b29b61c5",
+        "id": "ca8057cf-e4d0-4597-9dde-f64826acc0ed",
         "kind": "movie",
-        "links_expire_at": "2026-11-17T14:11:47.512135Z",
+        "links_expire_at": "2026-11-18T06:14:05.098178Z",
         "probe": {
           "burn_ins": false,
           "colour": "as_stored",
@@ -225,16 +229,18 @@
           "video_codec": "h264",
           "width": 1280
         },
-        "proxy_url": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/proxy/?token=SAMPLE",
-        "queued_at": "2026-11-17T13:11:45.113936Z",
+        "proxy_url": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/proxy/?token=SAMPLE",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T05:14:02.760332Z",
         "remake_of": null,
         "sequence": null,
         "source_name": "comp_v001.mov",
         "source_size": 31020,
-        "started_at": "2026-11-17T13:11:45.203747Z",
+        "started_at": "2026-11-18T05:14:02.849607Z",
         "status": "ready",
-        "thumbnail_url": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/thumbnail/?token=SAMPLE",
-        "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+        "storage_readable": false,
+        "thumbnail_url": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/thumbnail/?token=SAMPLE",
+        "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
       }
     ],
     "headers": {
@@ -247,51 +253,51 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/review-media/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/review-media/"
     },
     "status": 200
   },
   "rp10_own_version": {
     "body": {
-      "artist_id": "d89439cd-6458-429c-ac69-170118b24893",
+      "artist_id": "7eae2e26-4770-4486-8bd5-aae9e42fb505",
       "artist_name": "user@example.test",
       "asset_id": null,
       "changelog": "",
       "code": "RPM_SH0010_COMP_V002",
       "color_space": "ACEScg",
-      "created_at": "2026-11-17T13:11:48.842743Z",
+      "created_at": "2026-11-18T05:14:06.379233Z",
       "department": "",
       "end_frame": 1048,
       "entity_code": "RPM_SH0010",
-      "entity_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "entity_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "entity_name": "Hero walk",
       "entity_type": "Shot",
       "file_path": "",
       "file_size_mb": "0.00",
       "fps": "24.000",
       "frame_range": "",
-      "id": "9867f672-4b52-4ae3-8daf-98a43a2c3d9e",
+      "id": "19486b23-95db-4638-a4a7-57f6bcee9407",
       "is_archived": false,
       "is_hero": false,
       "is_published": false,
       "notes": "",
       "project_code": "RPM",
-      "project_id": "37612e11-1811-46e7-bf6d-c29eab53c415",
+      "project_id": "1473a304-7c87-45c4-8a4c-4dc33d5dd85c",
       "published_at": null,
       "published_by_id": null,
       "publishing_info": {},
       "resolution": "4096x2160",
       "review_media": null,
       "review_media_job": null,
-      "shot_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "shot_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "source_file_url": "",
       "start_frame": 1001,
       "status": "Pending Review",
       "tags": [],
-      "task_id": "fd59486d-1abf-49c0-a80c-ee7f1bcf6848",
+      "task_id": "8d01c869-f9be-4885-af76-3d28b6d1e014",
       "thumbnail_url": "",
-      "updated_at": "2026-11-17T13:11:48.842753Z",
-      "uuid": "9867f672-4b52-4ae3-8daf-98a43a2c3d9e",
+      "updated_at": "2026-11-18T05:14:06.379243Z",
+      "uuid": "19486b23-95db-4638-a4a7-57f6bcee9407",
       "version_index": 2,
       "version_number": "v001",
       "video_url": ""
@@ -306,36 +312,36 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/9867f672-4b52-4ae3-8daf-98a43a2c3d9e/"
+      "path": "/api/v1/versions/19486b23-95db-4638-a4a7-57f6bcee9407/"
     },
     "status": 200
   },
   "rp10_own_version_ready": {
     "body": {
-      "artist_id": "d89439cd-6458-429c-ac69-170118b24893",
+      "artist_id": "7eae2e26-4770-4486-8bd5-aae9e42fb505",
       "artist_name": "user@example.test",
       "asset_id": null,
       "changelog": "",
       "code": "RPM_SH0010_COMP_V002",
       "color_space": "ACEScg",
-      "created_at": "2026-11-17T13:11:48.842743Z",
+      "created_at": "2026-11-18T05:14:06.379233Z",
       "department": "",
       "end_frame": 1048,
       "entity_code": "RPM_SH0010",
-      "entity_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "entity_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "entity_name": "Hero walk",
       "entity_type": "Shot",
       "file_path": "",
       "file_size_mb": "0.00",
       "fps": "24.000",
       "frame_range": "",
-      "id": "9867f672-4b52-4ae3-8daf-98a43a2c3d9e",
+      "id": "19486b23-95db-4638-a4a7-57f6bcee9407",
       "is_archived": false,
       "is_hero": false,
       "is_published": false,
       "notes": "",
       "project_code": "RPM",
-      "project_id": "37612e11-1811-46e7-bf6d-c29eab53c415",
+      "project_id": "1473a304-7c87-45c4-8a4c-4dc33d5dd85c",
       "published_at": null,
       "published_by_id": null,
       "publishing_info": {},
@@ -344,18 +350,18 @@
         "attempts": 1,
         "color_space": "",
         "created_by": {
-          "id": "d89439cd-6458-429c-ac69-170118b24893",
+          "id": "7eae2e26-4770-4486-8bd5-aae9e42fb505",
           "name": "user@example.test"
         },
         "error_code": "",
         "error_message": "",
         "filmstrip_tiles": 48,
-        "filmstrip_url": "/api/v1/review-media/9c032c7b-6585-4b94-b2ea-d2c9be65790f/filmstrip/?token=SAMPLE",
-        "finished_at": "2026-11-17T13:11:50.541574Z",
+        "filmstrip_url": "/api/v1/review-media/58b470dc-9e05-48b1-84fe-cc1db26e4c76/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-18T05:14:08.007456Z",
         "frames_until": null,
-        "id": "9c032c7b-6585-4b94-b2ea-d2c9be65790f",
+        "id": "58b470dc-9e05-48b1-84fe-cc1db26e4c76",
         "kind": "movie",
-        "links_expire_at": "2026-11-17T14:11:50.574330Z",
+        "links_expire_at": "2026-11-18T06:14:08.044138Z",
         "probe": {
           "burn_ins": false,
           "colour": "as_stored",
@@ -371,27 +377,29 @@
           "video_codec": "h264",
           "width": 1280
         },
-        "proxy_url": "/api/v1/review-media/9c032c7b-6585-4b94-b2ea-d2c9be65790f/proxy/?token=SAMPLE",
-        "queued_at": "2026-11-17T13:11:49.050154Z",
+        "proxy_url": "/api/v1/review-media/58b470dc-9e05-48b1-84fe-cc1db26e4c76/proxy/?token=SAMPLE",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T05:14:06.524296Z",
         "remake_of": null,
         "sequence": null,
         "source_name": "comp_v002.mov",
         "source_size": 31020,
-        "started_at": "2026-11-17T13:11:49.064749Z",
+        "started_at": "2026-11-18T05:14:06.540836Z",
         "status": "ready",
-        "thumbnail_url": "/api/v1/review-media/9c032c7b-6585-4b94-b2ea-d2c9be65790f/thumbnail/?token=SAMPLE",
-        "version_id": "9867f672-4b52-4ae3-8daf-98a43a2c3d9e"
+        "storage_readable": false,
+        "thumbnail_url": "/api/v1/review-media/58b470dc-9e05-48b1-84fe-cc1db26e4c76/thumbnail/?token=SAMPLE",
+        "version_id": "19486b23-95db-4638-a4a7-57f6bcee9407"
       },
       "review_media_job": null,
-      "shot_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "shot_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "source_file_url": "",
       "start_frame": 1001,
       "status": "Pending Review",
       "tags": [],
-      "task_id": "fd59486d-1abf-49c0-a80c-ee7f1bcf6848",
+      "task_id": "8d01c869-f9be-4885-af76-3d28b6d1e014",
       "thumbnail_url": "",
-      "updated_at": "2026-11-17T13:11:48.842753Z",
-      "uuid": "9867f672-4b52-4ae3-8daf-98a43a2c3d9e",
+      "updated_at": "2026-11-18T05:14:06.379243Z",
+      "uuid": "19486b23-95db-4638-a4a7-57f6bcee9407",
       "version_index": 2,
       "version_number": "v001",
       "video_url": ""
@@ -406,7 +414,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/9867f672-4b52-4ae3-8daf-98a43a2c3d9e/"
+      "path": "/api/v1/versions/19486b23-95db-4638-a4a7-57f6bcee9407/"
     },
     "status": 200
   },
@@ -415,7 +423,7 @@
       "detail": "You do not have permission to perform this action.",
       "error": {
         "code": "permission_denied",
-        "request_id": "c56915b2-a268-4056-a2a6-2735c5f02104"
+        "request_id": "652603a4-a3a8-4d9e-99c3-eb64f8ba59ee"
       }
     },
     "headers": {
@@ -428,7 +436,7 @@
       "body": null,
       "method": "DELETE",
       "params": null,
-      "path": "/api/v1/review-media/9c032c7b-6585-4b94-b2ea-d2c9be65790f/"
+      "path": "/api/v1/review-media/58b470dc-9e05-48b1-84fe-cc1db26e4c76/"
     },
     "status": 403
   },
@@ -446,7 +454,7 @@
       "body": null,
       "method": "DELETE",
       "params": null,
-      "path": "/api/v1/review-media/9c032c7b-6585-4b94-b2ea-d2c9be65790f/"
+      "path": "/api/v1/review-media/58b470dc-9e05-48b1-84fe-cc1db26e4c76/"
     },
     "status": 204
   },
@@ -455,7 +463,7 @@
       "detail": "You do not have permission to perform this action.",
       "error": {
         "code": "permission_denied",
-        "request_id": "f3ee1525-6e65-4dd1-8fe0-945632456910"
+        "request_id": "bbdc0b95-7be1-4830-9a1b-fb10a640059a"
       }
     },
     "headers": {
@@ -470,7 +478,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/versions/9867f672-4b52-4ae3-8daf-98a43a2c3d9e/review-media/"
+      "path": "/api/v1/versions/19486b23-95db-4638-a4a7-57f6bcee9407/review-media/"
     },
     "status": 403
   },
@@ -479,7 +487,7 @@
       "attempts": 0,
       "color_space": "",
       "created_by": {
-        "id": "d89439cd-6458-429c-ac69-170118b24893",
+        "id": "7eae2e26-4770-4486-8bd5-aae9e42fb505",
         "name": "user@example.test"
       },
       "error_code": "",
@@ -488,20 +496,22 @@
       "filmstrip_url": null,
       "finished_at": null,
       "frames_until": null,
-      "id": "9c032c7b-6585-4b94-b2ea-d2c9be65790f",
+      "id": "58b470dc-9e05-48b1-84fe-cc1db26e4c76",
       "kind": "movie",
       "links_expire_at": null,
       "probe": null,
       "proxy_url": null,
-      "queued_at": "2026-11-17T13:11:49.050154Z",
+      "published_file_id": null,
+      "queued_at": "2026-11-18T05:14:06.524296Z",
       "remake_of": null,
       "sequence": null,
       "source_name": "comp_v002.mov",
       "source_size": 31020,
       "started_at": null,
       "status": "queued",
+      "storage_readable": false,
       "thumbnail_url": null,
-      "version_id": "9867f672-4b52-4ae3-8daf-98a43a2c3d9e"
+      "version_id": "19486b23-95db-4638-a4a7-57f6bcee9407"
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
@@ -515,7 +525,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/versions/9867f672-4b52-4ae3-8daf-98a43a2c3d9e/review-media/"
+      "path": "/api/v1/versions/19486b23-95db-4638-a4a7-57f6bcee9407/review-media/"
     },
     "status": 202
   },
@@ -524,7 +534,7 @@
       "detail": "Not found.",
       "error": {
         "code": "not_found",
-        "request_id": "7d9c44cb-a3a5-430d-a6c0-0afdc2ff968a"
+        "request_id": "6e00880f-bd7a-4d33-8352-cb996ba0c11f"
       }
     },
     "headers": {
@@ -537,7 +547,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/proxy/?token=SAMPLE"
+      "path": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/proxy/?token=SAMPLE"
     },
     "status": 404
   },
@@ -557,7 +567,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/proxy/?token=SAMPLE"
+      "path": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/proxy/?token=SAMPLE"
     },
     "status": 200
   },
@@ -592,7 +602,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/thumbnail/?token=SAMPLE"
+      "path": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/thumbnail/?token=SAMPLE"
     },
     "status": 200
   },
@@ -601,7 +611,7 @@
       "attempts": 0,
       "color_space": "",
       "created_by": {
-        "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+        "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
         "name": "user@example.test"
       },
       "error_code": "",
@@ -610,20 +620,22 @@
       "filmstrip_url": null,
       "finished_at": null,
       "frames_until": null,
-      "id": "469ad399-584a-4111-853b-35d202df1c8a",
+      "id": "029a5cb1-6efb-466b-a440-39957f1ab70a",
       "kind": "movie",
       "links_expire_at": null,
       "probe": null,
       "proxy_url": null,
-      "queued_at": "2026-11-17T13:11:47.008016Z",
+      "published_file_id": null,
+      "queued_at": "2026-11-18T05:14:04.603023Z",
       "remake_of": null,
       "sequence": null,
       "source_name": "comp_v002.mov",
       "source_size": 524,
       "started_at": null,
       "status": "queued",
+      "storage_readable": false,
       "thumbnail_url": null,
-      "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+      "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
@@ -637,7 +649,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/review-media/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/review-media/"
     },
     "status": 202
   },
@@ -646,7 +658,7 @@
       "detail": "This version already has an upload being processed. Wait for it to finish.",
       "error": {
         "code": "review_media_busy",
-        "request_id": "b1a4a31e-cb15-4105-8a0b-708b1ae640f7"
+        "request_id": "62809845-40e2-4543-844d-29625341c9f0"
       }
     },
     "headers": {
@@ -661,7 +673,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/review-media/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/review-media/"
     },
     "status": 409
   },
@@ -670,7 +682,7 @@
       "detail": "You do not have permission to perform this action.",
       "error": {
         "code": "permission_denied",
-        "request_id": "6b4e4c72-055a-47db-a85a-428ec7812b05"
+        "request_id": "6dafef35-e7a9-4805-93bf-fa566a66ec25"
       }
     },
     "headers": {
@@ -685,7 +697,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/review-media/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/review-media/"
     },
     "status": 403
   },
@@ -694,7 +706,7 @@
       "detail": "Review media uploads are not switched on for this studio.",
       "error": {
         "code": "review_media_disabled",
-        "request_id": "11c03caa-3a55-4df0-b3ad-af11aec52468"
+        "request_id": "0936f35c-7ea0-47eb-97ee-c7df2d5d6586"
       }
     },
     "headers": {
@@ -709,7 +721,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/review-media/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/review-media/"
     },
     "status": 409
   },
@@ -717,7 +729,7 @@
     "body": {
       "error": {
         "code": "validation_error",
-        "request_id": "ac7c6bc3-1395-4cbc-bf2e-985e7a5aa019"
+        "request_id": "22b9bcac-9b87-4179-9925-4f989392198f"
       },
       "file": [
         "Upload a movie or a still: avi, jpeg, jpg, m4v, mkv, mov, mp4, mxf, png, tif, tiff, webm."
@@ -735,7 +747,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/review-media/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/review-media/"
     },
     "status": 400
   },
@@ -743,7 +755,7 @@
     "body": {
       "error": {
         "code": "validation_error",
-        "request_id": "a6a88f82-eed3-4779-87bd-28587a1e1eb8"
+        "request_id": "36f980e2-2d2a-4bd5-9251-4a5844037bcf"
       },
       "file": [
         "The file's content does not match its extension."
@@ -761,7 +773,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/review-media/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/review-media/"
     },
     "status": 400
   },
@@ -770,7 +782,7 @@
       "attempts": 0,
       "color_space": "",
       "created_by": {
-        "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+        "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
         "name": "user@example.test"
       },
       "error_code": "",
@@ -779,20 +791,22 @@
       "filmstrip_url": null,
       "finished_at": null,
       "frames_until": null,
-      "id": "bd5442c8-e2c6-46ae-8b05-69a1b29b61c5",
+      "id": "ca8057cf-e4d0-4597-9dde-f64826acc0ed",
       "kind": "movie",
       "links_expire_at": null,
       "probe": null,
       "proxy_url": null,
-      "queued_at": "2026-11-17T13:11:45.113936Z",
+      "published_file_id": null,
+      "queued_at": "2026-11-18T05:14:02.760332Z",
       "remake_of": null,
       "sequence": null,
       "source_name": "comp_v001.mov",
       "source_size": 31020,
       "started_at": null,
       "status": "queued",
+      "storage_readable": false,
       "thumbnail_url": null,
-      "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+      "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
@@ -806,7 +820,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/review-media/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/review-media/"
     },
     "status": 202
   },
@@ -815,7 +829,7 @@
       "attempts": 0,
       "color_space": "",
       "created_by": {
-        "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+        "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
         "name": "user@example.test"
       },
       "error_code": "",
@@ -824,20 +838,22 @@
       "filmstrip_url": null,
       "finished_at": null,
       "frames_until": null,
-      "id": "17e3c99f-6893-4e84-89f7-c8268d3726bf",
+      "id": "e0ef6417-1d06-40fb-a1d5-fe14c993de8b",
       "kind": "still",
       "links_expire_at": null,
       "probe": null,
       "proxy_url": null,
-      "queued_at": "2026-11-17T13:11:47.910581Z",
+      "published_file_id": null,
+      "queued_at": "2026-11-18T05:14:05.611013Z",
       "remake_of": null,
       "sequence": null,
       "source_name": "frame.png",
       "source_size": 36108,
       "started_at": null,
       "status": "queued",
+      "storage_readable": false,
       "thumbnail_url": null,
-      "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+      "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
     },
     "headers": {
       "Allow": "GET, POST, HEAD, OPTIONS",
@@ -851,7 +867,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/review-media/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/review-media/"
     },
     "status": 202
   },
@@ -863,24 +879,24 @@
       "changelog": "",
       "code": "RPM_SH0010_COMP_V001",
       "color_space": "ACEScg",
-      "created_at": "2026-11-17T13:11:44.127231Z",
+      "created_at": "2026-11-18T05:14:01.853433Z",
       "department": "",
       "end_frame": 1048,
       "entity_code": "RPM_SH0010",
-      "entity_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "entity_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "entity_name": "Hero walk",
       "entity_type": "Shot",
       "file_path": "",
       "file_size_mb": "0.00",
       "fps": "24.000",
       "frame_range": "",
-      "id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+      "id": "591e1f4e-6daa-4d19-8dda-7b7538977970",
       "is_archived": false,
       "is_hero": false,
       "is_published": false,
       "notes": "",
       "project_code": "RPM",
-      "project_id": "37612e11-1811-46e7-bf6d-c29eab53c415",
+      "project_id": "1473a304-7c87-45c4-8a4c-4dc33d5dd85c",
       "published_at": null,
       "published_by_id": null,
       "publishing_info": {},
@@ -890,39 +906,41 @@
         "attempts": 2,
         "color_space": "",
         "created_by": {
-          "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+          "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
           "name": "user@example.test"
         },
         "error_code": "probe_failed",
         "error_message": "The file could not be read.",
         "filmstrip_tiles": 0,
         "filmstrip_url": null,
-        "finished_at": "2026-11-17T13:11:47.458476Z",
+        "finished_at": "2026-11-18T05:14:05.046929Z",
         "frames_until": null,
-        "id": "469ad399-584a-4111-853b-35d202df1c8a",
+        "id": "029a5cb1-6efb-466b-a440-39957f1ab70a",
         "kind": "movie",
         "links_expire_at": null,
         "probe": null,
         "proxy_url": null,
-        "queued_at": "2026-11-17T13:11:47.263634Z",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T05:14:04.864876Z",
         "remake_of": null,
         "sequence": null,
         "source_name": "comp_v002.mov",
         "source_size": 524,
-        "started_at": "2026-11-17T13:11:47.306390Z",
+        "started_at": "2026-11-18T05:14:04.902346Z",
         "status": "failed",
+        "storage_readable": false,
         "thumbnail_url": null,
-        "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+        "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
       },
-      "shot_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "shot_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "source_file_url": "",
       "start_frame": 1001,
       "status": "Pending Review",
       "tags": [],
-      "task_id": "fd59486d-1abf-49c0-a80c-ee7f1bcf6848",
+      "task_id": "8d01c869-f9be-4885-af76-3d28b6d1e014",
       "thumbnail_url": "",
-      "updated_at": "2026-11-17T13:11:44.127240Z",
-      "uuid": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+      "updated_at": "2026-11-18T05:14:01.853445Z",
+      "uuid": "591e1f4e-6daa-4d19-8dda-7b7538977970",
       "version_index": 1,
       "version_number": "v001",
       "video_url": ""
@@ -937,7 +955,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/"
     },
     "status": 200
   },
@@ -949,24 +967,24 @@
       "changelog": "",
       "code": "RPM_SH0010_COMP_V001",
       "color_space": "ACEScg",
-      "created_at": "2026-11-17T13:11:44.127231Z",
+      "created_at": "2026-11-18T05:14:01.853433Z",
       "department": "",
       "end_frame": 1048,
       "entity_code": "RPM_SH0010",
-      "entity_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "entity_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "entity_name": "Hero walk",
       "entity_type": "Shot",
       "file_path": "",
       "file_size_mb": "0.00",
       "fps": "24.000",
       "frame_range": "",
-      "id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+      "id": "591e1f4e-6daa-4d19-8dda-7b7538977970",
       "is_archived": false,
       "is_hero": false,
       "is_published": false,
       "notes": "",
       "project_code": "RPM",
-      "project_id": "37612e11-1811-46e7-bf6d-c29eab53c415",
+      "project_id": "1473a304-7c87-45c4-8a4c-4dc33d5dd85c",
       "published_at": null,
       "published_by_id": null,
       "publishing_info": {},
@@ -975,18 +993,18 @@
         "attempts": 1,
         "color_space": "",
         "created_by": {
-          "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+          "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
           "name": "user@example.test"
         },
         "error_code": "",
         "error_message": "",
         "filmstrip_tiles": 48,
-        "filmstrip_url": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/filmstrip/?token=SAMPLE",
-        "finished_at": "2026-11-17T13:11:46.685497Z",
+        "filmstrip_url": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-18T05:14:04.302445Z",
         "frames_until": null,
-        "id": "bd5442c8-e2c6-46ae-8b05-69a1b29b61c5",
+        "id": "ca8057cf-e4d0-4597-9dde-f64826acc0ed",
         "kind": "movie",
-        "links_expire_at": "2026-11-17T14:11:46.856938Z",
+        "links_expire_at": "2026-11-18T06:14:04.472087Z",
         "probe": {
           "burn_ins": false,
           "colour": "as_stored",
@@ -1002,27 +1020,29 @@
           "video_codec": "h264",
           "width": 1280
         },
-        "proxy_url": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/proxy/?token=SAMPLE",
-        "queued_at": "2026-11-17T13:11:45.113936Z",
+        "proxy_url": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/proxy/?token=SAMPLE",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T05:14:02.760332Z",
         "remake_of": null,
         "sequence": null,
         "source_name": "comp_v001.mov",
         "source_size": 31020,
-        "started_at": "2026-11-17T13:11:45.203747Z",
+        "started_at": "2026-11-18T05:14:02.849607Z",
         "status": "ready",
-        "thumbnail_url": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/thumbnail/?token=SAMPLE",
-        "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+        "storage_readable": false,
+        "thumbnail_url": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/thumbnail/?token=SAMPLE",
+        "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
       },
       "review_media_job": null,
-      "shot_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "shot_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "source_file_url": "",
       "start_frame": 1001,
       "status": "Pending Review",
       "tags": [],
-      "task_id": "fd59486d-1abf-49c0-a80c-ee7f1bcf6848",
+      "task_id": "8d01c869-f9be-4885-af76-3d28b6d1e014",
       "thumbnail_url": "",
-      "updated_at": "2026-11-17T13:11:44.127240Z",
-      "uuid": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+      "updated_at": "2026-11-18T05:14:01.853445Z",
+      "uuid": "591e1f4e-6daa-4d19-8dda-7b7538977970",
       "version_index": 1,
       "version_number": "v001",
       "video_url": ""
@@ -1037,7 +1057,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/"
     },
     "status": 200
   },
@@ -1049,24 +1069,24 @@
       "changelog": "",
       "code": "RPM_SH0010_COMP_V001",
       "color_space": "ACEScg",
-      "created_at": "2026-11-17T13:11:44.127231Z",
+      "created_at": "2026-11-18T05:14:01.853433Z",
       "department": "",
       "end_frame": 1048,
       "entity_code": "RPM_SH0010",
-      "entity_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "entity_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "entity_name": "Hero walk",
       "entity_type": "Shot",
       "file_path": "",
       "file_size_mb": "0.00",
       "fps": "24.000",
       "frame_range": "",
-      "id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+      "id": "591e1f4e-6daa-4d19-8dda-7b7538977970",
       "is_archived": false,
       "is_hero": false,
       "is_published": false,
       "notes": "",
       "project_code": "RPM",
-      "project_id": "37612e11-1811-46e7-bf6d-c29eab53c415",
+      "project_id": "1473a304-7c87-45c4-8a4c-4dc33d5dd85c",
       "published_at": null,
       "published_by_id": null,
       "publishing_info": {},
@@ -1075,18 +1095,18 @@
         "attempts": 1,
         "color_space": "",
         "created_by": {
-          "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+          "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
           "name": "user@example.test"
         },
         "error_code": "",
         "error_message": "",
         "filmstrip_tiles": 48,
-        "filmstrip_url": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/filmstrip/?token=SAMPLE",
-        "finished_at": "2026-11-17T13:11:46.685497Z",
+        "filmstrip_url": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-18T05:14:04.302445Z",
         "frames_until": null,
-        "id": "bd5442c8-e2c6-46ae-8b05-69a1b29b61c5",
+        "id": "ca8057cf-e4d0-4597-9dde-f64826acc0ed",
         "kind": "movie",
-        "links_expire_at": "2026-11-17T14:11:47.214694Z",
+        "links_expire_at": "2026-11-18T06:14:04.801871Z",
         "probe": {
           "burn_ins": false,
           "colour": "as_stored",
@@ -1102,54 +1122,58 @@
           "video_codec": "h264",
           "width": 1280
         },
-        "proxy_url": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/proxy/?token=SAMPLE",
-        "queued_at": "2026-11-17T13:11:45.113936Z",
+        "proxy_url": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/proxy/?token=SAMPLE",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T05:14:02.760332Z",
         "remake_of": null,
         "sequence": null,
         "source_name": "comp_v001.mov",
         "source_size": 31020,
-        "started_at": "2026-11-17T13:11:45.203747Z",
+        "started_at": "2026-11-18T05:14:02.849607Z",
         "status": "ready",
-        "thumbnail_url": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/thumbnail/?token=SAMPLE",
-        "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+        "storage_readable": false,
+        "thumbnail_url": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/thumbnail/?token=SAMPLE",
+        "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
       },
       "review_media_job": {
         "attempts": 1,
         "color_space": "",
         "created_by": {
-          "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+          "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
           "name": "user@example.test"
         },
         "error_code": "probe_failed",
         "error_message": "The file could not be read.",
         "filmstrip_tiles": 0,
         "filmstrip_url": null,
-        "finished_at": "2026-11-17T13:11:47.164311Z",
+        "finished_at": "2026-11-18T05:14:04.753684Z",
         "frames_until": null,
-        "id": "469ad399-584a-4111-853b-35d202df1c8a",
+        "id": "029a5cb1-6efb-466b-a440-39957f1ab70a",
         "kind": "movie",
         "links_expire_at": null,
         "probe": null,
         "proxy_url": null,
-        "queued_at": "2026-11-17T13:11:47.008016Z",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T05:14:04.603023Z",
         "remake_of": null,
         "sequence": null,
         "source_name": "comp_v002.mov",
         "source_size": 524,
-        "started_at": "2026-11-17T13:11:47.020610Z",
+        "started_at": "2026-11-18T05:14:04.613941Z",
         "status": "failed",
+        "storage_readable": false,
         "thumbnail_url": null,
-        "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+        "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
       },
-      "shot_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "shot_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "source_file_url": "",
       "start_frame": 1001,
       "status": "Pending Review",
       "tags": [],
-      "task_id": "fd59486d-1abf-49c0-a80c-ee7f1bcf6848",
+      "task_id": "8d01c869-f9be-4885-af76-3d28b6d1e014",
       "thumbnail_url": "",
-      "updated_at": "2026-11-17T13:11:44.127240Z",
-      "uuid": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+      "updated_at": "2026-11-18T05:14:01.853445Z",
+      "uuid": "591e1f4e-6daa-4d19-8dda-7b7538977970",
       "version_index": 1,
       "version_number": "v001",
       "video_url": ""
@@ -1164,7 +1188,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/"
     },
     "status": 200
   },
@@ -1176,24 +1200,24 @@
       "changelog": "",
       "code": "RPM_SH0010_COMP_V001",
       "color_space": "ACEScg",
-      "created_at": "2026-11-17T13:11:44.127231Z",
+      "created_at": "2026-11-18T05:14:01.853433Z",
       "department": "",
       "end_frame": 1048,
       "entity_code": "RPM_SH0010",
-      "entity_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "entity_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "entity_name": "Hero walk",
       "entity_type": "Shot",
       "file_path": "",
       "file_size_mb": "0.00",
       "fps": "24.000",
       "frame_range": "",
-      "id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+      "id": "591e1f4e-6daa-4d19-8dda-7b7538977970",
       "is_archived": false,
       "is_hero": false,
       "is_published": false,
       "notes": "",
       "project_code": "RPM",
-      "project_id": "37612e11-1811-46e7-bf6d-c29eab53c415",
+      "project_id": "1473a304-7c87-45c4-8a4c-4dc33d5dd85c",
       "published_at": null,
       "published_by_id": null,
       "publishing_info": {},
@@ -1203,7 +1227,7 @@
         "attempts": 0,
         "color_space": "",
         "created_by": {
-          "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+          "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
           "name": "user@example.test"
         },
         "error_code": "",
@@ -1212,30 +1236,32 @@
         "filmstrip_url": null,
         "finished_at": null,
         "frames_until": null,
-        "id": "bd5442c8-e2c6-46ae-8b05-69a1b29b61c5",
+        "id": "ca8057cf-e4d0-4597-9dde-f64826acc0ed",
         "kind": "movie",
         "links_expire_at": null,
         "probe": null,
         "proxy_url": null,
-        "queued_at": "2026-11-17T13:11:45.113936Z",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T05:14:02.760332Z",
         "remake_of": null,
         "sequence": null,
         "source_name": "comp_v001.mov",
         "source_size": 31020,
         "started_at": null,
         "status": "queued",
+        "storage_readable": false,
         "thumbnail_url": null,
-        "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+        "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
       },
-      "shot_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "shot_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "source_file_url": "",
       "start_frame": 1001,
       "status": "Pending Review",
       "tags": [],
-      "task_id": "fd59486d-1abf-49c0-a80c-ee7f1bcf6848",
+      "task_id": "8d01c869-f9be-4885-af76-3d28b6d1e014",
       "thumbnail_url": "",
-      "updated_at": "2026-11-17T13:11:44.127240Z",
-      "uuid": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+      "updated_at": "2026-11-18T05:14:01.853445Z",
+      "uuid": "591e1f4e-6daa-4d19-8dda-7b7538977970",
       "version_index": 1,
       "version_number": "v001",
       "video_url": ""
@@ -1250,7 +1276,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/"
     },
     "status": 200
   },
@@ -1262,24 +1288,24 @@
       "changelog": "",
       "code": "RPM_SH0010_COMP_V001",
       "color_space": "ACEScg",
-      "created_at": "2026-11-17T13:11:44.127231Z",
+      "created_at": "2026-11-18T05:14:01.853433Z",
       "department": "",
       "end_frame": 1048,
       "entity_code": "RPM_SH0010",
-      "entity_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "entity_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "entity_name": "Hero walk",
       "entity_type": "Shot",
       "file_path": "",
       "file_size_mb": "0.00",
       "fps": "24.000",
       "frame_range": "",
-      "id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+      "id": "591e1f4e-6daa-4d19-8dda-7b7538977970",
       "is_archived": false,
       "is_hero": false,
       "is_published": false,
       "notes": "",
       "project_code": "RPM",
-      "project_id": "37612e11-1811-46e7-bf6d-c29eab53c415",
+      "project_id": "1473a304-7c87-45c4-8a4c-4dc33d5dd85c",
       "published_at": null,
       "published_by_id": null,
       "publishing_info": {},
@@ -1288,18 +1314,18 @@
         "attempts": 1,
         "color_space": "",
         "created_by": {
-          "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+          "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
           "name": "user@example.test"
         },
         "error_code": "",
         "error_message": "",
         "filmstrip_tiles": 0,
         "filmstrip_url": null,
-        "finished_at": "2026-11-17T13:11:48.623694Z",
+        "finished_at": "2026-11-18T05:14:06.290637Z",
         "frames_until": null,
-        "id": "17e3c99f-6893-4e84-89f7-c8268d3726bf",
+        "id": "e0ef6417-1d06-40fb-a1d5-fe14c993de8b",
         "kind": "still",
-        "links_expire_at": "2026-11-17T14:11:48.806267Z",
+        "links_expire_at": "2026-11-18T06:14:06.334614Z",
         "probe": {
           "burn_ins": false,
           "colour": "as_stored",
@@ -1315,27 +1341,29 @@
           "video_codec": "png",
           "width": 2048
         },
-        "proxy_url": "/api/v1/review-media/17e3c99f-6893-4e84-89f7-c8268d3726bf/proxy/?token=SAMPLE",
-        "queued_at": "2026-11-17T13:11:47.910581Z",
+        "proxy_url": "/api/v1/review-media/e0ef6417-1d06-40fb-a1d5-fe14c993de8b/proxy/?token=SAMPLE",
+        "published_file_id": null,
+        "queued_at": "2026-11-18T05:14:05.611013Z",
         "remake_of": null,
         "sequence": null,
         "source_name": "frame.png",
         "source_size": 36108,
-        "started_at": "2026-11-17T13:11:47.926048Z",
+        "started_at": "2026-11-18T05:14:05.627596Z",
         "status": "ready",
-        "thumbnail_url": "/api/v1/review-media/17e3c99f-6893-4e84-89f7-c8268d3726bf/thumbnail/?token=SAMPLE",
-        "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+        "storage_readable": false,
+        "thumbnail_url": "/api/v1/review-media/e0ef6417-1d06-40fb-a1d5-fe14c993de8b/thumbnail/?token=SAMPLE",
+        "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
       },
       "review_media_job": null,
-      "shot_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "shot_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "source_file_url": "",
       "start_frame": 1001,
       "status": "Pending Review",
       "tags": [],
-      "task_id": "fd59486d-1abf-49c0-a80c-ee7f1bcf6848",
+      "task_id": "8d01c869-f9be-4885-af76-3d28b6d1e014",
       "thumbnail_url": "",
-      "updated_at": "2026-11-17T13:11:44.127240Z",
-      "uuid": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+      "updated_at": "2026-11-18T05:14:01.853445Z",
+      "uuid": "591e1f4e-6daa-4d19-8dda-7b7538977970",
       "version_index": 1,
       "version_number": "v001",
       "video_url": ""
@@ -1350,7 +1378,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/"
     },
     "status": 200
   },
@@ -1362,39 +1390,39 @@
       "changelog": "",
       "code": "RPM_SH0010_COMP_V001",
       "color_space": "ACEScg",
-      "created_at": "2026-11-17T13:11:44.127231Z",
+      "created_at": "2026-11-18T05:14:01.853433Z",
       "department": "",
       "end_frame": 1048,
       "entity_code": "RPM_SH0010",
-      "entity_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "entity_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "entity_name": "Hero walk",
       "entity_type": "Shot",
       "file_path": "",
       "file_size_mb": "0.00",
       "fps": "24.000",
       "frame_range": "",
-      "id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+      "id": "591e1f4e-6daa-4d19-8dda-7b7538977970",
       "is_archived": false,
       "is_hero": false,
       "is_published": false,
       "notes": "",
       "project_code": "RPM",
-      "project_id": "37612e11-1811-46e7-bf6d-c29eab53c415",
+      "project_id": "1473a304-7c87-45c4-8a4c-4dc33d5dd85c",
       "published_at": null,
       "published_by_id": null,
       "publishing_info": {},
       "resolution": "4096x2160",
       "review_media": null,
       "review_media_job": null,
-      "shot_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+      "shot_id": "b513b60d-040e-4598-abf3-e05066f2955a",
       "source_file_url": "",
       "start_frame": 1001,
       "status": "Pending Review",
       "tags": [],
-      "task_id": "fd59486d-1abf-49c0-a80c-ee7f1bcf6848",
+      "task_id": "8d01c869-f9be-4885-af76-3d28b6d1e014",
       "thumbnail_url": "",
-      "updated_at": "2026-11-17T13:11:44.127240Z",
-      "uuid": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+      "updated_at": "2026-11-18T05:14:01.853445Z",
+      "uuid": "591e1f4e-6daa-4d19-8dda-7b7538977970",
       "version_index": 1,
       "version_number": "v001",
       "video_url": ""
@@ -1409,7 +1437,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/93b9054d-1ff3-4dc8-9e24-dc8e247e11a4/"
+      "path": "/api/v1/versions/591e1f4e-6daa-4d19-8dda-7b7538977970/"
     },
     "status": 200
   },
@@ -1426,24 +1454,24 @@
           "changelog": "",
           "code": "RPM_SH0010_COMP_V001",
           "color_space": "ACEScg",
-          "created_at": "2026-11-17T13:11:44.127231Z",
+          "created_at": "2026-11-18T05:14:01.853433Z",
           "department": "",
           "end_frame": 1048,
           "entity_code": "RPM_SH0010",
-          "entity_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+          "entity_id": "b513b60d-040e-4598-abf3-e05066f2955a",
           "entity_name": "Hero walk",
           "entity_type": "Shot",
           "file_path": "",
           "file_size_mb": "0.00",
           "fps": "24.000",
           "frame_range": "",
-          "id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+          "id": "591e1f4e-6daa-4d19-8dda-7b7538977970",
           "is_archived": false,
           "is_hero": false,
           "is_published": false,
           "notes": "",
           "project_code": "RPM",
-          "project_id": "37612e11-1811-46e7-bf6d-c29eab53c415",
+          "project_id": "1473a304-7c87-45c4-8a4c-4dc33d5dd85c",
           "published_at": null,
           "published_by_id": null,
           "publishing_info": {},
@@ -1452,18 +1480,18 @@
             "attempts": 1,
             "color_space": "",
             "created_by": {
-              "id": "c36de29a-7739-40e6-a35b-8ef9b6caf6d5",
+              "id": "d0b45428-1cd4-45a0-a3cb-464ac256ba02",
               "name": "user@example.test"
             },
             "error_code": "",
             "error_message": "",
             "filmstrip_tiles": 48,
-            "filmstrip_url": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/filmstrip/?token=SAMPLE",
-            "finished_at": "2026-11-17T13:11:46.685497Z",
+            "filmstrip_url": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/filmstrip/?token=SAMPLE",
+            "finished_at": "2026-11-18T05:14:04.302445Z",
             "frames_until": null,
-            "id": "bd5442c8-e2c6-46ae-8b05-69a1b29b61c5",
+            "id": "ca8057cf-e4d0-4597-9dde-f64826acc0ed",
             "kind": "movie",
-            "links_expire_at": "2026-11-17T14:11:46.897413Z",
+            "links_expire_at": "2026-11-18T06:14:04.511504Z",
             "probe": {
               "burn_ins": false,
               "colour": "as_stored",
@@ -1479,27 +1507,29 @@
               "video_codec": "h264",
               "width": 1280
             },
-            "proxy_url": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/proxy/?token=SAMPLE",
-            "queued_at": "2026-11-17T13:11:45.113936Z",
+            "proxy_url": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/proxy/?token=SAMPLE",
+            "published_file_id": null,
+            "queued_at": "2026-11-18T05:14:02.760332Z",
             "remake_of": null,
             "sequence": null,
             "source_name": "comp_v001.mov",
             "source_size": 31020,
-            "started_at": "2026-11-17T13:11:45.203747Z",
+            "started_at": "2026-11-18T05:14:02.849607Z",
             "status": "ready",
-            "thumbnail_url": "/api/v1/review-media/bd5442c8-e2c6-46ae-8b05-69a1b29b61c5/thumbnail/?token=SAMPLE",
-            "version_id": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4"
+            "storage_readable": false,
+            "thumbnail_url": "/api/v1/review-media/ca8057cf-e4d0-4597-9dde-f64826acc0ed/thumbnail/?token=SAMPLE",
+            "version_id": "591e1f4e-6daa-4d19-8dda-7b7538977970"
           },
           "review_media_job": null,
-          "shot_id": "01604f43-d3d5-4deb-9631-31f5cd2df3c3",
+          "shot_id": "b513b60d-040e-4598-abf3-e05066f2955a",
           "source_file_url": "",
           "start_frame": 1001,
           "status": "Pending Review",
           "tags": [],
-          "task_id": "fd59486d-1abf-49c0-a80c-ee7f1bcf6848",
+          "task_id": "8d01c869-f9be-4885-af76-3d28b6d1e014",
           "thumbnail_url": "",
-          "updated_at": "2026-11-17T13:11:44.127240Z",
-          "uuid": "93b9054d-1ff3-4dc8-9e24-dc8e247e11a4",
+          "updated_at": "2026-11-18T05:14:01.853445Z",
+          "uuid": "591e1f4e-6daa-4d19-8dda-7b7538977970",
           "version_index": 1,
           "version_number": "v001",
           "video_url": ""
@@ -1516,7 +1546,7 @@
       "body": null,
       "method": "GET",
       "params": {
-        "project_id": "37612e11-1811-46e7-bf6d-c29eab53c415"
+        "project_id": "1473a304-7c87-45c4-8a4c-4dc33d5dd85c"
       },
       "path": "/api/v1/versions/"
     },

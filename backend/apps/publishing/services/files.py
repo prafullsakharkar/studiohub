@@ -25,6 +25,7 @@ from apps.masterdata.selectors.catalog import MasterFileTypeSelector
 from apps.production.permissions.checks import has_explicit_permission_code, has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.version import VersionSelector
+from apps.production.services.review_media import ReviewMediaService
 from apps.publishing.constants import workflow
 from apps.publishing.domain.paths import PathRuleError, is_sequence_pattern, normalize_relative_path
 from apps.publishing.events import PublishedFileRevoked
@@ -429,6 +430,8 @@ class PublishedFileService:
             },
         )
         if target == workflow.REVOKED:
+            # RP-17 (C-RP-46, Q-RP-81): review copies read from this file stay, but no longer read it.
+            ReviewMediaService.forget_storage(locked.pk)
             default_event_bus.publish(
                 PublishedFileRevoked(
                     file_id=str(locked.pk),

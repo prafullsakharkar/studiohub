@@ -7660,6 +7660,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/publishing/files/{uuid}/review-copy/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Queue a review copy of the file's version, read from this file on studio storage (C-RP-44). */
+        post: operations["v1_publishing_files_review_copy_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/publishing/files/{uuid}/revoke/": {
         parameters: {
             query?: never;
@@ -16793,6 +16810,7 @@ export interface components {
             /** @description How many files this one was built from (C-RP-16); annotated by the selector on reads. */
             readonly upstream_count: number;
             readonly downstream_count: number;
+            readonly review_copy_refusal: string | null;
             readonly version: components["schemas"]["LoaderVersion"];
             readonly task: components["schemas"]["LoaderTask"] | null;
         };
@@ -25893,6 +25911,7 @@ export interface components {
             /** @description How many files this one was built from (C-RP-16); annotated by the selector on reads. */
             readonly upstream_count: number;
             readonly downstream_count: number;
+            readonly review_copy_refusal: string | null;
         };
         ReadAll: {
             /** Format: date-time */
@@ -26375,6 +26394,7 @@ export interface components {
             skipped_busy: number;
             skipped_sequence: number;
             skipped_missing: number;
+            skipped_storage: number;
         };
         /** @description One copy made with other settings than its project has now (C-RP-42). */
         ReviewCopyDiffering: {
@@ -26392,7 +26412,14 @@ export interface components {
             remakable: boolean;
             /** Format: date-time */
             frames_until: string | null;
+            /** Format: uuid */
+            published_file_id: string | null;
             why: ("burn_ins" | "colour")[];
+        };
+        /** @description ``POST publishing/files/{id}/review-copy/`` (RP-17, C-RP-44): the colour space, as for an upload. */
+        ReviewCopyFromFile: {
+            /** @default  */
+            color_space: string;
         };
         ReviewCopyVersion: {
             /** Format: uuid */
@@ -26547,9 +26574,10 @@ export interface components {
              *     * `transcode_failed` - The review copy could not be made.
              *     * `timeout` - Processing took too long and was stopped.
              *     * `source_missing` - The uploaded file is no longer on the server.
+             *     * `storage_unreadable` - The published file could not be read from studio storage.
              * @enum {string}
              */
-            readonly error_code: "probe_failed" | "unsupported_stream" | "transcode_failed" | "timeout" | "source_missing";
+            readonly error_code: "probe_failed" | "unsupported_stream" | "transcode_failed" | "timeout" | "source_missing" | "storage_unreadable";
             readonly error_message: string;
             readonly attempts: number;
             /** Format: date-time */
@@ -26570,6 +26598,9 @@ export interface components {
             readonly color_space: string;
             /** Format: date-time */
             readonly frames_until: string | null;
+            /** Format: uuid */
+            readonly published_file_id: string | null;
+            readonly storage_readable: boolean;
         };
         /** @description How a copy's colour was made (C-RP-40): the config's names, never a path. */
         ReviewMediaColour: {
@@ -46948,6 +46979,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublishedFile"];
+                };
+            };
+        };
+    };
+    v1_publishing_files_review_copy_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReviewCopyFromFile"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReviewCopyFromFile"];
+                "multipart/form-data": components["schemas"]["ReviewCopyFromFile"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewMedia"];
                 };
             };
         };

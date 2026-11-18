@@ -105,7 +105,7 @@ describe("a project's copies (C-RP-38)", () => {
       '1 review copy was made with burn-ins; the project now leaves them off.',
     );
     expect(remadeText(flow.remake_all_200.body)).toBe('Remaking 1 review copy. 1 left: the frames of those sequences are no longer kept.');
-    expect(remadeText({ queued: 3, skipped_busy: 1, skipped_sequence: 0, skipped_missing: 2 })).toBe(
+    expect(remadeText({ queued: 3, skipped_busy: 1, skipped_sequence: 0, skipped_missing: 2, skipped_storage: 0 })).toBe(
       'Remaking 3 review copies. 1 left: their version already has a copy being made. 2 left: the uploaded file is gone; upload it again.',
     );
   });

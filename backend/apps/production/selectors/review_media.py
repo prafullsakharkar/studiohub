@@ -11,6 +11,7 @@ from types import SimpleNamespace
 from typing import Any
 from uuid import UUID
 
+from django.conf import settings
 from django.db.models import Prefetch, Q, QuerySet
 
 from apps.production.models import ReviewMedia, Version
@@ -250,7 +251,12 @@ class ReviewMediaSelector(ProductionBaseSelector):
 
     @staticmethod
     def remakable(row: ReviewMedia) -> bool:
-        """Whether ``row`` can be remade: a movie or still with its upload, a sequence with its frames."""
+        """Whether ``row`` can be remade: a movie or still with its upload, a sequence with its frames,
+        a copy read from a published file while that file can still be read (RP-17, C-RP-46)."""
+        if row.published_file_id is not None:
+            return row.from_storage and (
+                row.storage_root.upper() in settings.PUBLISHING_STORAGE_MOUNTS
+            )
         if row.kind == ReviewMedia.Kind.SEQUENCE:
             return row.frames_kept
         return bool(row.source_path)
@@ -278,6 +284,8 @@ class ReviewMediaSelector(ProductionBaseSelector):
                     "record_code": getattr(record, "code", "") or version.entity_code or "",
                     "remakable": cls.remakable(row),
                     "frames_until": row.frames_until if row.frames_kept else None,
+                    # RP-17 (C-RP-46): the published file the copy was read from, or null
+                    "published_file_id": row.published_file_id,
                     "why": why[row.pk],
                 }
             )

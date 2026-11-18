@@ -110,6 +110,12 @@ are always `not_checked`.
   `mismatch` or `missing` for files whose checksum is only declared; it never changes a declared
   checksum and prints counts only. The repository defines no Celery app (`config/celery.py` is
   empty), so nothing runs it automatically.
+* **Review copies from storage** (review-pipeline RP-17, C-RP-44 to C-RP-46, ADR-0042): the same
+  setting decides which roots the media worker may read a review copy from
+  (`POST files/{id}/review-copy/`). `celery-media` must mount each listed root's directory, read-only,
+  at the same path. The web container only checks that a root is listed. A file's
+  `review_copy_refusal` says why a copy cannot be read from it. Revoking a file stops its copies from
+  being remade.
 * **Sequence checksum:** for an image sequence, `sha256` is the SHA-256 of the lines
   `"<frame file name>  <frame sha256>\n"` sorted by file name (the `sha256sum` listing).
 

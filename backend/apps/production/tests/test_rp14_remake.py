@@ -514,6 +514,7 @@ class TestProjectCopies:
             "skipped_busy": 1,
             "skipped_sequence": 1,
             "skipped_missing": 1,
+            "skipped_storage": 0,  # RP-17 (C-RP-46)
         }
         made = ReviewMedia.objects.get(remake_of__isnull=False)
         assert made.remake_of == first and made.created_by == producer
