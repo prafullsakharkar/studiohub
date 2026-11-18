@@ -316,6 +316,7 @@ class TestWhichDiffer:
             "remakable": True,
             "frames_until": None,
             "published_file_id": None,  # RP-17 (C-RP-46): an upload
+            "source": "upload",  # RP-18 (C-RP-49)
             "why": ["burn_ins"],
         }
         assert listed[1]["remakable"] is True and listed[1]["frames_until"] is not None

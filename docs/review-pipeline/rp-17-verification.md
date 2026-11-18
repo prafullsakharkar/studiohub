@@ -45,6 +45,7 @@ Built 2026-11-18 on `feature/rp-17-studio-storage-frames`, off `develop` at `63a
 5. **The publishing `_flow.json` capture tool fails at HEAD, before RP-17.** It creates sequence `SQ010` in project `PUB`, which the project-code prefix rule (CR-49) refuses. That sample was not recaptured: no test pins the `PublishedFile` keys to it. The depth sample, which does pin them, was recaptured.
 6. **The live test uses one of the harness's published versions.** Files register only to published versions, and publishing needs an approval by someone other than the version's producer (separation of duties), so the test's own version could not be published.
 7. **A retry of a failed storage job reads the file again** (up to three attempts, as for uploads). The final message says to make the copy again from the published file, not to upload it.
+8. **Found after the release, while planning RP-18: copies from storage arrive only after approval.** Files can be registered only to published versions, and only an approved version can be published, so "From a published file" lists nothing for a version still in review. RP-18 ([PLAN.md](PLAN.md#rp-18-review-copies-before-approval)) plans copies for versions in review.
 
 ## Gates
 

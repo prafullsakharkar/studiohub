@@ -116,6 +116,11 @@ are always `not_checked`.
   at the same path. The web container only checks that a root is listed. A file's
   `review_copy_refusal` says why a copy cannot be read from it. Revoking a file stops its copies from
   being remade.
+* **Review copies before approval** (review-pipeline RP-18, C-RP-47 to C-RP-49, ADR-0043): a project
+  can name a review folder on one listed root (`review_source_root`, `review_source_folder`); a version
+  still in review then has its copy read by path under that folder
+  (`POST versions/{id}/review-media/from-storage/`), with nothing registered here. The worker reads it
+  through the same read-only mount.
 * **Sequence checksum:** for an image sequence, `sha256` is the SHA-256 of the lines
   `"<frame file name>  <frame sha256>\n"` sorted by file name (the `sha256sum` listing).
 

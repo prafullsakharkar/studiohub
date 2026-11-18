@@ -5,6 +5,10 @@ every recommendation of Q-RP-77 to Q-RP-81) · Amends: [ADR-0040](ADR-0040-revie
 source comes from) · Plan and contracts: `docs/review-pipeline/PLAN.md` (RP-17), `docs/review-pipeline/CONTRACTS.md`
 (C-RP-44 to C-RP-46) · Evidence: `docs/review-pipeline/rp-17-verification.md`
 
+> **Amended by [ADR-0043](ADR-0043-review-copies-by-path-from-the-project-folder.md)** (RP-18): decision 1 no longer holds
+> alone. A version still in review can also have its copy read by a path from a request, bounded by its project's review
+> folder; the worker resolves it under that folder as decision 3 does under the root.
+
 ## Context
 
 Until RP-16 every review copy was made from an upload: the browser sent a movie, a still or a sequence of frames, and

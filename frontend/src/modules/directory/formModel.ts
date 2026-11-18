@@ -43,10 +43,12 @@ function jsonProblem(shape: 'array' | 'object', text: string): string | undefine
 
 export function buildSchema(fields: ReadonlyArray<FieldDef>, editing = false) {
   const shape: Record<string, z.ZodType> = {};
-  for (const field of fields) shape[field.name] = field.kind === 'checkbox' ? z.boolean() : z.string();
+  // A field only an edit shows is never registered on a new record, so it may hold no value at all there.
+  const checked = fields.filter((field) => editing || !field.onlyOnEdit);
+  for (const field of checked) shape[field.name] = field.kind === 'checkbox' ? z.boolean() : z.string();
   // Rules that depend on what is visible are checked together, so a hidden field is never required.
   return z.object(shape).superRefine((values, ctx) => {
-    for (const field of fields) {
+    for (const field of checked) {
       if (field.kind === 'checkbox' || !isVisible(field, values as Values)) continue;
       const value = String(values[field.name] ?? '').trim();
       if ((field.required || (!editing && field.requiredOnCreate)) && value === '') {

@@ -8,6 +8,7 @@ from apps.production.models import Project
 from apps.production.permissions.checks import has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
 
+from .review_folder import REVIEW_FOLDER_FIELDS, ReviewFolderGatedMixin
 from .vendors import ProjectPageSerializer, VendorNamesField
 
 # What an external (vendor/client) member must not read from the project record: money, progress
@@ -29,6 +30,8 @@ EXTERNAL_HIDDEN_FIELDS = (
     "vendor_ids",
     "vendor_names",
     "vendor_team_ids",
+    # RP-18 (Q-RP-86): where the studio's renders lie
+    *REVIEW_FOLDER_FIELDS,
 )
 
 
@@ -61,7 +64,7 @@ class BudgetGatedMixin:
         return data
 
 
-class ProjectSerializer(BudgetGatedMixin, BaseReadSerializer[Any]):
+class ProjectSerializer(BudgetGatedMixin, ReviewFolderGatedMixin, BaseReadSerializer[Any]):
     supervisor_id = serializers.UUIDField(read_only=True, allow_null=True)
     supervisor_name = serializers.SerializerMethodField()
     coordinator_id = serializers.UUIDField(read_only=True, allow_null=True)
@@ -90,6 +93,8 @@ class ProjectSerializer(BudgetGatedMixin, BaseReadSerializer[Any]):
             "review_burn_ins",
             "review_view",
             "review_look",
+            "review_source_root",
+            "review_source_folder",
             "start_date",
             "delivery_date",
             "thumbnail_url",

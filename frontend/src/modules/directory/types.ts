@@ -34,6 +34,8 @@ export interface FieldGate {
   clearWhenHidden?: boolean;
   /** Show the field only while creating (a value the server never reports back, so an edit form could not show it). */
   onlyOnCreate?: boolean;
+  /** Show (and send) the field only while editing (a value the create route does not take, such as a project's review folder). */
+  onlyOnEdit?: boolean;
   /** Value of the field on a NEW record (a form can also be pre-filled from the query string). */
   initial?: string | boolean;
   /** The row property that holds the saved value when it is not the write name (a write takes `project`, a read has `project_id`). */

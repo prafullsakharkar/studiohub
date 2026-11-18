@@ -5,10 +5,17 @@ from apps.production.models import Project
 
 from .base import BudgetGatedMixin
 from .colour import ProjectColourMixin
+from .review_folder import ProjectReviewFolderMixin, ReviewFolderGatedMixin
 from .vendors import VendorIdsField, VendorNamesField
 
 
-class ProjectUpdateSerializer(ProjectColourMixin, BudgetGatedMixin, BaseWriteSerializer[Any]):
+class ProjectUpdateSerializer(
+    ProjectReviewFolderMixin,
+    ProjectColourMixin,
+    BudgetGatedMixin,
+    ReviewFolderGatedMixin,
+    BaseWriteSerializer[Any],
+):
     vendor_ids = VendorIdsField()
     vendor_names = VendorNamesField()
 
@@ -28,6 +35,8 @@ class ProjectUpdateSerializer(ProjectColourMixin, BudgetGatedMixin, BaseWriteSer
             "review_burn_ins",
             "review_view",
             "review_look",
+            "review_source_root",
+            "review_source_folder",
             "start_date",
             "delivery_date",
             "thumbnail_url",

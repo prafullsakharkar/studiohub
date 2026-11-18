@@ -74,6 +74,11 @@ class Project(EntityModel):
     # OpenColorIO config's, for its sRGB display.
     review_view = models.CharField(max_length=100, blank=True, default="")
     review_look = models.CharField(max_length=100, blank=True, default="")
+    # RP-18 (C-RP-47, Q-RP-83): where on studio storage this project's renders may be read from for
+    # review copies of versions still in review. ``review_source_root`` is a storage root's code (as in
+    # ``PUBLISHING_STORAGE_MOUNTS``), ``review_source_folder`` a relative folder on it; both blank = off.
+    review_source_root = models.CharField(max_length=50, blank=True, default="")
+    review_source_folder = models.CharField(max_length=512, blank=True, default="")
 
     start_date = models.DateField(null=True, blank=True)
     delivery_date = models.DateField(null=True, blank=True)
