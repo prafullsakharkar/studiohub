@@ -1,6 +1,6 @@
 """
 Kinds and target types of an in-app notification (docs/review-pipeline RP-6, C-RP-23; RP-11, C-RP-28;
-RP-13, C-RP-34 and C-RP-35).
+RP-13, C-RP-34 and C-RP-35; RP-19, C-RP-50).
 """
 
 from __future__ import annotations
@@ -29,6 +29,8 @@ class Kind(models.TextChoices):
     PUBLISHED_FILE_REVOKED = "published_file_revoked", "A file you depend on was revoked"
     MILESTONE_DUE = "milestone_due", "A milestone is due or overdue"
     MILESTONE_COMPLETED = "milestone_completed", "Your milestone was completed"
+    # RP-19 (C-RP-50): to the reviewer of the version's task
+    REVIEW_MEDIA_TO_REVIEW = "review_media_to_review", "A copy is ready for you to review"
 
 
 class TargetType(models.TextChoices):
@@ -49,6 +51,9 @@ KIND_PRIORITY = (Kind.NOTE_MENTION,)
 UNMUTABLE_KINDS = frozenset({Kind.NOTE_MENTION, Kind.REVIEW_INVITED})
 #: every kind a person may mute, in the kinds' order
 MUTABLE_KINDS = tuple(kind for kind in Kind.values if kind not in UNMUTABLE_KINDS)
+
+#: a version in these statuses is not waiting for a reviewer: no ``review_media_to_review`` (Q-RP-88)
+SETTLED_VERSION_STATUSES = frozenset({"Approved", "Archived"})
 
 #: the review decisions that notify (Q-RP-50); the others are the reviewer's own bookkeeping
 REVIEW_DECISIONS = frozenset({"Approved", "Rejected", "Changes Requested", "Retake"})

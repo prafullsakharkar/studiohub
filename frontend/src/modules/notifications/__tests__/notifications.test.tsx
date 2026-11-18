@@ -25,6 +25,8 @@ const lead = flow.lead_list.body.results as Notification[];
 const path = (c: MockCall) => new URL(c.url).pathname;
 const BASE = '/api/v1/notifications/';
 /** RP-11 (C-RP-28, C-RP-30): docs/sync/samples/notifications/_review_notifications_flow.json. */
+const copyFlow = loadSample<Record<string, Captured>>('notifications/_copy_to_review_flow.json');
+const toReview = copyFlow.supervisor_list.body.results[0] as Notification;
 const reviewFlow = loadSample<Record<string, Captured>>('notifications/_review_notifications_flow.json');
 const reviewList = [...reviewFlow.artist_list.body.results, ...reviewFlow.lead_list.body.results, ...reviewFlow.supervisor_list.body.results] as Notification[];
 /** RP-13 (C-RP-34, C-RP-35): docs/sync/samples/notifications/_pipeline_notifications_flow.json. */
@@ -92,6 +94,12 @@ describe('what a row says and where it leads', () => {
   it('a review movie has no actor; a failure says why in words', () => {
     expect(describeNotification(of('review_media_ready'))).toBe('The review movie of RPN_SH010_COMP_V001 is ready');
     expect(describeNotification(of('review_media_failed'))).toBe('The review movie of RPN_SH010_COMP_V001 failed: the proxy could not be made');
+  });
+
+  it('a copy ready to review names the version and opens its Media tab (RP-19, C-RP-50)', () => {
+    expect(toReview.kind).toBe('review_media_to_review');
+    expect(describeNotification(toReview)).toBe('RPR_SH010_COMP_V003 is ready for you to review');
+    expect(notificationPath(toReview)).toBe(`/versions/${toReview.target.id}?tab=media`);
   });
 
   it('a task and a version open their page, a review movie the Media tab, a note the Notes of its record', () => {

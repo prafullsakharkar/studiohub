@@ -29,6 +29,7 @@ const KIND_LABELS: Record<NotificationKind, string> = {
   published_file_revoked: 'Revoked files',
   milestone_due: 'Milestones due',
   milestone_completed: 'My milestones completed',
+  review_media_to_review: 'Copies to review',
 };
 
 /**
