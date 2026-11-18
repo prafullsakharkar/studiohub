@@ -1183,7 +1183,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-18 Review copies before approval
 
-**Status:** planned 2026-11-18; answered the same day (Q-RP-82 to Q-RP-86 = A, [DECISIONS.md](DECISIONS.md#rp-18-answers)); built the same day, not committed ([rp-18-verification.md](rp-18-verification.md)). Branch `feature/rp-18-auto-review-copies`, off `develop` at `04b11f9e` (v4.14.0).
+**Status:** planned 2026-11-18; answered the same day (Q-RP-82 to Q-RP-86 = A, [DECISIONS.md](DECISIONS.md#rp-18-answers)); built the same day, committed as `bfaf6466` ([rp-18-verification.md](rp-18-verification.md)). Branch `feature/rp-18-auto-review-copies`, off `develop` at `04b11f9e` (v4.14.0).
 
 **Goal.** A version that is still in review gets its review copy from its render on studio storage, by path, without an upload and without being published first. A render-farm tool can ask for it as soon as a render finishes.
 
