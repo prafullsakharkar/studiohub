@@ -1245,7 +1245,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-19 Copy ready to review
 
-**Status:** planned 2026-11-18; answered the same day (Q-RP-87 to Q-RP-91 = A, [DECISIONS.md](DECISIONS.md#rp-19-answers)); built the same day, committed `d17c3ccd` ([rp-19-verification.md](rp-19-verification.md)). Branch `feature/rp-19-copy-notifications`, off `develop` at `fb63b0ba` (v4.15.0).
+**Status:** planned 2026-11-18; answered the same day (Q-RP-87 to Q-RP-91 = A, [DECISIONS.md](DECISIONS.md#rp-19-answers)); committed `d17c3ccd`, merged into `develop` and `main`, released in v4.16.0 ([rp-19-verification.md](rp-19-verification.md)). Branch `feature/rp-19-copy-notifications`, off `develop` at `fb63b0ba` (v4.15.0).
 
 **Goal.** When a version's review copy is ready, the person who reviews that work is told, with a link to the copy. The version's artist is told too when someone else made the copy. With RP-18, a farm render of a version still in review then reaches its reviewer without anyone passing it on.
 

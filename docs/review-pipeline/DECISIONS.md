@@ -152,7 +152,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-16 Sequence copies after a settings change | planned in [PLAN.md](PLAN.md#rp-16-sequence-copies-after-a-settings-change); answered (Q-RP-73 to Q-RP-76 = A); committed `eb5cb64d`, merged into `develop` and `main`, released in v4.13.0 ([rp-16-verification.md](rp-16-verification.md)) |
 | RP-17 Review copies from studio storage | planned in [PLAN.md](PLAN.md#rp-17-review-copies-from-studio-storage); answered (Q-RP-77 to Q-RP-81 = A); committed `d06c0572`, merged into `develop` and `main`, released in v4.14.0 ([rp-17-verification.md](rp-17-verification.md)) |
 | RP-18 Review copies before approval | planned in [PLAN.md](PLAN.md#rp-18-review-copies-before-approval); answered (Q-RP-82 to Q-RP-86 = A); committed `bfaf6466`, merged into `develop` and `main`, released in v4.15.0 ([rp-18-verification.md](rp-18-verification.md)) |
-| RP-19 Copy ready to review | planned in [PLAN.md](PLAN.md#rp-19-copy-ready-to-review); answered (Q-RP-87 to Q-RP-91 = A); committed `d17c3ccd` ([rp-19-verification.md](rp-19-verification.md)) |
+| RP-19 Copy ready to review | planned in [PLAN.md](PLAN.md#rp-19-copy-ready-to-review); answered (Q-RP-87 to Q-RP-91 = A); committed `d17c3ccd`, merged into `develop` and `main`, released in v4.16.0 ([rp-19-verification.md](rp-19-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 

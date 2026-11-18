@@ -1,6 +1,6 @@
 # RP-19 verification: copy ready to review
 
-Built 2026-11-18 on `feature/rp-19-copy-notifications`, off `develop` at `fb63b0ba` (v4.15.0), with every recommendation of Q-RP-87 to Q-RP-91 ([DECISIONS.md](DECISIONS.md#rp-19-answers)). Committed `d17c3ccd`. Contracts C-RP-50 and C-RP-51 ([CONTRACTS.md](CONTRACTS.md#rp-19-copy-ready-to-review)). No ADR: the trust model does not change.
+Built 2026-11-18 on `feature/rp-19-copy-notifications`, off `develop` at `fb63b0ba` (v4.15.0), with every recommendation of Q-RP-87 to Q-RP-91 ([DECISIONS.md](DECISIONS.md#rp-19-answers)). Committed `d17c3ccd`; merged into `develop` (`58829a73`) and `main` (`48d28da4`), released in v4.16.0. CI was green on both on the first push. Contracts C-RP-50 and C-RP-51 ([CONTRACTS.md](CONTRACTS.md#rp-19-copy-ready-to-review)). No ADR: the trust model does not change.
 
 Why: a ready review copy told only the person who made it (RP-6). With RP-18, a render farm makes copies of versions still in review, and nobody who reviews the work heard of them; the version's artist did not either, when someone else made the copy.
 
