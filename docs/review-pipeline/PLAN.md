@@ -1369,3 +1369,69 @@ The grade applied with the switch off; the grade applied to a display-ready movi
 ### Gates
 
 ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, notifications, core); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green.
+
+## RP-21 The task and its reviewer on the version page
+
+**Status:** planned 2026-11-19; answered the same day (Q-RP-97 to Q-RP-100 = A, [DECISIONS.md](DECISIONS.md#rp-21-answers)); built on `feature/rp-21-version-reviewer`, off `develop` at `fbb1a370` (v4.17.1) ([rp-21-verification.md](rp-21-verification.md)).
+
+**Goal.** The version page says which task the version is for and who reviews it, with a link to the task. A reviewer who opens a copy from RP-19's "Copy to review" sees the version is theirs to review. An artist sees who their work goes to.
+
+### Why (what is there today)
+
+- **The version page never names its task.** Its overview shows the department, the artist, frames, resolution, frame rate, colour space and dates (`VersionWorkspace.tsx`). The version's answer carries only `task_id` (`VersionSerializer`), and nothing on the page uses it. To find the task, or who reviews it, you go through the shot.
+- **The reviewer is only on the task.** `Task.reviewer` is set in the task form. The task's answer serves `reviewer_id` and `reviewer_name`, and the task page shows them. Since RP-19, the reviewer is told when a copy is ready, but the version page they land on doesn't say they are the reviewer.
+- **The version's artist is often empty.** The Versions screen never sets `Version.artist` (RP-11, C-RP-28), so the overview's *Artist* is usually "—". The task names who did the work (its assignee) and who reviews it.
+- **The data is readable already.** Every built-in role with `version.view` also has `task.view`. `GET tasks/{id}/` applies the external scope (`selectors/external_scope.py`):
+  - a vendor member reads the tasks of their vendor, and so the task of every version they can see;
+  - a client member reads no task, but does read the versions in their reviews.
+
+  So asking for the task shows it to studio staff and vendors, and gives a client member a 404.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 21.1 | **The task on the version page** (Q-RP-97, Q-RP-98, Q-RP-100). When the version has a `task_id`, the page reads the task (`tasksApi.get`, only with `task.view`). The overview gains three facts after *Artist*: **Task**, the task's code and title, linked to `/tasks/{id}`; **Assignee**; **Reviewer**. Each shows "—" when empty. A version with no task shows none of the three. A refused read (404 or 403: a client member, or a custom role without `task.view`) shows none of the three and no error; any other failure shows them as "—". | `modules/production/review/VersionWorkspace.tsx` |
+| 21.2 | **Who reviews it, said once** (Q-RP-99). When the signed-in person is the task's reviewer, the Reviewer fact reads "You". No other change to the page. | same |
+| 21.3 | **Capture.** A new tool, `test_capture_version_task.py`. It records a version with a task, and that task's detail with an assignee and a reviewer. It also records a client member who reads the version (in a review they take part in) and gets 404 for its task, and a vendor member who reads both. | `docs/sync/tools/`, `docs/sync/samples/production/` |
+| 21.4 | **Tests, live, docs.** Frontend tests from the samples, and a live file. DECISIONS, `rp-21-verification.md`, and a pre-deploy checklist line. | `frontend/src/modules/production/review/__tests__/`, `frontend/src/test/live/`, `docs/` |
+
+### Questions before RP-21 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-97 | Where do the task and reviewer show? | A: **three facts in the overview**, after *Artist*: Task (linked), Assignee, Reviewer. B: one line under the title, beside the shot and project ("Comp · SH0010 · reviewed by Mia"). C: both. | **A**. The overview is where the version's facts are, and the facts grid already takes "—" for an empty value. A line under the title is easy to miss on a busy page, and C says the same thing twice. |
+| Q-RP-98 | How does the page read them? | A: **it asks for the task** (`GET tasks/{task_id}/`); whoever may not read the task sees none of the three. B: a backend change request: the version's answer gains `task_code`, `task_title`, `task_assignee_name` and `task_reviewer_name`. | **A**. No backend change, and the external scope already decides who sees the task: a client member gets 404, so the studio's assignee and reviewer never reach the client. B would serve those names with every version, to client members too, unless the version serializer copied the external scope. The cost is one extra request on a page that already makes several. |
+| Q-RP-99 | Does the page say when the reviewer is you? | A: **yes**: the Reviewer fact reads "You". B: no, the name only. | **A**. A reviewer arriving from "Copy to review" should see at a glance that it is theirs. It is one comparison with the signed-in user, already known from `/auth/me`. |
+| Q-RP-100 | Can the reviewer or assignee be changed from the version page? | A: **no**: the Task link opens the task, whose edit page sets both. B: a reviewer picker on the version page for holders of `task.update`. | **A**. The task form already owns these fields and their rules (members only, the project's people). A second editor would duplicate that and its tests. |
+
+Also decided in the plan, without a question:
+- **No backend change, no migration, no new permission code or setting, and no API contract change.**
+- **Only the version page.** The Versions list and the review player stay as they are.
+- **The version's own *Artist* stays**, as it is today; the Assignee fact sits next to it.
+
+### Not in RP-21
+
+- A reviewer field on versions; review queues or assignment rules (RP-19 left these out too).
+- The task on the Versions list or in the review player.
+- E-mail or digests; P3 and HDR copies; grades from EDLs or ALEs.
+
+### Tests (frontend, from captured samples)
+
+- **21.1:**
+  - a version with a task shows the Task link (code and title, to the task's page), the assignee and the reviewer;
+  - a task without a reviewer shows "—";
+  - a version without a task shows none of the three and asks for no task;
+  - a 404 or 403 for the task (the client member's capture) shows none of the three and no error;
+  - a 500 shows the facts as "—";
+  - without `task.view` the task is not asked for.
+- **21.2:** the reviewer signed in sees "You"; anyone else sees the name.
+- **Live:** against a seeded backend, a version page shows its task and reviewer. A client member's version page shows neither and no error.
+
+### Mutation checks
+
+The task read without `task.view`; a 404 shown as an error; the facts shown for a version without a task; "You" for someone who is not the reviewer; the link to the wrong task.
+
+### Gates
+
+Frontend typecheck, Biome (0 errors, 910 warnings), tests, build, unreachable check; ruff check on the new capture tool; the capture and the live run; after the merge, CI green.

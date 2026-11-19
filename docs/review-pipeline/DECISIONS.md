@@ -154,6 +154,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-18 Review copies before approval | planned in [PLAN.md](PLAN.md#rp-18-review-copies-before-approval); answered (Q-RP-82 to Q-RP-86 = A); committed `bfaf6466`, merged into `develop` and `main`, released in v4.15.0 ([rp-18-verification.md](rp-18-verification.md)) |
 | RP-19 Copy ready to review | planned in [PLAN.md](PLAN.md#rp-19-copy-ready-to-review); answered (Q-RP-87 to Q-RP-91 = A); committed `d17c3ccd`, merged into `develop` and `main`, released in v4.16.0 ([rp-19-verification.md](rp-19-verification.md)) |
 | RP-20 Per-shot grades on review copies | planned in [PLAN.md](PLAN.md#rp-20-per-shot-grades-on-review-copies); answered (Q-RP-92 to Q-RP-96 = A); committed `10f16b62`, merged into `develop` and `main`, released in v4.17.0 ([rp-20-verification.md](rp-20-verification.md)) |
+| RP-21 The task and its reviewer on the version page | planned in [PLAN.md](PLAN.md#rp-21-the-task-and-its-reviewer-on-the-version-page); answered (Q-RP-97 to Q-RP-100 = A); built ([rp-21-verification.md](rp-21-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
@@ -240,3 +241,14 @@ The owner took every recommendation of [PLAN.md, RP-20 questions](PLAN.md#questi
 | Q-RP-95 | **A** | Only colour-managed copies get it, and only while the project's switch is on (off by default). |
 | Q-RP-96 | **A** | Copies made with another grade are counted in the review-copies notice (reason `grade`) and remade by the project remake, not automatically. |
 
+
+## RP-21 answers
+
+The owner took every recommendation of [PLAN.md, RP-21 questions](PLAN.md#questions-before-rp-21-starts) on 2026-11-19 ("all A, go").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-97 | **A** | The version's overview gains three facts after *Artist*: Task (linked to the task), Assignee, Reviewer. |
+| Q-RP-98 | **A** | The page reads the task with `GET tasks/{task_id}/`; whoever may not read the task (a client member, a role without `task.view`) sees none of the three. No backend change. |
+| Q-RP-99 | **A** | The Reviewer fact reads "You" for the task's reviewer. |
+| Q-RP-100 | **A** | Nothing is edited from the version page; the task's edit page sets the assignee and the reviewer. |
