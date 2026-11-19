@@ -36,6 +36,7 @@ class ProjectUpdateSerializer(
             "review_view",
             "review_look",
             "review_grades",
+            "review_downloads",
             "review_source_root",
             "review_source_folder",
             "start_date",

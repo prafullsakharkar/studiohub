@@ -1508,3 +1508,65 @@ A name matching part of a code; the first name taken when a later one matches a 
 ### Gates
 
 ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green.
+
+## RP-23 Downloading a review copy
+
+**Status:** planned 2026-11-19; answered the same day (Q-RP-105 to Q-RP-108 = A, [DECISIONS.md](DECISIONS.md#rp-23-answers)); built on `feature/rp-23-review-download`, off `develop` at `eec94418` (v4.19.0), committed `c58da79c` ([rp-23-verification.md](rp-23-verification.md)). Left out by RP-19 and RP-20 ("downloading a copy"); chosen over the task on the Versions list, slates and automatic copies on registration.
+
+**Goal.** A reader of a version may **download its review copy** (the H.264 movie or the JPEG still, as made, with its burn-ins and grade) from the version page and the review player, where the project allows it. Each download is recorded.
+
+### Why (what is there today)
+
+- **Copies can only be played.** `review-media/{id}/stream/<output>/` serves `proxy`, `thumbnail` and `filmstrip` inline, through signed links bound to one user, one row and one output (C-RP-21). A supervisor who wants the copy for a cut, or a client who wants it for their own review, has to ask for the file.
+- **The browser cannot save it well.** "Save video as" on the player saves a file named by the token, when the browser offers it at all; nothing records it.
+- **The trust model must hold.** External members (vendors, clients) see versions only through their reviews and must use MFA (TM-007). A studio under TPN rules decides per show whether a client may take a copy away, and must be able to say who did.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 23.1 | **The project's switch** (Q-RP-105). `Project.review_downloads`: who may download, `internal` (the default), `everyone` or `nobody`. Changed by whoever may change the project; the change is in the project's change log (project updates write no audit row; the change-tracking signals record the old and new value and who). Migration. | `production/models/project.py`, migration, project serializer |
+| 23.2 | **The link** (Q-RP-106). A new output `download` in `review_media_links.OUTPUTS`, served from the copy's proxy file (movie or still) with `Content-Disposition: attachment; filename="<version code>.<mp4\|jpg>"` (ASCII-safe, plus `filename*` in UTF-8). The serializer gives `download_url` only when the viewer may download now; the stream view checks again on every request (the switch, the viewer's membership kind, their access to the version). A playback link cannot be turned into a download: the token names its output. Works behind `MEDIA_ACCEL_PREFIX` (the header goes with `X-Accel-Redirect`). | `services/review_media_links.py`, `api/views/review_media_stream.py`, `api/serializers/review_media.py` |
+| 23.3 | **The record** (Q-RP-107). Each download is an audit row (`review_media.download`: who, the copy, the version, the client IP), written when the response starts at byte 0, so a resumed download is not counted twice. The version's history shows it to whoever may see the project's audit. | `services/review_media.py`, audit |
+| 23.4 | **Frontend** (Q-RP-108). A **Download** link in the review movie panel (version page, Media tab) and in the review player's toolbar, shown only when `download_url` is given. The project's form gains the switch (three choices, with what each means). Types and keys. | `modules/production/review/ReviewMoviePanel.tsx`, the player, the project form, `api/production/review.ts`, `structure.ts` |
+| 23.5 | **Capture, live, docs.** Capture `production/_review_download_flow.json` (each switch value, an internal member, a client, an artist without access, the headers, the audit row). A live file. CONTRACTS (C-RP-56, C-RP-57), DECISIONS, `rp-23-verification.md`, the TPN note in the threat model. | `docs/` |
+
+### Questions before RP-23 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-105 | Who may download? | A: **a project switch**, `internal` by default: studio members who can see the version; `everyone` adds external members (vendors, clients) in their reviews; `nobody` turns it off. B: everyone who can see the version, no switch. C: a new permission code, `review.download`, given per role. | **A**. Whether a client may take a copy away is a per-show decision (TPN, the client's own rules), not a per-role one: the same client role is allowed on one show and not on another. Internal by default keeps today's exposure for external members. |
+| Q-RP-106 | What is downloaded? | A: **the review copy** as made (H.264 MP4, or the JPEG for a still), with its burn-ins and grade. B: also the original upload (a movie as uploaded). | **A**. The copy is what was reviewed and carries the burn-ins that say what it is. Originals and EXR frames are deliverables, which belong to publishing and deliveries, not to review. |
+| Q-RP-107 | Are downloads recorded? | A: **an audit row per download** (who, which copy, when, from where), not per byte range. B: not recorded. | **A**. "Who took a copy of this out" is the question a TPN audit or a leak asks, and the answer must exist before it is asked. |
+| Q-RP-108 | Where is the Download link? | A: **the review movie panel and the review player**. B: also each row of the Versions list. | **A**. Those are the places a copy is watched. A list action would invite bulk downloads, which RP-23 leaves out. |
+
+Also decided in the plan, without a question:
+- **No new permission code.** Downloading follows reading the version (C-RP-24's reach) and the project's switch.
+- **No watermarking or per-viewer marks**, no zip of several copies, no download of the original or of frames.
+- **No ADR:** the link is C-RP-21's signed link with a new output, checked the same way; the switch only narrows. The threat model gains a note.
+
+### Not in RP-23
+
+- Downloading several copies at once, a playlist or a review as a zip.
+- Forensic watermarks or per-viewer burn-ins; download limits or expiry beyond the link's TTL.
+- Downloading originals, EXR frames or the graded LUT.
+
+### Tests (targeted, test database)
+
+- **23.1:** the default; each value; who may change it; the audit of a change.
+- **23.2:**
+  - `download_url` for an internal reader, absent for an external one under `internal`, present under `everyone`, absent for everyone under `nobody`;
+  - the stream view re-checks: the switch turned off after the link was given; the viewer removed from the review; a playback token used for `download`;
+  - the headers (attachment, the file name from the version code, non-ASCII names), a still, ranges;
+  - `MEDIA_ACCEL_PREFIX`.
+- **23.3:** one audit row per download, none for a range that does not start at 0, none for a refused request.
+- **23.4:** the link shown or not from captured samples; the switch on the project form.
+
+### Mutation checks
+
+`download_url` given to an external member under `internal`; the switch not re-checked by the stream view; a playback token accepted for `download`; `inline` instead of `attachment`; an audit row for each range; the version code not ASCII-safe in `filename`.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green.
+

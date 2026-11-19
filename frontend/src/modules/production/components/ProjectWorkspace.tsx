@@ -639,6 +639,12 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
                     <span>Shot grades on review copies</span>
                   </>
                 )}
+                {project.review_downloads && project.review_downloads !== 'internal' && (
+                  <>
+                    <span>•</span>
+                    <span>{project.review_downloads === 'everyone' ? 'Clients and vendors may download review copies' : 'Review copies cannot be downloaded'}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>

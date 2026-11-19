@@ -281,6 +281,24 @@ Work on the entries that still rated High or Medium after the first round.
   overrides the default and makes client addresses the proxy's.
 - **TM-020.** `frontend-token-handling.md` lists what the web client must do; the client was not reviewed.
 
+# Follow-up: downloading review copies (review pipeline RP-23; TM-005, TM-002)
+
+Review copies were playable only (C-RP-21). RP-23 lets a reader of a version save its copy, under the
+same rules as playback and one more (docs/review-pipeline/CONTRACTS.md C-RP-56, C-RP-57):
+
+- **Per show.** The project's `review_downloads` is `internal` by default: only studio members who can
+  see the version may download. `everyone` adds vendor and client members, within what their
+  membership lets them see; `nobody` turns downloads off. A change is in the project's change log.
+- **The same signed link.** The output `download` is C-RP-21's link: one user, one copy, one output,
+  the same lifetime. Each request re-checks the user, their access to the version and the project's
+  switch, so turning it off stops links already given. A playback link is never a download link.
+- **What leaves.** Only the review copy (the H.264 MP4 or the JPEG of a still, with its burn-ins and
+  grade), as an attachment with the same inert headers; never the upload, frames or LUTs.
+- **Who took a copy.** Each download is an audit row (`export`, the version, the user, the client
+  address), written once per download, not per range.
+
+Not done: forensic watermarks or per-viewer burn-ins; a download count limit.
+
 ## Correction: the object-store bucket, and its removal
 
 An earlier summary said the public-read setting on the MinIO `media` bucket had been removed. It had
