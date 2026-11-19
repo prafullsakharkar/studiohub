@@ -71,6 +71,8 @@ export function useVersionsListConfig(scope?: { projectId: string }): DirectoryL
       // shot_id, task_id, asset_id, artist and is_hero are ignored by the server: only these narrow the list
       { key: 'entity_type', label: 'For', options: options(['Shot', 'Asset']) },
       { key: 'is_published', label: 'Published', options: [{ value: 'true', label: 'Published' }, { value: 'false', label: 'Not published' }] },
+      // RP-24 (C-RP-58): in Pending Review, on a task the signed-in person reviews; the server reads who from the session
+      { key: 'to_review', label: 'To review', options: [{ value: 'mine', label: 'Mine' }] },
     ],
     columns: [
       { header: 'Version', cell: (row) => `${row.code} · ${row.version_number}`, sortField: 'created_at' },

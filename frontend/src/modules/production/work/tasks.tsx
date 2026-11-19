@@ -49,6 +49,8 @@ export function useTasksListConfig(scope?: { projectId: string }): DirectoryList
       { key: 'priority', label: 'Priority', options: options(TASK_PRIORITIES) },
       { key: 'entity_type', label: 'Type', options: options(TASK_ENTITY_TYPES) },
       ...(me ? [{ key: 'assignee_id', label: 'Assignee', options: [{ value: me, label: 'Me' }] }] : []),
+      // RP-24 (C-RP-58): the tasks the signed-in person reviews
+      ...(me ? [{ key: 'reviewer_id', label: 'Reviewer', options: [{ value: me, label: 'Me' }] }] : []),
     ],
     columns: [
       { header: 'Task', cell: (row) => `${row.code} · ${row.title}`, sortField: 'code' },

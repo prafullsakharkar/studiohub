@@ -2,7 +2,7 @@ import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-quer
 import { ArrowDown, ArrowUp, Columns3, Download, LayoutGrid, List, Plus, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { auditKeys } from '@/api/audit/audit';
 import { mapHttpError } from '@/api/errors/errorMapper';
 import { InputError } from '@/api/errors/serverMessage';
@@ -44,6 +44,21 @@ function FilterSelect({ filter, value, onChange, filters }: { filter: ListFilter
 }
 
 /**
+ * The filters a list starts with from its address (`/versions?to_review=mine`, RP-24), so a link can open it filtered:
+ * only keys the list offers as filters (never its scope), and for a filter with fixed choices only one of them.
+ */
+function filtersFromAddress(filters: ReadonlyArray<ListFilter>, address: URLSearchParams, scope?: Record<string, unknown>): Record<string, string> {
+  const start: Record<string, string> = {};
+  for (const filter of filters) {
+    const value = address.get(filter.key);
+    if (!value || (scope && filter.key in scope)) continue;
+    if (filter.options && !filter.options.some((o) => o.value === value)) continue;
+    start[filter.key] = value;
+  }
+  return start;
+}
+
+/**
  * One list screen for every directory entity: server-side search / filters / ordering / paging with the
  * backend's own parameter names, export of ALL filtered rows (Q4), and delete with the server's reason
  * (a referenced row answers 409 `has_dependants`, shown by ConfirmDialog).
@@ -62,7 +77,10 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
   const fetchPage = inArchive ? (config.archived as NonNullable<typeof config.archived>).fetchPage : config.fetchPage;
   // A list whose rows carry links that expire (or work still running) refreshes itself; the board likewise (RP-10).
   const rowRefetch = config.refetchInterval;
-  const list = usePaginatedList<T>({ queryKey: [...config.queryKey, view, config.scope ?? {}], fetchPage, ordering: config.defaultOrdering, filters: config.scope, enabled: !boardMode, refetchInterval: rowRefetch });
+  const [address] = useSearchParams();
+  // Read once: afterwards the filters are the page's own, as before.
+  const [startFilters] = useState(() => ({ ...filtersFromAddress(config.filters ?? [], address, config.scope), ...config.scope }));
+  const list = usePaginatedList<T>({ queryKey: [...config.queryKey, view, config.scope ?? {}], fetchPage, ordering: config.defaultOrdering, filters: startFilters, enabled: !boardMode, refetchInterval: rowRefetch });
   // The board reads the same search and filters as the table, but all at once (it has no pages).
   const boardParams = { ...list.params, page: 1, page_size: config.board?.limit ?? 500, ...(config.board?.ordering ? { ordering: config.board.ordering } : {}) };
   const board = useQuery({ queryKey: [...config.queryKey, 'board', config.scope ?? {}, boardParams], queryFn: ({ signal }) => config.fetchPage(boardParams, signal), enabled: boardMode, staleTime: 30_000, placeholderData: keepPreviousData, refetchInterval: rowRefetch ? (q) => rowRefetch(q.state.data?.results ?? []) : undefined });

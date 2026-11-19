@@ -53076,6 +53076,7 @@ export interface operations {
                 priority?: string;
                 project?: string;
                 project_id?: string;
+                reviewer_id?: string;
                 /** @description A search term. */
                 search?: string;
                 sequence_id?: string;
@@ -53295,6 +53296,7 @@ export interface operations {
                 priority?: string;
                 project?: string;
                 project_id?: string;
+                reviewer_id?: string;
                 /** @description A search term. */
                 search?: string;
                 sequence_id?: string;
@@ -56131,6 +56133,8 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 status?: string;
+                /** @description * `mine` - mine */
+                to_review?: "mine";
             };
             header?: never;
             path?: never;
@@ -56418,6 +56422,8 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 status?: string;
+                /** @description * `mine` - mine */
+                to_review?: "mine";
             };
             header?: never;
             path: {
@@ -56535,6 +56541,8 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 status?: string;
+                /** @description * `mine` - mine */
+                to_review?: "mine";
             };
             header?: never;
             path: {

@@ -1,6 +1,6 @@
 # RP-23 verification: downloading a review copy
 
-Built 2026-11-19 on `feature/rp-23-review-download`, off `develop` at `eec94418` (v4.19.0), with every recommendation of Q-RP-105 to Q-RP-108 ([DECISIONS.md](DECISIONS.md#rp-23-answers)). Committed `c58da79c`. Contracts C-RP-56 and C-RP-57 ([CONTRACTS.md](CONTRACTS.md#rp-23-downloading-a-review-copy)). One migration (`0017_rp23_review_downloads`, one field with a default). No new route, permission code or setting, and no ADR: the link is C-RP-21's signed link with a new output, checked the same way, and the switch only narrows. The TPN note is in `docs/10-security/tpn-immediate-remediation.md`.
+Built 2026-11-19 on `feature/rp-23-review-download`, off `develop` at `eec94418` (v4.19.0), with every recommendation of Q-RP-105 to Q-RP-108 ([DECISIONS.md](DECISIONS.md#rp-23-answers)). Committed `c58da79c`; merged into `develop` (`a80f3053`, then the CI fix `f3fa5014` as `fb2cc453`) and `main` (`de9edb13`), released in v4.20.0. CI on `develop` failed once (see [After the merge](#after-the-merge)) and was green after the fix, and on `main` on its first push. Contracts C-RP-56 and C-RP-57 ([CONTRACTS.md](CONTRACTS.md#rp-23-downloading-a-review-copy)). One migration (`0017_rp23_review_downloads`, one field with a default). No new route, permission code or setting, and no ADR: the link is C-RP-21's signed link with a new output, checked the same way, and the switch only narrows. The TPN note is in `docs/10-security/tpn-immediate-remediation.md`.
 
 Why: review copies could only be played. Saving one meant asking for the file, or "Save video as" on a file named after the token, and nothing recorded it.
 
@@ -81,7 +81,6 @@ Why: review copies could only be played. Saving one meant asking for the file, o
 - Originals, EXR frames or graded LUTs.
 - The client case in the live run: it needs an external member with MFA. The backend tests and the capture cover it.
 - Left out of the commit, as before: `docs/sync/tools/run_role_smoke.sh`, `docs/sync/phase-34-verification.md`, `frontend/src/test/live/newScreens.live.test.tsx`, `spikes/`, `scripts/ATOM API.yaml`.
-- The pre-deploy checklist line is written with the release.
 
 ## Files
 

@@ -1511,7 +1511,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-23 Downloading a review copy
 
-**Status:** planned 2026-11-19; answered the same day (Q-RP-105 to Q-RP-108 = A, [DECISIONS.md](DECISIONS.md#rp-23-answers)); built on `feature/rp-23-review-download`, off `develop` at `eec94418` (v4.19.0), committed `c58da79c` ([rp-23-verification.md](rp-23-verification.md)). Left out by RP-19 and RP-20 ("downloading a copy"); chosen over the task on the Versions list, slates and automatic copies on registration.
+**Status:** planned 2026-11-19; answered the same day (Q-RP-105 to Q-RP-108 = A, [DECISIONS.md](DECISIONS.md#rp-23-answers)); built on `feature/rp-23-review-download`, off `develop` at `eec94418` (v4.19.0), committed `c58da79c`, merged into `develop` and `main`, released in v4.20.0 ([rp-23-verification.md](rp-23-verification.md)). Left out by RP-19 and RP-20 ("downloading a copy"); chosen over the task on the Versions list, slates and automatic copies on registration.
 
 **Goal.** A reader of a version may **download its review copy** (the H.264 movie or the JPEG still, as made, with its burn-ins and grade) from the version page and the review player, where the project allows it. Each download is recorded.
 
@@ -1570,3 +1570,63 @@ Also decided in the plan, without a question:
 
 ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green.
 
+
+## RP-24 Waiting for my review
+
+**Status:** planned 2026-11-19; answered the same day (Q-RP-109 to Q-RP-112 = A, [DECISIONS.md](DECISIONS.md#rp-24-answers)); built on `feature/rp-24-review-queue`, off `develop` at `0d302538` (v4.20.0), committed `3786373c` ([rp-24-verification.md](rp-24-verification.md)). Contract C-RP-58. Left out by RP-19 ("review queues") and RP-21; chosen over slates on downloaded copies (Q-RP-63's own condition, "if clients later get review copies as files", is now met, but the copy's burn-ins and file name already say what it is), the task on the Versions list and Display P3 or HDR copies.
+
+**Goal.** A reviewer can list the versions waiting for them: in *Pending Review*, on a task they review. The Versions list gets a filter for it, and the Tasks list a *Reviewer* filter.
+
+### Why (what is there today)
+
+- **A reviewer is told, but nothing lists what waits.** Since RP-19, the task's reviewer gets `review_media_to_review` when a version's first copy is ready, and since RP-21 the version page says "You" when they review it. To see everything waiting, a supervisor has to keep the notifications unread, or open every task.
+- **Neither list can filter by reviewer.** The Versions list filters by project, status, record type and published (`VersionFilterSet`); the Tasks list by project, status, priority, type and *Assignee: Me* (`TaskFilterSet.assignee_id`). Nothing reads `Task.reviewer`.
+- **The dashboard counts per project, not per person.** `StudioOverview` shows "Pending review" shots and `ReviewVersionHealth` the project's reviews; nothing says what is yours.
+- **Who may see the reviewer is settled.** A task's answer serves `reviewer_id` and `reviewer_name` to whoever reads the task. A client member reads no task (`selectors/external_scope.py`), and RP-21 kept the reviewer from them (Q-RP-98).
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 24.1 | **The version filter** (Q-RP-109, Q-RP-110). `GET versions/?to_review=mine`: the live versions in *Pending Review* whose task's reviewer is the caller (task live, not archived). Any other value is a 400 on the field. It narrows the rows the caller already reads (C-RP-24's reach), takes the other filters, search and ordering, and adds no query per row. | `production/api/filtersets/version.py` |
+| 24.2 | **The task filter** (Q-RP-110). `GET tasks/?reviewer_id=<id>`, read as `assignee_id` is (an unknown or malformed id gives no rows, never a 400). | `production/api/filtersets/task.py` |
+| 24.3 | **Frontend** (Q-RP-111, Q-RP-112). The Versions list gains a filter *To review: Mine*, and its rows link to the version page as now. The Tasks list gains *Reviewer: Me*, beside *Assignee: Me*. The notifications page's `review_media_to_review` rows gain a link "All waiting for my review", to `/versions?to_review=mine`. For that link to open the list filtered, the list page starts with the filters the address names: only keys it offers as filters, and for a filter with fixed choices only those values. Today a list's filters live only in its state, so this applies to every directory list. | `modules/production/review/versions.tsx`, `modules/production/work/tasks.tsx`, `modules/notifications/`, `modules/directory/DirectoryListPage.tsx` |
+| 24.4 | **Capture, live, docs.** A new capture tool, `test_capture_review_queue.py`: two reviewers, versions in each status, a task without a reviewer, an archived task, a client member asking for `to_review=mine`, a bad value. A live file. CONTRACTS (C-RP-58), DECISIONS, `rp-24-verification.md`, a pre-deploy checklist line. | `docs/sync/tools/`, `docs/sync/samples/production/`, `frontend/src/test/live/`, `docs/` |
+
+### Questions before RP-24 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-109 | What is "waiting for my review"? | A: **versions in *Pending Review* whose task's reviewer is me**. B: A, plus versions in review sessions that list me as a reviewer. C: A, but only versions with a ready review copy. | **A**. The task's reviewer is who RP-19 tells and RP-21 names, so the list matches the notices. Review sessions have their own reviewers, their own page and their own verdicts; mixing them would list a version twice for two reasons. C hides a version whose copy failed or was never made, which still waits. |
+| Q-RP-110 | How does the server answer it? | A: **`to_review=mine` on versions**, always the caller; and `reviewer_id=<id>` on tasks, as `assignee_id`. B: `reviewer_id=<id>` on both. | **A**. On tasks the reviewer is already served, so filtering by it shows nothing new. On versions it would: a client member reading the versions of a review could find which ones a studio supervisor reviews, which RP-21 kept from them. `mine` answers only about yourself. |
+| Q-RP-111 | Where does the frontend show it? | A: **a filter on the Versions list** (*To review: Mine*), *Reviewer: Me* on the Tasks list, and a link from the "copy to review" notices. B: a "To review" widget on the dashboard. C: a new page. | **A**. The Versions list already has the columns, ordering, search and export a queue needs. The link from a notice needs the list to read its starting filters from the address, which is small and helps every list. The dashboard is per project; a reviewer's queue spans projects. |
+| Q-RP-112 | A count of what waits? | A: **no count**: the notification inbox already counts the unread "copy to review" notices. B: a count beside *Versions* in the sidebar, asked for on every page. | **A**. B adds a request to every page for a number the inbox nearly gives. It can follow if reviewers ask for it. |
+
+Also decided in the plan, without a question:
+- **No migration, no new permission code or setting.** The filters narrow what the caller already reads.
+- **No contract change to any answer:** no field is added to a version or a task.
+- **The list's order stays the caller's** (newest first by default), as on every list.
+
+### Not in RP-24
+
+- Someone else's queue (a lead looking at a supervisor's); versions with no reviewer; assignment rules.
+- Review sessions' reviewers (Q-RP-109 B); a count in the sidebar (Q-RP-112 B); e-mail or digests (Q-RP-7 stands).
+- Slates on downloaded copies; the task on the Versions list; Display P3 and HDR copies.
+
+### Tests (targeted, test database)
+
+- **24.1:**
+  - a version in *Pending Review* on a task I review is listed; one in another status, on a task someone else reviews, on a task with no reviewer, without a task, archived, or on an archived task is not;
+  - another value is a 400; the filter with search, status and project;
+  - a client member and a vendor member get only rows they already read; the query count does not grow with the rows.
+- **24.2:** by reviewer id; an unknown and a malformed id give no rows.
+- **24.3 (from captured samples):** the Versions filter sends `to_review=mine` and shows the server's rows; *Reviewer: Me* sends the signed-in user's id; the notice's link opens the filtered list; the address's filters on a list: an offered key and value applied, an unknown key or value ignored.
+- **Live:** against a seeded backend, a reviewer's Versions list filtered to *To review: Mine* shows their waiting version and not a colleague's.
+
+### Mutation checks
+
+The status not checked; the reviewer compared with the artist; an archived task's version listed; another value accepted; `reviewer_id` filtering by assignee; the frontend sending the user's id for `to_review`; a list applying a key from the address it does not offer.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green.
