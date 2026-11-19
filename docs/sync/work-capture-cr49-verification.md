@@ -2,7 +2,7 @@
 
 Done 2026-11-18 on `fix/work-capture-cr49`, off `develop` at `385a7675` (v4.17.0). Tests and docs only: no backend or product change.
 
-Committed as `c5d0c658`.
+Committed as `c5d0c658`; merged into `develop` (`cf9047f4`) and `main` (`e2679371`), released in v4.17.1. CI was green on both on the first push.
 
 ## The problem
 

@@ -3,12 +3,14 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { auditKeys } from '@/api/audit/audit';
+import { mapHttpError } from '@/api/errors/errorMapper';
 import { reviewMediaRefetchInterval, reviewsApi, versionsApi } from '@/api/production/review';
 import { tasksApi } from '@/api/production/work';
 import type { Version } from '@/api/production/review';
 import { EntityHistory } from '@/components/history/EntityHistory';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
+import { useCurrentUser } from '@/core/auth/useCurrentUser';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { StatusBadge } from '@/shared/components/StatusBadge';
@@ -42,6 +44,35 @@ const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, c
     <dd className="mt-0.5 text-sm text-slate-200">{children || '—'}</dd>
   </div>
 );
+
+/**
+ * The version's task, who it is assigned to and who reviews it (RP-21), read from the task itself. Whoever may not read the
+ * task sees none of the three: a client member is answered 404 (the external scope), a role without `task.view` 403, and
+ * without `task.view` it is not asked for. Any other failure shows them empty.
+ */
+const VersionTaskFacts: React.FC<{ version: Version }> = ({ version }) => {
+  const taskId = version.task_id;
+  const canView = useCan('task.view', { projectId: version.project_id });
+  const { user } = useCurrentUser();
+  const query = useQuery({ queryKey: tasksApi.keys.detail(taskId ?? ''), queryFn: ({ signal }) => tasksApi.get(taskId as string, signal), enabled: Boolean(taskId) && canView });
+  if (!taskId || !canView || query.isLoading) return null;
+  const status = query.error ? mapHttpError(query.error).status : null;
+  if (status === 403 || status === 404) return null;
+  const task = query.data;
+  return (
+    <>
+      <Fact label="Task">
+        {task && (
+          <Link to={`/tasks/${task.id}`} className="text-cyan-300 hover:underline">
+            {task.code} · {task.title}
+          </Link>
+        )}
+      </Fact>
+      <Fact label="Assignee">{task?.assignee_name}</Fact>
+      <Fact label="Reviewer">{task?.reviewer_id && task.reviewer_id === user?.id ? 'You' : task?.reviewer_name}</Fact>
+    </>
+  );
+};
 
 /** The reviews showing this version, every page of them (`version_id`, C-RP-03). */
 const VersionReviews: React.FC<{ version: Version }> = ({ version }) => {
@@ -201,6 +232,7 @@ export const VersionWorkspace: React.FC = () => {
                 <dl className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <Fact label="Department">{v.department}</Fact>
                   <Fact label="Artist">{v.artist_name}</Fact>
+                  <VersionTaskFacts version={v} />
                   <Fact label="Frames">{v.frame_range}</Fact>
                   <Fact label="Resolution">{v.resolution}</Fact>
                   <Fact label="Frame rate">{v.fps}</Fact>
