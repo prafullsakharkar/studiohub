@@ -1573,7 +1573,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-24 Waiting for my review
 
-**Status:** planned 2026-11-19; answered the same day (Q-RP-109 to Q-RP-112 = A, [DECISIONS.md](DECISIONS.md#rp-24-answers)); built on `feature/rp-24-review-queue`, off `develop` at `0d302538` (v4.20.0) ([rp-24-verification.md](rp-24-verification.md)). Contract C-RP-58. Left out by RP-19 ("review queues") and RP-21; chosen over slates on downloaded copies (Q-RP-63's own condition, "if clients later get review copies as files", is now met, but the copy's burn-ins and file name already say what it is), the task on the Versions list and Display P3 or HDR copies.
+**Status:** planned 2026-11-19; answered the same day (Q-RP-109 to Q-RP-112 = A, [DECISIONS.md](DECISIONS.md#rp-24-answers)); built on `feature/rp-24-review-queue`, off `develop` at `0d302538` (v4.20.0), committed `3786373c` ([rp-24-verification.md](rp-24-verification.md)). Contract C-RP-58. Left out by RP-19 ("review queues") and RP-21; chosen over slates on downloaded copies (Q-RP-63's own condition, "if clients later get review copies as files", is now met, but the copy's burn-ins and file name already say what it is), the task on the Versions list and Display P3 or HDR copies.
 
 **Goal.** A reviewer can list the versions waiting for them: in *Pending Review*, on a task they review. The Versions list gets a filter for it, and the Tasks list a *Reviewer* filter.
 

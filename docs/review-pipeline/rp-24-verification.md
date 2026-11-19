@@ -1,6 +1,6 @@
 # RP-24 verification: waiting for my review
 
-Built 2026-11-19 on `feature/rp-24-review-queue`, off `develop` at `0d302538` (v4.20.0), with every recommendation of Q-RP-109 to Q-RP-112 ([DECISIONS.md](DECISIONS.md#rp-24-answers)). Not committed yet. Contract C-RP-58 ([CONTRACTS.md](CONTRACTS.md#rp-24-waiting-for-my-review)). No migration, no new route, permission code or setting, no field added to any answer, and no ADR.
+Built 2026-11-19 on `feature/rp-24-review-queue`, off `develop` at `0d302538` (v4.20.0), with every recommendation of Q-RP-109 to Q-RP-112 ([DECISIONS.md](DECISIONS.md#rp-24-answers)). Committed `3786373c`. Contract C-RP-58 ([CONTRACTS.md](CONTRACTS.md#rp-24-waiting-for-my-review)). No migration, no new route, permission code or setting, no field added to any answer, and no ADR.
 
 Why: since RP-19 a task's reviewer is told when a version's copy is ready, but nothing listed what waits for them. Neither the Versions nor the Tasks list could filter by reviewer, and the dashboard counts per project.
 
