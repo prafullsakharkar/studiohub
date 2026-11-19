@@ -1511,7 +1511,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-23 Downloading a review copy
 
-**Status:** planned 2026-11-19; answered the same day (Q-RP-105 to Q-RP-108 = A, [DECISIONS.md](DECISIONS.md#rp-23-answers)); built on `feature/rp-23-review-download`, off `develop` at `eec94418` (v4.19.0), committed `c58da79c` ([rp-23-verification.md](rp-23-verification.md)). Left out by RP-19 and RP-20 ("downloading a copy"); chosen over the task on the Versions list, slates and automatic copies on registration.
+**Status:** planned 2026-11-19; answered the same day (Q-RP-105 to Q-RP-108 = A, [DECISIONS.md](DECISIONS.md#rp-23-answers)); built on `feature/rp-23-review-download`, off `develop` at `eec94418` (v4.19.0), committed `c58da79c`, merged into `develop` and `main`, released in v4.20.0 ([rp-23-verification.md](rp-23-verification.md)). Left out by RP-19 and RP-20 ("downloading a copy"); chosen over the task on the Versions list, slates and automatic copies on registration.
 
 **Goal.** A reader of a version may **download its review copy** (the H.264 movie or the JPEG still, as made, with its burn-ins and grade) from the version page and the review player, where the project allows it. Each download is recorded.
 
