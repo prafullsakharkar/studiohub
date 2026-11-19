@@ -1,6 +1,6 @@
 # RP-22 verification: grades from EDLs and ALEs
 
-Built 2026-11-19 on `feature/rp-22-edl-ale-grades`, off `develop` at `876fbacb` (v4.18.0), with every recommendation of Q-RP-101 to Q-RP-104 ([DECISIONS.md](DECISIONS.md#rp-22-answers)). Committed `d5d2576c`. Contract C-RP-55, which extends C-RP-54 ([CONTRACTS.md](CONTRACTS.md#rp-22-grades-from-edls-and-ales)). No migration, no new route, permission code or setting, and no ADR: the files are text, read with no parser that fetches anything, and the trust model doesn't change.
+Built 2026-11-19 on `feature/rp-22-edl-ale-grades`, off `develop` at `876fbacb` (v4.18.0), with every recommendation of Q-RP-101 to Q-RP-104 ([DECISIONS.md](DECISIONS.md#rp-22-answers)). Committed `d5d2576c`; merged into `develop` (`e9150429`) and `main` (`1448dac6`), released in v4.19.0. CI was green on both on the first push. Contract C-RP-55, which extends C-RP-54 ([CONTRACTS.md](CONTRACTS.md#rp-22-grades-from-edls-and-ales)). No migration, no new route, permission code or setting, and no ADR: the files are text, read with no parser that fetches anything, and the trust model doesn't change.
 
 Why: *Import grades…* read only CDL XML files (`.cc`, `.ccc`, `.cdl`). Grades that arrive in the cut's EDL (`*ASC_SOP`, `*ASC_SAT` comments) or a dailies ALE (`ASC_SOP`, `ASC_SAT` columns) had to be typed in one shot at a time.
 
@@ -82,7 +82,6 @@ Why: *Import grades…* read only CDL XML files (`.cc`, `.ccc`, `.cdl`). Grades 
 
 - FCPXML, AAF and OpenTimelineIO; EDL dialects other than CMX 3600 beyond the lines they share with it.
 - Left out of the commit, as before: `docs/sync/tools/run_role_smoke.sh`, `docs/sync/phase-34-verification.md`, `frontend/src/test/live/newScreens.live.test.tsx`, `spikes/`, `scripts/ATOM API.yaml`.
-- The pre-deploy checklist line is written with the release.
 
 ## Files
 

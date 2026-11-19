@@ -87,7 +87,7 @@ describe('a copy read from a published file (C-RP-44, C-RP-46)', () => {
     const noFiles = { ...artist, permissions: (artist.permissions ?? []).filter((p) => p !== 'publishing.view') } as User;
     mockFetch(() => ({ status: 200, body: fromMovie }));
     mount(<ReviewMoviePanel version={{ ...fromMovie, artist_id: noFiles.id }} />, noFiles);
-    expect(within(panel()).queryByRole('link')).toBeNull();
+    expect(within(panel()).queryByRole('link', { name: copy(fromMovie).source_name })).toBeNull(); // the one link is Download (RP-23)
     expect(within(panel()).getByText(/made by the server from the published file/).textContent).toContain(copy(fromMovie).source_name);
     expect(within(panel()).getByRole('button', { name: 'Replace' })).toBeTruthy();
     expect(within(panel()).queryByRole('button', { name: 'From a published file' })).toBeNull();

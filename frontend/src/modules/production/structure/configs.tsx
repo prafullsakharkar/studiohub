@@ -1,4 +1,4 @@
-import { PROJECT_STATUSES, PROJECT_TYPES, PROJECT_WORKFLOWS, TRACK_TYPES, episodesApi, projectsApi, sequencesApi, showsApi, tracksApi } from '@/api/production/structure';
+import { PROJECT_STATUSES, PROJECT_TYPES, PROJECT_WORKFLOWS, REVIEW_DOWNLOADS, TRACK_TYPES, episodesApi, projectsApi, sequencesApi, showsApi, tracksApi } from '@/api/production/structure';
 import type { EditorialTrack, Episode, Project, Sequence, Show } from '@/api/production/structure';
 import { EntityPicker } from '@/components/forms/EntityPicker';
 import { ClientPicker, VendorMultiPicker } from '@/modules/directory/pickers';
@@ -86,6 +86,8 @@ export const projectsFormConfig: DirectoryFormConfig<Project> = {
     { kind: 'entity', textValue: true, name: 'review_look', label: 'Review look', render: (p) => <ReviewColourSelect field="review_look" value={p.value} onChange={p.onChange} error={p.error} /> },
     // RP-20 (C-RP-53): off by default; only colour-managed copies (EXR frames, uploads naming a colour space) take a grade.
     { kind: 'checkbox', name: 'review_grades', label: "Apply shot grades (ASC CDL) to colour-managed review copies" },
+    // RP-23 (C-RP-56, Q-RP-105): studio members by default; clients and vendors only when a show allows it.
+    { kind: 'select', name: 'review_downloads', label: 'Who may download review copies', initial: 'internal', options: [...REVIEW_DOWNLOADS], hint: 'A download saves the copy with its burn-ins and grade, and is recorded.' },
     // RP-18 (C-RP-47): where the studio's renders lie, so a version still in review can have its copy read by path. Read
     // and written only with project.update, set once the project exists; both blank switches it off.
     { kind: 'text', name: 'review_source_root', label: 'Review folder: storage root', permission: MANAGE_PROJECT, onlyOnEdit: true, hint: 'A storage root the server reads, for example STUDIO.' },

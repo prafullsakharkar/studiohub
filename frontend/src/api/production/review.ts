@@ -163,6 +163,12 @@ export interface ReviewMedia {
   thumbnail_url: string | null;
   filmstrip_url: string | null;
   filmstrip_tiles: number;
+  /**
+   * RP-23 (C-RP-56): saves the copy as an attachment named after the version, signed like the others; null unless the
+   * copy is ready and the project's `review_downloads` lets this viewer download (studio members under `internal`,
+   * everyone under `everyone`, nobody under `nobody`). Each download is recorded (C-RP-57).
+   */
+  download_url: string | null;
   links_expire_at: string | null;
   error_code: string;
   error_message: string;

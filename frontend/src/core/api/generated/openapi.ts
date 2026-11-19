@@ -16525,6 +16525,7 @@ export interface components {
             unmatched: string[];
             invalid: components["schemas"]["GradeImportInvalid"][];
             applied: number;
+            ungraded: number;
         };
         GradeImportInvalid: {
             id: string;
@@ -16532,7 +16533,7 @@ export interface components {
             message: string;
         };
         GradeImportMatched: {
-            /** @description The correction's id in the file. */
+            /** @description The correction's id in the file; for an EDL or ALE, `event <n>: <name>` or `row <n>: <name>`. */
             id: string;
             shot: components["schemas"]["GradeImportShot"];
             old: components["schemas"]["ShotGrade"] | null;
@@ -20757,6 +20758,15 @@ export interface components {
             review_look?: string;
             /** @description When on, colour-managed review copies of a shot's versions carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53). Off by default. */
             review_grades?: boolean;
+            /**
+             * @description Who may download a version's review copy: studio members who can see the version (the default), everyone who can see it (also vendors and clients), or nobody (review pipeline RP-23, C-RP-56).
+             *
+             *     * `internal` - Studio members
+             *     * `everyone` - Everyone who can see the version
+             *     * `nobody` - Nobody
+             * @enum {string}
+             */
+            review_downloads?: "internal" | "everyone" | "nobody";
             review_source_root?: string;
             review_source_folder?: string;
             /** Format: date */
@@ -25211,6 +25221,15 @@ export interface components {
             review_look?: string;
             /** @description When on, colour-managed review copies of a shot's versions carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53). Off by default. */
             review_grades?: boolean;
+            /**
+             * @description Who may download a version's review copy: studio members who can see the version (the default), everyone who can see it (also vendors and clients), or nobody (review pipeline RP-23, C-RP-56).
+             *
+             *     * `internal` - Studio members
+             *     * `everyone` - Everyone who can see the version
+             *     * `nobody` - Nobody
+             * @enum {string}
+             */
+            review_downloads?: "internal" | "everyone" | "nobody";
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25290,6 +25309,15 @@ export interface components {
             review_look?: string;
             /** @description When on, colour-managed review copies of a shot's versions carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53). Off by default. */
             review_grades?: boolean;
+            /**
+             * @description Who may download a version's review copy: studio members who can see the version (the default), everyone who can see it (also vendors and clients), or nobody (review pipeline RP-23, C-RP-56).
+             *
+             *     * `internal` - Studio members
+             *     * `everyone` - Everyone who can see the version
+             *     * `nobody` - Nobody
+             * @enum {string}
+             */
+            review_downloads?: "internal" | "everyone" | "nobody";
             review_source_root?: string;
             review_source_folder?: string;
             /** Format: date */
@@ -25381,6 +25409,15 @@ export interface components {
             review_look?: string;
             /** @description When on, colour-managed review copies of a shot's versions carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53). Off by default. */
             review_grades?: boolean;
+            /**
+             * @description Who may download a version's review copy: studio members who can see the version (the default), everyone who can see it (also vendors and clients), or nobody (review pipeline RP-23, C-RP-56).
+             *
+             *     * `internal` - Studio members
+             *     * `everyone` - Everyone who can see the version
+             *     * `nobody` - Nobody
+             * @enum {string}
+             */
+            review_downloads?: "internal" | "everyone" | "nobody";
             review_source_root?: string;
             review_source_folder?: string;
             /** Format: date */
@@ -25668,6 +25705,15 @@ export interface components {
             review_look?: string;
             /** @description When on, colour-managed review copies of a shot's versions carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53). Off by default. */
             review_grades?: boolean;
+            /**
+             * @description Who may download a version's review copy: studio members who can see the version (the default), everyone who can see it (also vendors and clients), or nobody (review pipeline RP-23, C-RP-56).
+             *
+             *     * `internal` - Studio members
+             *     * `everyone` - Everyone who can see the version
+             *     * `nobody` - Nobody
+             * @enum {string}
+             */
+            review_downloads?: "internal" | "everyone" | "nobody";
             review_source_root?: string;
             review_source_folder?: string;
             /** Format: date */
@@ -26699,6 +26745,7 @@ export interface components {
             readonly thumbnail_url: string | null;
             readonly filmstrip_url: string | null;
             readonly filmstrip_tiles: number;
+            readonly download_url: string | null;
             /** Format: date-time */
             readonly links_expire_at: string | null;
             /** Format: uuid */
