@@ -2,6 +2,8 @@
 
 Done 2026-11-18 on `fix/work-capture-cr49`, off `develop` at `385a7675` (v4.17.0). Tests and docs only: no backend or product change.
 
+Committed as `c5d0c658`.
+
 ## The problem
 
 CR-49 (v4.4.0) refuses a new sequence, shot, asset, task or episode whose code does not start with the project's code, and a new shot without a sequence. CR-49's verification did not rerun the capture tools, and five of them create records that way:
