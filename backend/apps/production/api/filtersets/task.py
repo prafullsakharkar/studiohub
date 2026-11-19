@@ -1,3 +1,5 @@
+import uuid
+
 import django_filters
 from django.db.models import Q
 
@@ -26,6 +28,8 @@ class TaskFilterSet(BaseFilterSet):
     team_id = django_filters.CharFilter(method="filter_team")
     assignee = django_filters.CharFilter(method="filter_assignee")
     assignee_id = django_filters.CharFilter(method="filter_assignee")
+    # RP-24 (C-RP-58): read as assignee_id is; a task's answer already serves its reviewer.
+    reviewer_id = django_filters.CharFilter(method="filter_reviewer")
     vendor_id = django_filters.CharFilter(field_name="vendor_id", lookup_expr="iexact")
     # Accepted but not yet scoped: no Show model exists (see the Show epic).
     # Declared explicitly so the param documents intent and survives any
@@ -35,7 +39,7 @@ class TaskFilterSet(BaseFilterSet):
 
     class Meta:
         model = Task
-        fields = ["status", "priority", "project", "project_id", "entity_type", "entity_id", "department", "team", "team_id", "assignee", "assignee_id", "vendor_id", "show_id", "is_archived"]
+        fields = ["status", "priority", "project", "project_id", "entity_type", "entity_id", "department", "team", "team_id", "assignee", "assignee_id", "reviewer_id", "vendor_id", "show_id", "is_archived"]
 
 
     def filter_project(self, queryset, name, value):
@@ -62,6 +66,15 @@ class TaskFilterSet(BaseFilterSet):
         try:
             return queryset.filter(assignee_id=value)
         except (ValueError, TypeError, Exception):
+            return queryset.none()
+
+    def filter_reviewer(self, queryset, name, value):
+        """An unknown or malformed id gives no rows, never a 400 (as ``assignee_id``)."""
+        if not value:
+            return queryset
+        try:
+            return queryset.filter(reviewer_id=uuid.UUID(str(value)))
+        except (ValueError, TypeError):
             return queryset.none()
 
     def filter_show_id(self, queryset, name, value):

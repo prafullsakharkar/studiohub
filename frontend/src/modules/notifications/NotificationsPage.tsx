@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { NOTIFICATION_KINDS, notificationsApi } from '@/api/notifications/notifications';
 import type { Notification, NotificationKind } from '@/api/notifications/notifications';
 import { Pagination } from '@/shared/components/Pagination';
@@ -31,6 +31,9 @@ const KIND_LABELS: Record<NotificationKind, string> = {
   milestone_completed: 'My milestones completed',
   review_media_to_review: 'Copies to review',
 };
+
+/** The Versions list filtered to what waits for the signed-in person's review (RP-24). */
+const TO_REVIEW_PATH = '/versions?to_review=mine';
 
 /**
  * Every notification of the signed-in person (review pipeline RP-6, C-RP-23), newest first, with the unread and kind
@@ -115,6 +118,12 @@ export const NotificationsPage: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <NotificationRow n={n} onOpen={openRow} />
               </div>
+              {n.kind === 'review_media_to_review' && (
+                // RP-24 (C-RP-58): every version waiting for this person's review, not only this one
+                <Link to={TO_REVIEW_PATH} className="self-center px-3 text-[11px] text-cyan-400 hover:text-cyan-300 shrink-0">
+                  All waiting for my review
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={() => (n.read_at ? unread : read).mutate(n)}

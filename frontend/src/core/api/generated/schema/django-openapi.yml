@@ -29241,6 +29241,10 @@ paths:
         name: project_id
         schema:
           type: string
+      - in: query
+        name: reviewer_id
+        schema:
+          type: string
       - name: search
         required: false
         in: query
@@ -29705,6 +29709,10 @@ paths:
           type: string
       - in: query
         name: project_id
+        schema:
+          type: string
+      - in: query
+        name: reviewer_id
         schema:
           type: string
       - name: search
@@ -33071,6 +33079,13 @@ paths:
         name: status
         schema:
           type: string
+      - in: query
+        name: to_review
+        schema:
+          type: string
+          enum:
+          - mine
+        description: '* `mine` - mine'
       tags:
       - v1
       security:
@@ -33615,6 +33630,13 @@ paths:
         name: status
         schema:
           type: string
+      - in: query
+        name: to_review
+        schema:
+          type: string
+          enum:
+          - mine
+        description: '* `mine` - mine'
       - in: path
         name: uuid
         schema:
@@ -33821,6 +33843,13 @@ paths:
         name: status
         schema:
           type: string
+      - in: query
+        name: to_review
+        schema:
+          type: string
+          enum:
+          - mine
+        description: '* `mine` - mine'
       - in: path
         name: uuid
         schema:
