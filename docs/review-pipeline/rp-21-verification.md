@@ -1,6 +1,6 @@
 # RP-21 verification: the task and its reviewer on the version page
 
-Built 2026-11-19 on `feature/rp-21-version-reviewer`, off `develop` at `fbb1a370` (v4.17.1), with every recommendation of Q-RP-97 to Q-RP-100 ([DECISIONS.md](DECISIONS.md#rp-21-answers)). Committed `5b303561`. Frontend only: no backend change, no migration, no new permission code or setting, and no API contract change, so there is no new C-RP contract and no ADR.
+Built 2026-11-19 on `feature/rp-21-version-reviewer`, off `develop` at `fbb1a370` (v4.17.1), with every recommendation of Q-RP-97 to Q-RP-100 ([DECISIONS.md](DECISIONS.md#rp-21-answers)). Committed `5b303561`; merged into `develop` (`a447dcbe`) and `main` (`b5e39d92`), released in v4.18.0. CI was green on both on the first push. Frontend only: no backend change, no migration, no new permission code or setting, and no API contract change, so there is no new C-RP contract and no ADR.
 
 Why: the version page never named its task. Its overview showed the artist, usually empty because the Versions screen never sets it (RP-11). Since RP-19, the reviewer is told when a copy is ready, but the page they land on didn't say they review it.
 
@@ -67,7 +67,6 @@ No backend code changed, so no backend tests were run.
 - The task on the Versions list or in the review player (left out by the plan).
 - No live mutation run; the five mutations above are covered by the unit tests.
 - Left out of the commit, as before: `docs/sync/tools/run_role_smoke.sh`, `docs/sync/phase-34-verification.md`, `frontend/src/test/live/newScreens.live.test.tsx`, `spikes/`, `scripts/ATOM API.yaml`.
-- The pre-deploy checklist line is written with the release.
 
 ## Files
 
