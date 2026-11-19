@@ -17,5 +17,5 @@ export const STATUSHISTORYROW_KEYS: Record<keyof StatusHistoryRow, true> = { act
 export const TEMPLATEITEM_KEYS: Record<keyof TemplateItem, true> = { default_bid_hours: true, department_name: true, id: true, name: true, order: true, task_type_code: true, task_type_id: true, task_type_name: true };
 // RP-20 (C-RP-52, C-RP-54)
 export const SHOTGRADE_KEYS: Record<keyof ShotGrade, true> = { offset: true, power: true, saturation: true, slope: true };
-export const GRADEIMPORT_KEYS: Record<keyof GradeImport, true> = { applied: true, corrections: true, dry_run: true, file_name: true, invalid: true, matched: true, unchanged: true, unmatched: true };
+export const GRADEIMPORT_KEYS: Record<keyof GradeImport, true> = { applied: true, corrections: true, dry_run: true, file_name: true, invalid: true, matched: true, unchanged: true, unmatched: true, ungraded: true };
 export const GRADEIMPORTMATCH_KEYS: Record<keyof GradeImportMatch, true> = { id: true, new: true, old: true, shot: true };

@@ -155,6 +155,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-19 Copy ready to review | planned in [PLAN.md](PLAN.md#rp-19-copy-ready-to-review); answered (Q-RP-87 to Q-RP-91 = A); committed `d17c3ccd`, merged into `develop` and `main`, released in v4.16.0 ([rp-19-verification.md](rp-19-verification.md)) |
 | RP-20 Per-shot grades on review copies | planned in [PLAN.md](PLAN.md#rp-20-per-shot-grades-on-review-copies); answered (Q-RP-92 to Q-RP-96 = A); committed `10f16b62`, merged into `develop` and `main`, released in v4.17.0 ([rp-20-verification.md](rp-20-verification.md)) |
 | RP-21 The task and its reviewer on the version page | planned in [PLAN.md](PLAN.md#rp-21-the-task-and-its-reviewer-on-the-version-page); answered (Q-RP-97 to Q-RP-100 = A); committed `5b303561`, merged into `develop` and `main`, released in v4.18.0 ([rp-21-verification.md](rp-21-verification.md)) |
+| RP-22 Grades from EDLs and ALEs | planned in [PLAN.md](PLAN.md#rp-22-grades-from-edls-and-ales); answered (Q-RP-101 to Q-RP-104 = A); committed `d5d2576c` ([rp-22-verification.md](rp-22-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
@@ -252,3 +253,14 @@ The owner took every recommendation of [PLAN.md, RP-21 questions](PLAN.md#questi
 | Q-RP-98 | **A** | The page reads the task with `GET tasks/{task_id}/`; whoever may not read the task (a client member, a role without `task.view`) sees none of the three. No backend change. |
 | Q-RP-99 | **A** | The Reviewer fact reads "You" for the task's reviewer. |
 | Q-RP-100 | **A** | Nothing is edited from the version page; the task's edit page sets the assignee and the reviewer. |
+
+## RP-22 answers
+
+The owner took every recommendation of [PLAN.md, RP-22 questions](PLAN.md#questions-before-rp-22-starts) on 2026-11-19 ("go ahead").
+
+| ID | Answer | What it means |
+|---|---|---|
+| Q-RP-101 | **A** | An EDL event's names are tried in turn: its locators, its clip names (TO, then FROM, without the extension), its reel. The first that matches a shot names it; names matching different shots make the event invalid. |
+| Q-RP-102 | **A** | An ALE row's names are the first present of the `Shot`, `VFX`, `VFX ID` and `Shot Name` columns (ignoring case), then `Name`. |
+| Q-RP-103 | **A** | One shot in several events with the same grade is one correction; with different grades every one of them is invalid and the shot keeps its grade. |
+| Q-RP-104 | **A** | Events and rows without a grade are counted (`ungraded`), not listed. |

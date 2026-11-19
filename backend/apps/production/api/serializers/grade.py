@@ -21,7 +21,9 @@ class GradeImportShotSerializer(serializers.Serializer[Any]):
 
 
 class GradeImportMatchedSerializer(serializers.Serializer[Any]):
-    id = serializers.CharField(help_text="The correction's id in the file.")
+    id = serializers.CharField(
+        help_text="The correction's id in the file; for an EDL or ALE, `event <n>: <name>` or `row <n>: <name>`."
+    )
     shot = GradeImportShotSerializer()
     old = ShotGradeSerializer(allow_null=True)
     new = ShotGradeSerializer()
@@ -47,3 +49,5 @@ class GradeImportSerializer(serializers.Serializer[Any]):
     unmatched = serializers.ListField(child=serializers.CharField())
     invalid = GradeImportInvalidSerializer(many=True)
     applied = serializers.IntegerField()
+    #: EDL events and ALE rows without a grade (RP-22, C-RP-55); 0 for CDL files
+    ungraded = serializers.IntegerField()

@@ -5,7 +5,9 @@ the pinned ACES 2.0 OpenColorIO config).
 C-RP-52 a shot's grade typed and refused; C-RP-54 a client's ``.ccc`` file read as a dry run, applied,
 read again (unchanged), and the refusals (a document type, another kind of file, no ``shot.update``);
 C-RP-53 the project's switch, an EXR sequence made with its shot's grade, a display-ready movie never
-graded, a changed grade counted and remade, a config without a grading space. Pytest test database
+graded, a changed grade counted and remade, a config without a grading space. C-RP-55 (RP-22) a cut's
+EDL (a dry run and applied: names in turn, a shot twice with one grade, a shot with two grades, two
+names for two shots, ungraded events) and a dailies ALE, and their refusals. Pytest test database
 only, inside a rolled-back transaction; MEDIA_ROOT is a temporary folder. Needs an ffmpeg that reads
 the baked LUT (Debian's or Ubuntu's; ``/usr/bin/ffmpeg``) with the EXR encoder.
 
@@ -290,6 +292,54 @@ def test_capture_shot_grades(
     settings.REVIEW_MEDIA_OCIO_CONFIG = str(tmp_path / "no_timing.ocio")
     sequence(third)
     flow["version_sequence_no_grading_space"] = call(pa, "GET", f"/api/v1/versions/{third.pk}/")
+
+    # C-RP-55 (RP-22): a cut's EDL and a dailies ALE, after everything above so it is unchanged.
+    tc = "01:00:00:00 01:00:02:00 01:00:00:00 01:00:02:00"
+    edl = "\n".join([
+        "TITLE: RPG CUT 4", "FCM: NON-DROP FRAME", "",
+        f"001  BL       V     C        {tc}",
+        f"002  A001     V     C        {tc}",
+        "* FROM CLIP NAME: A001C003_220101_R1AB.mov", "* LOC: 01:00:01:12 YELLOW SH0010",
+        "*ASC_SOP (0.9 1.0 1.1)(0.0 0.0 0.01)(1.0 1.0 1.0)", "*ASC_SAT 1.0",
+        f"003  A002     V     C        {tc}",
+        "* FROM CLIP NAME: A002C001.mov", "* LOC: 01:00:03:00 SH0020",
+        "*ASC_SOP (1.0 1.0 1.0)(0.0 0.0 0.0)(1.0 1.0 1.0)", "*ASC_SAT 0.8",
+        f"004  A001     V     C        {tc}",
+        "* LOC: 01:00:05:00 YELLOW SH0010",
+        "*ASC_SOP (0.9 1.0 1.1)(0.0 0.0 0.01)(1.0 1.0 1.0)", "*ASC_SAT 1.0",
+        f"005  A003     V     C        {tc}", "* LOC: 01:00:07:00 SH0030", "*ASC_SAT 0.7",
+        f"006  A003     V     C        {tc}", "* LOC: 01:00:09:00 SH0030", "*ASC_SAT 0.6",
+        f"007  A004     V     C        {tc}", "* LOC: 01:00:11:00 SH9990", "*ASC_SAT 0.9",
+        f"008  A005     V     C        {tc}",
+        "* TO CLIP NAME: RPG_SH0020.exr", "* LOC: 01:00:13:00 SH0010", "*ASC_SAT 0.9",
+        f"009  BL       V     C        {tc}", "",
+    ]).encode()  # fmt: skip
+    flow["import_edl_dry_run_200"] = call(
+        pa, "POST", ipath, upload(edl, "cut4.edl"), multipart=True
+    )
+    flow["import_edl_apply_200"] = call(
+        pa, "POST", ipath, upload(edl, "cut4.edl", dry_run=False), multipart=True
+    )
+    flow["shot_from_edl"] = call(pa, "GET", f"/api/v1/shots/{shots[1]}/")
+    assert flow["import_edl_apply_200"]["body"]["applied"] == 1
+    ale = "\n".join([
+        "Heading", "FIELD_DELIM\tTABS", "VIDEO_FORMAT\t1080", "FPS\t24", "",
+        "Column", "Name\tTracks\tStart\tEnd\tASC_SOP\tASC_SAT\tShot", "",
+        "Data",
+        "A001C003\tV\t01:00:00:00\t01:00:02:00\t(1.05 1.0 0.95)(0.0 0.0 0.0)(1.0 1.0 1.0)\t0.95\tSH0010",
+        "A001C004\tV\t01:00:02:00\t01:00:04:00\t\t\t",
+        "A005C001\tV\t01:00:04:00\t01:00:06:00\t(1 1 1)(0 0 0)(1 1 1)\t0.9\tSH9990", "",
+    ]).encode()  # fmt: skip
+    flow["import_ale_dry_run_200"] = call(
+        pa, "POST", ipath, upload(ale, "dailies.ale"), multipart=True
+    )
+    flow["import_edl_no_event_400"] = call(
+        pa, "POST", ipath, upload(b"TITLE: empty\n", "empty.edl"), multipart=True
+    )
+    flow["import_ale_no_grade_column_400"] = call(
+        pa, "POST", ipath, upload(b"Heading\n\nColumn\nName\tTracks\n\nData\nA001\tV\n", "log.ale"),
+        multipart=True,
+    )  # fmt: skip
 
     flow["ids"] = {"project": pid, "first": str(first.pk), "second": str(second.pk),
                    "third": str(third.pk), "graded": graded_id, "movie": movie_id,
