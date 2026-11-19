@@ -9,6 +9,7 @@ from rest_framework import serializers
 
 from apps.production.api.serializers.shot.base import ShotGradeSerializer
 from apps.production.models import ReviewMedia
+from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.review_media import ReviewMediaSelector
 from apps.production.services import review_media_links
 from apps.production.transcode import sequence as frames
@@ -98,6 +99,8 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
     proxy_url = serializers.SerializerMethodField()
     thumbnail_url = serializers.SerializerMethodField()
     filmstrip_url = serializers.SerializerMethodField()
+    #: RP-23 (C-RP-56): a link that saves the copy, while the project lets this viewer download
+    download_url = serializers.SerializerMethodField()
     links_expire_at = serializers.SerializerMethodField()
     remake_of = serializers.UUIDField(source="remake_of_id", read_only=True, allow_null=True)
     frames_until = serializers.SerializerMethodField()
@@ -113,7 +116,8 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
             "source_name", "source_size", "probe", "sequence",
             "error_code", "error_message", "attempts",
             "queued_at", "started_at", "finished_at", "created_by",
-            "proxy_url", "thumbnail_url", "filmstrip_url", "filmstrip_tiles", "links_expire_at",
+            "proxy_url", "thumbnail_url", "filmstrip_url", "filmstrip_tiles", "download_url",
+            "links_expire_at",
             "remake_of", "color_space", "frames_until", "published_file_id", "storage_readable",
             "source",
         )  # fmt: skip
@@ -181,6 +185,32 @@ class ReviewMediaSerializer(serializers.ModelSerializer[ReviewMedia]):
     @extend_schema_field(serializers.CharField(allow_null=True))
     def get_filmstrip_url(self, obj: ReviewMedia) -> str | None:
         return self._link(obj, "filmstrip", obj.filmstrip_path)
+
+    @staticmethod
+    def _downloads(request: Any, project_id: Any) -> str:
+        """The project's ``review_downloads``, read once per request: a list serializes many rows."""
+        cache = getattr(request, "_review_downloads", None)
+        if cache is None:
+            cache = {}
+            if request is not None:
+                request._review_downloads = cache
+        if project_id not in cache:
+            cache[project_id] = review_media_links.downloads_of(project_id)
+        return cache[project_id]
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_download_url(self, obj: ReviewMedia) -> str | None:
+        """RP-23 (C-RP-56): the copy as an attachment, or ``null`` when this viewer may not download it."""
+        if obj.status != ReviewMedia.Status.READY or not obj.proxy_path:
+            return None
+        request = self.context.get("request")
+        project_id = obj.project_id  # pyright: ignore[reportAttributeAccessIssue]
+        external = ProductionBaseSelector.is_external_on(request, project_id)
+        if not review_media_links.may_download(
+            self._downloads(request, project_id), external=external
+        ):
+            return None
+        return self._link(obj, "download", obj.proxy_path)
 
     @extend_schema_field(serializers.DateTimeField(allow_null=True))
     def get_links_expire_at(self, obj: ReviewMedia) -> str | None:

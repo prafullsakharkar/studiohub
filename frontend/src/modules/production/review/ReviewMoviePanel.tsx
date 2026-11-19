@@ -14,6 +14,7 @@ import { Button } from '@/shared/components/Button';
 import { choicesOf } from './ReviewColourSelect';
 import { ReviewFromPublishedFile } from './ReviewFromPublishedFile';
 import { ReviewFromStorage } from './ReviewFromStorage';
+import { ReviewCopyDownload } from './ReviewCopyDownload';
 import { partsOf, planSequence, SEQUENCE_EXTENSIONS } from './sequenceFrames';
 
 /** What the file picker offers; the server decides (by the first bytes and the extension) and answers 400 on `file`. */
@@ -231,6 +232,7 @@ export const ReviewMoviePanel: React.FC<{ version: Version }> = ({ version }) =>
             )}
           </p>
         </div>
+        <ReviewCopyDownload media={current} code={version.code} />
         {canManage && (
           <div className="flex flex-wrap items-center gap-2">
             <input ref={input} type="file" accept={ACCEPT} aria-label="Movie or still to upload" className="hidden" onChange={(e) => { upload(e.target.files?.[0]); e.target.value = ''; }} />

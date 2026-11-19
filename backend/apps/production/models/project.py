@@ -16,6 +16,13 @@ from apps.production.constants import (
 
 
 class Project(EntityModel):
+    class ReviewDownloads(models.TextChoices):
+        """Who may download a version's review copy (review pipeline RP-23, C-RP-56, Q-RP-105)."""
+
+        INTERNAL = "internal", "Studio members"
+        EVERYONE = "everyone", "Everyone who can see the version"
+        NOBODY = "nobody", "Nobody"
+
     """
     Project — the top-level production container (e.g., Feature Film, Episodic Series).
 
@@ -84,6 +91,16 @@ class Project(EntityModel):
     # RP-18 (C-RP-47, Q-RP-83): where on studio storage this project's renders may be read from for
     # review copies of versions still in review. ``review_source_root`` is a storage root's code (as in
     # ``PUBLISHING_STORAGE_MOUNTS``), ``review_source_folder`` a relative folder on it; both blank = off.
+    review_downloads = models.CharField(
+        max_length=10,
+        choices=ReviewDownloads.choices,
+        default=ReviewDownloads.INTERNAL,
+        help_text=(
+            "Who may download a version's review copy: studio members who can see the version "
+            "(the default), everyone who can see it (also vendors and clients), or nobody "
+            "(review pipeline RP-23, C-RP-56)."
+        ),
+    )
     review_source_root = models.CharField(max_length=50, blank=True, default="")
     review_source_folder = models.CharField(max_length=512, blank=True, default="")
 

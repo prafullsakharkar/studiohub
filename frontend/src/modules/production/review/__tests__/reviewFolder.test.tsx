@@ -78,7 +78,7 @@ describe('a copy read by path (C-RP-48, C-RP-49)', () => {
     const { calls } = mockFetch((c) => (c.method === 'POST' ? { status: 202, body: media } : { status: 200, body: fromPath }));
     mount(<ReviewMoviePanel version={fromPath} />);
     expect(within(panel()).getByText(/read from studio storage\./).textContent).toContain(media.source_name);
-    expect(within(panel()).queryByRole('link')).toBeNull();
+    expect(within(panel()).queryByRole('link', { name: media.source_name })).toBeNull(); // no published file to open (the one link is Download, RP-23)
     expect(within(panel()).getByLabelText('Review copy').textContent).toContain("Read from the project's review folder on studio storage");
     const remake = within(panel()).getByRole('button', { name: 'Remake' });
     expect(remake.getAttribute('title')).toContain("render in the project's review folder");

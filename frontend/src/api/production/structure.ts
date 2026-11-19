@@ -12,6 +12,13 @@ import type { Page } from '@/shared/data/listing';
 export const PROJECT_TYPES = ['Feature Film', 'Episodic Series', 'Commercial', 'Game Cinematic'] as const;
 export const PROJECT_STATUSES = ['In Progress', 'Pending Review', 'Approved', 'Archived', 'On Hold'] as const;
 export const PROJECT_WORKFLOWS = ['standard', 'episodic'] as const;
+/** RP-23 (C-RP-56, Q-RP-105): who may download a version's review copy, the server's `review_downloads` choices. */
+export const REVIEW_DOWNLOADS = [
+  { value: 'internal', label: 'Studio members who can see the version' },
+  { value: 'everyone', label: 'Everyone who can see the version, vendors and clients too' },
+  { value: 'nobody', label: 'Nobody' },
+] as const;
+export type ReviewDownloads = (typeof REVIEW_DOWNLOADS)[number]['value'];
 export const TRACK_TYPES = ['Video', 'Audio', 'VFX Plates', 'Reference', 'Subtitles', 'Markers'] as const;
 
 export interface Project {
@@ -38,6 +45,8 @@ export interface Project {
   review_look: string;
   /** RP-20 (C-RP-53): colour-managed review copies carry their shot's grade (ASC CDL). Off by default. */
   review_grades: boolean;
+  /** RP-23 (C-RP-56): who may download a version's review copy; `internal` (studio members) by default. */
+  review_downloads: ReviewDownloads;
   /**
    * RP-18 (C-RP-47): the storage root and the folder on it where the studio's renders lie, so a version still in review
    * can have its copy read by path; both blank = off. Only for those who may change the project (`project.update`); left
@@ -87,6 +96,7 @@ export interface ProjectInput {
   review_view?: string;
   review_look?: string;
   review_grades?: boolean;
+  review_downloads?: ReviewDownloads;
   /** RP-18: the root must be one the server reads; the folder a relative folder on it (400 otherwise). Both blank = off. */
   review_source_root?: string;
   review_source_folder?: string;

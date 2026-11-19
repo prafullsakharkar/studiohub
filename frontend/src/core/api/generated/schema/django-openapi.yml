@@ -39577,6 +39577,8 @@ components:
             $ref: '#/components/schemas/GradeImportInvalid'
         applied:
           type: integer
+        ungraded:
+          type: integer
       required:
       - applied
       - corrections
@@ -39585,6 +39587,7 @@ components:
       - invalid
       - matched
       - unchanged
+      - ungraded
       - unmatched
     GradeImportInvalid:
       type: object
@@ -39604,7 +39607,8 @@ components:
       properties:
         id:
           type: string
-          description: The correction's id in the file.
+          description: 'The correction''s id in the file; for an EDL or ALE, `event
+            <n>: <name>` or `row <n>: <name>`.'
         shot:
           $ref: '#/components/schemas/GradeImportShot'
         old:
@@ -47029,6 +47033,19 @@ components:
           description: When on, colour-managed review copies of a shot's versions
             carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53).
             Off by default.
+        review_downloads:
+          enum:
+          - internal
+          - everyone
+          - nobody
+          type: string
+          x-spec-enum-id: 6fedbb477c5ac07f
+          description: |-
+            Who may download a version's review copy: studio members who can see the version (the default), everyone who can see it (also vendors and clients), or nobody (review pipeline RP-23, C-RP-56).
+
+            * `internal` - Studio members
+            * `everyone` - Everyone who can see the version
+            * `nobody` - Nobody
         review_source_root:
           type: string
           maxLength: 50
@@ -55428,6 +55445,19 @@ components:
           description: When on, colour-managed review copies of a shot's versions
             carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53).
             Off by default.
+        review_downloads:
+          enum:
+          - internal
+          - everyone
+          - nobody
+          type: string
+          x-spec-enum-id: 6fedbb477c5ac07f
+          description: |-
+            Who may download a version's review copy: studio members who can see the version (the default), everyone who can see it (also vendors and clients), or nobody (review pipeline RP-23, C-RP-56).
+
+            * `internal` - Studio members
+            * `everyone` - Everyone who can see the version
+            * `nobody` - Nobody
         start_date:
           type: string
           format: date
@@ -55583,6 +55613,19 @@ components:
           description: When on, colour-managed review copies of a shot's versions
             carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53).
             Off by default.
+        review_downloads:
+          enum:
+          - internal
+          - everyone
+          - nobody
+          type: string
+          x-spec-enum-id: 6fedbb477c5ac07f
+          description: |-
+            Who may download a version's review copy: studio members who can see the version (the default), everyone who can see it (also vendors and clients), or nobody (review pipeline RP-23, C-RP-56).
+
+            * `internal` - Studio members
+            * `everyone` - Everyone who can see the version
+            * `nobody` - Nobody
         review_source_root:
           type: string
           maxLength: 50
@@ -55780,6 +55823,19 @@ components:
           description: When on, colour-managed review copies of a shot's versions
             carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53).
             Off by default.
+        review_downloads:
+          enum:
+          - internal
+          - everyone
+          - nobody
+          type: string
+          x-spec-enum-id: 6fedbb477c5ac07f
+          description: |-
+            Who may download a version's review copy: studio members who can see the version (the default), everyone who can see it (also vendors and clients), or nobody (review pipeline RP-23, C-RP-56).
+
+            * `internal` - Studio members
+            * `everyone` - Everyone who can see the version
+            * `nobody` - Nobody
         review_source_root:
           type: string
           maxLength: 50
@@ -56415,6 +56471,19 @@ components:
           description: When on, colour-managed review copies of a shot's versions
             carry the shot's grade, its ASC CDL (review pipeline RP-20, C-RP-53).
             Off by default.
+        review_downloads:
+          enum:
+          - internal
+          - everyone
+          - nobody
+          type: string
+          x-spec-enum-id: 6fedbb477c5ac07f
+          description: |-
+            Who may download a version's review copy: studio members who can see the version (the default), everyone who can see it (also vendors and clients), or nobody (review pipeline RP-23, C-RP-56).
+
+            * `internal` - Studio members
+            * `everyone` - Everyone who can see the version
+            * `nobody` - Nobody
         review_source_root:
           type: string
           maxLength: 50
@@ -58500,6 +58569,10 @@ components:
         filmstrip_tiles:
           type: integer
           readOnly: true
+        download_url:
+          type: string
+          nullable: true
+          readOnly: true
         links_expire_at:
           type: string
           format: date-time
@@ -58542,6 +58615,7 @@ components:
       - attempts
       - color_space
       - created_by
+      - download_url
       - error_code
       - error_message
       - filmstrip_tiles

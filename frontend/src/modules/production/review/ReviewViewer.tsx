@@ -15,6 +15,7 @@ import { SELECTED } from '@/shared/utils/kitStyles';
 import { AnnotationLayer } from './AnnotationLayer';
 import { COLORS, parseDrawing, type Shape, TOOLS, type Tool, toDrawing } from './annotationModel';
 import { InternalSwitch, useOffersInternal, useReviewWrite } from './ReviewPanels';
+import { ReviewCopyDownload } from './ReviewCopyDownload';
 
 interface Feedback {
   key: string;
@@ -151,6 +152,11 @@ export const ReviewViewer: React.FC<{ review: Review; compareWith?: string | nul
               onFrameChange={setFrame}
               overlay={<AnnotationLayer existing={savedHere} draft={draftFrame === frame ? draft : []} tool={layerTool} color={color} onDraft={(shapes) => { if (draft.length === 0) setDraftFrame(frame); setDraft(shapes); }} />}
             />
+          )}
+          {!comparing && (
+            <div className="flex justify-end">
+              <ReviewCopyDownload media={version?.review_media} code={current.code} />
+            </div>
           )}
           {comparing && canEdit && !closed && <p className="text-[11px] text-slate-500">Drawing is off while two versions are compared; a comment still names the frame being shown.</p>}
           {canDraw && (

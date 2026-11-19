@@ -42,11 +42,13 @@ from rest_framework.exceptions import ValidationError
 
 from apps.audit.models import AuditLog
 from apps.core.events import default_event_bus
+from apps.core.utils.client_ip import get_client_ip
 from apps.core.utils.paths import PathRuleError, frame_file_name, is_sequence_pattern, resolve_mount
 from apps.production.events.review_media import ReviewMediaFinished
 from apps.production.exceptions import ReviewMediaBusy, ReviewMediaDisabled
 from apps.production.models import Project, ReviewMedia, Shot, Version
 from apps.production.selectors.review_media import ReviewMediaSelector
+from apps.production.services import review_media_links
 from apps.production.transcode import colour, detect
 from apps.production.transcode import ffmpeg as commands
 from apps.production.transcode import sequence as frames
@@ -200,6 +202,28 @@ def _audit(
             "kind": media.kind,
             "status": media.status,
             "attempts": media.attempts,
+        },
+    )
+
+
+def record_download(*, user: Any, media: ReviewMedia, request: Any) -> None:
+    """RP-23 (C-RP-57, Q-RP-107): who downloaded which copy, when and from where; one row per download."""
+    version = media.version
+    name = review_media_links.download_name(media)
+    AuditLog.objects.create(
+        action=AuditLog.ACTION_EXPORT,
+        target_type=AuditLog.TARGET_VERSION,
+        target_id=str(version.pk),
+        target_name=str(version.code)[:255],
+        project_id=version.project_id,  # pyright: ignore[reportAttributeAccessIssue]
+        description=f"Downloaded the review copy {name}."[:1000],
+        actor_id=getattr(user, "pk", None),
+        ip_address=get_client_ip(request) or None,
+        metadata={
+            "operation": "download",
+            "review_media_id": str(media.pk),
+            "kind": media.kind,
+            "file_name": name,
         },
     )
 
