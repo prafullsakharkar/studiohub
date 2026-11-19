@@ -1,6 +1,6 @@
 # RP-23 verification: downloading a review copy
 
-Built 2026-11-19 on `feature/rp-23-review-download`, off `develop` at `eec94418` (v4.19.0), with every recommendation of Q-RP-105 to Q-RP-108 ([DECISIONS.md](DECISIONS.md#rp-23-answers)). Not committed. Contracts C-RP-56 and C-RP-57 ([CONTRACTS.md](CONTRACTS.md#rp-23-downloading-a-review-copy)). One migration (`0017_rp23_review_downloads`, one field with a default). No new route, permission code or setting, and no ADR: the link is C-RP-21's signed link with a new output, checked the same way, and the switch only narrows. The TPN note is in `docs/10-security/tpn-immediate-remediation.md`.
+Built 2026-11-19 on `feature/rp-23-review-download`, off `develop` at `eec94418` (v4.19.0), with every recommendation of Q-RP-105 to Q-RP-108 ([DECISIONS.md](DECISIONS.md#rp-23-answers)). Committed `c58da79c`. Contracts C-RP-56 and C-RP-57 ([CONTRACTS.md](CONTRACTS.md#rp-23-downloading-a-review-copy)). One migration (`0017_rp23_review_downloads`, one field with a default). No new route, permission code or setting, and no ADR: the link is C-RP-21's signed link with a new output, checked the same way, and the switch only narrows. The TPN note is in `docs/10-security/tpn-immediate-remediation.md`.
 
 Why: review copies could only be played. Saving one meant asking for the file, or "Save video as" on a file named after the token, and nothing recorded it.
 
