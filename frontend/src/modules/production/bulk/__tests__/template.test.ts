@@ -29,10 +29,10 @@ describe('templateParents', () => {
       return empty;
     });
     const parents = await templateParents(shotBulkSpec, 'P', true);
-    // SQ010 is filed under EP150, not under the project's first episode EP101.
-    expect(parents).toMatchObject({ sequence: 'SQ010', sequenceEpisode: 'EP150' });
+    // ALPHA_SQ010 is filed under ALPHA_EP150, not under the project's first episode EP101 (made with the project, so unprefixed).
+    expect(parents).toMatchObject({ sequence: 'ALPHA_SQ010', sequenceEpisode: 'ALPHA_EP150' });
     const [row] = exampleRows(shotBulkSpec, columnsFor(shotBulkSpec, { episodic: true, mode: 'create' }), parents);
-    expect(row).toEqual({ code: 'SQ010_0100', name: 'Shot 0100', description: '', sequence: 'SQ010', episode: 'EP150', frame_in: '1001', frame_out: '1048', handle_frames: '8', status: 'Not Started' });
+    expect(row).toEqual({ code: 'ALPHA_SQ010_0100', name: 'Shot 0100', description: '', sequence: 'ALPHA_SQ010', episode: 'ALPHA_EP150', frame_in: '1001', frame_out: '1048', handle_frames: '8', status: 'Not Started' });
   });
 
   it('a standard project asks for no episode and the example has no episode column', async () => {

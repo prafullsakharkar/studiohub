@@ -1,6 +1,8 @@
 """
 CR-48 sample capture: bulk create and update of sequences, shots, assets and tasks with `dry_run`,
 `atomic`, code matching, the field whitelist and the 500-item limit (docs/episodic-bulk-discovery.md).
+Every new code starts with its project's (CR-49): `STD_`, `EPIC_`; the episode an episodic project
+starts with is made by the server and keeps `EP101`.
 
 Real MFA-enrolled superuser JWT flow; every call is recorded whatever its status. Batch answers are
 kept whole (no row trimming): the frontend tests read them row by row. Pytest test database only,
@@ -73,8 +75,8 @@ def test_capture_bulk_cr48(django_user_model):
     first = a.get(f"/api/v1/episodes/?project={epic['id']}").json()["results"][0]
     assert first["code"] == "EP101", first
     call(a, "episodes_of_episodic", "GET", f"/api/v1/episodes/?project={epic['id']}")
-    sq010 = post("/api/v1/sequences/", {"project": std["id"], "code": "SQ010", "name": "Opening"})
-    post("/api/v1/shots/", {"project": std["id"], "code": "SH010", "sequence_id": sq010["id"]})
+    sq010 = post("/api/v1/sequences/", {"project": std["id"], "code": "STD_SQ010", "name": "Opening"})
+    post("/api/v1/shots/", {"project": std["id"], "code": "STD_SH010", "sequence_id": sq010["id"]})
 
     def create(project, rows, **flags):
         return {
@@ -86,44 +88,44 @@ def test_capture_bulk_cr48(django_user_model):
     S = "/api/v1/sequences/"
     # ------------------------------------------------------------ sequences: create
     call(a, "sequences_create_dry_run_ok", "POST", f"{S}bulk-create/",
-         create(std, [("SQ020", {"name": "Chase"}), ("SQ030", {"frame_in": 1001, "frame_out": 1100})], dry_run=True, atomic=True))
+         create(std, [("STD_SQ020", {"name": "Chase"}), ("STD_SQ030", {"frame_in": 1001, "frame_out": 1100})], dry_run=True, atomic=True))
     call(a, "sequences_create_dry_run_errors", "POST", f"{S}bulk-create/",
-         create(std, [("SQ010", {}), ("SQ040", {}), ("SQ040", {}), ("BAD CODE", {}), ("SQ050", {"frame_in": 1100, "frame_out": 1001})], dry_run=True, atomic=True))
+         create(std, [("STD_SQ010", {}), ("STD_SQ040", {}), ("STD_SQ040", {}), ("STD_BAD CODE", {}), ("STD_SQ050", {"frame_in": 1100, "frame_out": 1001})], dry_run=True, atomic=True))
     call(a, "sequences_create_commit", "POST", f"{S}bulk-create/",
-         create(std, [("SQ020", {"name": "Chase"}), ("SQ030", {})], dry_run=False, atomic=True))
+         create(std, [("STD_SQ020", {"name": "Chase"}), ("STD_SQ030", {})], dry_run=False, atomic=True))
     call(a, "sequences_create_atomic_fails", "POST", f"{S}bulk-create/",
-         create(std, [("SQ060", {}), ("BAD/CODE", {})], dry_run=False, atomic=True))
+         create(std, [("STD_SQ060", {}), ("STD_BAD/CODE", {})], dry_run=False, atomic=True))
     call(a, "sequences_create_skip_invalid", "POST", f"{S}bulk-create/",
-         create(std, [("SQ070", {}), ("BAD/CODE", {})], dry_run=False, atomic=False))
+         create(std, [("STD_SQ070", {}), ("STD_BAD/CODE", {})], dry_run=False, atomic=False))
     call(a, "sequences_create_episodic_dry_run", "POST", f"{S}bulk-create/",
-         create(epic, [("SQA", {"episode_id": "EP101"}), ("SQB", {})], dry_run=True, atomic=True))
+         create(epic, [("EPIC_SQA", {"episode_id": "EP101"}), ("EPIC_SQB", {})], dry_run=True, atomic=True))
     call(a, "sequences_create_over_limit", "POST", f"{S}bulk-create/",
-         create(std, [(f"SQ{n:04d}", {}) for n in range(501)], dry_run=True, atomic=True))
+         create(std, [(f"STD_SQ{n:04d}", {}) for n in range(501)], dry_run=True, atomic=True))
     call(a, "sequences_create_bad_flag", "POST", f"{S}bulk-create/",
-         create(std, [("SQ080", {})], dry_run="maybe"))
+         create(std, [("STD_SQ080", {})], dry_run="maybe"))
 
     # ------------------------------------------------------------ sequences: update
     call(a, "sequences_update_dry_run", "POST", f"{S}bulk-update/",
          {"project_id": std["id"], "dry_run": True, "atomic": True,
-          "items": [{"code": "SQ010", "description": "Re-cut"}, {"code": "NOPE", "name": "x"}]})
+          "items": [{"code": "STD_SQ010", "description": "Re-cut"}, {"code": "STD_NOPE", "name": "x"}]})
     call(a, "sequences_update_commit", "POST", f"{S}bulk-update/",
          {"project_id": std["id"], "dry_run": False, "atomic": True,
-          "items": [{"code": "sq010", "description": "Re-cut"}, {"code": "SQ020", "status": "In Progress"}]})
+          "items": [{"code": "std_sq010", "description": "Re-cut"}, {"code": "STD_SQ020", "status": "In Progress"}]})
     call(a, "sequences_update_ids", "POST", f"{S}bulk-update/",
          {"ids": [sq010["id"]], "changes": {"status": "Pending Review"}, "dry_run": False, "atomic": True})
     call(a, "sequences_update_ids_refused", "POST", f"{S}bulk-update/",
          {"ids": [sq010["id"]], "changes": {"status": "Nope"}, "dry_run": False, "atomic": True})
     call(a, "sequences_update_not_bulk_updatable", "POST", f"{S}bulk-update/",
          {"project_id": std["id"], "dry_run": True, "atomic": True,
-          "items": [{"code": "SQ010", "metadata": {"a": 1}}]})
+          "items": [{"code": "STD_SQ010", "metadata": {"a": 1}}]})
 
     # ------------------------------------------------------------ shots, assets, tasks
     call(a, "shots_create_dry_run", "POST", "/api/v1/shots/bulk-create/",
-         create(std, [("SH020", {"sequence_id": "SQ010", "frame_in": 1001, "frame_out": 1050}), ("SH030", {"sequence_id": "SQ999"})], dry_run=True, atomic=True))
+         create(std, [("STD_SH020", {"sequence_id": "STD_SQ010", "frame_in": 1001, "frame_out": 1050}), ("STD_SH030", {"sequence_id": "STD_SQ999"})], dry_run=True, atomic=True))
     call(a, "assets_create_dry_run", "POST", "/api/v1/assets/bulk-create/",
-         create(std, [("HERO", {"name": "Hero", "category": "Character"}), ("PROP1", {"name": "Prop", "asset_type_id": "NOPE"}), ("PROP2", {})], dry_run=True, atomic=True))
+         create(std, [("STD_HERO", {"name": "Hero", "category": "Character"}), ("STD_PROP1", {"name": "Prop", "asset_type_id": "NOPE"}), ("STD_PROP2", {})], dry_run=True, atomic=True))
     call(a, "tasks_create_dry_run", "POST", "/api/v1/tasks/bulk-create/",
-         create(std, [("COMP010", {"title": "Comp", "entity_type": "Shot", "entity_id": "SH010"}), ("COMP020", {"title": "Comp", "entity_type": "Shot", "entity_id": "SH999"})], dry_run=True, atomic=True))
+         create(std, [("STD_COMP010", {"title": "Comp", "entity_type": "Shot", "entity_id": "STD_SH010"}), ("STD_COMP020", {"title": "Comp", "entity_type": "Shot", "entity_id": "STD_SH999"})], dry_run=True, atomic=True))
 
     (OUT / "production").mkdir(parents=True, exist_ok=True)
     (OUT / "production" / "_bulk_cr48_flow.json").write_text(

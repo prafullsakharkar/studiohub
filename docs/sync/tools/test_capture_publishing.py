@@ -77,10 +77,10 @@ def test_capture_publishing(django_user_model):
     for who, role in ((sup, "Supervisor"), (padmin, "Producer"), (lead, "Lead"), (artist, "Artist")):
         call(a, f"setup_member_{who.email.split('@')[0]}", "POST", f"/api/organizations/projects/{pid}/members/", {"user_id": str(who.id), "role": role})
     project = Project.objects.get(pk=pid)
-    qid = call(a, "setup_sequence", "POST", "/api/v1/sequences/", {"project": pid, "code": "SQ010", "name": "Opening"}).json()["id"]
+    qid = call(a, "setup_sequence", "POST", "/api/v1/sequences/", {"project": pid, "code": "PUB_SQ010", "name": "Opening"}).json()["id"]
     from apps.production.models import Shot
 
-    shots = [Shot.objects.get(pk=call(a, f"setup_shot_{n}", "POST", "/api/v1/shots/", {"project": pid, "sequence_id": qid, "code": f"SH{n:04d}", "name": f"Shot {n}"}).json()["id"]) for n in (10, 20, 30, 40)]
+    shots = [Shot.objects.get(pk=call(a, f"setup_shot_{n}", "POST", "/api/v1/shots/", {"project": pid, "sequence_id": qid, "code": f"PUB_SH{n:04d}", "name": f"Shot {n}"}).json()["id"]) for n in (10, 20, 30, 40)]
     other = Project.objects.get(pk=pid2)
     counter = iter(range(1, 1000))
 
