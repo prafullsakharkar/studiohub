@@ -20,10 +20,13 @@ class VersionFilterSet(BaseFilterSet):
     # Archived means soft-deleted (D-25); asking for it also brings the archived rows into the list.
     is_archived = django_filters.BooleanFilter(field_name="is_deleted")
     department = django_filters.CharFilter(field_name="department", lookup_expr="iexact")
+    # RP-24 (C-RP-58): the versions waiting for the caller's review. Only "mine": the filter never takes
+    # someone else's id, so it says nothing about who reviews what (Q-RP-110).
+    to_review = django_filters.ChoiceFilter(choices=(("mine", "mine"),), method="filter_to_review")
 
     class Meta:
         model = Version
-        fields = ["status", "project", "project_id", "entity_type", "entity_id", "is_published", "is_archived", "department"]
+        fields = ["status", "project", "project_id", "entity_type", "entity_id", "is_published", "is_archived", "department", "to_review"]
 
 
     def filter_project(self, queryset, name, value):
@@ -35,6 +38,21 @@ class VersionFilterSet(BaseFilterSet):
         if project is None:
             return queryset.none()
         return queryset.filter(project=project)
+
+    def filter_to_review(self, queryset, name, value):
+        """In Pending Review, on a live task whose reviewer is the caller (Q-RP-109)."""
+        if not value:
+            return queryset
+        from apps.production.constants import ProductionStatus, TaskStatus
+
+        user = getattr(self.request, "user", None)
+        if user is None or not user.is_authenticated:
+            return queryset.none()
+        return queryset.filter(
+            status=ProductionStatus.PENDING_REVIEW,
+            task__reviewer=user,
+            task__is_deleted=False,
+        ).exclude(task__status=TaskStatus.ARCHIVED)
 
     def filter_search(self, queryset, name, value):
         if not value:
