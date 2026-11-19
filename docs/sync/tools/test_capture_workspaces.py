@@ -68,22 +68,22 @@ def test_capture_workspaces(django_user_model):
     project = make("/api/v1/projects/", {"code": "WS18", "name": "Workspaces", "workflow_type": "standard", "type": "Feature Film"})
     pid = project["id"]
     make(f"/api/organizations/projects/{pid}/members/", {"user_id": str(artist.id), "role": "Artist"})
-    seq = make("/api/v1/sequences/", {"project": pid, "code": "SQ010", "name": "Opening"})
-    shot = make("/api/v1/shots/", {"project": pid, "sequence_id": seq["id"], "code": "SH0010", "name": "Hero walk", "frame_in": 1001, "frame_out": 1096, "handle_frames": 8})
-    asset = make("/api/v1/assets/", {"project": pid, "code": "CHR-HERO", "name": "Hero", "category": "Character"})
+    seq = make("/api/v1/sequences/", {"project": pid, "code": "WS18_SQ010", "name": "Opening"})
+    shot = make("/api/v1/shots/", {"project": pid, "sequence_id": seq["id"], "code": "WS18_SH0010", "name": "Hero walk", "frame_in": 1001, "frame_out": 1096, "handle_frames": 8})
+    asset = make("/api/v1/assets/", {"project": pid, "code": "WS18_CHR-HERO", "name": "Hero", "category": "Character"})
     sid, aid = shot["id"], asset["id"]
-    bulk_shot = make("/api/v1/shots/", {"project": pid, "sequence_id": seq["id"], "code": "SH0020", "name": "Bulk target"})["id"]
+    bulk_shot = make("/api/v1/shots/", {"project": pid, "sequence_id": seq["id"], "code": "WS18_SH0020", "name": "Bulk target"})["id"]
 
     flow: dict[str, dict] = {"ids": {"project": pid, "shot": sid, "asset": aid, "artist": str(artist.id), "stranger": str(stranger.id)}}  # type: ignore[dict-item]
     notes = f"/api/organizations/projects/{pid}/notes/"
-    flow["note_on_shot"] = call(a, "POST", notes, {"subject": "Match the plate", "body": "Grade to the ref.", "category": "Supervisor Note", "entity_type": "Shot", "entity_id": sid, "entity_code": "SH0010", "entity_name": "Hero walk"})
-    flow["note_on_asset"] = call(a, "POST", notes, {"subject": "Fix the rig", "category": "Pipeline Notice", "entity_type": "Asset", "entity_id": aid, "entity_code": "CHR-HERO", "entity_name": "Hero"})
+    flow["note_on_shot"] = call(a, "POST", notes, {"subject": "Match the plate", "body": "Grade to the ref.", "category": "Supervisor Note", "entity_type": "Shot", "entity_id": sid, "entity_code": "WS18_SH0010", "entity_name": "Hero walk"})
+    flow["note_on_asset"] = call(a, "POST", notes, {"subject": "Fix the rig", "category": "Pipeline Notice", "entity_type": "Asset", "entity_id": aid, "entity_code": "WS18_CHR-HERO", "entity_name": "Hero"})
     flow["note_on_project"] = call(a, "POST", notes, {"subject": "Delivery spec"})
-    flow["note_mentions_code"] = call(a, "POST", notes, {"subject": "Remember SH0010 later", "entity_type": "Project"})
+    flow["note_mentions_code"] = call(a, "POST", notes, {"subject": "Remember WS18_SH0010 later", "entity_type": "Project"})
     flow["note_empty_400"] = call(a, "POST", notes, {})
     flow["notes_all"] = call(a, "GET", notes)
-    flow["notes_search_shot"] = call(a, "GET", f"{notes}?search=SH0010")
-    flow["notes_search_asset"] = call(a, "GET", f"{notes}?search=CHR-HERO")
+    flow["notes_search_shot"] = call(a, "GET", f"{notes}?search=WS18_SH0010")
+    flow["notes_search_asset"] = call(a, "GET", f"{notes}?search=WS18_CHR-HERO")
 
     flow["shot_detail"] = call(a, "GET", f"/api/v1/shots/{sid}/")
     flow["shot_assign"] = call(a, "PATCH", f"/api/v1/shots/{sid}/", {"assigned_artist": str(artist.id)})
@@ -130,7 +130,10 @@ def test_capture_workspaces(django_user_model):
     call(a, "PATCH", f"/api/v1/projects/{qid}/", {"status": "In Progress"})
     detail = flow["project_detail"]["body"]
     flow["project_clone_whole_object"] = call(a, "POST", "/api/v1/projects/", {**detail, "name": "Clone of all", "code": "WS18-C1", "approved_shots": 0, "status": "In Progress"})
-    settings = {k: detail[k] for k in ("type", "workflow_type", "fps", "resolution", "aspect_ratio", "color_space", "description") if k in detail}
+    # the settings the Duplicate dialog copies (CloneProjectDialog), the review switches included
+    keep = ("type", "workflow_type", "fps", "resolution", "aspect_ratio", "color_space", "description",
+            "approve_task_on_version_approval", "review_burn_ins", "review_grades")
+    settings = {k: detail[k] for k in keep if k in detail}
     flow["project_clone_settings"] = call(a, "POST", "/api/v1/projects/", {**settings, "name": "Clone of settings", "code": "WS18-C2"})
     flow["project_archive"] = call(a, "POST", f"/api/v1/projects/{qid}/archive/")
     flow["project_detail_after_archive"] = call(a, "GET", f"/api/v1/projects/{qid}/")

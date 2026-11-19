@@ -1,6 +1,6 @@
 # RP-20 verification: per-shot grades on review copies
 
-Built 2026-11-18 on `feature/rp-20-shot-grades`, off `develop` at `176c1ad3` (v4.16.0), with every recommendation of Q-RP-92 to Q-RP-96 ([DECISIONS.md](DECISIONS.md#rp-20-answers)). Committed `10f16b62`. Contracts C-RP-52 to C-RP-54 ([CONTRACTS.md](CONTRACTS.md#rp-20-per-shot-grades-on-review-copies)). No ADR: the trust model does not change; a note in [ADR-0041](../adr/ADR-0041-review-colour-management.md) says how the grade joins the colour transform.
+Built 2026-11-18 on `feature/rp-20-shot-grades`, off `develop` at `176c1ad3` (v4.16.0), with every recommendation of Q-RP-92 to Q-RP-96 ([DECISIONS.md](DECISIONS.md#rp-20-answers)). Committed `10f16b62`; merged into `develop` (`28a8bd3e`) and `main` (`b98ddcf6`), released in v4.17.0. CI was green on both on the first push. Contracts C-RP-52 to C-RP-54 ([CONTRACTS.md](CONTRACTS.md#rp-20-per-shot-grades-on-review-copies)). No ADR: the trust model does not change; a note in [ADR-0041](../adr/ADR-0041-review-colour-management.md) says how the grade joins the colour transform.
 
 Why: RP-15 applies one colour transform per project, so every shot looks the same in review. A shot graded warm and dark in the DI shows neutral and bright, and supervisors judge comp against a picture the client never sees.
 
@@ -100,7 +100,7 @@ What the capture and the real-ffmpeg test show:
 2. **The update answers the update serializer's shape.** `PATCH shots/{id}/` answers the written `grade` but not `grade_source` or `grade_updated_at`; the capture reads the shot back (`shot_typed`) for the full shape, as the RP-16 live test does for projects.
 3. **The real-ffmpeg check needs the grading space.** ACES 2.0's `color_timing` role is ACEScct (log), so the grade acts as in the DI. A config whose `color_timing` is linear or missing gets no grade (`no_grading_space`): a CDL in linear light is not the grade the client approved.
 4. **Two older contract tests pinned the copies read exactly** (`reviewColourContracts`, `reviewRemakeContracts`); they now include the two new keys.
-5. **`test_capture_production_work.py` no longer runs** (`KeyError: 'id'`): it predates CR-49 and creates `SQ020` without the project's code, which is refused. Not an RP-20 change, and not fixed here. Its sample `_work_flow.json` is left as it is; the shot's keys are pinned to the RP-20 capture instead (`workContracts.test.ts`, test `Shot`), and that test checks that the old flow has every other key.
+5. **`test_capture_production_work.py` no longer runs** (`KeyError: 'id'`): it predates CR-49 and creates `SQ020` without the project's code, which is refused. Not an RP-20 change, and not fixed here. Its sample `_work_flow.json` is left as it is; the shot's keys are pinned to the RP-20 capture instead (`workContracts.test.ts`, test `Shot`), and that test checks that the old flow has every other key. Fixed after the release on `fix/work-capture-cr49` ([work-capture-cr49-verification.md](../sync/work-capture-cr49-verification.md)): the tool prefixes its codes, the flow is recaptured and the shot's keys are pinned to it again.
 
 ## Not done
 

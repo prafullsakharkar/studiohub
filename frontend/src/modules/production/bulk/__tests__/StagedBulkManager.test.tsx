@@ -32,10 +32,13 @@ const episodic = bulk.projects_detail_episodic.body as { id: string; code: strin
 
 const path = (c: MockCall) => new URL(c.url).pathname;
 /**
- * New codes start with the project's (`STD_SQ010`), while the captured answers name the bare codes the backend was asked
- * about. The same captures with their codes prefixed are what the backend would answer to the prefixed request.
+ * New codes start with the project's (`STD_SQ010`, CR-49), and each capture's codes start with its own project's: STD and
+ * EPIC (this flow), ALPHA (_structure_flow.json), WORK (_work_flow.json). An answer from another capture is what the
+ * backend would answer in the test's project once its codes carry that project's code instead.
  */
-const prefixed = <T,>(value: T, project: { code: string }): T => JSON.parse(JSON.stringify(value), (key, v) => (key === 'code' && typeof v === 'string' ? `${project.code}_${v}` : v));
+const CAPTURED_PROJECT = /^(STD|EPIC|ALPHA|WORK)_/;
+const prefixed = <T,>(value: T, project: { code: string }): T =>
+  JSON.parse(JSON.stringify(value), (key, v) => (key === 'code' && typeof v === 'string' ? `${project.code}_${v.replace(CAPTURED_PROJECT, '')}` : v));
 const reply = (c: Captured, project?: { code: string }): MockReply => ({ status: c.status, body: project ? prefixed(c.body, project) : c.body });
 const projectOf = (c: MockCall) => ((c.body as { project_id?: string }).project_id === episodic.id ? episodic : standard);
 const posts = (calls: MockCall[], route: string) => calls.filter((c) => c.method === 'POST' && path(c) === `/api/v1/sequences/${route}/`);
@@ -250,7 +253,7 @@ describe.each([
     useConfig: useTasksListConfig,
     existence: work.tasks_check_existence,
     dryRun: bulk.tasks_create_dry_run,
-    csv: 'code,title,entity_type,entity\nCOMP010,Comp,Shot,SH010\nCOMP020,Comp,Shot,SH999\n',
+    csv: 'code,title,entity_type,entity\nCOMP010,Comp,Shot,STD_SH010\nCOMP020,Comp,Shot,STD_SH999\n', // a shot is named by its code, as stored
     errors: 1,
   },
 ])('Bulk add $plural', ({ plural, useConfig, existence, dryRun, csv, errors }) => {

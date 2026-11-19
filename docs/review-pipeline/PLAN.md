@@ -1303,7 +1303,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-20 Per-shot grades on review copies
 
-**Status:** planned 2026-11-18; answered the same day (Q-RP-92 to Q-RP-96 = A, [DECISIONS.md](DECISIONS.md#rp-20-answers)); built on `feature/rp-20-shot-grades`, off `develop` at `176c1ad3` (v4.16.0), committed `10f16b62` ([rp-20-verification.md](rp-20-verification.md)).
+**Status:** planned 2026-11-18; answered the same day (Q-RP-92 to Q-RP-96 = A, [DECISIONS.md](DECISIONS.md#rp-20-answers)); built on `feature/rp-20-shot-grades`, off `develop` at `176c1ad3` (v4.16.0), committed `10f16b62`, merged into `develop` and `main`, released in v4.17.0 ([rp-20-verification.md](rp-20-verification.md)).
 
 **Goal.** A shot's grade (its ASC CDL: slope, offset and power per channel, and saturation) is applied to its versions' review copies, so supervisors judge comp against the graded picture, as in the DI and in the client's dailies. Grades are typed on the shot or imported from the client's `.cc`, `.ccc` or `.cdl` files; copies made with an older grade can be remade (RP-14, RP-15).
 
