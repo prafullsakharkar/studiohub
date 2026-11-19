@@ -28,6 +28,8 @@ interface Flow {
   import_dry_run_200: Captured<GradeImportResult>;
   import_apply_200: Captured<GradeImportResult>;
   import_doctype_400: Captured<Record<string, string[]>>;
+  import_edl_dry_run_200: Captured<GradeImportResult>;
+  import_ale_dry_run_200: Captured<GradeImportResult>;
   version_sequence_graded: Captured<Version>;
   version_sequence_regraded: Captured<Version>;
   version_sequence_no_grading_space: Captured<Version>;
@@ -144,6 +146,29 @@ describe('Import grades… (C-RP-54)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Apply to 2 shots' }));
     await waitFor(() => expect(sent).toEqual(['dry run', 'apply']));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Apply to 2 shots' })).toBeNull());
+  });
+
+  it('an EDL (RP-22): its events counted, the ungraded ones said, ids by event, unmatched names kept apart', async () => {
+    const edl = flow.import_edl_dry_run_200.body;
+    mockFetch((c) => (isImport(c) ? { status: 200, body: edl } : { status: 500 }));
+    mount(<GradeImport projectId="p1" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Import grades…' }));
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(input.accept).toBe('.cc,.ccc,.cdl,.edl,.ale');
+    fireEvent.change(input, { target: { files: [new File(['TITLE: x'], 'cut4.edl')] } });
+    await screen.findByText(importSummary(edl));
+    expect(importSummary(edl)).toBe(
+      '7 graded events in cut4.edl. 2 events without a grade. 1 shot would get a new grade. 1 shot already has it. 1 match no shot you may change. 3 cannot be used.',
+    );
+    expect(screen.getByRole('list', { name: 'New grades' }).textContent).toContain('RPG_SH0010 (from event 2: SH0010)');
+    expect(screen.getByText('event 7: SH9990, A004')).toBeTruthy();
+    expect(screen.getByRole('list', { name: 'Corrections that cannot be used' }).textContent).toContain('Events 5 and 6 give shot RPG_SH0030 different grades.');
+    expect(screen.getByRole('button', { name: 'Apply to 1 shot' })).toBeTruthy();
+  });
+
+  it('an ALE counts rows; a CDL file never mentions ungraded entries', () => {
+    expect(importSummary(flow.import_ale_dry_run_200.body)).toMatch(/^2 graded rows in dailies\.ale\. 1 row without a grade\. /);
+    expect(importSummary(dryRun)).not.toMatch(/without a grade/);
   });
 
   it('a refused file says why, and nothing can be applied', async () => {

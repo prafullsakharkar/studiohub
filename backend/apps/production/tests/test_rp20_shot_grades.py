@@ -465,7 +465,7 @@ class TestImport:
 
     def test_refusals(self, writer, project, shots, monkeypatch):
         cases = [
-            (_ccc(_cc("SH010")), "reel1.xml", "Choose a .cc, .ccc or .cdl file."),
+            (_ccc(_cc("SH010")), "reel1.xml", "Choose a .cc, .ccc, .cdl, .edl or .ale file."),
             (b'<!DOCTYPE x><ColorCorrection id="SH010"/>', "reel1.cc", "declares a document type"),
             (b"nope", "reel1.cdl", "not XML"),
         ]

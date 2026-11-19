@@ -9,7 +9,7 @@ import type { GradeImport, Shot } from '../work';
 import * as K from '../workRowKeys';
 
 /**
- * Per-shot grades on review copies (RP-20, docs/review-pipeline/CONTRACTS.md C-RP-52 to C-RP-54), pinned to the capture
+ * Per-shot grades on review copies (RP-20, docs/review-pipeline/CONTRACTS.md C-RP-52 to C-RP-54; RP-22, C-RP-55), pinned to the capture
  * made with a real ffmpeg and the pinned ACES 2.0 config: docs/sync/samples/production/_shot_grades_flow.json.
  */
 /** The capture's responses, typed by what each one is. */
@@ -29,6 +29,12 @@ interface Flow {
   import_doctype_400: Captured<Refusal>;
   import_other_file_400: Captured<Refusal>;
   import_artist_403: Captured<unknown>;
+  import_edl_dry_run_200: Captured<GradeImport>;
+  import_edl_apply_200: Captured<GradeImport>;
+  import_ale_dry_run_200: Captured<GradeImport>;
+  import_edl_no_event_400: Captured<Refusal>;
+  import_ale_no_grade_column_400: Captured<Refusal>;
+  shot_from_edl: Captured<Shot>;
   version_sequence_graded: Captured<Version>;
   version_movie_not_graded: Captured<Version>;
   version_sequence_regraded: Captured<Version>;
@@ -107,8 +113,47 @@ describe('C-RP-54: the import', () => {
 
   it('refusals: a document type, another kind of file, no shot.update', () => {
     expect(normalizeApiError(400, flow.import_doctype_400.body).fieldErrors.file).toEqual(['The file declares a document type, which CDL files never need.']);
-    expect(normalizeApiError(400, flow.import_other_file_400.body).fieldErrors.file).toEqual(['Choose a .cc, .ccc or .cdl file.']);
+    expect(normalizeApiError(400, flow.import_other_file_400.body).fieldErrors.file).toEqual(['Choose a .cc, .ccc, .cdl, .edl or .ale file.']);
     expect(flow.import_artist_403.status).toBe(403);
+  });
+});
+
+describe('C-RP-55: grades from an EDL and an ALE (RP-22)', () => {
+  const edl = flow.import_edl_dry_run_200.body;
+  const ale = flow.import_ale_dry_run_200.body;
+
+  it('the answer has the same keys, with the events or rows without a grade counted', () => {
+    for (const answer of [edl, ale, flow.import_edl_apply_200.body]) expect(keys(answer)).toEqual(keys(K.GRADEIMPORT_KEYS));
+    expect(edl).toMatchObject({ file_name: 'cut4.edl', corrections: 7, ungraded: 2, applied: 0 });
+    expect(ale).toMatchObject({ file_name: 'dailies.ale', corrections: 2, ungraded: 1 });
+    expect(dryRun.ungraded).toBe(0); // a CDL file has none
+  });
+
+  it('each event’s names are tried in turn: a locator names the shot, a camera clip name matches nothing', () => {
+    // event 4 is SH0010 again with the same grade: one correction (Q-RP-103)
+    expect(edl.matched.map((m) => [m.id, m.shot.code])).toEqual([['event 2: SH0010', 'RPG_SH0010']]);
+    expect(edl.unchanged.map((u) => [u.id, u.shot.code])).toEqual([['event 3: SH0020', 'RPG_SH0020']]);
+    expect(edl.unmatched).toEqual(['event 7: SH9990, A004']); // every name tried
+    expect(ale.matched.map((m) => m.id)).toEqual(['row 1: SH0010']);
+    expect(ale.unmatched).toEqual(['row 3: SH9990, A005C001']);
+  });
+
+  it('two names for two shots, and two grades for one shot, are refused, not guessed', () => {
+    expect(edl.invalid).toEqual([
+      { id: 'event 8: SH0010', field: 'id', message: 'The event names two shots: RPG_SH0010 and RPG_SH0020.' },
+      { id: 'event 5: SH0030', field: 'id', message: 'Events 5 and 6 give shot RPG_SH0030 different grades.' },
+      { id: 'event 6: SH0030', field: 'id', message: 'Events 5 and 6 give shot RPG_SH0030 different grades.' },
+    ]);
+  });
+
+  it('applying writes the shot with the event as its source', () => {
+    expect(flow.import_edl_apply_200.body).toMatchObject({ dry_run: false, applied: 1 });
+    expect(flow.shot_from_edl.body.grade_source).toBe('cut4.edl (event 2: SH0010)');
+  });
+
+  it('a file that is not what its name says is refused on file', () => {
+    expect(normalizeApiError(400, flow.import_edl_no_event_400.body).fieldErrors.file).toEqual(['The file is not an EDL: it holds no event.']);
+    expect(normalizeApiError(400, flow.import_ale_no_grade_column_400.body).fieldErrors.file).toEqual(['The ALE has no ASC_SOP or ASC_SAT column.']);
   });
 });
 

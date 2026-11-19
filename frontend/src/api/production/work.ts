@@ -88,8 +88,9 @@ export interface GradeImportMatch {
 }
 
 /**
- * `POST projects/{id}/grades/import/` (RP-20, C-RP-54), pinned to docs/sync/samples/production/_shot_grades_flow.json.
- * Only shots the caller may update are matched; a shot they cannot see is `unmatched`.
+ * `POST projects/{id}/grades/import/` (RP-20, C-RP-54; RP-22, C-RP-55), pinned to docs/sync/samples/production/_shot_grades_flow.json.
+ * Only shots the caller may update are matched; a shot they cannot see is `unmatched`. For an EDL or an ALE each id is
+ * `event <n>: <name>` or `row <n>: <name>`, and an unmatched one lists every name tried.
  */
 export interface GradeImport {
   dry_run: boolean;
@@ -101,6 +102,8 @@ export interface GradeImport {
   invalid: { id: string; field: string; message: string }[];
   /** How many shots were written: 0 on a dry run. */
   applied: number;
+  /** EDL events or ALE rows without a grade: counted, not listed (Q-RP-104); 0 for CDL files. */
+  ungraded: number;
 }
 
 export interface ShotInput {
