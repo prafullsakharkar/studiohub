@@ -16,16 +16,11 @@ const firstRow = (key: string): Record<string, unknown> => {
   return body.results?.[0] ?? body.items?.[0] ?? body;
 };
 const count = (key: string): number => flow[key].body.count;
-/**
- * RP-20 added the shot's grade (C-RP-52). This flow was captured in Phase 6 and its tool predates CR-49's code prefixes,
- * so the shot's keys are pinned to RP-20's capture; this flow's shot has every other key.
- */
-const grades = loadSample<Record<string, Captured>>('production/_shot_grades_flow.json');
-const RP20_SHOT_KEYS = ['grade', 'grade_source', 'grade_updated_at'];
 
 
 describe('work row types match the captured responses', () => {
   it.each([
+    ['Shot', 'shots_list', SHOT_KEYS],
     ['Asset', 'assets_list', ASSET_KEYS],
     ['Task', 'tasks_list', TASK_KEYS],
     ['Timelog', 'timelogs_list_own', TIMELOG_KEYS],
@@ -35,12 +30,6 @@ describe('work row types match the captured responses', () => {
     ['StatusHistoryRow', 'shots_status_history', STATUSHISTORYROW_KEYS],
   ])('%s', (_label, sample, expected) => {
     expect(Object.keys(firstRow(sample)).sort()).toEqual(Object.keys(expected).sort());
-  });
-
-  it('Shot', () => {
-    expect(Object.keys(grades.shot_no_grade.body).sort()).toEqual(Object.keys(SHOT_KEYS).sort());
-    const before = Object.keys(SHOT_KEYS).filter((k) => !RP20_SHOT_KEYS.includes(k));
-    expect(Object.keys(firstRow('shots_list')).sort()).toEqual(before.sort());
   });
 
   it('TemplateItem', () => {
@@ -56,7 +45,7 @@ describe('work row types match the captured responses', () => {
 
 describe('the rules the screens rely on', () => {
   it('a task is linked with entity_type + entity_id: a shot_id key on a write is silently dropped (General task)', () => {
-    expect(flow.tasks_create.body).toMatchObject({ entity_type: 'Shot', entity_code: 'SH0015' });
+    expect(flow.tasks_create.body).toMatchObject({ entity_type: 'Shot', entity_code: 'WORK_SH0015' });
     expect(flow.tasks_create_shot_id_ignored.status).toBe(201);
     expect(flow.tasks_create_shot_id_ignored.body).toMatchObject({ entity_type: 'General', entity_id: '' });
     expect(flow.tasks_detail.body.shot_id).toBe(flow.tasks_create.body.entity_id); // reads expose the link
@@ -137,7 +126,7 @@ describe('the rules the screens rely on', () => {
 
   it('templates: apply creates once, then reports the same tasks as existing; project copies are project-scoped', () => {
     expect(flow.templates_apply.status).toBe(201);
-    expect(flow.templates_apply.body.created.map((t: { code: string }) => t.code)).toEqual(['SH0020_COMP', 'SH0020_ROTO']);
+    expect(flow.templates_apply.body.created.map((t: { code: string }) => t.code)).toEqual(['WORK_SH0020_COMP', 'WORK_SH0020_ROTO']);
     expect(flow.templates_apply_again.status).toBe(200);
     expect(flow.templates_apply_again.body.created).toEqual([]);
     expect(flow.templates_apply_again.body.existing).toHaveLength(2);
@@ -151,7 +140,7 @@ describe('filters: each one was probed alone, an unknown one is ignored without 
   const narrows = (probe: string, baseline: string) => expect(count(probe), probe).toBeLessThan(count(baseline));
 
   it('shots', () => {
-    for (const p of ['fp_shots_by_status_PendingR', 'fp_shots_by_code_SH0020', 'fp_shots_by_search_turn', 'fp_shots_by_sequence_SQ010', 'fp_shots_by_sequence_code_SQ010']) {
+    for (const p of ['fp_shots_by_status_PendingR', 'fp_shots_by_code_WORKSH0020', 'fp_shots_by_search_turn', 'fp_shots_by_sequence_WORKSQ010', 'fp_shots_by_sequence_code_WORKSQ010']) {
       const key = Object.keys(flow).find((k) => k.startsWith(p.slice(0, p.lastIndexOf('_')))) ?? p;
       narrows(key, 'fp_shots_baseline');
     }
@@ -212,8 +201,8 @@ describe('the status machine the UI offers matches what the server accepted and 
   });
 
   it('a code can be changed by PATCH until a version exists (then rename-code); a new code must be free', () => {
-    expect(flow.shots_patch_code.body.code).toBe('SH7777');
-    expect(flow.assets_patch_code.body.code).toBe('ZZZ_NEW');
+    expect(flow.shots_patch_code.body.code).toBe('WORK_SH7777');
+    expect(flow.assets_patch_code.body.code).toBe('WORK_ZZZ_NEW');
     expect(flow.shots_rename_code.status).toBe(200);
     expect(flow.artist_rename_code.status).toBe(403);
   });

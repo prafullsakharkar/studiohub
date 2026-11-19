@@ -17,13 +17,13 @@
     }
    ],
    "failed": 2,
-   "operation_id": "1e9a7f1576064bfa9a6f0d9668c9a1ec",
+   "operation_id": "71a32824613e480ba94cfc6e24b1b776",
    "partial_success": true,
    "processed": 3,
    "results": [
     {
      "actionTaken": "created",
-     "code": "HERO",
+     "code": "STD_HERO",
      "error": null,
      "id": null,
      "index": 0,
@@ -71,7 +71,7 @@
     "total": 3,
     "updatedCount": 0
    },
-   "timestamp": "2026-11-06T08:20:25.146487+00:00"
+   "timestamp": "2026-11-18T17:39:03.796475+00:00"
   },
   "request": {
    "body": {
@@ -80,7 +80,7 @@
     "items": [
      {
       "action": "create",
-      "code": "HERO",
+      "code": "STD_HERO",
       "data": {
        "category": "Character",
        "name": "Hero"
@@ -88,7 +88,7 @@
      },
      {
       "action": "create",
-      "code": "PROP1",
+      "code": "STD_PROP1",
       "data": {
        "asset_type_id": "NOPE",
        "name": "Prop"
@@ -96,11 +96,11 @@
      },
      {
       "action": "create",
-      "code": "PROP2",
+      "code": "STD_PROP2",
       "data": {}
      }
     ],
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/assets/bulk-create/"
@@ -116,7 +116,7 @@
     {
      "air_date": null,
      "code": "EP101",
-     "created_at": "2026-11-06T08:20:24.600215Z",
+     "created_at": "2026-11-18T17:39:03.225320Z",
      "deleted_at": null,
      "delivery_date": null,
      "description": "",
@@ -124,30 +124,31 @@
      "episode_number": 1,
      "frame_in": 1001,
      "frame_out": 1100,
-     "id": "da42f213-0abf-4078-9343-e99ec6c09705",
+     "id": "d12947f5-fb94-418b-82da-a16b56c0ca9c",
      "is_deleted": false,
      "metadata": {},
      "name": "Episode 1",
      "project_code": "EPIC",
-     "project_id": "d1ad6b53-1015-41fa-b9a3-659fb88709c2",
+     "project_id": "daa9a22d-f245-4395-9684-60b4c2cb6c22",
      "project_name": "Episodic",
      "season_number": 1,
      "show_id": null,
      "status": "Not Started",
-     "updated_at": "2026-11-06T08:20:24.600222Z",
-     "uuid": "da42f213-0abf-4078-9343-e99ec6c09705"
+     "updated_at": "2026-11-18T17:39:03.225328Z",
+     "uuid": "d12947f5-fb94-418b-82da-a16b56c0ca9c"
     }
    ]
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/episodes/?project=d1ad6b53-1015-41fa-b9a3-659fb88709c2"
+   "path": "/api/v1/episodes/?project=daa9a22d-f245-4395-9684-60b4c2cb6c22"
   },
   "status": 200
  },
  "projects_detail_episodic": {
   "body": {
+   "approve_task_on_version_approval": false,
    "approved_shots": 0,
    "aspect_ratio": "2.39:1",
    "budget_usd": "0.00",
@@ -159,15 +160,21 @@
    "color_space": "ACEScg",
    "coordinator_id": null,
    "coordinator_name": "",
-   "created_at": "2026-11-06T08:20:24.594068Z",
+   "created_at": "2026-11-18T17:39:03.218490Z",
    "delivery_date": null,
    "description": "",
    "fps": "24.000",
-   "id": "d1ad6b53-1015-41fa-b9a3-659fb88709c2",
+   "id": "daa9a22d-f245-4395-9684-60b4c2cb6c22",
    "in_progress_shots": 0,
    "name": "Episodic",
    "project_code": "EPIC",
    "resolution": "4096x2160 (4K DCI)",
+   "review_burn_ins": false,
+   "review_grades": false,
+   "review_look": "",
+   "review_source_folder": "",
+   "review_source_root": "",
+   "review_view": "",
    "start_date": null,
    "status": "In Progress",
    "supervisor_id": null,
@@ -176,8 +183,8 @@
    "total_assets": 0,
    "total_shots": 0,
    "type": "Feature Film",
-   "updated_at": "2026-11-06T08:20:24.594075Z",
-   "uuid": "d1ad6b53-1015-41fa-b9a3-659fb88709c2",
+   "updated_at": "2026-11-18T17:39:03.218497Z",
+   "uuid": "daa9a22d-f245-4395-9684-60b4c2cb6c22",
    "vendor_ids": [],
    "vendor_names": [],
    "vendor_team_ids": [],
@@ -186,12 +193,13 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/d1ad6b53-1015-41fa-b9a3-659fb88709c2/"
+   "path": "/api/v1/projects/daa9a22d-f245-4395-9684-60b4c2cb6c22/"
   },
   "status": 200
  },
  "projects_detail_standard": {
   "body": {
+   "approve_task_on_version_approval": false,
    "approved_shots": 0,
    "aspect_ratio": "2.39:1",
    "budget_usd": "0.00",
@@ -203,15 +211,21 @@
    "color_space": "ACEScg",
    "coordinator_id": null,
    "coordinator_name": "",
-   "created_at": "2026-11-06T08:20:24.576166Z",
+   "created_at": "2026-11-18T17:39:03.199801Z",
    "delivery_date": null,
    "description": "",
    "fps": "24.000",
-   "id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+   "id": "82a48989-110e-4174-8400-eb3e53a07d3f",
    "in_progress_shots": 0,
    "name": "Standard",
    "project_code": "STD",
    "resolution": "4096x2160 (4K DCI)",
+   "review_burn_ins": false,
+   "review_grades": false,
+   "review_look": "",
+   "review_source_folder": "",
+   "review_source_root": "",
+   "review_view": "",
    "start_date": null,
    "status": "In Progress",
    "supervisor_id": null,
@@ -220,8 +234,8 @@
    "total_assets": 0,
    "total_shots": 0,
    "type": "Feature Film",
-   "updated_at": "2026-11-06T08:20:24.576176Z",
-   "uuid": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+   "updated_at": "2026-11-18T17:39:03.199811Z",
+   "uuid": "82a48989-110e-4174-8400-eb3e53a07d3f",
    "vendor_ids": [],
    "vendor_names": [],
    "vendor_team_ids": [],
@@ -230,7 +244,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/30c72d8e-efd1-437d-b204-6e7765a1ec42/"
+   "path": "/api/v1/projects/82a48989-110e-4174-8400-eb3e53a07d3f/"
   },
   "status": 200
  },
@@ -247,13 +261,13 @@
     }
    ],
    "failed": 1,
-   "operation_id": "4d2438c686b4485ea513d5a745c8e3d9",
+   "operation_id": "a991f27146394f49bf4d60dc5662834c",
    "partial_success": true,
    "processed": 2,
    "results": [
     {
      "actionTaken": "created",
-     "code": "SQ060",
+     "code": "STD_SQ060",
      "error": null,
      "id": null,
      "index": 0,
@@ -288,7 +302,7 @@
     "total": 2,
     "updatedCount": 0
    },
-   "timestamp": "2026-11-06T08:20:24.888180+00:00"
+   "timestamp": "2026-11-18T17:39:03.509291+00:00"
   },
   "request": {
    "body": {
@@ -297,16 +311,16 @@
     "items": [
      {
       "action": "create",
-      "code": "SQ060",
+      "code": "STD_SQ060",
       "data": {}
      },
      {
       "action": "create",
-      "code": "BAD/CODE",
+      "code": "STD_BAD/CODE",
       "data": {}
      }
     ],
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/sequences/bulk-create/"
@@ -320,7 +334,7 @@
    ],
    "error": {
     "code": "validation_error",
-    "request_id": "a62a1a1f-3425-4da6-93bd-0279db517083"
+    "request_id": "c467deec-a999-4c1a-b143-8162d71aeacf"
    }
   },
   "request": {
@@ -329,11 +343,11 @@
     "items": [
      {
       "action": "create",
-      "code": "SQ080",
+      "code": "STD_SQ080",
       "data": {}
      }
     ],
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/sequences/bulk-create/"
@@ -347,23 +361,23 @@
    "dry_run": false,
    "errors": [],
    "failed": 0,
-   "operation_id": "5a7497ad1c2b44638cb657ba4c5dc647",
+   "operation_id": "0815bfca92934cb087a5bb78f69f3b63",
    "partial_success": false,
    "processed": 2,
    "results": [
     {
      "actionTaken": "created",
-     "code": "SQ020",
+     "code": "STD_SQ020",
      "entity": {
-      "code": "SQ020",
-      "created_at": "2026-11-06T08:20:24.845258Z",
+      "code": "STD_SQ020",
+      "created_at": "2026-11-18T17:39:03.457766Z",
       "deleted_at": null,
       "department": "",
       "description": "",
       "episode_id": null,
       "frame_in": 1001,
       "frame_out": 1100,
-      "id": "da2bfe14-35b4-4a67-887b-098a30ae6336",
+      "id": "fee2644b-b3a9-4223-81f7-99da8c37a3c0",
       "is_deleted": false,
       "lead_artist": null,
       "lead_artist_id": null,
@@ -371,34 +385,34 @@
       "metadata": {},
       "name": "Chase",
       "project_code": "STD",
-      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f",
       "project_name": "Standard",
       "shots_count": 0,
       "show_id": null,
       "status": "Not Started",
       "tags": [],
-      "updated_at": "2026-11-06T08:20:24.845264Z",
-      "uuid": "da2bfe14-35b4-4a67-887b-098a30ae6336"
+      "updated_at": "2026-11-18T17:39:03.457772Z",
+      "uuid": "fee2644b-b3a9-4223-81f7-99da8c37a3c0"
      },
      "error": null,
-     "id": "da2bfe14-35b4-4a67-887b-098a30ae6336",
+     "id": "fee2644b-b3a9-4223-81f7-99da8c37a3c0",
      "index": 0,
      "status": "created",
      "success": true
     },
     {
      "actionTaken": "created",
-     "code": "SQ030",
+     "code": "STD_SQ030",
      "entity": {
-      "code": "SQ030",
-      "created_at": "2026-11-06T08:20:24.855592Z",
+      "code": "STD_SQ030",
+      "created_at": "2026-11-18T17:39:03.467754Z",
       "deleted_at": null,
       "department": "",
       "description": "",
       "episode_id": null,
       "frame_in": 1001,
       "frame_out": 1100,
-      "id": "528a2af0-82b6-4883-abf0-ee8bf95eeaea",
+      "id": "356fa658-49a4-4e0d-8b0e-63bdc1aef65c",
       "is_deleted": false,
       "lead_artist": null,
       "lead_artist_id": null,
@@ -406,17 +420,17 @@
       "metadata": {},
       "name": "",
       "project_code": "STD",
-      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f",
       "project_name": "Standard",
       "shots_count": 0,
       "show_id": null,
       "status": "Not Started",
       "tags": [],
-      "updated_at": "2026-11-06T08:20:24.855599Z",
-      "uuid": "528a2af0-82b6-4883-abf0-ee8bf95eeaea"
+      "updated_at": "2026-11-18T17:39:03.467760Z",
+      "uuid": "356fa658-49a4-4e0d-8b0e-63bdc1aef65c"
      },
      "error": null,
-     "id": "528a2af0-82b6-4883-abf0-ee8bf95eeaea",
+     "id": "356fa658-49a4-4e0d-8b0e-63bdc1aef65c",
      "index": 1,
      "status": "created",
      "success": true
@@ -436,7 +450,7 @@
     "total": 2,
     "updatedCount": 0
    },
-   "timestamp": "2026-11-06T08:20:24.857924+00:00"
+   "timestamp": "2026-11-18T17:39:03.469891+00:00"
   },
   "request": {
    "body": {
@@ -445,18 +459,18 @@
     "items": [
      {
       "action": "create",
-      "code": "SQ020",
+      "code": "STD_SQ020",
       "data": {
        "name": "Chase"
       }
      },
      {
       "action": "create",
-      "code": "SQ030",
+      "code": "STD_SQ030",
       "data": {}
      }
     ],
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/sequences/bulk-create/"
@@ -491,15 +505,15 @@
     }
    ],
    "failed": 4,
-   "operation_id": "f81b59f6127e4339954e776abb4409da",
+   "operation_id": "a92ba9e66459420aae9604ffa28791ee",
    "partial_success": true,
    "processed": 5,
    "results": [
     {
      "actionTaken": "failed",
-     "code": "SQ010",
+     "code": "STD_SQ010",
      "error": null,
-     "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+     "id": "76614c50-6afd-4b4d-a485-b7155ee46bb9",
      "index": 0,
      "status": "exists",
      "success": false,
@@ -507,7 +521,7 @@
     },
     {
      "actionTaken": "created",
-     "code": "SQ040",
+     "code": "STD_SQ040",
      "error": null,
      "id": null,
      "index": 1,
@@ -564,7 +578,7 @@
     "total": 5,
     "updatedCount": 0
    },
-   "timestamp": "2026-11-06T08:20:24.825159+00:00"
+   "timestamp": "2026-11-18T17:39:03.438884+00:00"
   },
   "request": {
    "body": {
@@ -573,34 +587,34 @@
     "items": [
      {
       "action": "create",
-      "code": "SQ010",
+      "code": "STD_SQ010",
       "data": {}
      },
      {
       "action": "create",
-      "code": "SQ040",
+      "code": "STD_SQ040",
       "data": {}
      },
      {
       "action": "create",
-      "code": "SQ040",
+      "code": "STD_SQ040",
       "data": {}
      },
      {
       "action": "create",
-      "code": "BAD CODE",
+      "code": "STD_BAD CODE",
       "data": {}
      },
      {
       "action": "create",
-      "code": "SQ050",
+      "code": "STD_SQ050",
       "data": {
        "frame_in": 1100,
        "frame_out": 1001
       }
      }
     ],
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/sequences/bulk-create/"
@@ -614,13 +628,13 @@
    "dry_run": true,
    "errors": [],
    "failed": 0,
-   "operation_id": "d2b7601c881a468ea135e258abc6ba14",
+   "operation_id": "31330be127324d37b1235f6207600682",
    "partial_success": false,
    "processed": 2,
    "results": [
     {
      "actionTaken": "created",
-     "code": "SQ020",
+     "code": "STD_SQ020",
      "error": null,
      "id": null,
      "index": 0,
@@ -629,7 +643,7 @@
     },
     {
      "actionTaken": "created",
-     "code": "SQ030",
+     "code": "STD_SQ030",
      "error": null,
      "id": null,
      "index": 1,
@@ -651,7 +665,7 @@
     "total": 2,
     "updatedCount": 0
    },
-   "timestamp": "2026-11-06T08:20:24.784830+00:00"
+   "timestamp": "2026-11-18T17:39:03.401320+00:00"
   },
   "request": {
    "body": {
@@ -660,21 +674,21 @@
     "items": [
      {
       "action": "create",
-      "code": "SQ020",
+      "code": "STD_SQ020",
       "data": {
        "name": "Chase"
       }
      },
      {
       "action": "create",
-      "code": "SQ030",
+      "code": "STD_SQ030",
       "data": {
        "frame_in": 1001,
        "frame_out": 1100
       }
      }
     ],
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/sequences/bulk-create/"
@@ -694,13 +708,13 @@
     }
    ],
    "failed": 1,
-   "operation_id": "67fbe86899b640adb99035a92ed44c46",
+   "operation_id": "2d813ee9019d4279930de9d2e32bca38",
    "partial_success": true,
    "processed": 2,
    "results": [
     {
      "actionTaken": "created",
-     "code": "SQA",
+     "code": "EPIC_SQA",
      "error": null,
      "id": null,
      "index": 0,
@@ -735,7 +749,7 @@
     "total": 2,
     "updatedCount": 0
    },
-   "timestamp": "2026-11-06T08:20:24.944139+00:00"
+   "timestamp": "2026-11-18T17:39:03.580412+00:00"
   },
   "request": {
    "body": {
@@ -744,18 +758,18 @@
     "items": [
      {
       "action": "create",
-      "code": "SQA",
+      "code": "EPIC_SQA",
       "data": {
        "episode_id": "EP101"
       }
      },
      {
       "action": "create",
-      "code": "SQB",
+      "code": "EPIC_SQB",
       "data": {}
      }
     ],
-    "project_id": "d1ad6b53-1015-41fa-b9a3-659fb88709c2"
+    "project_id": "daa9a22d-f245-4395-9684-60b4c2cb6c22"
    },
    "method": "POST",
    "path": "/api/v1/sequences/bulk-create/"
@@ -766,7 +780,7 @@
   "body": {
    "error": {
     "code": "validation_error",
-    "request_id": "9db51084-e700-4d3c-8b94-91f52a107759"
+    "request_id": "50edf3c3-c55b-4000-b0c0-4a1d5b26e9bd"
    },
    "items": [
     "At most 500 items per request."
@@ -777,7 +791,7 @@
     "atomic": true,
     "dry_run": true,
     "items": "<501 items>",
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/sequences/bulk-create/"
@@ -797,23 +811,23 @@
     }
    ],
    "failed": 1,
-   "operation_id": "179114fe014847f8815b580e95451c9b",
+   "operation_id": "6b686c8a188943098d67f0387debc4ce",
    "partial_success": true,
    "processed": 2,
    "results": [
     {
      "actionTaken": "created",
-     "code": "SQ070",
+     "code": "STD_SQ070",
      "entity": {
-      "code": "SQ070",
-      "created_at": "2026-11-06T08:20:24.908013Z",
+      "code": "STD_SQ070",
+      "created_at": "2026-11-18T17:39:03.540932Z",
       "deleted_at": null,
       "department": "",
       "description": "",
       "episode_id": null,
       "frame_in": 1001,
       "frame_out": 1100,
-      "id": "ec3259eb-ab01-4276-a772-333d53a2d8c4",
+      "id": "b15c3e40-1ff3-4f77-a206-1a411cc0f234",
       "is_deleted": false,
       "lead_artist": null,
       "lead_artist_id": null,
@@ -821,17 +835,17 @@
       "metadata": {},
       "name": "",
       "project_code": "STD",
-      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f",
       "project_name": "Standard",
       "shots_count": 0,
       "show_id": null,
       "status": "Not Started",
       "tags": [],
-      "updated_at": "2026-11-06T08:20:24.908019Z",
-      "uuid": "ec3259eb-ab01-4276-a772-333d53a2d8c4"
+      "updated_at": "2026-11-18T17:39:03.540941Z",
+      "uuid": "b15c3e40-1ff3-4f77-a206-1a411cc0f234"
      },
      "error": null,
-     "id": "ec3259eb-ab01-4276-a772-333d53a2d8c4",
+     "id": "b15c3e40-1ff3-4f77-a206-1a411cc0f234",
      "index": 0,
      "status": "created",
      "success": true
@@ -864,7 +878,7 @@
     "total": 2,
     "updatedCount": 0
    },
-   "timestamp": "2026-11-06T08:20:24.913362+00:00"
+   "timestamp": "2026-11-18T17:39:03.547351+00:00"
   },
   "request": {
    "body": {
@@ -873,16 +887,16 @@
     "items": [
      {
       "action": "create",
-      "code": "SQ070",
+      "code": "STD_SQ070",
       "data": {}
      },
      {
       "action": "create",
-      "code": "BAD/CODE",
+      "code": "STD_BAD/CODE",
       "data": {}
      }
     ],
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/sequences/bulk-create/"
@@ -896,23 +910,23 @@
    "dry_run": false,
    "errors": [],
    "failed": 0,
-   "operation_id": "7792877fb80949cb992a893bd8669e81",
+   "operation_id": "d56890093eb6415d80d6eb8a93a6b2a8",
    "partial_success": false,
    "processed": 2,
    "results": [
     {
      "actionTaken": "updated",
-     "code": "SQ010",
+     "code": "STD_SQ010",
      "entity": {
-      "code": "SQ010",
-      "created_at": "2026-11-06T08:20:24.713164Z",
+      "code": "STD_SQ010",
+      "created_at": "2026-11-18T17:39:03.329715Z",
       "deleted_at": null,
       "department": "",
       "description": "Re-cut",
       "episode_id": null,
       "frame_in": 1001,
       "frame_out": 1100,
-      "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+      "id": "76614c50-6afd-4b4d-a485-b7155ee46bb9",
       "is_deleted": false,
       "lead_artist": null,
       "lead_artist_id": null,
@@ -920,34 +934,34 @@
       "metadata": {},
       "name": "Opening",
       "project_code": "STD",
-      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f",
       "project_name": "Standard",
       "shots_count": 1,
       "show_id": null,
       "status": "Not Started",
       "tags": [],
-      "updated_at": "2026-11-06T08:20:25.009959Z",
-      "uuid": "d68eb94a-9581-4a69-8d3a-68a9a1287a76"
+      "updated_at": "2026-11-18T17:39:03.644763Z",
+      "uuid": "76614c50-6afd-4b4d-a485-b7155ee46bb9"
      },
      "error": null,
-     "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+     "id": "76614c50-6afd-4b4d-a485-b7155ee46bb9",
      "index": 0,
      "status": "updated",
      "success": true
     },
     {
      "actionTaken": "updated",
-     "code": "SQ020",
+     "code": "STD_SQ020",
      "entity": {
-      "code": "SQ020",
-      "created_at": "2026-11-06T08:20:24.845258Z",
+      "code": "STD_SQ020",
+      "created_at": "2026-11-18T17:39:03.457766Z",
       "deleted_at": null,
       "department": "",
       "description": "",
       "episode_id": null,
       "frame_in": 1001,
       "frame_out": 1100,
-      "id": "da2bfe14-35b4-4a67-887b-098a30ae6336",
+      "id": "fee2644b-b3a9-4223-81f7-99da8c37a3c0",
       "is_deleted": false,
       "lead_artist": null,
       "lead_artist_id": null,
@@ -955,17 +969,17 @@
       "metadata": {},
       "name": "Chase",
       "project_code": "STD",
-      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f",
       "project_name": "Standard",
       "shots_count": 0,
       "show_id": null,
       "status": "In Progress",
       "tags": [],
-      "updated_at": "2026-11-06T08:20:25.018125Z",
-      "uuid": "da2bfe14-35b4-4a67-887b-098a30ae6336"
+      "updated_at": "2026-11-18T17:39:03.656363Z",
+      "uuid": "fee2644b-b3a9-4223-81f7-99da8c37a3c0"
      },
      "error": null,
-     "id": "da2bfe14-35b4-4a67-887b-098a30ae6336",
+     "id": "fee2644b-b3a9-4223-81f7-99da8c37a3c0",
      "index": 1,
      "status": "updated",
      "success": true
@@ -985,7 +999,7 @@
     "total": 2,
     "updatedCount": 2
    },
-   "timestamp": "2026-11-06T08:20:25.021148+00:00"
+   "timestamp": "2026-11-18T17:39:03.662796+00:00"
   },
   "request": {
    "body": {
@@ -993,15 +1007,15 @@
     "dry_run": false,
     "items": [
      {
-      "code": "sq010",
+      "code": "std_sq010",
       "description": "Re-cut"
      },
      {
-      "code": "SQ020",
+      "code": "STD_SQ020",
       "status": "In Progress"
      }
     ],
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/sequences/bulk-update/"
@@ -1021,23 +1035,23 @@
     }
    ],
    "failed": 1,
-   "operation_id": "d6ce05e9da654fb6a25b6386e17e43dd",
+   "operation_id": "1582ac7191e74aac893745444748ede8",
    "partial_success": true,
    "processed": 2,
    "results": [
     {
      "actionTaken": "updated",
-     "code": "SQ010",
+     "code": "STD_SQ010",
      "entity": {
-      "code": "SQ010",
-      "created_at": "2026-11-06T08:20:24.713164Z",
+      "code": "STD_SQ010",
+      "created_at": "2026-11-18T17:39:03.329715Z",
       "deleted_at": null,
       "department": "",
       "description": "Re-cut",
       "episode_id": null,
       "frame_in": 1001,
       "frame_out": 1100,
-      "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+      "id": "76614c50-6afd-4b4d-a485-b7155ee46bb9",
       "is_deleted": false,
       "lead_artist": null,
       "lead_artist_id": null,
@@ -1045,24 +1059,24 @@
       "metadata": {},
       "name": "Opening",
       "project_code": "STD",
-      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f",
       "project_name": "Standard",
       "shots_count": 1,
       "show_id": null,
       "status": "Not Started",
       "tags": [],
-      "updated_at": "2026-11-06T08:20:24.983224Z",
-      "uuid": "d68eb94a-9581-4a69-8d3a-68a9a1287a76"
+      "updated_at": "2026-11-18T17:39:03.618111Z",
+      "uuid": "76614c50-6afd-4b4d-a485-b7155ee46bb9"
      },
      "error": null,
-     "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+     "id": "76614c50-6afd-4b4d-a485-b7155ee46bb9",
      "index": 0,
      "status": "updated",
      "success": true
     },
     {
      "actionTaken": "failed",
-     "code": "NOPE",
+     "code": "STD_NOPE",
      "error": "Sequence not found.",
      "id": null,
      "index": 1,
@@ -1084,7 +1098,7 @@
     "total": 2,
     "updatedCount": 1
    },
-   "timestamp": "2026-11-06T08:20:24.986447+00:00"
+   "timestamp": "2026-11-18T17:39:03.621170+00:00"
   },
   "request": {
    "body": {
@@ -1092,15 +1106,15 @@
     "dry_run": true,
     "items": [
      {
-      "code": "SQ010",
+      "code": "STD_SQ010",
       "description": "Re-cut"
      },
      {
-      "code": "NOPE",
+      "code": "STD_NOPE",
       "name": "x"
      }
     ],
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/sequences/bulk-update/"
@@ -1114,23 +1128,23 @@
    "dry_run": false,
    "errors": [],
    "failed": 0,
-   "operation_id": "2ad6701252a3459487b17de18453be4f",
+   "operation_id": "8d1c140798274548acc4ae8c716694b1",
    "partial_success": false,
    "processed": 1,
    "results": [
     {
      "actionTaken": "updated",
-     "code": "SQ010",
+     "code": "STD_SQ010",
      "entity": {
-      "code": "SQ010",
-      "created_at": "2026-11-06T08:20:24.713164Z",
+      "code": "STD_SQ010",
+      "created_at": "2026-11-18T17:39:03.329715Z",
       "deleted_at": null,
       "department": "",
       "description": "Re-cut",
       "episode_id": null,
       "frame_in": 1001,
       "frame_out": 1100,
-      "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+      "id": "76614c50-6afd-4b4d-a485-b7155ee46bb9",
       "is_deleted": false,
       "lead_artist": null,
       "lead_artist_id": null,
@@ -1138,17 +1152,17 @@
       "metadata": {},
       "name": "Opening",
       "project_code": "STD",
-      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f",
       "project_name": "Standard",
       "shots_count": 1,
       "show_id": null,
       "status": "Pending Review",
       "tags": [],
-      "updated_at": "2026-11-06T08:20:25.040872Z",
-      "uuid": "d68eb94a-9581-4a69-8d3a-68a9a1287a76"
+      "updated_at": "2026-11-18T17:39:03.693830Z",
+      "uuid": "76614c50-6afd-4b4d-a485-b7155ee46bb9"
      },
      "error": null,
-     "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+     "id": "76614c50-6afd-4b4d-a485-b7155ee46bb9",
      "index": 0,
      "status": "updated",
      "success": true
@@ -1168,7 +1182,7 @@
     "total": 1,
     "updatedCount": 1
    },
-   "timestamp": "2026-11-06T08:20:25.043779+00:00"
+   "timestamp": "2026-11-18T17:39:03.697151+00:00"
   },
   "request": {
    "body": {
@@ -1178,7 +1192,7 @@
     },
     "dry_run": false,
     "ids": [
-     "d68eb94a-9581-4a69-8d3a-68a9a1287a76"
+     "76614c50-6afd-4b4d-a485-b7155ee46bb9"
     ]
    },
    "method": "POST",
@@ -1199,7 +1213,7 @@
     }
    ],
    "failed": 1,
-   "operation_id": "a8a88e202e5a4689b5eedf325da92cb3",
+   "operation_id": "e556c99755674478b98768041f4506ff",
    "partial_success": false,
    "processed": 1,
    "results": [
@@ -1231,7 +1245,7 @@
     "total": 1,
     "updatedCount": 0
    },
-   "timestamp": "2026-11-06T08:20:25.058362+00:00"
+   "timestamp": "2026-11-18T17:39:03.713824+00:00"
   },
   "request": {
    "body": {
@@ -1241,7 +1255,7 @@
     },
     "dry_run": false,
     "ids": [
-     "d68eb94a-9581-4a69-8d3a-68a9a1287a76"
+     "76614c50-6afd-4b4d-a485-b7155ee46bb9"
     ]
    },
    "method": "POST",
@@ -1262,7 +1276,7 @@
     }
    ],
    "failed": 1,
-   "operation_id": "75f8ea5a669a49b2b5d24983d1d67eec",
+   "operation_id": "6c3d509e4c8f4094ba1ef9f0ea1d885b",
    "partial_success": false,
    "processed": 1,
    "results": [
@@ -1274,7 +1288,7 @@
        "This field cannot be changed in bulk."
       ]
      },
-     "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+     "id": "76614c50-6afd-4b4d-a485-b7155ee46bb9",
      "index": 0,
      "status": "invalid",
      "success": false
@@ -1294,7 +1308,7 @@
     "total": 1,
     "updatedCount": 0
    },
-   "timestamp": "2026-11-06T08:20:25.070098+00:00"
+   "timestamp": "2026-11-18T17:39:03.724985+00:00"
   },
   "request": {
    "body": {
@@ -1302,13 +1316,13 @@
     "dry_run": true,
     "items": [
      {
-      "code": "SQ010",
+      "code": "STD_SQ010",
       "metadata": {
        "a": 1
       }
      }
     ],
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/sequences/bulk-update/"
@@ -1328,13 +1342,13 @@
     }
    ],
    "failed": 1,
-   "operation_id": "51253e1f901e44eb845f8751a2ebf1c6",
+   "operation_id": "e84218dfa754435e94c0d45fb1a6f743",
    "partial_success": true,
    "processed": 2,
    "results": [
     {
      "actionTaken": "created",
-     "code": "SH020",
+     "code": "STD_SH020",
      "error": null,
      "id": null,
      "index": 0,
@@ -1369,7 +1383,7 @@
     "total": 2,
     "updatedCount": 0
    },
-   "timestamp": "2026-11-06T08:20:25.103465+00:00"
+   "timestamp": "2026-11-18T17:39:03.756512+00:00"
   },
   "request": {
    "body": {
@@ -1378,22 +1392,22 @@
     "items": [
      {
       "action": "create",
-      "code": "SH020",
+      "code": "STD_SH020",
       "data": {
        "frame_in": 1001,
        "frame_out": 1050,
-       "sequence_id": "SQ010"
+       "sequence_id": "STD_SQ010"
       }
      },
      {
       "action": "create",
-      "code": "SH030",
+      "code": "STD_SH030",
       "data": {
-       "sequence_id": "SQ999"
+       "sequence_id": "STD_SQ999"
       }
      }
     ],
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/shots/bulk-create/"
@@ -1413,13 +1427,13 @@
     }
    ],
    "failed": 1,
-   "operation_id": "3d26f38f3c9d4a84b4de414239bf436e",
+   "operation_id": "7cf7abc41bf5495d976f5833872153ca",
    "partial_success": true,
    "processed": 2,
    "results": [
     {
      "actionTaken": "created",
-     "code": "COMP010",
+     "code": "STD_COMP010",
      "error": null,
      "id": null,
      "index": 0,
@@ -1454,7 +1468,7 @@
     "total": 2,
     "updatedCount": 0
    },
-   "timestamp": "2026-11-06T08:20:25.184596+00:00"
+   "timestamp": "2026-11-18T17:39:03.832012+00:00"
   },
   "request": {
    "body": {
@@ -1463,24 +1477,24 @@
     "items": [
      {
       "action": "create",
-      "code": "COMP010",
+      "code": "STD_COMP010",
       "data": {
-       "entity_id": "SH010",
+       "entity_id": "STD_SH010",
        "entity_type": "Shot",
        "title": "Comp"
       }
      },
      {
       "action": "create",
-      "code": "COMP020",
+      "code": "STD_COMP020",
       "data": {
-       "entity_id": "SH999",
+       "entity_id": "STD_SH999",
        "entity_type": "Shot",
        "title": "Comp"
       }
      }
     ],
-    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+    "project_id": "82a48989-110e-4174-8400-eb3e53a07d3f"
    },
    "method": "POST",
    "path": "/api/v1/tasks/bulk-create/"

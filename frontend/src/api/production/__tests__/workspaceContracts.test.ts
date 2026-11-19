@@ -81,7 +81,10 @@ describe('what the project workspace relies on (captured from the running backen
   it('a duplicate is created from the settings alone; the server ignores the other fields of a whole project it is sent', () => {
     const settings = flow.project_clone_settings;
     expect(settings.status).toBe(201);
-    expect(Object.keys((settings as any).request.body).sort()).toEqual(['aspect_ratio', 'code', 'color_space', 'description', 'fps', 'name', 'resolution', 'type', 'workflow_type']);
+    expect(Object.keys((settings as any).request.body).sort()).toEqual([
+      // what CloneProjectDialog sends: the settings, the approval roll-up and the review switches (burn-ins, grades)
+      'approve_task_on_version_approval', 'aspect_ratio', 'code', 'color_space', 'description', 'fps', 'name', 'resolution', 'review_burn_ins', 'review_grades', 'type', 'workflow_type',
+    ]);
     expect(settings.body.id).not.toBe(flow.project_detail.body.id);
     expect(flow.project_clone_whole_object.status).toBe(201);
     expect(flow.project_clone_whole_object.body.id).not.toBe(flow.project_detail.body.id);

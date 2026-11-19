@@ -76,8 +76,8 @@ describe('items on the wire', () => {
 
   it('the captured dry runs were sent in this shape', () => {
     const captured = flow.sequences_create_dry_run_ok.request.body;
-    expect(captured.items[0]).toEqual({ code: 'SQ020', action: 'create', data: { name: 'Chase' } });
-    expect(flow.sequences_update_dry_run.request.body.items[0]).toEqual({ code: 'SQ010', description: 'Re-cut' });
+    expect(captured.items[0]).toEqual({ code: 'STD_SQ020', action: 'create', data: { name: 'Chase' } });
+    expect(flow.sequences_update_dry_run.request.body.items[0]).toEqual({ code: 'STD_SQ010', description: 'Re-cut' });
   });
 });
 
