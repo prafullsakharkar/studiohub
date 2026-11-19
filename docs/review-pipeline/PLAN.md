@@ -1372,7 +1372,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-21 The task and its reviewer on the version page
 
-**Status:** planned 2026-11-19; answered the same day (Q-RP-97 to Q-RP-100 = A, [DECISIONS.md](DECISIONS.md#rp-21-answers)); built on `feature/rp-21-version-reviewer`, off `develop` at `fbb1a370` (v4.17.1) ([rp-21-verification.md](rp-21-verification.md)).
+**Status:** planned 2026-11-19; answered the same day (Q-RP-97 to Q-RP-100 = A, [DECISIONS.md](DECISIONS.md#rp-21-answers)); built on `feature/rp-21-version-reviewer`, off `develop` at `fbb1a370` (v4.17.1), committed `5b303561` ([rp-21-verification.md](rp-21-verification.md)).
 
 **Goal.** The version page says which task the version is for and who reviews it, with a link to the task. A reviewer who opens a copy from RP-19's "Copy to review" sees the version is theirs to review. An artist sees who their work goes to.
 

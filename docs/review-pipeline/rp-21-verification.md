@@ -1,6 +1,6 @@
 # RP-21 verification: the task and its reviewer on the version page
 
-Built 2026-11-19 on `feature/rp-21-version-reviewer`, off `develop` at `fbb1a370` (v4.17.1), with every recommendation of Q-RP-97 to Q-RP-100 ([DECISIONS.md](DECISIONS.md#rp-21-answers)). Not committed. Frontend only: no backend change, no migration, no new permission code or setting, and no API contract change, so there is no new C-RP contract and no ADR.
+Built 2026-11-19 on `feature/rp-21-version-reviewer`, off `develop` at `fbb1a370` (v4.17.1), with every recommendation of Q-RP-97 to Q-RP-100 ([DECISIONS.md](DECISIONS.md#rp-21-answers)). Committed `5b303561`. Frontend only: no backend change, no migration, no new permission code or setting, and no API contract change, so there is no new C-RP contract and no ADR.
 
 Why: the version page never named its task. Its overview showed the artist, usually empty because the Versions screen never sets it (RP-11). Since RP-19, the reviewer is told when a copy is ready, but the page they land on didn't say they review it.
 
