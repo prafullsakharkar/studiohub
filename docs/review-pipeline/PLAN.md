@@ -1438,7 +1438,7 @@ Frontend typecheck, Biome (0 errors, 910 warnings), tests, build, unreachable ch
 
 ## RP-22 Grades from EDLs and ALEs
 
-**Status:** planned 2026-11-19; answered the same day (Q-RP-101 to Q-RP-104 = A, [DECISIONS.md](DECISIONS.md#rp-22-answers)); built on `feature/rp-22-edl-ale-grades`, off `develop` at `876fbacb` (v4.18.0) ([rp-22-verification.md](rp-22-verification.md)). Chosen over notification e-mail, which would reverse Q-RP-7 (in-app only).
+**Status:** planned 2026-11-19; answered the same day (Q-RP-101 to Q-RP-104 = A, [DECISIONS.md](DECISIONS.md#rp-22-answers)); built on `feature/rp-22-edl-ale-grades`, off `develop` at `876fbacb` (v4.18.0), committed `d5d2576c` ([rp-22-verification.md](rp-22-verification.md)). Chosen over notification e-mail, which would reverse Q-RP-7 (in-app only).
 
 **Goal.** *Import grades…* also reads the two files a DI house most often sends grades in: an **EDL** whose events carry `*ASC_SOP` and `*ASC_SAT` comments, and an **ALE** with `ASC_SOP` and `ASC_SAT` columns. They use the same dry run, the same matching to shot codes and the same all-or-nothing apply as RP-20's `.cc`, `.ccc` and `.cdl` files.
 

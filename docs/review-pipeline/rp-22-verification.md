@@ -1,6 +1,6 @@
 # RP-22 verification: grades from EDLs and ALEs
 
-Built 2026-11-19 on `feature/rp-22-edl-ale-grades`, off `develop` at `876fbacb` (v4.18.0), with every recommendation of Q-RP-101 to Q-RP-104 ([DECISIONS.md](DECISIONS.md#rp-22-answers)). Not committed. Contract C-RP-55, which extends C-RP-54 ([CONTRACTS.md](CONTRACTS.md#rp-22-grades-from-edls-and-ales)). No migration, no new route, permission code or setting, and no ADR: the files are text, read with no parser that fetches anything, and the trust model doesn't change.
+Built 2026-11-19 on `feature/rp-22-edl-ale-grades`, off `develop` at `876fbacb` (v4.18.0), with every recommendation of Q-RP-101 to Q-RP-104 ([DECISIONS.md](DECISIONS.md#rp-22-answers)). Committed `d5d2576c`. Contract C-RP-55, which extends C-RP-54 ([CONTRACTS.md](CONTRACTS.md#rp-22-grades-from-edls-and-ales)). No migration, no new route, permission code or setting, and no ADR: the files are text, read with no parser that fetches anything, and the trust model doesn't change.
 
 Why: *Import grades…* read only CDL XML files (`.cc`, `.ccc`, `.cdl`). Grades that arrive in the cut's EDL (`*ASC_SOP`, `*ASC_SAT` comments) or a dailies ALE (`ASC_SOP`, `ASC_SAT` columns) had to be typed in one shot at a time.
 
