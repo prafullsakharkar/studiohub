@@ -1372,7 +1372,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-21 The task and its reviewer on the version page
 
-**Status:** planned 2026-11-19; answered the same day (Q-RP-97 to Q-RP-100 = A, [DECISIONS.md](DECISIONS.md#rp-21-answers)); built on `feature/rp-21-version-reviewer`, off `develop` at `fbb1a370` (v4.17.1), committed `5b303561` ([rp-21-verification.md](rp-21-verification.md)).
+**Status:** planned 2026-11-19; answered the same day (Q-RP-97 to Q-RP-100 = A, [DECISIONS.md](DECISIONS.md#rp-21-answers)); built on `feature/rp-21-version-reviewer`, off `develop` at `fbb1a370` (v4.17.1), committed `5b303561`, merged into `develop` and `main`, released in v4.18.0 ([rp-21-verification.md](rp-21-verification.md)).
 
 **Goal.** The version page says which task the version is for and who reviews it, with a link to the task. A reviewer who opens a copy from RP-19's "Copy to review" sees the version is theirs to review. An artist sees who their work goes to.
 
@@ -1435,3 +1435,76 @@ The task read without `task.view`; a 404 shown as an error; the facts shown for 
 ### Gates
 
 Frontend typecheck, Biome (0 errors, 910 warnings), tests, build, unreachable check; ruff check on the new capture tool; the capture and the live run; after the merge, CI green.
+
+## RP-22 Grades from EDLs and ALEs
+
+**Status:** planned 2026-11-19; answered the same day (Q-RP-101 to Q-RP-104 = A, [DECISIONS.md](DECISIONS.md#rp-22-answers)); built on `feature/rp-22-edl-ale-grades`, off `develop` at `876fbacb` (v4.18.0), committed `d5d2576c` ([rp-22-verification.md](rp-22-verification.md)). Chosen over notification e-mail, which would reverse Q-RP-7 (in-app only).
+
+**Goal.** *Import grades…* also reads the two files a DI house most often sends grades in: an **EDL** whose events carry `*ASC_SOP` and `*ASC_SAT` comments, and an **ALE** with `ASC_SOP` and `ASC_SAT` columns. They use the same dry run, the same matching to shot codes and the same all-or-nothing apply as RP-20's `.cc`, `.ccc` and `.cdl` files.
+
+### Why (what is there today)
+
+- **Only CDL XML files are read.** `transcode/cdl.py` parses `.cc`, `.ccc` and `.cdl`, and anything else is refused ("Choose a .cc, .ccc or .cdl file."). Many grades arrive another way:
+  - in the cut, as a CMX 3600 EDL whose events carry the grade as comments (`*ASC_SOP (1.1 1.0 0.9)(0.01 0.0 -0.01)(1.0 1.0 1.05)` and `*ASC_SAT 0.9`);
+  - from dailies tools, as an Avid ALE with `ASC_SOP` and `ASC_SAT` columns.
+
+  Today a coordinator has to type those grades one shot at a time.
+- **The rest exists.** `GradeImportService` matches a list of corrections (an id and a grade) to the project's shots, answers the dry run and writes in one transaction with one audit row (C-RP-54). An EDL or ALE reader only has to produce that list. The grade, its bounds (`clean_grade`), the review copies and the remake are unchanged.
+- **The shot is named differently.** A CDL correction has an `id`; an EDL event or ALE row has no field for the shot. A shot code usually appears in one of these:
+  - an EDL event's locator (`* LOC: 01:00:02:00 YELLOW SH0010`);
+  - its clip name (`* TO CLIP NAME:`, `* FROM CLIP NAME:`);
+  - its reel;
+  - an ALE column such as `Shot`, `VFX` or `Name`.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 22.1 | **The readers** (Q-RP-101, Q-RP-102, Q-RP-104). `transcode/grade_files.py`: `.edl` and `.ale` beside the CDL files; each gives a list of corrections like `cdl.parse`. The text is read as UTF-8, or Latin-1 when it is not UTF-8.<br>**EDL:** an event starts at its number line. Its comment lines follow: `*ASC_SOP` (three groups of three numbers, spaces and parentheses as written by Resolve, Baselight and Avid) and `*ASC_SAT` (one number); either alone is valid, and a missing one changes nothing. The event's names are its locators, then its clip names (TO, then FROM, without the extension), then its reel.<br>**ALE:** the `Column` line names the columns; each `Data` row is read by them. The names are the `Shot`, `VFX`, `VFX ID` or `Shot Name` column (in that order), then `Name`.<br>An event or row with neither grade comment is **ungraded**: counted, not listed. One with a grade and no name is invalid on `id`. A grade that cannot be read is invalid on its field. At most 2,000 graded events or rows; 1 MiB, as now. | `production/transcode/grade_files.py` (new), `cdl.py` (the extensions) |
+| 22.2 | **Matching** (Q-RP-101, Q-RP-103). Each name of an event, in order, is looked up as an id is today (the code, with or without the project's code, ignoring case). The first name that matches a shot names it; names that match different shots make the event invalid. Several events for one shot with **the same grade** are one correction. **Different grades** make every one of them invalid, and the shot is not written. The source is `"<file> (event <n>: <name>)"` or `"<file> (row <n>: <name>)"`. | `production/services/grade_import.py` |
+| 22.3 | **The answer** (C-RP-55, extends C-RP-54). The same fields. `id` in `matched`, `unchanged`, `unmatched` and `invalid` is `"event <n>: <name>"` or `"row <n>: <name>"` for these files; an unmatched event lists every name tried. New `ungraded`: the number of events or rows without a grade (0 for CDL files). The route, rights, caps, dry run and audit row are as C-RP-54. | `production/api/serializers/grade.py`, `viewsets/project.py` |
+| 22.4 | **Frontend.** The file input takes `.edl` and `.ale`, and the dialog's text names them. The dry run's lists show the event or row ids, and "N events without a grade" when `ungraded` is not 0. Types and keys. | `modules/shots/components/GradeImport.tsx`, `api/production/work.ts` |
+| 22.5 | **Capture, live, docs.** Recapture `production/_shot_grades_flow.json` with an EDL and an ALE (dry run, apply, ungraded events, a shot in two events, two names for two shots). A live file. `docs/api/shot-grades-import.md`, CONTRACTS (C-RP-55), DECISIONS, `rp-22-verification.md`. | `docs/` |
+
+### Questions before RP-22 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-101 | Which part of an EDL event names the shot? | A: **each in turn**: the locators, the clip names (TO, then FROM, without the extension), the reel; the first that matches a shot names it, and names matching different shots make the event invalid. B: the locators only. C: the dialog asks which (locator, clip name, reel). | **A**. Facilities differ: some put the VFX id on a locator, some rename the clip, some use the reel. Trying each in a fixed order reads every common layout without a setting. A name matches only a whole shot code, never part of one, so a camera clip name (`A001C003_220101`) matches nothing. Two names for two shots are refused, not guessed. C makes everyone learn their EDL's layout. |
+| Q-RP-102 | Which ALE column names the shot? | A: **the first present** of `Shot`, `VFX`, `VFX ID`, `Shot Name` (ignoring case), then `Name`, each tried as in Q-RP-101. B: `Name` only. C: the dialog asks for the column. | **A**. Dailies tools put the clip's name in `Name` and the VFX id in a column a coordinator adds. Trying the usual names first, then `Name`, reads both. |
+| Q-RP-103 | One shot in several events (cut in twice, or across a dissolve)? | A: **the same grade** in each is one correction; **different grades** make every one of them invalid, and the shot keeps its grade. B: as for CDL files today: the first wins and the later ones are invalid. | **A**. A shot cut in twice is normal in an EDL and is not an error. Different grades for one shot are a question for the colourist, and picking one by its order in the cut would hide it. |
+| Q-RP-104 | Events and rows without a grade? | A: **counted** (`ungraded`), not listed: black, titles and clips the colourist did not grade are normal in a cut. B: each listed as invalid. | **A**. A 200-event cut with 40 graded VFX shots would otherwise show 160 errors. The count still says how much of the file was read. |
+
+Also decided in the plan, without a question:
+- **No new route, permission code, setting or migration.** The route, its rights (`shot.update`, the single routes' narrowing), its caps (1 MiB, 2,000 graded entries) and its audit row are C-RP-54's.
+- **The grade's bounds are RP-20's** (`clean_grade`), whatever the file.
+- **No ADR:** the trust model doesn't change. The files are text, read with no parser that fetches anything.
+
+### Not in RP-22
+
+- FCPXML, AAF or OpenTimelineIO files; EDLs other than CMX 3600 (File 32, File 128 and GVG are read only where they share its event and comment lines).
+- Exporting grades; per-version grades; reading grades from studio storage (Q-RP-93 C).
+- Notification e-mail (Q-RP-7 stands).
+
+### Tests (targeted, test database)
+
+- **22.1:**
+  - EDL: Resolve's, Baselight's and Avid's spelling of `*ASC_SOP` and `*ASC_SAT`; SOP or SAT alone; a transition (two events, one grade); locators, clip names and reels; a Latin-1 file; ungraded events;
+  - a grade out of bounds, or one that cannot be read;
+  - ALE: each name column, columns in any order, a row shorter than the columns;
+  - the caps; a file that is neither.
+- **22.2:**
+  - each name in order; a camera clip name matching nothing; two names for two shots;
+  - one shot twice with the same grade and with different grades;
+  - the source text;
+  - a shot the caller may not update stays unmatched.
+- **22.3:** the answer's fields; `ungraded`; CDL files unchanged (RP-20's tests pass as they are).
+- **22.4:** the input's accept list, the dialog's text, event ids and the ungraded line (from captured samples).
+
+### Mutation checks
+
+A name matching part of a code; the first name taken when a later one matches a different shot; different grades for one shot written; an ungraded event listed as invalid; the TO clip name tried after FROM; a Latin-1 file refused; the 2,000 cap counting ungraded events.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green.

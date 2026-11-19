@@ -14,9 +14,18 @@ import { Button } from '@/shared/components/Button';
 
 const shots = (n: number) => `${formatNumber(n)} ${n === 1 ? 'shot' : 'shots'}`;
 
-/** What the dry run found (C-RP-54), one sentence. */
+/** What an EDL or ALE counts in (RP-22): its events or its rows; null for a CDL file. */
+const unitOf = (fileName: string): 'event' | 'row' | null => {
+  const lower = fileName.toLowerCase();
+  return lower.endsWith('.edl') ? 'event' : lower.endsWith('.ale') ? 'row' : null;
+};
+const counted = (n: number, word: string) => `${formatNumber(n)} ${word}${n === 1 ? '' : 's'}`;
+
+/** What the dry run found (C-RP-54, C-RP-55), one sentence. */
 export function importSummary(r: GradeImportResult): string {
-  const parts = [`${formatNumber(r.corrections)} ${r.corrections === 1 ? 'correction' : 'corrections'} in ${r.file_name}.`];
+  const unit = unitOf(r.file_name);
+  const parts = [`${counted(r.corrections, unit ? `graded ${unit}` : 'correction')} in ${r.file_name}.`];
+  if (unit && r.ungraded) parts.push(`${counted(r.ungraded, unit)} without a grade.`);
   parts.push(r.matched.length ? `${shots(r.matched.length)} would get a new grade.` : 'No shot would get a new grade.');
   if (r.unchanged.length) parts.push(`${shots(r.unchanged.length)} already ${r.unchanged.length === 1 ? 'has' : 'have'} it.`);
   if (r.unmatched.length) parts.push(`${formatNumber(r.unmatched.length)} match no shot you may change.`);
@@ -25,7 +34,8 @@ export function importSummary(r: GradeImportResult): string {
 }
 
 /**
- * "Import grades…" for one project (RP-20, C-RP-54): choose a client's `.cc`, `.ccc` or `.cdl` file, read what a dry run
+ * "Import grades…" for one project (RP-20, C-RP-54): choose a client's `.cc`, `.ccc` or `.cdl` file, or a cut's EDL or a
+ * dailies ALE (RP-22, C-RP-55), read what a dry run
  * would change, then apply it, which writes every matched shot or none. Shown with `shot.update` in that project (the
  * server refuses the rest, and matches only the shots the caller may update).
  */
@@ -77,7 +87,7 @@ export const GradeImport: React.FC<{ projectId: string | undefined }> = ({ proje
           onClose={close}
           size="2xl"
           title="Import shot grades"
-          subtitle="A client's .cc, .ccc or .cdl file. Each correction's id is matched to a shot code, with or without the project's code before it."
+          subtitle="A client's .cc, .ccc or .cdl file, or an EDL or ALE with ASC_SOP and ASC_SAT. Each correction's id, or each event's or row's names in turn, is matched to a shot code, with or without the project's code before it."
           footer={
             <>
               <Button variant="ghost" onClick={close}>
@@ -91,10 +101,10 @@ export const GradeImport: React.FC<{ projectId: string | undefined }> = ({ proje
         >
           <div className="space-y-3 text-sm">
             <label className="block text-xs text-slate-300">
-              CDL file
+              Grade file
               <input
                 type="file"
-                accept=".cc,.ccc,.cdl"
+                accept=".cc,.ccc,.cdl,.edl,.ale"
                 className="mt-1 block text-xs text-slate-300"
                 onChange={(e) => {
                   const chosen = e.target.files?.[0] ?? null;
@@ -126,7 +136,7 @@ export const GradeImport: React.FC<{ projectId: string | undefined }> = ({ proje
                 )}
                 {result.unmatched.length > 0 && (
                   <p className="text-xs text-amber-300">
-                    No shot: <span className="font-mono">{result.unmatched.join(', ')}</span>
+                    No shot: <span className="font-mono">{result.unmatched.join('; ')}</span>
                   </p>
                 )}
                 {result.invalid.length > 0 && (

@@ -1,10 +1,18 @@
 """
-Shot grades imported from the client's CDL files (review-pipeline RP-20, C-RP-54; Q-RP-93).
+Shot grades imported from the client's CDL files (review-pipeline RP-20, C-RP-54; Q-RP-93), EDLs and
+ALEs (RP-22, C-RP-55; Q-RP-101 to Q-RP-104).
 
-``POST projects/{id}/grades/import/`` reads one ``.cc``, ``.ccc`` or ``.cdl`` file. Each correction's
-``id`` is matched to a shot of the project, ignoring case: the shot's code itself, or the code with
-the project's code and ``_`` before it or taken off it (``SH010`` and ``PRJ_SH010``). An exact code
-wins over one read through the project's code, and an id two shots would both answer is unmatched.
+``POST projects/{id}/grades/import/`` reads one ``.cc``, ``.ccc``, ``.cdl``, ``.edl`` or ``.ale`` file.
+Each correction's ``id`` (an EDL event's or ALE row's names, in turn) is matched to a shot of the
+project, ignoring case: the shot's code itself, or the code with the project's code and ``_`` before
+it or taken off it (``SH010`` and ``PRJ_SH010``). An exact code wins over one read through the
+project's code, and an id two shots would both answer is unmatched.
+
+In a CDL file a second correction for a shot is invalid. In an EDL or ALE the first of an event's
+names that matches names its shot, and names matching different shots make it invalid; a shot in
+several events with the same grade is one correction, and with different grades every one of them
+is invalid and the shot is not written (Q-RP-103). Events and rows without a grade are counted as
+``ungraded`` (Q-RP-104).
 
 Only the shots the caller may update are matched: the narrowing of the single shot routes (CR-46),
 so a shot the caller cannot see is ``unmatched``, as a bulk update answers ``not_found``. A dry run
@@ -23,7 +31,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.audit.models import AuditLog
 from apps.production.models import Shot
-from apps.production.transcode import cdl
+from apps.production.transcode import cdl, grade_files
 
 #: the largest file read
 MAX_BYTES = 1024 * 1024
@@ -36,8 +44,8 @@ def _file_name(upload: Any) -> str:
 
 def _read(upload: Any) -> tuple[str, bytes]:
     name = _file_name(upload)
-    if not name.lower().endswith(cdl.EXTENSIONS):
-        raise ValidationError({"file": ["Choose a .cc, .ccc or .cdl file."]})
+    if not name.lower().endswith(cdl.EXTENSIONS + grade_files.EXTENSIONS):
+        raise ValidationError({"file": ["Choose a .cc, .ccc, .cdl, .edl or .ale file."]})
     if (getattr(upload, "size", 0) or 0) > MAX_BYTES:
         raise ValidationError({"file": ["The file is larger than 1 MiB."]})
     data = upload.read(MAX_BYTES + 1)
@@ -74,8 +82,15 @@ class GradeImportService:
     ) -> dict[str, Any]:
         """The import's answer (C-RP-54); ``scope`` is the project's shots the caller may update."""
         name, data = _read(upload)
+        extension = PurePath(name.lower()).suffix
+        corrections: list[cdl.Correction] = []
+        entries: list[grade_files.Entry] = []
+        ungraded = 0
         try:
-            corrections = cdl.parse(data)
+            if extension in grade_files.EXTENSIONS:
+                entries, ungraded = grade_files.parse(extension, data)
+            else:
+                corrections = cdl.parse(data)
         except cdl.CdlError as error:
             raise ValidationError({"file": [str(error)]}) from error
 
@@ -86,8 +101,13 @@ class GradeImportService:
                 ids = [shot.pk for shot in shots]
                 shots = list(Shot.objects.select_for_update().filter(pk__in=ids).order_by("pk"))
             lookup = _lookup(project, shots)
-            answer = cls._match(corrections, lookup)
-            answer.update({"dry_run": dry_run, "file_name": name, "corrections": len(corrections)})
+            answer = (
+                cls._match_entries(entries, lookup) if entries else cls._match(corrections, lookup)
+            )
+            count = len(entries) if entries else len(corrections)
+            answer.update(
+                {"dry_run": dry_run, "file_name": name, "corrections": count, "ungraded": ungraded}
+            )
             answer["applied"] = 0 if dry_run else cls._apply(actor, project, name, answer)
         return answer
 
@@ -123,6 +143,67 @@ class GradeImportService:
                 unchanged.append(row)
             else:
                 matched.append({**row, "old": shot.grade, "new": correction.grade, "_shot": shot})
+        return {
+            "matched": matched,
+            "unchanged": unchanged,
+            "unmatched": unmatched,
+            "invalid": invalid,
+        }
+
+    @staticmethod
+    def _match_entries(
+        entries: list[grade_files.Entry], lookup: dict[str, Shot | None]
+    ) -> dict[str, Any]:
+        """EDL events and ALE rows: each one's names in turn (Q-RP-101, Q-RP-102), one grade per shot (Q-RP-103)."""
+        unmatched: list[str] = []
+        invalid: list[dict[str, str]] = []
+        by_shot: dict[Any, list[tuple[grade_files.Entry, Shot, str]]] = {}
+        for entry in entries:
+            if not entry.valid:
+                named = f"{entry.label}: {entry.names[0]}" if entry.names else entry.label
+                invalid.append({"id": named, "field": entry.field, "message": entry.message})
+                continue
+            hits: list[tuple[str, Shot]] = []
+            for candidate in entry.names:
+                shot = lookup.get(candidate.upper())
+                if shot is not None and all(shot.pk != found.pk for _, found in hits):
+                    hits.append((candidate, shot))
+            if not hits:
+                unmatched.append(f"{entry.label}: {', '.join(entry.names)}")
+            elif len(hits) > 1:
+                codes = " and ".join(found.code for _, found in hits[:2])
+                invalid.append(
+                    {
+                        "id": f"{entry.label}: {hits[0][0]}",
+                        "field": "id",
+                        "message": f"The {entry.label.split()[0]} names two shots: {codes}.",
+                    }
+                )
+            else:
+                by_shot.setdefault(hits[0][1].pk, []).append((entry, hits[0][1], hits[0][0]))
+
+        matched: list[dict[str, Any]] = []
+        unchanged: list[dict[str, Any]] = []
+        for group in by_shot.values():
+            first, shot, candidate = group[0]
+            if any(entry.grade != first.grade for entry, _, _ in group[1:]):
+                numbers = [entry.label.split()[1] for entry, _, _ in group]
+                which = f"{', '.join(numbers[:-1])} and {numbers[-1]}"
+                kind = first.label.split()[0].capitalize()
+                for entry, _, name in group:
+                    invalid.append(
+                        {
+                            "id": f"{entry.label}: {name}",
+                            "field": "id",
+                            "message": f"{kind}s {which} give shot {shot.code} different grades.",
+                        }
+                    )
+                continue
+            row = {"id": f"{first.label}: {candidate}", "shot": _shot_ref(shot)}
+            if shot.grade == first.grade:
+                unchanged.append(row)
+            else:
+                matched.append({**row, "old": shot.grade, "new": first.grade, "_shot": shot})
         return {
             "matched": matched,
             "unchanged": unchanged,
