@@ -71,6 +71,10 @@ Why: review copies could only be played. Saving one meant asking for the file, o
 4. **The OpenAPI types were regenerated** (`manage.py spectacular` under `DJANGO_ENV=testing`, then `pnpm api:generate`). They gain `review_downloads` and `download_url`, and also RP-22's `ungraded` and its `id` text, which RP-22 did not regenerate.
 5. **The live run sends the upload with Node's fetch**, as RP-5's does (jsdom's `File` loses its bytes). The download itself is the page's own link, followed as a browser would follow it.
 
+## After the merge
+
+- **CI on `develop` (`a80f3053`) failed on one test outside the production app.** `apps/core/tests/test_bootstrap.py` caps each app's migrations, and production's limit of 16 didn't allow 0017. The targeted runs covered only `apps/production`, so they missed it. The fix raises the limit to 17 and names 0016 (RP-20, which raised the limit without naming it) and 0017 in the comment. The bootstrap tests pass: 26, and 25 with one failure when the limit is put back at 16.
+
 ## Not done
 
 - Several copies at once, a playlist or a review as a zip; forensic watermarks or per-viewer burn-ins; download limits.
