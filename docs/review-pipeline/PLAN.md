@@ -1759,7 +1759,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-27 Exporting shot grades
 
-**Status:** planned 2026-11-20 on `feature/rp-27-grade-export`, off `develop` at `4637ea94` (v4.23.0); answered the same day (Q-RP-121 to Q-RP-124 = A, [DECISIONS.md](DECISIONS.md#rp-27-answers)); built ([rp-27-verification.md](rp-27-verification.md); contract C-RP-62). Left out by RP-20 and RP-22 ("Exporting grades"); passed over by RP-25 and RP-26. Chosen over someone else's review queue, Display P3 or HDR copies, and notification e-mail (which would reverse Q-RP-7).
+**Status:** planned 2026-11-20 on `feature/rp-27-grade-export`, off `develop` at `4637ea94` (v4.23.0); answered the same day (Q-RP-121 to Q-RP-124 = A, [DECISIONS.md](DECISIONS.md#rp-27-answers)); committed `e55bfdeb` ([rp-27-verification.md](rp-27-verification.md); contract C-RP-62). Left out by RP-20 and RP-22 ("Exporting grades"); passed over by RP-25 and RP-26. Chosen over someone else's review queue, Display P3 or HDR copies, and notification e-mail (which would reverse Q-RP-7).
 
 **Goal.** A project's shot grades leave StudioHub as the file grading tools read, a `.ccc`, so a grade typed or corrected on a shot reaches editorial, the DI house and the vendors comping in it. Importing an exported file changes nothing.
 
