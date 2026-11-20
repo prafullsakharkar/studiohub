@@ -84,3 +84,7 @@ Nothing is remade on its own (Q-RP-96). The project's review-copies notice (the 
 another grade, and **Remake** makes them again with the new grades: movies and stills from their upload, sequences while
 their frames are kept, copies from studio storage while the file can still be read. The review movie panel says which
 grade a copy was made with, and from which file.
+
+## Sending grades back out
+
+Since RP-27 (C-RP-62) the project's grades can be read back as one `.ccc`: see [Shot grades as a .ccc file](shot-grades-export.md). Importing that file changes nothing.

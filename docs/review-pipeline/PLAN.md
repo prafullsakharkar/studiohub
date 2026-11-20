@@ -1757,3 +1757,61 @@ The fields shown without the per-task check; shown without `task.view`; the filt
 
 ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production); frontend typecheck, Biome, tests, build, unreachable check; the capture and the live run; after the merge, CI green.
 
+## RP-27 Exporting shot grades
+
+**Status:** planned 2026-11-20 on `feature/rp-27-grade-export`, off `develop` at `4637ea94` (v4.23.0); answered the same day (Q-RP-121 to Q-RP-124 = A, [DECISIONS.md](DECISIONS.md#rp-27-answers)); committed `e55bfdeb` ([rp-27-verification.md](rp-27-verification.md); contract C-RP-62). Left out by RP-20 and RP-22 ("Exporting grades"); passed over by RP-25 and RP-26. Chosen over someone else's review queue, Display P3 or HDR copies, and notification e-mail (which would reverse Q-RP-7).
+
+**Goal.** A project's shot grades leave StudioHub as the file grading tools read, a `.ccc`, so a grade typed or corrected on a shot reaches editorial, the DI house and the vendors comping in it. Importing an exported file changes nothing.
+
+### Why (what is there today)
+
+- **Grades only come in.** `POST projects/{id}/grades/import/` reads `.cc`, `.ccc`, `.cdl` (RP-20), EDL and ALE (RP-22), with a dry run. There is no route that gives them back, and `transcode/cdl.py` only parses.
+- **Grades change here.** A supervisor types or corrects a shot's grade on its edit page (C-RP-52); the client's file is then out of date, and the only way to pass the studio's numbers on is to copy them by hand from each shot.
+- **The pieces exist.** A grade is stored as a CDL (`slope`, `offset`, `power`, `saturation`), rounded to six places as CDL files carry it (`validators/grade.py`), with `grade_source` naming the file it came from. Every shot answer already carries `grade` to whoever reads the shot (RP-20), scoped by the shots list (project membership, the external members' narrowing). RP-23 records each download as an `export` audit row.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 27.1 | **The file** (Q-RP-121). `transcode/cdl.py` gains `write_collection(corrections)`: a `ColorCorrectionCollection` in the ASC CDL v1.01 namespace, one `ColorCorrection` per shot, `id` the shot's code, `SOPNode` (`Slope`, `Offset`, `Power`, six places) and `SatNode` (`Saturation`), and a `Description` with `grade_source` when there is one. Written with `xml.etree.ElementTree`, so codes and sources are escaped; UTF-8 with an XML declaration. `parse(write_collection(x))` gives `x` back. | `transcode/cdl.py` |
+| 27.2 | **`GET projects/{id}/grades/export/`** (Q-RP-122, Q-RP-123). The project's live shots that have a grade and that the caller reads (the shots list's scoping), ordered by code; `?sequence_id=<id>` narrows to one sequence (an unknown or malformed id gives a file with no corrections, never a 400). Answered as an attachment `<project code>_grades.ccc` (`application/xml`). Needs `shot.view`; a project the caller cannot open is 404. A project with no graded shot answers an empty collection, not an error. | `api/viewsets/project.py`, `services/grade_export.py` |
+| 27.3 | **The audit row** (Q-RP-124). Each export is an `export` row on the project: the user, the client address, the file name, the sequence if narrowed and the number of shots, as RP-23's downloads. | `services/grade_export.py` |
+| 27.4 | **Frontend.** The Shots page gains *Export grades…* beside *Import grades…*, on the same project (the Project filter, else the active project), for holders of `shot.view`: a small dialog to choose the whole project or one sequence, then the download (fetched with the session, saved as the server names it). | `modules/shots/components/GradeExport.tsx`, `pages/ShotsPage.tsx`, `api/production/` |
+| 27.5 | **Capture, live, docs.** A capture: graded and ungraded shots, a typed grade and an imported one (its source), a sequence, a vendor member (only their shots), a role without `shot.view` (403), the round trip through the import's dry run (everything `unchanged`), the audit row. A live file. `docs/api/shot-grades-export.md`, CONTRACTS (C-RP-62), DECISIONS, `rp-27-verification.md`. | `docs/` |
+
+### Questions before RP-27 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-121 | Which file? | A: **a `.ccc`** (one collection, ids the shot codes). B: A, and an ALE with `ASC_SOP`/`ASC_SAT` columns. C: A, and an EDL with `*ASC_SOP` comments. | **A**. Every grading and conform tool reads a `.ccc`, and it round-trips through RP-20's import exactly. An ALE is a dailies file made by the dailies house, and an EDL needs a cut's events and timecodes, which a project here does not hold; both would be files with made-up columns. |
+| Q-RP-122 | Which shots? | A: **the project's graded shots, or one sequence's** (`sequence_id`). B: the shots chosen on the list. C: every shot, ungraded ones as identity corrections. | **A**. A grade goes out per reel or per sequence; a selection (B) needs a selection the Shots list does not have. C would hand a DI house hundreds of "no grade" entries that overwrite theirs. |
+| Q-RP-123 | Who may export? | A: **holders of `shot.view`, getting the shots they read** (a vendor member: their tasks' shots). B: holders of `shot.update` only. C: the studio only, never an external member. | **A**. The grade is already in every shot answer they read (RP-20), so the file reveals nothing new; a vendor comping a shot needs its grade, which is the point. B and C would only send people to copy numbers by hand. |
+| Q-RP-124 | Recorded? | A: **an `export` audit row per file** (who, when, from where, how many shots). B: no record. | **A**. Grades are the client's creative decisions; TPN expects what leaves the system to be logged, and RP-23 logs each download the same way. |
+
+Also decided in the plan, without a question:
+- **No migration, permission code, setting or dependency.**
+- **The values are written as stored** (six places), so an exported file imported again is all `unchanged`; the import's matching (the shot code, alone or after the project code) needs nothing new.
+- **No ADR:** who reads grades is unchanged (Q-RP-123 A).
+
+### Not in RP-27
+
+- ALE or EDL exports (Q-RP-121 B, C); a `.cdl` per shot or a zip of `.cc` files.
+- Exporting the shots chosen on the list (Q-RP-122 B); per-version grades.
+
+### Tests (targeted, test database)
+
+- **27.1:** the XML (namespace, ids, values, source, escaping of `&`, `<` and quotes in a source); the round trip `parse(write(x)) == x`; an empty collection.
+- **27.2:** only graded live shots, ordered; the sequence filter with a known, an unknown and a malformed id; a vendor member gets only their shots; no `shot.view` is 403; another project is 404; the headers and name.
+- **27.3:** one audit row per export, with the count and the sequence.
+- **Round trip through the API:** export, then import the file with `dry_run`: every shot `unchanged`, nothing `matched` or `unmatched`.
+- **27.4 (from captured samples):** the action shown with `shot.view`, the request (project, sequence), the saved file name.
+- **Live:** the supervisor exports a sequence and the downloaded file names its graded shots, with their values.
+
+### Mutation checks
+
+Ungraded shots exported; an archived shot exported; the sequence filter ignored; a malformed sequence id answering 400; the shots list's scoping skipped; values written with fewer places (the round trip changes grades); the source not escaped; no audit row; the frontend action shown without `shot.view`; the sequence not sent.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production); frontend typecheck, Biome, tests, build, unreachable check; the capture and the live run; after the merge, CI green.
+

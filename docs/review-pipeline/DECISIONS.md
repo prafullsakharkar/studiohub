@@ -160,6 +160,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-24 Waiting for my review | planned in [PLAN.md](PLAN.md#rp-24-waiting-for-my-review); answered (Q-RP-109 to Q-RP-112 = A); committed `3786373c`, merged into `develop` and `main`, released in v4.21.0 ([rp-24-verification.md](rp-24-verification.md)) |
 | RP-25 Slates on downloaded copies | planned in [PLAN.md](PLAN.md#rp-25-slates-on-downloaded-copies); answered (Q-RP-113 to Q-RP-116 = A); committed `fdebebb4`, merged into `develop` and `main`, released in v4.22.0 ([rp-25-verification.md](rp-25-verification.md)) |
 | RP-26 The task on the Versions list | planned in [PLAN.md](PLAN.md#rp-26-the-task-on-the-versions-list); answered (Q-RP-117 to Q-RP-119 = A, Q-RP-120 = B); committed `8363660c`, merged into `develop` and `main`, released in v4.23.0 ([rp-26-verification.md](rp-26-verification.md)) |
+| RP-27 Exporting shot grades | planned in [PLAN.md](PLAN.md#rp-27-exporting-shot-grades); answered (Q-RP-121 to Q-RP-124 = A); committed `e55bfdeb` on `feature/rp-27-grade-export` ([rp-27-verification.md](rp-27-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
@@ -322,4 +323,20 @@ Decided while building, within the answers:
 - **A version card names the task first** in its subtitle (before the department and project), so the queue reads the same as cards and as a table.
 - **An archived task counts as one the caller cannot open**: its versions show no task, as the task list shows no archived task.
 - **No Task filter on the Versions list itself:** a task's page lists its versions (the *Versions* tab), and a select of every task of every project would not scale.
+
+## RP-27 answers
+
+The owner took every recommendation of [PLAN.md, RP-27 questions](PLAN.md#questions-before-rp-27-starts) on 2026-11-20 ("All A, build it").
+
+| ID | Answer | Meaning |
+|---|---|---|
+| Q-RP-121 | **A** | A `.ccc` only: one `ColorCorrectionCollection`, each id the shot's code. No ALE or EDL. |
+| Q-RP-122 | **A** | The project's graded shots, or one sequence's (`sequence_id`); ungraded shots are left out. |
+| Q-RP-123 | **A** | Holders of `shot.view`, getting the shots they read (the Shots list's scoping): a vendor member their tasks' shots, a client member none. |
+| Q-RP-124 | **A** | An `export` audit row per file: who, when, from where, the file, the sequence and how many shots. |
+
+Decided while building, within the answers:
+- **The frontend names the saved file as the server does** (`<project code>_grades.ccc`, `gradeExportName`): the backend does not expose `Content-Disposition` to cross-origin scripts, and exposing it is a CORS change this phase does not need.
+- **An empty collection is a valid answer** (a project with no graded shot, a client member, an unknown sequence); the import refuses such a file, as it refuses any file with no correction.
+- **The audit row's description counts "1 shot" and "n shots".**
 

@@ -1,5 +1,8 @@
 from django.db import transaction
-from drf_spectacular.utils import extend_schema
+from django.http import HttpResponse
+from django.utils.http import content_disposition_header
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -32,6 +35,7 @@ from apps.production.selectors.dashboard import ProjectDashboardSelector
 from apps.production.selectors.delivery_figures import delivery_figures
 from apps.production.selectors.project import ProjectSelector
 from apps.production.selectors.review_media import ReviewMediaSelector
+from apps.production.services.grade_export import GradeExportService
 from apps.production.services.grade_import import GradeImportService
 from apps.production.services.project import ProjectService
 from apps.production.services.project_scoped import ProjectMembershipService
@@ -70,6 +74,8 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         "keep_review_copies": (ProjectPermissions.UPDATE,),
         # RP-20 (C-RP-54): grades are the shots', so importing them needs the shot write
         "import_grades": (ShotPermissions.UPDATE,),
+        # RP-27 (C-RP-62, Q-RP-123): the grades of the shots the caller reads
+        "export_grades": (ShotPermissions.VIEW,),
         # check_existence / existence_check stay unmapped on purpose: this viewset has no
         # _existence_items_from_request, so mapping them would turn a 403 into a 500.
     }
@@ -225,3 +231,30 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
             ),
         )
         return Response(GradeImportSerializer(answer).data)
+
+    @extend_schema(
+        parameters=[OpenApiParameter("sequence_id", OpenApiTypes.STR, required=False)],
+        responses={
+            (200, "application/xml"): OpenApiResponse(
+                OpenApiTypes.BINARY, description="A ColorCorrectionCollection (.ccc)."
+            )
+        },
+    )
+    @action(detail=True, methods=["get"], url_path="grades/export")
+    def export_grades(self, request, *args, **kwargs):
+        """The graded shots the caller reads as one .ccc file, or one sequence's (RP-27, C-RP-62);
+        each export is an audit row."""
+        instance = self.get_object()
+        name, data = GradeExportService.export(
+            actor=request.user,
+            project=instance,
+            scope=ProductionBaseSelector.scope_by_project_membership(
+                Shot.objects.all(), request=request
+            ),
+            sequence_id=request.query_params.get("sequence_id") or None,
+            request=request,
+        )
+        response = HttpResponse(data, content_type="application/xml; charset=utf-8")
+        response["Content-Disposition"] = content_disposition_header(True, name)
+        response["Cache-Control"] = "no-store"
+        return response

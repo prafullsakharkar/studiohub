@@ -3,11 +3,13 @@ import { useProductionStore } from '@/core/production/useProductionStore';
 import { DirectoryFormPage } from '@/modules/directory/DirectoryFormPage';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { shotsFormConfig, useShotsListConfig } from '@/modules/production/work/shots';
+import { GradeExport } from '../components/GradeExport';
 import { GradeImport } from '../components/GradeImport';
 import { ShotBulkAdd } from '../components/ShotBulkAdd';
 
 /**
- * Shots across the caller's projects. Bulk add and Import grades (RP-20) open on the project of the Project filter, else
+ * Shots across the caller's projects. Bulk add, Import grades (RP-20) and Export grades (RP-27) open on the project of the
+ * Project filter, else
  * the active project.
  */
 export const ShotsPage: React.FC = () => {
@@ -22,6 +24,7 @@ export const ShotsPage: React.FC = () => {
           <>
             <ShotBulkAdd projectId={projectOf(filters)} />
             <GradeImport projectId={projectOf(filters)} />
+            <GradeExport projectId={projectOf(filters)} />
           </>
         ),
       }}
