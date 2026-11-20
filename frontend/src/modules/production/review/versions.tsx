@@ -8,6 +8,7 @@ import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } fr
 import { Badge } from '@/shared/components/Badge';
 import { StatusMenu } from '@/modules/production/work/StatusMenu';
 import { AssetPicker, ProjectPicker, ShotPicker, TaskPicker } from '@/modules/production/work/pickers';
+import { VersionTaskCell } from './VersionTaskCell';
 
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
 
@@ -68,7 +69,8 @@ export function useVersionsListConfig(scope?: { projectId: string }): DirectoryL
     filters: [
       { key: 'project_id', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } },
       { key: 'status', label: 'Status', options: options(TASK_STATUSES.filter((s) => s !== 'Archived')) },
-      // shot_id, task_id, asset_id, artist and is_hero are ignored by the server: only these narrow the list
+      // shot_id, asset_id, artist and is_hero are ignored by the server: only these narrow the list (task_id does since
+      // RP-26; the task's page lists its versions with it)
       { key: 'entity_type', label: 'For', options: options(['Shot', 'Asset']) },
       { key: 'is_published', label: 'Published', options: [{ value: 'true', label: 'Published' }, { value: 'false', label: 'Not published' }] },
       // RP-24 (C-RP-58): in Pending Review, on a task the signed-in person reviews; the server reads who from the session
@@ -77,6 +79,8 @@ export function useVersionsListConfig(scope?: { projectId: string }): DirectoryL
     columns: [
       { header: 'Version', cell: (row) => `${row.code} · ${row.version_number}`, sortField: 'created_at' },
       { header: 'For', cell: (row) => `${row.entity_type} ${row.entity_code}`.trim() || '—' },
+      // RP-26 (C-RP-61): null when there is no task or the reader could not open it
+      { header: 'Task', cell: (row) => <VersionTaskCell version={row} /> },
       { header: 'Department', cell: (row) => row.department || '—' },
       { header: 'Artist', cell: (row) => row.artist_name || '—' },
       { header: 'State', cell: versionBadges },
@@ -90,6 +94,7 @@ export function useVersionsListConfig(scope?: { projectId: string }): DirectoryL
       { header: 'Code', value: (r) => r.code },
       { header: 'Number', value: (r) => r.version_number },
       { header: 'For', value: (r) => `${r.entity_type} ${r.entity_code}`.trim() },
+      { header: 'Task', value: (r) => r.task_code ?? '' },
       { header: 'Department', value: (r) => r.department },
       { header: 'Status', value: (r) => r.status },
       { header: 'Published', value: (r) => r.is_published },

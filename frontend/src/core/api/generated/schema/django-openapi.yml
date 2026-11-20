@@ -33080,6 +33080,10 @@ paths:
         schema:
           type: string
       - in: query
+        name: task_id
+        schema:
+          type: string
+      - in: query
         name: to_review
         schema:
           type: string
@@ -33631,6 +33635,10 @@ paths:
         schema:
           type: string
       - in: query
+        name: task_id
+        schema:
+          type: string
+      - in: query
         name: to_review
         schema:
           type: string
@@ -33841,6 +33849,10 @@ paths:
           type: string
       - in: query
         name: status
+        schema:
+          type: string
+      - in: query
+        name: task_id
         schema:
           type: string
       - in: query
@@ -58861,6 +58873,19 @@ components:
             * `colour_config_unavailable` - colour_config_unavailable
           x-spec-enum-id: 1761c6dea4c09cac
           nullable: true
+        slate:
+          type: boolean
+        slate_skipped:
+          enum:
+          - slate_failed
+          - font_missing
+          - null
+          type: string
+          description: |-
+            * `slate_failed` - slate_failed
+            * `font_missing` - font_missing
+          x-spec-enum-id: 240308d2dc25a509
+          nullable: true
       required:
       - burn_ins
       - colour
@@ -58876,6 +58901,8 @@ components:
       - height
       - last_frame
       - ocio
+      - slate
+      - slate_skipped
       - video_codec
       - width
     ReviewMediaSequence:
@@ -64673,6 +64700,14 @@ components:
           format: uuid
           readOnly: true
           nullable: true
+        task_code:
+          type: string
+          nullable: true
+          readOnly: true
+        task_title:
+          type: string
+          nullable: true
+          readOnly: true
         department:
           type: string
           maxLength: 100
@@ -64804,7 +64839,9 @@ components:
       - review_media
       - review_media_job
       - shot_id
+      - task_code
       - task_id
+      - task_title
       - updated_at
       - uuid
     VersionList:
@@ -64866,6 +64903,14 @@ components:
           format: uuid
           readOnly: true
           nullable: true
+        task_code:
+          type: string
+          nullable: true
+          readOnly: true
+        task_title:
+          type: string
+          nullable: true
+          readOnly: true
         department:
           type: string
           maxLength: 100
@@ -64997,7 +65042,9 @@ components:
       - review_media
       - review_media_job
       - shot_id
+      - task_code
       - task_id
+      - task_title
       - updated_at
       - uuid
     VersionPublishingInfo:

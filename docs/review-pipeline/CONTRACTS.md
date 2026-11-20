@@ -378,3 +378,15 @@ Approved 2026-11-20 with every recommendation of Q-RP-113 to Q-RP-116 ([DECISION
 Notes on the contract:
 - **Disk:** each slated copy is a second file about the copy's size (the card adds tens of kilobytes). It is removed with the copy's folder, as the copy is.
 - **The join is checked, the copy is never at risk:** whatever fails, the copy is moved into place as before and the download is the copy.
+
+## RP-26 The task on the Versions list
+
+Approved 2026-11-20 with every recommendation of Q-RP-117 to Q-RP-120 ([DECISIONS.md](DECISIONS.md#rp-26-answers)). Paths are under `/api/v1/` unless named. C-RP-61 adds two fields to every version answer and a filter to the versions list. No permission code, setting, route, migration or dependency is added, and who reads what is unchanged, so there is no ADR. Pinned to `docs/sync/samples/production/_version_task_list_flow.json`.
+
+| ID | Applies to | Before | After |
+|---|---|---|---|
+| C-RP-61 | `versions/` and `versions/{id}/` (and the answers of `publish`, `unpublish`, `promote`); `/api/organizations/projects/{id}/versions/` | A version carried only `task_id`; its task's code and title were read one version at a time (`tasks/{id}/`, RP-21). `task_id` on the list was ignored. | **Every version answer gains `task_code` and `task_title`**, the task's code and title, beside `task_id` (unchanged). Both are `null` when the version has no task, when the task is archived, when the caller lacks `task.view`, and when the task list's own scoping would not give the caller that task (a client member, a vendor member and another vendor's task, a project the caller is not a member of); `task_id` is given either way. Worked out once per answer: one query for a page's task ids, whatever its size.<br>**`versions/?task_id=<id>`** lists that task's versions, inside what the caller already reads; it combines with every other filter (`to_review`, `project_id`, `search`). An unknown or malformed id gives no rows, never a 400, as `tasks/?reviewer_id=` (C-RP-58). `shot_id`, `asset_id`, `artist` and `is_hero` are still ignored. |
+
+Notes on the contract:
+- **Nothing new is readable:** a caller who could open the task could already read its code and title from `tasks/{id}/`; one who could not still gets the versions they read, without the task.
+
