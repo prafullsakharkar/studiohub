@@ -1,0 +1,713 @@
+{
+ "audit_of_exports": {
+  "body": {
+   "count": 6,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "action": "export",
+     "changes_diff": {
+      "file_name": "REX_grades.ccc",
+      "operation": "grades_export",
+      "sequence_id": null,
+      "shots": 0
+     },
+     "created_at": "2026-11-20T11:26:59.961328Z",
+     "description": "Exported the grades of 0 shots as REX_grades.ccc.",
+     "entity_code": "REX",
+     "entity_id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+     "entity_type": "project",
+     "id": "0382412b-61f8-4060-9d92-d65cbb9c35ea",
+     "ip_address": "127.0.0.1",
+     "updated_at": "2026-11-20T11:26:59.961342Z",
+     "user_email": "user@example.test",
+     "user_id": "fb4f09b1-d90a-4704-8e69-bf1a4df3774d",
+     "user_name": "Client Example",
+     "uuid": "0382412b-61f8-4060-9d92-d65cbb9c35ea"
+    },
+    {
+     "action": "export",
+     "changes_diff": {
+      "file_name": "REX_grades.ccc",
+      "operation": "grades_export",
+      "sequence_id": null,
+      "shots": 1
+     },
+     "created_at": "2026-11-20T11:26:59.878021Z",
+     "description": "Exported the grades of 1 shot as REX_grades.ccc.",
+     "entity_code": "REX",
+     "entity_id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+     "entity_type": "project",
+     "id": "5efed4f7-0a28-4ce3-83b1-f1ba6aa88441",
+     "ip_address": "127.0.0.1",
+     "updated_at": "2026-11-20T11:26:59.878034Z",
+     "user_email": "user@example.test",
+     "user_id": "0245101f-95a3-42e7-b713-8ef7d06c95a5",
+     "user_name": "Vendor Example",
+     "uuid": "5efed4f7-0a28-4ce3-83b1-f1ba6aa88441"
+    },
+    {
+     "action": "export",
+     "changes_diff": {
+      "file_name": "REX_grades.ccc",
+      "operation": "grades_export",
+      "sequence_id": "not-a-uuid",
+      "shots": 0
+     },
+     "created_at": "2026-11-20T11:26:59.787958Z",
+     "description": "Exported the grades of 0 shots as REX_grades.ccc.",
+     "entity_code": "REX",
+     "entity_id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+     "entity_type": "project",
+     "id": "09731a35-2fed-453d-9cde-12264fe31577",
+     "ip_address": "127.0.0.1",
+     "updated_at": "2026-11-20T11:26:59.787970Z",
+     "user_email": "user@example.test",
+     "user_id": "d1b5fbe3-e8b8-4216-81ab-0747a893c1e8",
+     "user_name": "Supervisor Example",
+     "uuid": "09731a35-2fed-453d-9cde-12264fe31577"
+    },
+    {
+     "action": "export",
+     "changes_diff": {
+      "file_name": "REX_grades.ccc",
+      "operation": "grades_export",
+      "sequence_id": "00000000-0000-0000-0000-000000000000",
+      "shots": 0
+     },
+     "created_at": "2026-11-20T11:26:59.760200Z",
+     "description": "Exported the grades of 0 shots as REX_grades.ccc.",
+     "entity_code": "REX",
+     "entity_id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+     "entity_type": "project",
+     "id": "4b855114-709d-4f8c-a4f5-301119c514cc",
+     "ip_address": "127.0.0.1",
+     "updated_at": "2026-11-20T11:26:59.760211Z",
+     "user_email": "user@example.test",
+     "user_id": "d1b5fbe3-e8b8-4216-81ab-0747a893c1e8",
+     "user_name": "Supervisor Example",
+     "uuid": "4b855114-709d-4f8c-a4f5-301119c514cc"
+    },
+    {
+     "action": "export",
+     "changes_diff": {
+      "file_name": "REX_grades.ccc",
+      "operation": "grades_export",
+      "sequence_id": "ab16d373-2ff1-4bc6-a60e-4910aa76c266",
+      "shots": 2
+     },
+     "created_at": "2026-11-20T11:26:59.731106Z",
+     "description": "Exported the grades of 2 shots as REX_grades.ccc.",
+     "entity_code": "REX",
+     "entity_id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+     "entity_type": "project",
+     "id": "c6c8a98b-f122-4a91-9937-b660afd9bdbb",
+     "ip_address": "127.0.0.1",
+     "updated_at": "2026-11-20T11:26:59.731118Z",
+     "user_email": "user@example.test",
+     "user_id": "d1b5fbe3-e8b8-4216-81ab-0747a893c1e8",
+     "user_name": "Supervisor Example",
+     "uuid": "c6c8a98b-f122-4a91-9937-b660afd9bdbb"
+    },
+    {
+     "action": "export",
+     "changes_diff": {
+      "file_name": "REX_grades.ccc",
+      "operation": "grades_export",
+      "sequence_id": null,
+      "shots": 3
+     },
+     "created_at": "2026-11-20T11:26:59.703790Z",
+     "description": "Exported the grades of 3 shots as REX_grades.ccc.",
+     "entity_code": "REX",
+     "entity_id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+     "entity_type": "project",
+     "id": "f3aded1c-1b03-484a-b10b-9ccd2e710859",
+     "ip_address": "127.0.0.1",
+     "updated_at": "2026-11-20T11:26:59.703801Z",
+     "user_email": "user@example.test",
+     "user_id": "d1b5fbe3-e8b8-4216-81ab-0747a893c1e8",
+     "user_name": "Supervisor Example",
+     "uuid": "f3aded1c-1b03-484a-b10b-9ccd2e710859"
+    }
+   ]
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/?search=e7ecb18c-7a9e-432c-b5c5-a2858166e843&action=EXPORT"
+  },
+  "status": 200
+ },
+ "export_as_client": {
+  "body": "<?xml version='1.0' encoding='utf-8'?>\n<ColorCorrectionCollection xmlns=\"urn:ASC:CDL:v1.01\" />\n",
+  "headers": {
+   "Cache-Control": "no-store",
+   "Content-Disposition": "attachment; filename=\"REX_grades.ccc\"",
+   "Content-Type": "application/xml; charset=utf-8"
+  },
+  "request": {
+   "method": "GET",
+   "path": "/api/v1/projects/e7ecb18c-7a9e-432c-b5c5-a2858166e843/grades/export/"
+  },
+  "status": 200
+ },
+ "export_as_vendor": {
+  "body": "<?xml version='1.0' encoding='utf-8'?>\n<ColorCorrectionCollection xmlns=\"urn:ASC:CDL:v1.01\">\n  <ColorCorrection id=\"REX_SH0020\">\n    <SOPNode>\n      <Slope>0.900000 1.000000 1.100000</Slope>\n      <Offset>0.000000 0.000000 0.000000</Offset>\n      <Power>1.000000 1.000000 1.000000</Power>\n    </SOPNode>\n    <SatNode>\n      <Saturation>1.000000</Saturation>\n    </SatNode>\n  </ColorCorrection>\n</ColorCorrectionCollection>\n",
+  "headers": {
+   "Cache-Control": "no-store",
+   "Content-Disposition": "attachment; filename=\"REX_grades.ccc\"",
+   "Content-Type": "application/xml; charset=utf-8"
+  },
+  "request": {
+   "method": "GET",
+   "path": "/api/v1/projects/e7ecb18c-7a9e-432c-b5c5-a2858166e843/grades/export/"
+  },
+  "status": 200
+ },
+ "export_outside_404": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "6e81937d-fa14-45d5-945a-74a164779d00"
+   }
+  },
+  "headers": {
+   "Content-Type": "application/json"
+  },
+  "request": {
+   "method": "GET",
+   "path": "/api/v1/projects/e7ecb18c-7a9e-432c-b5c5-a2858166e843/grades/export/"
+  },
+  "status": 404
+ },
+ "export_project": {
+  "body": "<?xml version='1.0' encoding='utf-8'?>\n<ColorCorrectionCollection xmlns=\"urn:ASC:CDL:v1.01\">\n  <ColorCorrection id=\"REX_SH0010\">\n    <SOPNode>\n      <Slope>1.100000 1.000000 0.900000</Slope>\n      <Offset>0.010000 0.000000 -0.010000</Offset>\n      <Power>1.000000 1.000000 1.050000</Power>\n    </SOPNode>\n    <SatNode>\n      <Saturation>0.900000</Saturation>\n    </SatNode>\n  </ColorCorrection>\n  <ColorCorrection id=\"REX_SH0020\">\n    <SOPNode>\n      <Slope>0.900000 1.000000 1.100000</Slope>\n      <Offset>0.000000 0.000000 0.000000</Offset>\n      <Power>1.000000 1.000000 1.000000</Power>\n    </SOPNode>\n    <SatNode>\n      <Saturation>1.000000</Saturation>\n    </SatNode>\n  </ColorCorrection>\n  <ColorCorrection id=\"REX_SH0030\">\n    <Description>client_reel1.ccc (REX_SH0030)</Description>\n    <SOPNode>\n      <Slope>1.050000 1.000000 0.970000</Slope>\n      <Offset>0.002000 0.000000 -0.004000</Offset>\n      <Power>1.000000 1.000000 1.000000</Power>\n    </SOPNode>\n    <SatNode>\n      <Saturation>0.920000</Saturation>\n    </SatNode>\n  </ColorCorrection>\n</ColorCorrectionCollection>\n",
+  "headers": {
+   "Cache-Control": "no-store",
+   "Content-Disposition": "attachment; filename=\"REX_grades.ccc\"",
+   "Content-Type": "application/xml; charset=utf-8"
+  },
+  "request": {
+   "method": "GET",
+   "path": "/api/v1/projects/e7ecb18c-7a9e-432c-b5c5-a2858166e843/grades/export/"
+  },
+  "status": 200
+ },
+ "export_sequence": {
+  "body": "<?xml version='1.0' encoding='utf-8'?>\n<ColorCorrectionCollection xmlns=\"urn:ASC:CDL:v1.01\">\n  <ColorCorrection id=\"REX_SH0010\">\n    <SOPNode>\n      <Slope>1.100000 1.000000 0.900000</Slope>\n      <Offset>0.010000 0.000000 -0.010000</Offset>\n      <Power>1.000000 1.000000 1.050000</Power>\n    </SOPNode>\n    <SatNode>\n      <Saturation>0.900000</Saturation>\n    </SatNode>\n  </ColorCorrection>\n  <ColorCorrection id=\"REX_SH0020\">\n    <SOPNode>\n      <Slope>0.900000 1.000000 1.100000</Slope>\n      <Offset>0.000000 0.000000 0.000000</Offset>\n      <Power>1.000000 1.000000 1.000000</Power>\n    </SOPNode>\n    <SatNode>\n      <Saturation>1.000000</Saturation>\n    </SatNode>\n  </ColorCorrection>\n</ColorCorrectionCollection>\n",
+  "headers": {
+   "Cache-Control": "no-store",
+   "Content-Disposition": "attachment; filename=\"REX_grades.ccc\"",
+   "Content-Type": "application/xml; charset=utf-8"
+  },
+  "request": {
+   "method": "GET",
+   "path": "/api/v1/projects/e7ecb18c-7a9e-432c-b5c5-a2858166e843/grades/export/?sequence_id=ab16d373-2ff1-4bc6-a60e-4910aa76c266"
+  },
+  "status": 200
+ },
+ "export_sequence_malformed": {
+  "body": "<?xml version='1.0' encoding='utf-8'?>\n<ColorCorrectionCollection xmlns=\"urn:ASC:CDL:v1.01\" />\n",
+  "headers": {
+   "Cache-Control": "no-store",
+   "Content-Disposition": "attachment; filename=\"REX_grades.ccc\"",
+   "Content-Type": "application/xml; charset=utf-8"
+  },
+  "request": {
+   "method": "GET",
+   "path": "/api/v1/projects/e7ecb18c-7a9e-432c-b5c5-a2858166e843/grades/export/?sequence_id=not-a-uuid"
+  },
+  "status": 200
+ },
+ "export_sequence_unknown": {
+  "body": "<?xml version='1.0' encoding='utf-8'?>\n<ColorCorrectionCollection xmlns=\"urn:ASC:CDL:v1.01\" />\n",
+  "headers": {
+   "Cache-Control": "no-store",
+   "Content-Disposition": "attachment; filename=\"REX_grades.ccc\"",
+   "Content-Type": "application/xml; charset=utf-8"
+  },
+  "request": {
+   "method": "GET",
+   "path": "/api/v1/projects/e7ecb18c-7a9e-432c-b5c5-a2858166e843/grades/export/?sequence_id=00000000-0000-0000-0000-000000000000"
+  },
+  "status": 200
+ },
+ "export_without_shot_view_403": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "f771c006-a477-4299-915f-61aaafbfad49"
+   }
+  },
+  "headers": {
+   "Content-Type": "application/json"
+  },
+  "request": {
+   "method": "GET",
+   "path": "/api/v1/projects/e7ecb18c-7a9e-432c-b5c5-a2858166e843/grades/export/"
+  },
+  "status": 403
+ },
+ "me_supervisor": {
+  "body": {
+   "auth_source": "local",
+   "avatar_url": null,
+   "created_at": "2026-11-20T11:26:58.847540+00:00",
+   "email": "user@example.test",
+   "first_name": "Supervisor",
+   "full_name": "Supervisor Example",
+   "id": "d1b5fbe3-e8b8-4216-81ab-0747a893c1e8",
+   "is_active": true,
+   "is_staff": false,
+   "is_superuser": false,
+   "last_name": "Example",
+   "mfa_required": false,
+   "must_change_password": false,
+   "permissions": [
+    "asset.create",
+    "asset.delete",
+    "asset.update",
+    "asset.view",
+    "audit.view",
+    "automation.create",
+    "automation.delete",
+    "automation.update",
+    "automation.view",
+    "delivery.approve",
+    "delivery.create",
+    "delivery.update",
+    "delivery.view",
+    "episode.create",
+    "episode.delete",
+    "episode.update",
+    "episode.view",
+    "identity.user.view",
+    "masterdata.partner.view",
+    "media.create",
+    "media.delete",
+    "media.update",
+    "media.view",
+    "note.create",
+    "note.delete",
+    "note.update",
+    "playlist.create",
+    "playlist.delete",
+    "playlist.update",
+    "playlist.view",
+    "project.create",
+    "project.delete",
+    "project.update",
+    "project.view",
+    "publishing.create",
+    "publishing.deprecate",
+    "publishing.revoke",
+    "publishing.update",
+    "publishing.view",
+    "review.approve",
+    "review.create",
+    "review.delete",
+    "review.update",
+    "review.view",
+    "schedule.approve",
+    "schedule.create",
+    "schedule.delete",
+    "schedule.manage",
+    "schedule.update",
+    "schedule.view",
+    "schedule.view_rates",
+    "sequence.create",
+    "sequence.delete",
+    "sequence.update",
+    "sequence.view",
+    "shot.approve",
+    "shot.create",
+    "shot.delete",
+    "shot.update",
+    "shot.view",
+    "show.create",
+    "show.delete",
+    "show.update",
+    "show.view",
+    "task.create",
+    "task.delete",
+    "task.update",
+    "task.view",
+    "tasktemplate.create",
+    "tasktemplate.delete",
+    "tasktemplate.manage_studio",
+    "tasktemplate.update",
+    "tasktemplate.view",
+    "timelog.approve",
+    "timelog.create",
+    "timelog.delete",
+    "timelog.manage",
+    "timelog.update",
+    "timelog.view",
+    "timelog.view_all",
+    "track.create",
+    "track.delete",
+    "track.update",
+    "track.view",
+    "version.create",
+    "version.delete",
+    "version.publish",
+    "version.update",
+    "version.view",
+    "workflow.create",
+    "workflow.delete",
+    "workflow.update",
+    "workflow.view"
+   ],
+   "project_memberships": [
+    {
+     "client_id": "",
+     "department": "",
+     "department_id": "",
+     "id": "3478e2b6-549c-4960-915b-17669967e72d",
+     "project_code": "REX",
+     "project_id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+     "role": "VFX Supervisor",
+     "roles": [
+      "VFX Supervisor"
+     ],
+     "scope": "PROJECT",
+     "show_id": null,
+     "status": "active",
+     "team_id": "",
+     "user_id": "d1b5fbe3-e8b8-4216-81ab-0747a893c1e8",
+     "vendor_id": ""
+    }
+   ],
+   "role": "VFX Supervisor",
+   "updated_at": "2026-11-20T11:26:58.847547+00:00"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/auth/me/"
+  },
+  "status": 200
+ },
+ "me_without_shot_view": {
+  "body": {
+   "auth_source": "local",
+   "avatar_url": null,
+   "created_at": "2026-11-20T11:26:58.893183+00:00",
+   "email": "user@example.test",
+   "first_name": "Projects-Only",
+   "full_name": "Projects-Only Example",
+   "id": "2b3b0f83-1262-4f53-a277-75f625a63189",
+   "is_active": true,
+   "is_staff": false,
+   "is_superuser": false,
+   "last_name": "Example",
+   "mfa_required": false,
+   "must_change_password": false,
+   "permissions": [
+    "project.view"
+   ],
+   "project_memberships": [
+    {
+     "client_id": "",
+     "department": "",
+     "department_id": "",
+     "id": "6575e8fa-90e4-4e40-8ad4-cdac3735b4f4",
+     "project_code": "REX",
+     "project_id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+     "role": "Coordinator",
+     "roles": [
+      "Coordinator"
+     ],
+     "scope": "PROJECT",
+     "show_id": null,
+     "status": "active",
+     "team_id": "",
+     "user_id": "2b3b0f83-1262-4f53-a277-75f625a63189",
+     "vendor_id": ""
+    }
+   ],
+   "role": "Test Grants 95875645",
+   "updated_at": "2026-11-20T11:26:58.893192+00:00"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/auth/me/"
+  },
+  "status": 200
+ },
+ "project": {
+  "body": {
+   "approve_task_on_version_approval": false,
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "REX",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-20T11:26:59.239734Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+   "in_progress_shots": 0,
+   "name": "Grade export",
+   "project_code": "REX",
+   "resolution": "4096x2160 (4K DCI)",
+   "review_burn_ins": false,
+   "review_downloads": "internal",
+   "review_grades": false,
+   "review_look": "",
+   "review_slate_note": "",
+   "review_slates": false,
+   "review_source_folder": "",
+   "review_source_root": "",
+   "review_view": "",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-20T11:26:59.239742Z",
+   "uuid": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/e7ecb18c-7a9e-432c-b5c5-a2858166e843/"
+  },
+  "status": 200
+ },
+ "reimport_dry_run": {
+  "body": {
+   "applied": 0,
+   "corrections": 3,
+   "dry_run": true,
+   "file_name": "REX_grades.ccc",
+   "invalid": [],
+   "matched": [],
+   "unchanged": [
+    {
+     "id": "REX_SH0010",
+     "shot": {
+      "code": "REX_SH0010",
+      "id": "43199fdb-3f11-4f88-9855-ed06158ffb44"
+     }
+    },
+    {
+     "id": "REX_SH0020",
+     "shot": {
+      "code": "REX_SH0020",
+      "id": "1705a206-329b-4992-b966-5937a1a255fd"
+     }
+    },
+    {
+     "id": "REX_SH0030",
+     "shot": {
+      "code": "REX_SH0030",
+      "id": "a989a8b9-0800-4d11-9298-c8d59ae47333"
+     }
+    }
+   ],
+   "ungraded": 0,
+   "unmatched": []
+  },
+  "request": {
+   "body": null,
+   "method": "POST",
+   "path": "/api/v1/projects/e7ecb18c-7a9e-432c-b5c5-a2858166e843/grades/import/"
+  },
+  "status": 200
+ },
+ "sequences": {
+  "body": {
+   "count": 2,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "code": "REX_SQ010",
+     "created_at": "2026-11-20T11:26:59.309427Z",
+     "deleted_at": null,
+     "department": "",
+     "description": "",
+     "episode_id": null,
+     "frame_in": 1001,
+     "frame_out": 1100,
+     "id": "ab16d373-2ff1-4bc6-a60e-4910aa76c266",
+     "is_deleted": false,
+     "lead_artist": null,
+     "lead_artist_id": null,
+     "lead_artist_name": "",
+     "metadata": {},
+     "name": "Opening",
+     "project_code": "REX",
+     "project_id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+     "project_name": "Grade export",
+     "shots_count": 3,
+     "show_id": null,
+     "status": "Not Started",
+     "tags": [],
+     "updated_at": "2026-11-20T11:26:59.309434Z",
+     "uuid": "ab16d373-2ff1-4bc6-a60e-4910aa76c266"
+    },
+    {
+     "code": "REX_SQ020",
+     "created_at": "2026-11-20T11:26:59.324606Z",
+     "deleted_at": null,
+     "department": "",
+     "description": "",
+     "episode_id": null,
+     "frame_in": 1001,
+     "frame_out": 1100,
+     "id": "855f0c99-dbcc-46c8-846b-d8688c158efd",
+     "is_deleted": false,
+     "lead_artist": null,
+     "lead_artist_id": null,
+     "lead_artist_name": "",
+     "metadata": {},
+     "name": "Chase",
+     "project_code": "REX",
+     "project_id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+     "project_name": "Grade export",
+     "shots_count": 1,
+     "show_id": null,
+     "status": "Not Started",
+     "tags": [],
+     "updated_at": "2026-11-20T11:26:59.324612Z",
+     "uuid": "855f0c99-dbcc-46c8-846b-d8688c158efd"
+    }
+   ]
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/sequences/?project_id=e7ecb18c-7a9e-432c-b5c5-a2858166e843&ordering=code"
+  },
+  "status": 200
+ },
+ "shot_imported": {
+  "body": {
+   "assigned_artist_id": null,
+   "assigned_artist_name": "",
+   "client_approved": false,
+   "code": "REX_SH0030",
+   "created_at": "2026-11-20T11:26:59.397714Z",
+   "current_version": "",
+   "current_version_id": null,
+   "description": "",
+   "episode_id": null,
+   "frame_count": 100,
+   "frame_in": 1001,
+   "frame_out": 1100,
+   "grade": {
+    "offset": [
+     0.002,
+     0.0,
+     -0.004
+    ],
+    "power": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "saturation": 0.92,
+    "slope": [
+     1.05,
+     1.0,
+     0.97
+    ]
+   },
+   "grade_source": "client_reel1.ccc (REX_SH0030)",
+   "grade_updated_at": "2026-11-20T11:26:59.522664Z",
+   "handle_frames": 8,
+   "id": "a989a8b9-0800-4d11-9298-c8d59ae47333",
+   "name": "REX_SH0030",
+   "pipeline": {
+    "animation": "Not Started",
+    "comp": "Not Started",
+    "fx": "Not Started",
+    "layout": "Not Started",
+    "lighting": "Not Started"
+   },
+   "project_code": "REX",
+   "project_id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+   "sequence_code": "REX_SQ020",
+   "sequence_id": "855f0c99-dbcc-46c8-846b-d8688c158efd",
+   "show_id": null,
+   "status": "Not Started",
+   "supervisor_approved": false,
+   "thumbnail_url": "",
+   "updated_at": "2026-11-20T11:26:59.525872Z",
+   "uuid": "a989a8b9-0800-4d11-9298-c8d59ae47333",
+   "video_url": ""
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/shots/a989a8b9-0800-4d11-9298-c8d59ae47333/"
+  },
+  "status": 200
+ },
+ "shot_ungraded": {
+  "body": {
+   "assigned_artist_id": null,
+   "assigned_artist_name": "",
+   "client_approved": false,
+   "code": "REX_SH0040",
+   "created_at": "2026-11-20T11:26:59.419002Z",
+   "current_version": "",
+   "current_version_id": null,
+   "description": "",
+   "episode_id": null,
+   "frame_count": 100,
+   "frame_in": 1001,
+   "frame_out": 1100,
+   "grade": null,
+   "grade_source": "",
+   "grade_updated_at": null,
+   "handle_frames": 8,
+   "id": "f56938d1-446b-401d-9641-3d5319eda77f",
+   "name": "REX_SH0040",
+   "pipeline": {
+    "animation": "Not Started",
+    "comp": "Not Started",
+    "fx": "Not Started",
+    "layout": "Not Started",
+    "lighting": "Not Started"
+   },
+   "project_code": "REX",
+   "project_id": "e7ecb18c-7a9e-432c-b5c5-a2858166e843",
+   "sequence_code": "REX_SQ010",
+   "sequence_id": "ab16d373-2ff1-4bc6-a60e-4910aa76c266",
+   "show_id": null,
+   "status": "Not Started",
+   "supervisor_approved": false,
+   "thumbnail_url": "",
+   "updated_at": "2026-11-20T11:26:59.419008Z",
+   "uuid": "f56938d1-446b-401d-9641-3d5319eda77f",
+   "video_url": ""
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/shots/f56938d1-446b-401d-9641-3d5319eda77f/"
+  },
+  "status": 200
+ }
+}

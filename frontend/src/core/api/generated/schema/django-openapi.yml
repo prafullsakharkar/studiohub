@@ -19224,6 +19224,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProjectList'
           description: ''
+  /api/v1/projects/{uuid}/grades/export/:
+    get:
+      operationId: v1_projects_grades_export_retrieve
+      description: |-
+        The graded shots the caller reads as one .ccc file, or one sequence's (RP-27, C-RP-62);
+        each export is an audit row.
+      parameters:
+      - in: query
+        name: sequence_id
+        schema:
+          type: string
+      - in: path
+        name: uuid
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+          description: A ColorCorrectionCollection (.ccc).
   /api/v1/projects/{uuid}/grades/import/:
     post:
       operationId: v1_projects_grades_import_create
