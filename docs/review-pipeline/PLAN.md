@@ -1573,7 +1573,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-24 Waiting for my review
 
-**Status:** planned 2026-11-19; answered the same day (Q-RP-109 to Q-RP-112 = A, [DECISIONS.md](DECISIONS.md#rp-24-answers)); built on `feature/rp-24-review-queue`, off `develop` at `0d302538` (v4.20.0), committed `3786373c` ([rp-24-verification.md](rp-24-verification.md)). Contract C-RP-58. Left out by RP-19 ("review queues") and RP-21; chosen over slates on downloaded copies (Q-RP-63's own condition, "if clients later get review copies as files", is now met, but the copy's burn-ins and file name already say what it is), the task on the Versions list and Display P3 or HDR copies.
+**Status:** planned 2026-11-19; answered the same day (Q-RP-109 to Q-RP-112 = A, [DECISIONS.md](DECISIONS.md#rp-24-answers)); built on `feature/rp-24-review-queue`, off `develop` at `0d302538` (v4.20.0), committed `3786373c`, merged into `develop` and `main`, released in v4.21.0 ([rp-24-verification.md](rp-24-verification.md)). Contract C-RP-58. Left out by RP-19 ("review queues") and RP-21; chosen over slates on downloaded copies (Q-RP-63's own condition, "if clients later get review copies as files", is now met, but the copy's burn-ins and file name already say what it is), the task on the Versions list and Display P3 or HDR copies.
 
 **Goal.** A reviewer can list the versions waiting for them: in *Pending Review*, on a task they review. The Versions list gets a filter for it, and the Tasks list a *Reviewer* filter.
 
@@ -1630,3 +1630,73 @@ The status not checked; the reviewer compared with the artist; an archived task'
 ### Gates
 
 ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production); frontend typecheck, Biome, tests, build, unreachable check; capture and live runs; after the merge, CI green.
+
+## RP-25 Slates on downloaded copies
+
+**Status:** planned 2026-11-20 on `feature/rp-25-download-slates`, off `develop` at `a9064a24` (v4.21.0); answered the same day (Q-RP-113 to Q-RP-116 = A, [DECISIONS.md](DECISIONS.md#rp-25-answers)); committed `fdebebb4` ([rp-25-verification.md](rp-25-verification.md); contracts C-RP-59 and C-RP-60). RP-14 declined slates (Q-RP-63 = A) "until clients get review copies as files"; RP-23 made that so. Chosen over the task on the Versions list, someone else's review queue, exporting grades and Display P3 or HDR copies.
+
+**Goal.** A review copy that leaves StudioHub says what it is. On a project that asks for it, the **downloaded** movie starts with a short slate (the project, the shot or asset, the version, the task, the artist, the frames, the date, and the project's own line). **Playback in StudioHub is unchanged**: the player, the timeline, the filmstrip and every stored frame number still use the copy without a slate.
+
+### Why (what is there today)
+
+- **A downloaded copy is anonymous.** RP-23 serves the copy's `proxy.mp4` as `<version code>.mp4`. Burn-ins are off by default (`review_burn_ins`), so once the file is renamed or forwarded nothing in it says which show, shot or version it is, or that it is confidential.
+- **A slate inside the copy breaks review.** RP-14 found that a slate in the movie shifts every frame number that comments and drawings store (`ReviewViewer.tsx`), so the viewer, timeline and filmstrip would all have to skip it (Q-RP-63). A slate only in the **downloaded file** avoids that: the copy that plays is not touched.
+- **The pieces exist.**
+  - The job already writes burn-in text into files and draws them with `drawtext` and `expansion=none` (C-RP-33), so no text of ours or theirs enters the filter graph.
+  - The copy's encoding is fixed: H.264 high, `yuv420p`, CRF 20, the source's constant rate, at most `PROXY_MAX_WIDTH` wide, AAC stereo when there is audio (`proxy_command`).
+  - "Copies that differ" (RP-14, RP-16) compares what a copy's `probe` recorded with the project's settings, and remakes them from the kept upload.
+- **The download is one signed link** (C-RP-56) and its audit row (C-RP-57); which file it serves is decided in one place (`review_media_stream.py`).
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 25.1 | **The project's switch and line** (Q-RP-113, Q-RP-114). `Project.review_slates` (off by default) and `Project.review_slate_note` (up to 120 characters, one line, blank by default; control characters refused). Set on the project form, kept by Duplicate, change-logged like any project field. Migration production `0018` (and `test_bootstrap.py`'s limit to 18, naming it). | `models/project.py`, migration, project serializers, `apps/core/tests/test_bootstrap.py` |
+| 25.2 | **The slate clip** (Q-RP-114, Q-RP-115). For a movie or sequence copy made while `review_slates` is on, the job writes the slate's text files and draws a two-second card at the copy's size and rate (black, the burn-in font, `drawtext` from files, `expansion=none`), encoded with the copy's own settings, with silent AAC when the copy has audio. It then joins the card and the copy into `download.mp4` **without re-encoding the copy** (the concat demuxer, `-c copy`, `+faststart`) and checks the result with ffprobe (frame count = the card's plus the copy's). The probe records `slate` and, when it was left out, `slate_skipped` (both shown on the copy). A failure at any step leaves the copy ready **without** a slate (`slate_skipped`, logged), never a failed copy. Stills never get one. | `transcode/ffmpeg.py` (`slate_texts`, `slate_command`, `join_command`), `services/review_media.py` (`_prepare_slate`, `_make`, `_finish`) |
+| 25.3 | **The download serves it** (Q-RP-115). The `download` output serves `download.mp4` when the copy has one, else `proxy.mp4` as now; the same name, headers, checks and `X-Accel-Redirect`. The audit row's metadata gains `slate: true\|false`. `proxy`, `thumbnail` and `filmstrip` are unchanged. | `api/views/review_media_stream.py`, `services/review_media.py` (`record_download`) |
+| 25.4 | **Copies that differ** (Q-RP-116). `slate` joins `burn_ins`, `colour` and `grade` as a reason: a movie or sequence copy whose `probe.slate` is not the project's `review_slates`. A copy without the key counts as without a slate. *Remake the copies that differ* remakes it (a sequence whose frames are gone is counted, as now). Changing the note alone does not make copies differ. | `selectors/review_media.py`, the project copies notice |
+| 25.5 | **Frontend.** The project form gains *Put a slate before downloaded review copies* and *Slate line* (shown while the switch is on). The project page says so when it is on. The copies notice names the new reason ("without the slate" / "with a slate"). Duplicate keeps both fields. Types and keys. | `structure/configs.tsx`, `ProjectWorkspace.tsx`, `CloneProjectDialog.tsx`, `ReviewCopiesNotice.tsx`, `api/production/structure.ts`, `review.ts` |
+| 25.6 | **Capture, live, docs.** A capture with a real ffmpeg: a movie with and without audio and a sequence made with the switch on (the download's frame count, its first frames black with text, the copy's unchanged), a still, the switch off, a remake after turning it on, a note with quotes, `%` and a newline refused, and the audit row. A live file (`SYNC_LIVE_MEDIA=1`). CONTRACTS (C-RP-59, C-RP-60), DECISIONS, `rp-25-verification.md`, the TPN note, a pre-deploy checklist line (the migration; disk: one more file per copy, about its size). | `docs/` |
+
+### Questions before RP-25 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-113 | Which copies get a slated download? | A: **a project switch, `review_slates`, off by default**; movie and sequence copies made while it is on; stills never. B: every movie copy, always. C: only while the project lets someone download (`review_downloads` is not `nobody`). | **A**. Each slated copy is a second file about the copy's size, so a studio should choose it per show. B doubles the media volume's growth for shows that never download. C saves the disk but makes the files depend on a second switch: turning downloads on later would leave every copy without its slate. |
+| Q-RP-114 | What does the slate say? | A: **the facts and the project's line**: project code and name, shot or asset code, version code and number, task, artist, frame range and rate, the copy's date (its burn-in date, kept by remakes), and `review_slate_note` (e.g. "Confidential: do not forward"). B: the facts only. C: A, plus who downloaded it and when, made for each download. | **A**. The facts are what a slate is for; the line is how a TPN show marks a copy that leaves the building, and it is one text field drawn like a burn-in. C needs a file per download (ffmpeg on the request, or a job and a wait), and per-viewer marks were left out of RP-23; the audit row already says who took it. |
+| Q-RP-115 | How is the slated file made? | A: **a card encoded with the copy's settings, joined to the copy without re-encoding it**, checked by ffprobe; a failure leaves the copy without a slate (`slate_skipped`). B: the card and the copy re-encoded together into the download. | **A**. Joining copies the copy's frames, so it costs seconds and no quality, whatever the copy's length; B doubles the encoding time of every copy. The card is encoded by the same command line at the same size and rate, which is what joining needs; the probe check catches a join that went wrong, and the copy itself is never at risk. |
+| Q-RP-116 | Copies made before the switch was turned on (or before the upgrade)? | A: **they download without a slate, and count as differing** (`slate`), so *Remake the copies that differ* adds it. B: not counted; remade one at a time. | **A**. It is the path RP-14 built for the burn-in switch, and the project's notice already offers it. A sequence whose frames are gone cannot be remade, as for burn-ins, and is counted as such. |
+
+Also decided in the plan, without a question:
+- **The card holds two seconds**, black, white text in the burn-in font, silent; at the copy's rate, so the download is the copy's length plus two seconds.
+- **Playback never uses the slated file.** The stored frame numbers, comments, drawings, filmstrip and thumbnail are unchanged.
+- **The slate uses the burn-in font** (`REVIEW_MEDIA_BURN_IN_FONT`); a missing font leaves copies without a slate, as it leaves them without burn-ins. No new setting.
+- **No new route or permission code.** Who may download is RP-23's.
+- **No ADR:** nothing about who reads what changes. The threat model's RP-23 note gains a line.
+
+### Not in RP-25
+
+- A slate inside the copy that plays; per-viewer or forensic marks; who downloaded it on the slate (Q-RP-114 C).
+- Slates on stills; a slate image shown in the player; a studio-wide slate template or logo.
+- Downloading several copies at once; originals or frames.
+
+### Tests (targeted, test database)
+
+- **25.1:** the defaults; each field written and read; the note's length and control characters; Duplicate; the change log; the migration (and `test_bootstrap.py`).
+- **25.2:**
+  - the slate's text files: each fact, an empty one left out, the note as written (`%`, quotes and backslashes drawn as characters);
+  - the commands: the card at the copy's size and rate, with and without audio; the join without re-encoding; `+faststart`;
+  - the job: switch on gives `download.mp4` and `probe.slate`, off gives neither; a still never; a failed card or join leaves the copy ready without a slate (`slate_skipped`); a remake keeps the date.
+- **25.3:** the download serves `download.mp4` when there is one, `proxy.mp4` otherwise, with the same headers and under `MEDIA_ACCEL_PREFIX`; playback serves `proxy.mp4` in both cases; the audit row's `slate`.
+- **25.4:** `slate` among the reasons both ways; a copy without the key; a still never; the note alone not a reason; the remake of a differing copy.
+- **25.5 (from captured samples):** the form's switch and line, the project page, the copies notice's reason, Duplicate.
+- **Capture (real ffmpeg):** the download's frame count and duration, its first frame black with text and its third second the copy's first frame; the copy unchanged.
+- **Live:** a project with slates; the downloaded file is two seconds longer than the copy; the player still plays the copy from its first frame.
+
+### Mutation checks
+
+The slate in the copy that plays; the switch not checked; a still given a slate; the copy re-encoded in the join; `expansion` left at its default for the note; a failed join failing the copy; the download serving `proxy.mp4` when a slated file exists; `slate` not counted as differing; the note alone counted as differing.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, and `apps/core/tests/test_bootstrap.py` for the migration); frontend typecheck, Biome, tests, build, unreachable check; captures and the live run (`SYNC_LIVE_MEDIA=1`); after the merge, CI green.

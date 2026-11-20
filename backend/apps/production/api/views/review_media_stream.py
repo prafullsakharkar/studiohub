@@ -135,7 +135,8 @@ class ReviewMediaStreamView(APIView):
             "proxy": row.proxy_path,
             "thumbnail": row.thumbnail_path,
             "filmstrip": row.filmstrip_path,
-            "download": row.proxy_path,
+            # RP-25 (C-RP-59): the slated file when the copy has one
+            "download": review_media_links.download_path(row),
         }[output]
         path = Path(settings.MEDIA_ROOT) / stored
         if not stored or not path.is_file():

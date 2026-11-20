@@ -8,7 +8,9 @@
       "out_of_date": 0,
       "review_burn_ins": false,
       "review_grades": true,
-      "sequences_out_of_date": 0
+      "review_slates": false,
+      "sequences_out_of_date": 0,
+      "slate_out_of_date": 0
     },
     "headers": {
       "Content-Type": "application/json"
@@ -17,7 +19,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/review-copies/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/review-copies/"
     },
     "status": 200
   },
@@ -30,7 +32,9 @@
       "out_of_date": 0,
       "review_burn_ins": false,
       "review_grades": true,
-      "sequences_out_of_date": 0
+      "review_slates": false,
+      "sequences_out_of_date": 0,
+      "slate_out_of_date": 0
     },
     "headers": {
       "Content-Type": "application/json"
@@ -39,7 +43,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/review-copies/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/review-copies/"
     },
     "status": 200
   },
@@ -48,16 +52,16 @@
       "colour_out_of_date": 0,
       "differing": [
         {
-          "frames_until": "2026-12-03T12:39:26.841235Z",
+          "frames_until": "2026-12-04T05:10:40.017670Z",
           "kind": "sequence",
           "published_file_id": null,
           "record_code": "RPG_SH0010",
           "remakable": true,
-          "review_media_id": "b2fd954a-91ef-4e9d-a88d-1308708affda",
+          "review_media_id": "dfa2d60c-83e8-475e-8595-2313be10c471",
           "source": "upload",
           "version": {
             "code": "RPG_SH0010_COMP_V001",
-            "id": "eb1644ec-0467-48db-8538-abfb901965de"
+            "id": "2f09cc7e-13f7-4a89-923d-d6833b6677dc"
           },
           "why": [
             "grade"
@@ -69,7 +73,9 @@
       "out_of_date": 0,
       "review_burn_ins": false,
       "review_grades": true,
-      "sequences_out_of_date": 1
+      "review_slates": false,
+      "sequences_out_of_date": 1,
+      "slate_out_of_date": 0
     },
     "headers": {
       "Content-Type": "application/json"
@@ -78,7 +84,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/review-copies/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/review-copies/"
     },
     "status": 200
   },
@@ -91,7 +97,9 @@
       "out_of_date": 0,
       "review_burn_ins": false,
       "review_grades": false,
-      "sequences_out_of_date": 0
+      "review_slates": false,
+      "sequences_out_of_date": 0,
+      "slate_out_of_date": 0
     },
     "headers": {
       "Content-Type": "application/json"
@@ -100,22 +108,22 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/review-copies/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/review-copies/"
     },
     "status": 200
   },
   "ids": {
-    "first": "eb1644ec-0467-48db-8538-abfb901965de",
-    "graded": "b2fd954a-91ef-4e9d-a88d-1308708affda",
-    "movie": "79b24be2-42cf-4119-a4f6-f75f127ef9c4",
-    "project": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
-    "second": "da7f52d2-7f71-45d8-a01d-72ea65d3bbdc",
+    "first": "2f09cc7e-13f7-4a89-923d-d6833b6677dc",
+    "graded": "dfa2d60c-83e8-475e-8595-2313be10c471",
+    "movie": "0c50d2fd-9c11-4f05-9498-1361deb319e5",
+    "project": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
+    "second": "546a6f4f-3234-4937-b888-0d56f6fef4ad",
     "shots": {
-      "1": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d",
-      "2": "50b03aeb-e6c1-4c52-933a-6c1e6a7d5b4b",
-      "3": "8f4983cc-7edf-4e6d-868d-061b6ea73880"
+      "1": "df025ef8-8d22-4558-9908-a3d269f8b00b",
+      "2": "24f3e45d-2f54-46bd-8a93-dba87f881c2a",
+      "3": "1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029"
     },
-    "third": "f8bf032b-19d7-4daa-a0ad-3af596ffa079"
+    "third": "39a87a88-cdb4-4bf1-9494-3d551215cb21"
   },
   "import_again_200": {
     "body": {
@@ -136,21 +144,21 @@
           "id": "SH0010",
           "shot": {
             "code": "RPG_SH0010",
-            "id": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d"
+            "id": "df025ef8-8d22-4558-9908-a3d269f8b00b"
           }
         },
         {
           "id": "RPG_SH0020",
           "shot": {
             "code": "RPG_SH0020",
-            "id": "50b03aeb-e6c1-4c52-933a-6c1e6a7d5b4b"
+            "id": "24f3e45d-2f54-46bd-8a93-dba87f881c2a"
           }
         },
         {
           "id": "SH0030",
           "shot": {
             "code": "RPG_SH0030",
-            "id": "8f4983cc-7edf-4e6d-868d-061b6ea73880"
+            "id": "1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029"
           }
         }
       ],
@@ -168,7 +176,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/grades/import/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/grades/import/"
     },
     "status": 200
   },
@@ -220,7 +228,7 @@
           },
           "shot": {
             "code": "RPG_SH0010",
-            "id": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d"
+            "id": "df025ef8-8d22-4558-9908-a3d269f8b00b"
           }
         }
       ],
@@ -239,7 +247,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/grades/import/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/grades/import/"
     },
     "status": 200
   },
@@ -261,7 +269,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/grades/import/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/grades/import/"
     },
     "status": 400
   },
@@ -302,7 +310,7 @@
           "old": null,
           "shot": {
             "code": "RPG_SH0010",
-            "id": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d"
+            "id": "df025ef8-8d22-4558-9908-a3d269f8b00b"
           }
         },
         {
@@ -328,7 +336,7 @@
           "old": null,
           "shot": {
             "code": "RPG_SH0020",
-            "id": "50b03aeb-e6c1-4c52-933a-6c1e6a7d5b4b"
+            "id": "24f3e45d-2f54-46bd-8a93-dba87f881c2a"
           }
         }
       ],
@@ -337,7 +345,7 @@
           "id": "SH0030",
           "shot": {
             "code": "RPG_SH0030",
-            "id": "8f4983cc-7edf-4e6d-868d-061b6ea73880"
+            "id": "1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029"
           }
         }
       ],
@@ -356,7 +364,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/grades/import/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/grades/import/"
     },
     "status": 200
   },
@@ -376,7 +384,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/grades/import/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/grades/import/"
     },
     "status": 403
   },
@@ -398,7 +406,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/grades/import/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/grades/import/"
     },
     "status": 400
   },
@@ -439,7 +447,7 @@
           "old": null,
           "shot": {
             "code": "RPG_SH0010",
-            "id": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d"
+            "id": "df025ef8-8d22-4558-9908-a3d269f8b00b"
           }
         },
         {
@@ -465,7 +473,7 @@
           "old": null,
           "shot": {
             "code": "RPG_SH0020",
-            "id": "50b03aeb-e6c1-4c52-933a-6c1e6a7d5b4b"
+            "id": "24f3e45d-2f54-46bd-8a93-dba87f881c2a"
           }
         }
       ],
@@ -474,7 +482,7 @@
           "id": "SH0030",
           "shot": {
             "code": "RPG_SH0030",
-            "id": "8f4983cc-7edf-4e6d-868d-061b6ea73880"
+            "id": "1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029"
           }
         }
       ],
@@ -492,7 +500,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/grades/import/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/grades/import/"
     },
     "status": 200
   },
@@ -560,7 +568,7 @@
           },
           "shot": {
             "code": "RPG_SH0010",
-            "id": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d"
+            "id": "df025ef8-8d22-4558-9908-a3d269f8b00b"
           }
         }
       ],
@@ -569,7 +577,7 @@
           "id": "event 3: SH0020",
           "shot": {
             "code": "RPG_SH0020",
-            "id": "50b03aeb-e6c1-4c52-933a-6c1e6a7d5b4b"
+            "id": "24f3e45d-2f54-46bd-8a93-dba87f881c2a"
           }
         }
       ],
@@ -588,7 +596,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/grades/import/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/grades/import/"
     },
     "status": 200
   },
@@ -656,7 +664,7 @@
           },
           "shot": {
             "code": "RPG_SH0010",
-            "id": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d"
+            "id": "df025ef8-8d22-4558-9908-a3d269f8b00b"
           }
         }
       ],
@@ -665,7 +673,7 @@
           "id": "event 3: SH0020",
           "shot": {
             "code": "RPG_SH0020",
-            "id": "50b03aeb-e6c1-4c52-933a-6c1e6a7d5b4b"
+            "id": "24f3e45d-2f54-46bd-8a93-dba87f881c2a"
           }
         }
       ],
@@ -683,7 +691,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/grades/import/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/grades/import/"
     },
     "status": 200
   },
@@ -705,7 +713,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/grades/import/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/grades/import/"
     },
     "status": 400
   },
@@ -727,7 +735,7 @@
       },
       "method": "POST",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/grades/import/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/grades/import/"
     },
     "status": 400
   },
@@ -745,11 +753,11 @@
       "color_space": "ACEScg",
       "coordinator_id": null,
       "coordinator_name": "",
-      "created_at": "2026-11-19T12:39:22.565487Z",
+      "created_at": "2026-11-20T05:10:35.671302Z",
       "delivery_date": null,
       "description": "",
       "fps": "24.000",
-      "id": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
+      "id": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
       "in_progress_shots": 0,
       "name": "Shot grades",
       "project_code": "RPG",
@@ -758,6 +766,8 @@
       "review_downloads": "internal",
       "review_grades": false,
       "review_look": "",
+      "review_slate_note": "",
+      "review_slates": false,
       "review_source_folder": "",
       "review_source_root": "",
       "review_view": "",
@@ -769,8 +779,8 @@
       "total_assets": 0,
       "total_shots": 0,
       "type": "Feature Film",
-      "updated_at": "2026-11-19T12:39:22.565494Z",
-      "uuid": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
+      "updated_at": "2026-11-20T05:10:35.671311Z",
+      "uuid": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
       "vendor_ids": [],
       "vendor_names": [],
       "vendor_team_ids": [],
@@ -783,7 +793,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/"
     },
     "status": 200
   },
@@ -801,11 +811,11 @@
       "color_space": "ACEScg",
       "coordinator_id": null,
       "coordinator_name": "",
-      "created_at": "2026-11-19T12:39:22.565487Z",
+      "created_at": "2026-11-20T05:10:35.671302Z",
       "delivery_date": null,
       "description": "",
       "fps": "24.000",
-      "id": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
+      "id": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
       "in_progress_shots": 0,
       "name": "Shot grades",
       "project_code": "RPG",
@@ -814,6 +824,8 @@
       "review_downloads": "internal",
       "review_grades": true,
       "review_look": "",
+      "review_slate_note": "",
+      "review_slates": false,
       "review_source_folder": "",
       "review_source_root": "",
       "review_view": "",
@@ -825,8 +837,8 @@
       "total_assets": 0,
       "total_shots": 0,
       "type": "Feature Film",
-      "updated_at": "2026-11-19T12:39:23.783711Z",
-      "uuid": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
+      "updated_at": "2026-11-20T05:10:36.888063Z",
+      "uuid": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
       "vendor_ids": [],
       "vendor_names": [],
       "vendor_team_ids": [],
@@ -839,7 +851,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/"
     },
     "status": 200
   },
@@ -864,6 +876,8 @@
       "review_downloads": "internal",
       "review_grades": true,
       "review_look": "",
+      "review_slate_note": "",
+      "review_slates": false,
       "review_source_folder": "",
       "review_source_root": "",
       "review_view": "",
@@ -885,7 +899,7 @@
       },
       "method": "PATCH",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/"
     },
     "status": 200
   },
@@ -904,7 +918,7 @@
       "body": null,
       "method": "POST",
       "params": null,
-      "path": "/api/v1/projects/d9108ca0-875f-41dc-ae51-11d5279d42aa/review-copies/remake/"
+      "path": "/api/v1/projects/cd55af3d-10fd-4d6b-9b42-c4d6142aea5e/review-copies/remake/"
     },
     "status": 200
   },
@@ -914,9 +928,9 @@
       "assigned_artist_name": "",
       "client_approved": false,
       "code": "RPG_SH0010",
-      "created_at": "2026-11-19T12:39:23.215571Z",
+      "created_at": "2026-11-20T05:10:36.316119Z",
       "current_version": "v001",
-      "current_version_id": "eb1644ec-0467-48db-8538-abfb901965de",
+      "current_version_id": "2f09cc7e-13f7-4a89-923d-d6833b6677dc",
       "description": "",
       "episode_id": null,
       "frame_count": 100,
@@ -941,9 +955,9 @@
         ]
       },
       "grade_source": "cut4.edl (event 2: SH0010)",
-      "grade_updated_at": "2026-11-19T12:39:34.707668Z",
+      "grade_updated_at": "2026-11-20T05:10:48.006643Z",
       "handle_frames": 8,
-      "id": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d",
+      "id": "df025ef8-8d22-4558-9908-a3d269f8b00b",
       "name": "Shot 1",
       "pipeline": {
         "animation": "Not Started",
@@ -953,15 +967,15 @@
         "lighting": "Not Started"
       },
       "project_code": "RPG",
-      "project_id": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
+      "project_id": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
       "sequence_code": "RPG_SQ010",
-      "sequence_id": "04ed2f69-f1bc-4c95-a565-a1e4fe26d6ce",
+      "sequence_id": "e6910d63-d60a-45c4-8cc3-7baae690bc67",
       "show_id": null,
       "status": "Not Started",
       "supervisor_approved": false,
       "thumbnail_url": "",
-      "updated_at": "2026-11-19T12:39:34.710056Z",
-      "uuid": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d",
+      "updated_at": "2026-11-20T05:10:48.008861Z",
+      "uuid": "df025ef8-8d22-4558-9908-a3d269f8b00b",
       "video_url": ""
     },
     "headers": {
@@ -971,7 +985,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/shots/4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d/"
+      "path": "/api/v1/shots/df025ef8-8d22-4558-9908-a3d269f8b00b/"
     },
     "status": 200
   },
@@ -981,7 +995,7 @@
       "client_approved": false,
       "code": "RPG_SH0030",
       "current_version": "v001",
-      "current_version_id": "f8bf032b-19d7-4daa-a0ad-3af596ffa079",
+      "current_version_id": "39a87a88-cdb4-4bf1-9494-3d551215cb21",
       "description": "",
       "frame_in": 1001,
       "frame_out": 1100,
@@ -1044,7 +1058,7 @@
       },
       "method": "PATCH",
       "params": null,
-      "path": "/api/v1/shots/8f4983cc-7edf-4e6d-868d-061b6ea73880/"
+      "path": "/api/v1/shots/1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029/"
     },
     "status": 200
   },
@@ -1082,7 +1096,7 @@
       },
       "method": "PATCH",
       "params": null,
-      "path": "/api/v1/shots/8f4983cc-7edf-4e6d-868d-061b6ea73880/"
+      "path": "/api/v1/shots/1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029/"
     },
     "status": 400
   },
@@ -1092,9 +1106,9 @@
       "assigned_artist_name": "",
       "client_approved": false,
       "code": "RPG_SH0010",
-      "created_at": "2026-11-19T12:39:23.215571Z",
+      "created_at": "2026-11-20T05:10:36.316119Z",
       "current_version": "v001",
-      "current_version_id": "eb1644ec-0467-48db-8538-abfb901965de",
+      "current_version_id": "2f09cc7e-13f7-4a89-923d-d6833b6677dc",
       "description": "",
       "episode_id": null,
       "frame_count": 100,
@@ -1119,9 +1133,9 @@
         ]
       },
       "grade_source": "reel1.ccc (SH0010)",
-      "grade_updated_at": "2026-11-19T12:39:23.561576Z",
+      "grade_updated_at": "2026-11-20T05:10:36.669539Z",
       "handle_frames": 8,
-      "id": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d",
+      "id": "df025ef8-8d22-4558-9908-a3d269f8b00b",
       "name": "Shot 1",
       "pipeline": {
         "animation": "Not Started",
@@ -1131,15 +1145,15 @@
         "lighting": "Not Started"
       },
       "project_code": "RPG",
-      "project_id": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
+      "project_id": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
       "sequence_code": "RPG_SQ010",
-      "sequence_id": "04ed2f69-f1bc-4c95-a565-a1e4fe26d6ce",
+      "sequence_id": "e6910d63-d60a-45c4-8cc3-7baae690bc67",
       "show_id": null,
       "status": "Not Started",
       "supervisor_approved": false,
       "thumbnail_url": "",
-      "updated_at": "2026-11-19T12:39:23.563814Z",
-      "uuid": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d",
+      "updated_at": "2026-11-20T05:10:36.671733Z",
+      "uuid": "df025ef8-8d22-4558-9908-a3d269f8b00b",
       "video_url": ""
     },
     "headers": {
@@ -1149,7 +1163,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/shots/4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d/"
+      "path": "/api/v1/shots/df025ef8-8d22-4558-9908-a3d269f8b00b/"
     },
     "status": 200
   },
@@ -1159,9 +1173,9 @@
       "assigned_artist_name": "",
       "client_approved": false,
       "code": "RPG_SH0030",
-      "created_at": "2026-11-19T12:39:23.347102Z",
+      "created_at": "2026-11-20T05:10:36.460503Z",
       "current_version": "v001",
-      "current_version_id": "f8bf032b-19d7-4daa-a0ad-3af596ffa079",
+      "current_version_id": "39a87a88-cdb4-4bf1-9494-3d551215cb21",
       "description": "",
       "episode_id": null,
       "frame_count": 100,
@@ -1171,7 +1185,7 @@
       "grade_source": "",
       "grade_updated_at": null,
       "handle_frames": 8,
-      "id": "8f4983cc-7edf-4e6d-868d-061b6ea73880",
+      "id": "1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029",
       "name": "Shot 3",
       "pipeline": {
         "animation": "Not Started",
@@ -1181,15 +1195,15 @@
         "lighting": "Not Started"
       },
       "project_code": "RPG",
-      "project_id": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
+      "project_id": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
       "sequence_code": "RPG_SQ010",
-      "sequence_id": "04ed2f69-f1bc-4c95-a565-a1e4fe26d6ce",
+      "sequence_id": "e6910d63-d60a-45c4-8cc3-7baae690bc67",
       "show_id": null,
       "status": "Not Started",
       "supervisor_approved": false,
       "thumbnail_url": "",
-      "updated_at": "2026-11-19T12:39:23.347108Z",
-      "uuid": "8f4983cc-7edf-4e6d-868d-061b6ea73880",
+      "updated_at": "2026-11-20T05:10:36.460510Z",
+      "uuid": "1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029",
       "video_url": ""
     },
     "headers": {
@@ -1199,7 +1213,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/shots/8f4983cc-7edf-4e6d-868d-061b6ea73880/"
+      "path": "/api/v1/shots/1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029/"
     },
     "status": 200
   },
@@ -1209,7 +1223,7 @@
       "client_approved": false,
       "code": "RPG_SH0010",
       "current_version": "v001",
-      "current_version_id": "eb1644ec-0467-48db-8538-abfb901965de",
+      "current_version_id": "2f09cc7e-13f7-4a89-923d-d6833b6677dc",
       "description": "",
       "frame_in": 1001,
       "frame_out": 1100,
@@ -1272,7 +1286,7 @@
       },
       "method": "PATCH",
       "params": null,
-      "path": "/api/v1/shots/4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d/"
+      "path": "/api/v1/shots/df025ef8-8d22-4558-9908-a3d269f8b00b/"
     },
     "status": 200
   },
@@ -1282,9 +1296,9 @@
       "assigned_artist_name": "",
       "client_approved": false,
       "code": "RPG_SH0030",
-      "created_at": "2026-11-19T12:39:23.347102Z",
+      "created_at": "2026-11-20T05:10:36.460503Z",
       "current_version": "v001",
-      "current_version_id": "f8bf032b-19d7-4daa-a0ad-3af596ffa079",
+      "current_version_id": "39a87a88-cdb4-4bf1-9494-3d551215cb21",
       "description": "",
       "episode_id": null,
       "frame_count": 100,
@@ -1309,9 +1323,9 @@
         ]
       },
       "grade_source": "",
-      "grade_updated_at": "2026-11-19T12:39:23.458217Z",
+      "grade_updated_at": "2026-11-20T05:10:36.568589Z",
       "handle_frames": 8,
-      "id": "8f4983cc-7edf-4e6d-868d-061b6ea73880",
+      "id": "1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029",
       "name": "Shot 3",
       "pipeline": {
         "animation": "Not Started",
@@ -1321,15 +1335,15 @@
         "lighting": "Not Started"
       },
       "project_code": "RPG",
-      "project_id": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
+      "project_id": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
       "sequence_code": "RPG_SQ010",
-      "sequence_id": "04ed2f69-f1bc-4c95-a565-a1e4fe26d6ce",
+      "sequence_id": "e6910d63-d60a-45c4-8cc3-7baae690bc67",
       "show_id": null,
       "status": "Not Started",
       "supervisor_approved": false,
       "thumbnail_url": "",
-      "updated_at": "2026-11-19T12:39:23.460816Z",
-      "uuid": "8f4983cc-7edf-4e6d-868d-061b6ea73880",
+      "updated_at": "2026-11-20T05:10:36.571298Z",
+      "uuid": "1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029",
       "video_url": ""
     },
     "headers": {
@@ -1339,7 +1353,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/shots/8f4983cc-7edf-4e6d-868d-061b6ea73880/"
+      "path": "/api/v1/shots/1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029/"
     },
     "status": 200
   },
@@ -1351,24 +1365,24 @@
       "changelog": "",
       "code": "RPG_SH0020_COMP_V001",
       "color_space": "ACEScg",
-      "created_at": "2026-11-19T12:39:23.329691Z",
+      "created_at": "2026-11-20T05:10:36.443135Z",
       "department": "",
       "end_frame": 1004,
       "entity_code": "RPG_SH0020",
-      "entity_id": "50b03aeb-e6c1-4c52-933a-6c1e6a7d5b4b",
+      "entity_id": "24f3e45d-2f54-46bd-8a93-dba87f881c2a",
       "entity_name": "Shot 2",
       "entity_type": "Shot",
       "file_path": "",
       "file_size_mb": "0.00",
       "fps": "24.000",
       "frame_range": "",
-      "id": "da7f52d2-7f71-45d8-a01d-72ea65d3bbdc",
+      "id": "546a6f4f-3234-4937-b888-0d56f6fef4ad",
       "is_archived": false,
       "is_hero": false,
       "is_published": false,
       "notes": "",
       "project_code": "RPG",
-      "project_id": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
+      "project_id": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
       "published_at": null,
       "published_by_id": null,
       "publishing_info": {},
@@ -1377,19 +1391,19 @@
         "attempts": 1,
         "color_space": "",
         "created_by": {
-          "id": "7cceb471-a102-4298-93a1-1181a5b5bdb6",
+          "id": "9dbc2b3b-c3cd-40ea-b924-3e3a3b7f232b",
           "name": "user@example.test"
         },
-        "download_url": "/api/v1/review-media/79b24be2-42cf-4119-a4f6-f75f127ef9c4/download/?token=SAMPLE",
+        "download_url": "/api/v1/review-media/0c50d2fd-9c11-4f05-9498-1361deb319e5/download/?token=SAMPLE",
         "error_code": "",
         "error_message": "",
         "filmstrip_tiles": 24,
-        "filmstrip_url": "/api/v1/review-media/79b24be2-42cf-4119-a4f6-f75f127ef9c4/filmstrip/?token=SAMPLE",
-        "finished_at": "2026-11-19T12:39:28.296830Z",
+        "filmstrip_url": "/api/v1/review-media/0c50d2fd-9c11-4f05-9498-1361deb319e5/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-20T05:10:41.430966Z",
         "frames_until": null,
-        "id": "79b24be2-42cf-4119-a4f6-f75f127ef9c4",
+        "id": "0c50d2fd-9c11-4f05-9498-1361deb319e5",
         "kind": "movie",
-        "links_expire_at": "2026-11-19T13:39:28.370307Z",
+        "links_expire_at": "2026-11-20T06:10:41.503111Z",
         "probe": {
           "burn_ins": false,
           "colour": "as_stored",
@@ -1405,33 +1419,35 @@
           "height": 360,
           "last_frame": null,
           "ocio": null,
+          "slate": false,
+          "slate_skipped": null,
           "video_codec": "h264",
           "width": 640
         },
-        "proxy_url": "/api/v1/review-media/79b24be2-42cf-4119-a4f6-f75f127ef9c4/proxy/?token=SAMPLE",
+        "proxy_url": "/api/v1/review-media/0c50d2fd-9c11-4f05-9498-1361deb319e5/proxy/?token=SAMPLE",
         "published_file_id": null,
-        "queued_at": "2026-11-19T12:39:27.224631Z",
+        "queued_at": "2026-11-20T05:10:40.369748Z",
         "remake_of": null,
         "sequence": null,
         "source": "upload",
         "source_name": "graded.mp4",
         "source_size": 90524,
-        "started_at": "2026-11-19T12:39:27.242647Z",
+        "started_at": "2026-11-20T05:10:40.379690Z",
         "status": "ready",
         "storage_readable": false,
-        "thumbnail_url": "/api/v1/review-media/79b24be2-42cf-4119-a4f6-f75f127ef9c4/thumbnail/?token=SAMPLE",
-        "version_id": "da7f52d2-7f71-45d8-a01d-72ea65d3bbdc"
+        "thumbnail_url": "/api/v1/review-media/0c50d2fd-9c11-4f05-9498-1361deb319e5/thumbnail/?token=SAMPLE",
+        "version_id": "546a6f4f-3234-4937-b888-0d56f6fef4ad"
       },
       "review_media_job": null,
-      "shot_id": "50b03aeb-e6c1-4c52-933a-6c1e6a7d5b4b",
+      "shot_id": "24f3e45d-2f54-46bd-8a93-dba87f881c2a",
       "source_file_url": "",
       "start_frame": 1001,
       "status": "Pending Review",
       "tags": [],
-      "task_id": "a5e33b7d-fb86-40e9-9cff-01874863ec54",
+      "task_id": "2ae54f57-506e-4d09-8d7d-b48c3fc0399b",
       "thumbnail_url": "",
-      "updated_at": "2026-11-19T12:39:23.329697Z",
-      "uuid": "da7f52d2-7f71-45d8-a01d-72ea65d3bbdc",
+      "updated_at": "2026-11-20T05:10:36.443142Z",
+      "uuid": "546a6f4f-3234-4937-b888-0d56f6fef4ad",
       "version_index": 1,
       "version_number": "v001",
       "video_url": ""
@@ -1443,7 +1459,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/da7f52d2-7f71-45d8-a01d-72ea65d3bbdc/"
+      "path": "/api/v1/versions/546a6f4f-3234-4937-b888-0d56f6fef4ad/"
     },
     "status": 200
   },
@@ -1455,24 +1471,24 @@
       "changelog": "",
       "code": "RPG_SH0010_COMP_V001",
       "color_space": "ACEScg",
-      "created_at": "2026-11-19T12:39:23.277050Z",
+      "created_at": "2026-11-20T05:10:36.371650Z",
       "department": "",
       "end_frame": 1004,
       "entity_code": "RPG_SH0010",
-      "entity_id": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d",
+      "entity_id": "df025ef8-8d22-4558-9908-a3d269f8b00b",
       "entity_name": "Shot 1",
       "entity_type": "Shot",
       "file_path": "",
       "file_size_mb": "0.00",
       "fps": "24.000",
       "frame_range": "",
-      "id": "eb1644ec-0467-48db-8538-abfb901965de",
+      "id": "2f09cc7e-13f7-4a89-923d-d6833b6677dc",
       "is_archived": false,
       "is_hero": false,
       "is_published": false,
       "notes": "",
       "project_code": "RPG",
-      "project_id": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
+      "project_id": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
       "published_at": null,
       "published_by_id": null,
       "publishing_info": {},
@@ -1481,19 +1497,19 @@
         "attempts": 1,
         "color_space": "",
         "created_by": {
-          "id": "7cceb471-a102-4298-93a1-1181a5b5bdb6",
+          "id": "9dbc2b3b-c3cd-40ea-b924-3e3a3b7f232b",
           "name": "user@example.test"
         },
-        "download_url": "/api/v1/review-media/b2fd954a-91ef-4e9d-a88d-1308708affda/download/?token=SAMPLE",
+        "download_url": "/api/v1/review-media/dfa2d60c-83e8-475e-8595-2313be10c471/download/?token=SAMPLE",
         "error_code": "",
         "error_message": "",
         "filmstrip_tiles": 4,
-        "filmstrip_url": "/api/v1/review-media/b2fd954a-91ef-4e9d-a88d-1308708affda/filmstrip/?token=SAMPLE",
-        "finished_at": "2026-11-19T12:39:26.841235Z",
-        "frames_until": "2026-12-03T12:39:26.841235Z",
-        "id": "b2fd954a-91ef-4e9d-a88d-1308708affda",
+        "filmstrip_url": "/api/v1/review-media/dfa2d60c-83e8-475e-8595-2313be10c471/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-20T05:10:40.017670Z",
+        "frames_until": "2026-12-04T05:10:40.017670Z",
+        "id": "dfa2d60c-83e8-475e-8595-2313be10c471",
         "kind": "sequence",
-        "links_expire_at": "2026-11-19T13:39:27.027475Z",
+        "links_expire_at": "2026-11-20T06:10:40.214256Z",
         "probe": {
           "burn_ins": false,
           "colour": "ocio",
@@ -1532,12 +1548,14 @@
             "look": "",
             "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
           },
+          "slate": false,
+          "slate_skipped": null,
           "video_codec": "exr",
           "width": 640
         },
-        "proxy_url": "/api/v1/review-media/b2fd954a-91ef-4e9d-a88d-1308708affda/proxy/?token=SAMPLE",
+        "proxy_url": "/api/v1/review-media/dfa2d60c-83e8-475e-8595-2313be10c471/proxy/?token=SAMPLE",
         "published_file_id": null,
-        "queued_at": "2026-11-19T12:39:23.940770Z",
+        "queued_at": "2026-11-20T05:10:37.034868Z",
         "remake_of": null,
         "sequence": {
           "extension": "exr",
@@ -1549,22 +1567,22 @@
         "source": "upload",
         "source_name": "rpg_comp.[1001-1004].exr",
         "source_size": 11083808,
-        "started_at": "2026-11-19T12:39:23.950435Z",
+        "started_at": "2026-11-20T05:10:37.044628Z",
         "status": "ready",
         "storage_readable": false,
-        "thumbnail_url": "/api/v1/review-media/b2fd954a-91ef-4e9d-a88d-1308708affda/thumbnail/?token=SAMPLE",
-        "version_id": "eb1644ec-0467-48db-8538-abfb901965de"
+        "thumbnail_url": "/api/v1/review-media/dfa2d60c-83e8-475e-8595-2313be10c471/thumbnail/?token=SAMPLE",
+        "version_id": "2f09cc7e-13f7-4a89-923d-d6833b6677dc"
       },
       "review_media_job": null,
-      "shot_id": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d",
+      "shot_id": "df025ef8-8d22-4558-9908-a3d269f8b00b",
       "source_file_url": "",
       "start_frame": 1001,
       "status": "Pending Review",
       "tags": [],
-      "task_id": "abce0784-03f4-4da5-a240-36e4a2c31d02",
+      "task_id": "52efbb73-66d3-4004-90b8-60b5939e9912",
       "thumbnail_url": "",
-      "updated_at": "2026-11-19T12:39:23.277058Z",
-      "uuid": "eb1644ec-0467-48db-8538-abfb901965de",
+      "updated_at": "2026-11-20T05:10:36.371659Z",
+      "uuid": "2f09cc7e-13f7-4a89-923d-d6833b6677dc",
       "version_index": 1,
       "version_number": "v001",
       "video_url": ""
@@ -1576,7 +1594,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/eb1644ec-0467-48db-8538-abfb901965de/"
+      "path": "/api/v1/versions/2f09cc7e-13f7-4a89-923d-d6833b6677dc/"
     },
     "status": 200
   },
@@ -1588,24 +1606,24 @@
       "changelog": "",
       "code": "RPG_SH0030_COMP_V001",
       "color_space": "ACEScg",
-      "created_at": "2026-11-19T12:39:23.377779Z",
+      "created_at": "2026-11-20T05:10:36.492736Z",
       "department": "",
       "end_frame": 1004,
       "entity_code": "RPG_SH0030",
-      "entity_id": "8f4983cc-7edf-4e6d-868d-061b6ea73880",
+      "entity_id": "1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029",
       "entity_name": "Shot 3",
       "entity_type": "Shot",
       "file_path": "",
       "file_size_mb": "0.00",
       "fps": "24.000",
       "frame_range": "",
-      "id": "f8bf032b-19d7-4daa-a0ad-3af596ffa079",
+      "id": "39a87a88-cdb4-4bf1-9494-3d551215cb21",
       "is_archived": false,
       "is_hero": false,
       "is_published": false,
       "notes": "",
       "project_code": "RPG",
-      "project_id": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
+      "project_id": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
       "published_at": null,
       "published_by_id": null,
       "publishing_info": {},
@@ -1614,19 +1632,19 @@
         "attempts": 1,
         "color_space": "",
         "created_by": {
-          "id": "7cceb471-a102-4298-93a1-1181a5b5bdb6",
+          "id": "9dbc2b3b-c3cd-40ea-b924-3e3a3b7f232b",
           "name": "user@example.test"
         },
-        "download_url": "/api/v1/review-media/fe5be051-c2e1-4248-9aa5-a02d7f1d1c36/download/?token=SAMPLE",
+        "download_url": "/api/v1/review-media/cf0ed7a1-8624-48c1-aaee-98ec8aea095a/download/?token=SAMPLE",
         "error_code": "",
         "error_message": "",
         "filmstrip_tiles": 4,
-        "filmstrip_url": "/api/v1/review-media/fe5be051-c2e1-4248-9aa5-a02d7f1d1c36/filmstrip/?token=SAMPLE",
-        "finished_at": "2026-11-19T12:39:34.568996Z",
-        "frames_until": "2026-12-03T12:39:34.568996Z",
-        "id": "fe5be051-c2e1-4248-9aa5-a02d7f1d1c36",
+        "filmstrip_url": "/api/v1/review-media/cf0ed7a1-8624-48c1-aaee-98ec8aea095a/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-20T05:10:47.874579Z",
+        "frames_until": "2026-12-04T05:10:47.874579Z",
+        "id": "cf0ed7a1-8624-48c1-aaee-98ec8aea095a",
         "kind": "sequence",
-        "links_expire_at": "2026-11-19T13:39:34.641602Z",
+        "links_expire_at": "2026-11-20T06:10:47.944732Z",
         "probe": {
           "burn_ins": false,
           "colour": "ocio",
@@ -1648,12 +1666,14 @@
             "look": "",
             "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
           },
+          "slate": false,
+          "slate_skipped": null,
           "video_codec": "exr",
           "width": 640
         },
-        "proxy_url": "/api/v1/review-media/fe5be051-c2e1-4248-9aa5-a02d7f1d1c36/proxy/?token=SAMPLE",
+        "proxy_url": "/api/v1/review-media/cf0ed7a1-8624-48c1-aaee-98ec8aea095a/proxy/?token=SAMPLE",
         "published_file_id": null,
-        "queued_at": "2026-11-19T12:39:31.589140Z",
+        "queued_at": "2026-11-20T05:10:44.809625Z",
         "remake_of": null,
         "sequence": {
           "extension": "exr",
@@ -1665,22 +1685,22 @@
         "source": "upload",
         "source_name": "rpg_comp.[1001-1004].exr",
         "source_size": 11083808,
-        "started_at": "2026-11-19T12:39:31.599727Z",
+        "started_at": "2026-11-20T05:10:44.820258Z",
         "status": "ready",
         "storage_readable": false,
-        "thumbnail_url": "/api/v1/review-media/fe5be051-c2e1-4248-9aa5-a02d7f1d1c36/thumbnail/?token=SAMPLE",
-        "version_id": "f8bf032b-19d7-4daa-a0ad-3af596ffa079"
+        "thumbnail_url": "/api/v1/review-media/cf0ed7a1-8624-48c1-aaee-98ec8aea095a/thumbnail/?token=SAMPLE",
+        "version_id": "39a87a88-cdb4-4bf1-9494-3d551215cb21"
       },
       "review_media_job": null,
-      "shot_id": "8f4983cc-7edf-4e6d-868d-061b6ea73880",
+      "shot_id": "1ff7ce5c-ebb6-4a2d-a82a-9659fe1b7029",
       "source_file_url": "",
       "start_frame": 1001,
       "status": "Pending Review",
       "tags": [],
-      "task_id": "ece6c00a-d573-422a-8ef6-2b528aeb4a32",
+      "task_id": "3ba6963e-e21e-4b43-bbf8-77e1d8170664",
       "thumbnail_url": "",
-      "updated_at": "2026-11-19T12:39:23.377785Z",
-      "uuid": "f8bf032b-19d7-4daa-a0ad-3af596ffa079",
+      "updated_at": "2026-11-20T05:10:36.492743Z",
+      "uuid": "39a87a88-cdb4-4bf1-9494-3d551215cb21",
       "version_index": 1,
       "version_number": "v001",
       "video_url": ""
@@ -1692,7 +1712,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/f8bf032b-19d7-4daa-a0ad-3af596ffa079/"
+      "path": "/api/v1/versions/39a87a88-cdb4-4bf1-9494-3d551215cb21/"
     },
     "status": 200
   },
@@ -1704,24 +1724,24 @@
       "changelog": "",
       "code": "RPG_SH0010_COMP_V001",
       "color_space": "ACEScg",
-      "created_at": "2026-11-19T12:39:23.277050Z",
+      "created_at": "2026-11-20T05:10:36.371650Z",
       "department": "",
       "end_frame": 1004,
       "entity_code": "RPG_SH0010",
-      "entity_id": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d",
+      "entity_id": "df025ef8-8d22-4558-9908-a3d269f8b00b",
       "entity_name": "Shot 1",
       "entity_type": "Shot",
       "file_path": "",
       "file_size_mb": "0.00",
       "fps": "24.000",
       "frame_range": "",
-      "id": "eb1644ec-0467-48db-8538-abfb901965de",
+      "id": "2f09cc7e-13f7-4a89-923d-d6833b6677dc",
       "is_archived": false,
       "is_hero": false,
       "is_published": false,
       "notes": "",
       "project_code": "RPG",
-      "project_id": "d9108ca0-875f-41dc-ae51-11d5279d42aa",
+      "project_id": "cd55af3d-10fd-4d6b-9b42-c4d6142aea5e",
       "published_at": null,
       "published_by_id": null,
       "publishing_info": {},
@@ -1730,19 +1750,19 @@
         "attempts": 1,
         "color_space": "",
         "created_by": {
-          "id": "7cceb471-a102-4298-93a1-1181a5b5bdb6",
+          "id": "9dbc2b3b-c3cd-40ea-b924-3e3a3b7f232b",
           "name": "user@example.test"
         },
-        "download_url": "/api/v1/review-media/ba3bae37-fb6c-4ba1-886c-97c14091b1d1/download/?token=SAMPLE",
+        "download_url": "/api/v1/review-media/1a03f353-5fc3-417f-8cf3-fe2e2bb5138a/download/?token=SAMPLE",
         "error_code": "",
         "error_message": "",
         "filmstrip_tiles": 4,
-        "filmstrip_url": "/api/v1/review-media/ba3bae37-fb6c-4ba1-886c-97c14091b1d1/filmstrip/?token=SAMPLE",
-        "finished_at": "2026-11-19T12:39:31.349365Z",
-        "frames_until": "2026-12-03T12:39:26.841235Z",
-        "id": "ba3bae37-fb6c-4ba1-886c-97c14091b1d1",
+        "filmstrip_url": "/api/v1/review-media/1a03f353-5fc3-417f-8cf3-fe2e2bb5138a/filmstrip/?token=SAMPLE",
+        "finished_at": "2026-11-20T05:10:44.572298Z",
+        "frames_until": "2026-12-04T05:10:40.017670Z",
+        "id": "1a03f353-5fc3-417f-8cf3-fe2e2bb5138a",
         "kind": "sequence",
-        "links_expire_at": "2026-11-19T13:39:31.443348Z",
+        "links_expire_at": "2026-11-20T06:10:44.661488Z",
         "probe": {
           "burn_ins": false,
           "colour": "ocio",
@@ -1781,13 +1801,15 @@
             "look": "",
             "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
           },
+          "slate": false,
+          "slate_skipped": null,
           "video_codec": "exr",
           "width": 640
         },
-        "proxy_url": "/api/v1/review-media/ba3bae37-fb6c-4ba1-886c-97c14091b1d1/proxy/?token=SAMPLE",
+        "proxy_url": "/api/v1/review-media/1a03f353-5fc3-417f-8cf3-fe2e2bb5138a/proxy/?token=SAMPLE",
         "published_file_id": null,
-        "queued_at": "2026-11-19T12:39:28.523679Z",
-        "remake_of": "b2fd954a-91ef-4e9d-a88d-1308708affda",
+        "queued_at": "2026-11-20T05:10:41.688448Z",
+        "remake_of": "dfa2d60c-83e8-475e-8595-2313be10c471",
         "sequence": {
           "extension": "exr",
           "first_frame": 1001,
@@ -1798,22 +1820,22 @@
         "source": "upload",
         "source_name": "rpg_comp.[1001-1004].exr",
         "source_size": 11083808,
-        "started_at": "2026-11-19T12:39:28.534534Z",
+        "started_at": "2026-11-20T05:10:41.698057Z",
         "status": "ready",
         "storage_readable": false,
-        "thumbnail_url": "/api/v1/review-media/ba3bae37-fb6c-4ba1-886c-97c14091b1d1/thumbnail/?token=SAMPLE",
-        "version_id": "eb1644ec-0467-48db-8538-abfb901965de"
+        "thumbnail_url": "/api/v1/review-media/1a03f353-5fc3-417f-8cf3-fe2e2bb5138a/thumbnail/?token=SAMPLE",
+        "version_id": "2f09cc7e-13f7-4a89-923d-d6833b6677dc"
       },
       "review_media_job": null,
-      "shot_id": "4cf52c8f-3ab8-4788-95c5-a23fe6d7a90d",
+      "shot_id": "df025ef8-8d22-4558-9908-a3d269f8b00b",
       "source_file_url": "",
       "start_frame": 1001,
       "status": "Pending Review",
       "tags": [],
-      "task_id": "abce0784-03f4-4da5-a240-36e4a2c31d02",
+      "task_id": "52efbb73-66d3-4004-90b8-60b5939e9912",
       "thumbnail_url": "",
-      "updated_at": "2026-11-19T12:39:23.277058Z",
-      "uuid": "eb1644ec-0467-48db-8538-abfb901965de",
+      "updated_at": "2026-11-20T05:10:36.371659Z",
+      "uuid": "2f09cc7e-13f7-4a89-923d-d6833b6677dc",
       "version_index": 1,
       "version_number": "v001",
       "video_url": ""
@@ -1825,7 +1847,7 @@
       "body": null,
       "method": "GET",
       "params": null,
-      "path": "/api/v1/versions/eb1644ec-0467-48db-8538-abfb901965de/"
+      "path": "/api/v1/versions/2f09cc7e-13f7-4a89-923d-d6833b6677dc/"
     },
     "status": 200
   }

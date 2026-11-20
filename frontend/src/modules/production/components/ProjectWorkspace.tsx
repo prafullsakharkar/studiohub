@@ -639,6 +639,12 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
                     <span>Shot grades on review copies</span>
                   </>
                 )}
+                {project.review_slates && (
+                  <>
+                    <span>•</span>
+                    <span>Slates on downloaded review copies</span>
+                  </>
+                )}
                 {project.review_downloads && project.review_downloads !== 'internal' && (
                   <>
                     <span>•</span>

@@ -52,6 +52,14 @@ def download_name(media: Any) -> str:
     return f"{media.version.code}{extension}"
 
 
+def download_path(media: Any) -> str:
+    """The stored file a download serves (RP-25, C-RP-59): the copy with its slate when it was made
+    with one (``download.mp4`` beside the copy), else the copy itself. Playback never uses it."""
+    if (media.probe or {}).get("slate") and media.proxy_path:
+        return f"{str(media.proxy_path).rsplit('/', 1)[0]}/download.mp4"
+    return media.proxy_path
+
+
 def make_token(media: Any, user: Any, output: str) -> str:
     return signing.dumps(
         {"m": str(media.pk), "u": str(user.pk), "o": output}, salt=_SALT, compress=False

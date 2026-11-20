@@ -139,7 +139,7 @@ describe('keeping copies as they are (C-RP-43)', () => {
     const region = await notice();
     fireEvent.click(within(region).getByRole('button', { name: 'Keep as they are' }));
     const dialog = await screen.findByRole('dialog');
-    expect(dialog.textContent).toContain("1 review copy cannot be remade. Keep it as it is? It will count again if the project's burn-ins, colour space, view or look change.");
+    expect(dialog.textContent).toContain("1 review copy cannot be remade. Keep it as it is? It will count again if the project's burn-ins, colour space, view, look or slate change.");
     fireEvent.click(within(dialog).getByRole('button', { name: 'Keep as they are' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
     const post = calls.find((c) => c.method === 'POST') as MockCall;

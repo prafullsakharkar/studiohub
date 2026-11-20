@@ -1,21 +1,21 @@
 {
   "ids": {
-    "project": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
-    "shot": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-    "asset": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
-    "artist": "e5a0f95c-f0cc-4f43-84be-a489c25a2dc9",
-    "stranger": "adbd4bb3-f19e-4f4d-8f7c-30291964bbcc"
+    "project": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
+    "shot": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+    "asset": "91058837-d928-47f6-bdd1-f3897acbe898",
+    "artist": "b2a559a2-e033-4ddb-8efb-fb8867578c4f",
+    "stranger": "5dbab333-6898-4341-a35d-1ac2e4744217"
   },
   "note_on_shot": {
     "request": {
       "method": "POST",
-      "path": "/api/organizations/projects/f083e6ae-031d-424e-b4a0-3c4be2854c03/notes/",
+      "path": "/api/organizations/projects/fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8/notes/",
       "body": {
         "subject": "Match the plate",
         "body": "Grade to the ref.",
         "category": "Supervisor Note",
         "entity_type": "Shot",
-        "entity_id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
+        "entity_id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
         "entity_code": "WS18_SH0010",
         "entity_name": "Hero walk"
       }
@@ -23,18 +23,18 @@
     "status": 201,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "3f1b3b1b-b233-4208-9e64-9b0626e2c2fc",
+      "X-Request-ID": "ae2d015e-25fc-486d-b5b3-46c79672be4d",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
-      "id": "ef11df33-2f94-4939-8a09-6060ab07b482",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "b624dcaa-411e-4c12-a118-6cdb620abf7f",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "project_code": "WS18",
       "entity_type": "Shot",
-      "entity_id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
+      "entity_id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
       "entity_code": "WS18_SH0010",
       "entity_name": "Hero walk",
-      "author_id": "ee2bf69d-3df3-49f6-9fa4-41f072f8c6f8",
+      "author_id": "b35fbd33-450c-428b-8e38-1cf7c08aa320",
       "author_name": "user@example.test",
       "author_avatar": "",
       "author_role": "",
@@ -48,13 +48,13 @@
       "addressed_at": null,
       "timecode_ref": "",
       "frame_number": null,
-      "created_at": "2026-11-19T12:39:43.622453Z",
-      "updated_at": "2026-11-19T12:39:43.622462Z",
+      "created_at": "2026-11-20T05:10:56.992726Z",
+      "updated_at": "2026-11-20T05:10:56.992737Z",
       "parent_id": null,
       "links": [
         {
           "entity_type": "Shot",
-          "entity_id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
+          "entity_id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
           "code": "WS18_SH0010",
           "name": "Hero walk"
         }
@@ -68,12 +68,12 @@
   "note_on_asset": {
     "request": {
       "method": "POST",
-      "path": "/api/organizations/projects/f083e6ae-031d-424e-b4a0-3c4be2854c03/notes/",
+      "path": "/api/organizations/projects/fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8/notes/",
       "body": {
         "subject": "Fix the rig",
         "category": "Pipeline Notice",
         "entity_type": "Asset",
-        "entity_id": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
+        "entity_id": "91058837-d928-47f6-bdd1-f3897acbe898",
         "entity_code": "WS18_CHR-HERO",
         "entity_name": "Hero"
       }
@@ -81,18 +81,18 @@
     "status": 201,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "42d6308b-27fb-4d78-9536-85b897956946",
+      "X-Request-ID": "79eed885-78f3-47cc-b100-57bba1f8cc93",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
-      "id": "4b9799ee-58e6-4c64-aa88-539db9a01fae",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "09e56838-77cc-4e9b-9248-81c09d3038d2",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "project_code": "WS18",
       "entity_type": "Asset",
-      "entity_id": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
+      "entity_id": "91058837-d928-47f6-bdd1-f3897acbe898",
       "entity_code": "WS18_CHR-HERO",
       "entity_name": "Hero",
-      "author_id": "ee2bf69d-3df3-49f6-9fa4-41f072f8c6f8",
+      "author_id": "b35fbd33-450c-428b-8e38-1cf7c08aa320",
       "author_name": "user@example.test",
       "author_avatar": "",
       "author_role": "",
@@ -106,13 +106,13 @@
       "addressed_at": null,
       "timecode_ref": "",
       "frame_number": null,
-      "created_at": "2026-11-19T12:39:43.655728Z",
-      "updated_at": "2026-11-19T12:39:43.655736Z",
+      "created_at": "2026-11-20T05:10:57.030638Z",
+      "updated_at": "2026-11-20T05:10:57.030648Z",
       "parent_id": null,
       "links": [
         {
           "entity_type": "Asset",
-          "entity_id": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
+          "entity_id": "91058837-d928-47f6-bdd1-f3897acbe898",
           "code": "WS18_CHR-HERO",
           "name": "Hero"
         }
@@ -126,7 +126,7 @@
   "note_on_project": {
     "request": {
       "method": "POST",
-      "path": "/api/organizations/projects/f083e6ae-031d-424e-b4a0-3c4be2854c03/notes/",
+      "path": "/api/organizations/projects/fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8/notes/",
       "body": {
         "subject": "Delivery spec"
       }
@@ -134,18 +134,18 @@
     "status": 201,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "ff3f7718-6367-490d-8db4-3a0671b53d06",
+      "X-Request-ID": "a4fd65c6-4fdf-4239-a258-ce3d07cf34f6",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
-      "id": "1f7b8322-68bb-4ef8-8baa-9b684aa82fcd",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "ef42a1ae-1a23-4906-b195-1ea28493600c",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "project_code": "WS18",
       "entity_type": "Project",
       "entity_id": "",
       "entity_code": "",
       "entity_name": "",
-      "author_id": "ee2bf69d-3df3-49f6-9fa4-41f072f8c6f8",
+      "author_id": "b35fbd33-450c-428b-8e38-1cf7c08aa320",
       "author_name": "user@example.test",
       "author_avatar": "",
       "author_role": "",
@@ -159,8 +159,8 @@
       "addressed_at": null,
       "timecode_ref": "",
       "frame_number": null,
-      "created_at": "2026-11-19T12:39:43.679984Z",
-      "updated_at": "2026-11-19T12:39:43.679992Z",
+      "created_at": "2026-11-20T05:10:57.055910Z",
+      "updated_at": "2026-11-20T05:10:57.055919Z",
       "parent_id": null,
       "links": [],
       "task_id": null,
@@ -172,7 +172,7 @@
   "note_mentions_code": {
     "request": {
       "method": "POST",
-      "path": "/api/organizations/projects/f083e6ae-031d-424e-b4a0-3c4be2854c03/notes/",
+      "path": "/api/organizations/projects/fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8/notes/",
       "body": {
         "subject": "Remember WS18_SH0010 later",
         "entity_type": "Project"
@@ -181,18 +181,18 @@
     "status": 201,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "87d1f4dd-a611-4ebc-9432-803583ab0e56",
+      "X-Request-ID": "4efa807e-44d7-44bb-989b-1a9980eef0ff",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
-      "id": "d1879c59-c98e-4d48-afa5-389e580a5fc9",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "e8ee9602-6931-4b68-8e97-93d450f30338",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "project_code": "WS18",
       "entity_type": "Project",
       "entity_id": "",
       "entity_code": "",
       "entity_name": "",
-      "author_id": "ee2bf69d-3df3-49f6-9fa4-41f072f8c6f8",
+      "author_id": "b35fbd33-450c-428b-8e38-1cf7c08aa320",
       "author_name": "user@example.test",
       "author_avatar": "",
       "author_role": "",
@@ -206,8 +206,8 @@
       "addressed_at": null,
       "timecode_ref": "",
       "frame_number": null,
-      "created_at": "2026-11-19T12:39:43.700617Z",
-      "updated_at": "2026-11-19T12:39:43.700625Z",
+      "created_at": "2026-11-20T05:10:57.083463Z",
+      "updated_at": "2026-11-20T05:10:57.083473Z",
       "parent_id": null,
       "links": [],
       "task_id": null,
@@ -219,13 +219,13 @@
   "note_empty_400": {
     "request": {
       "method": "POST",
-      "path": "/api/organizations/projects/f083e6ae-031d-424e-b4a0-3c4be2854c03/notes/",
+      "path": "/api/organizations/projects/fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8/notes/",
       "body": {}
     },
     "status": 400,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "25b4330b-9b3b-4968-a2b5-d1a85e73fcb3",
+      "X-Request-ID": "d08daa61-e2e8-48a7-903d-897812bfac7e",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -234,20 +234,20 @@
       ],
       "error": {
         "code": "validation_error",
-        "request_id": "25b4330b-9b3b-4968-a2b5-d1a85e73fcb3"
+        "request_id": "d08daa61-e2e8-48a7-903d-897812bfac7e"
       }
     }
   },
   "notes_all": {
     "request": {
       "method": "GET",
-      "path": "/api/organizations/projects/f083e6ae-031d-424e-b4a0-3c4be2854c03/notes/",
+      "path": "/api/organizations/projects/fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8/notes/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "2530f45f-a1c2-4a13-80d7-9e77c17cefc7",
+      "X-Request-ID": "fa1a997e-a813-4a31-b03e-e9dba96762f0",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -256,14 +256,14 @@
       "previous": null,
       "results": [
         {
-          "id": "d1879c59-c98e-4d48-afa5-389e580a5fc9",
-          "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+          "id": "e8ee9602-6931-4b68-8e97-93d450f30338",
+          "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
           "project_code": "WS18",
           "entity_type": "Project",
           "entity_id": "",
           "entity_code": "",
           "entity_name": "",
-          "author_id": "ee2bf69d-3df3-49f6-9fa4-41f072f8c6f8",
+          "author_id": "b35fbd33-450c-428b-8e38-1cf7c08aa320",
           "author_name": "user@example.test",
           "author_avatar": "",
           "author_role": "",
@@ -277,8 +277,8 @@
           "addressed_at": null,
           "timecode_ref": "",
           "frame_number": null,
-          "created_at": "2026-11-19T12:39:43.700617Z",
-          "updated_at": "2026-11-19T12:39:43.700625Z",
+          "created_at": "2026-11-20T05:10:57.083463Z",
+          "updated_at": "2026-11-20T05:10:57.083473Z",
           "parent_id": null,
           "links": [],
           "task_id": null,
@@ -287,14 +287,14 @@
           "mentions": []
         },
         {
-          "id": "1f7b8322-68bb-4ef8-8baa-9b684aa82fcd",
-          "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+          "id": "ef42a1ae-1a23-4906-b195-1ea28493600c",
+          "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
           "project_code": "WS18",
           "entity_type": "Project",
           "entity_id": "",
           "entity_code": "",
           "entity_name": "",
-          "author_id": "ee2bf69d-3df3-49f6-9fa4-41f072f8c6f8",
+          "author_id": "b35fbd33-450c-428b-8e38-1cf7c08aa320",
           "author_name": "user@example.test",
           "author_avatar": "",
           "author_role": "",
@@ -308,8 +308,8 @@
           "addressed_at": null,
           "timecode_ref": "",
           "frame_number": null,
-          "created_at": "2026-11-19T12:39:43.679984Z",
-          "updated_at": "2026-11-19T12:39:43.679992Z",
+          "created_at": "2026-11-20T05:10:57.055910Z",
+          "updated_at": "2026-11-20T05:10:57.055919Z",
           "parent_id": null,
           "links": [],
           "task_id": null,
@@ -318,14 +318,14 @@
           "mentions": []
         },
         {
-          "id": "4b9799ee-58e6-4c64-aa88-539db9a01fae",
-          "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+          "id": "09e56838-77cc-4e9b-9248-81c09d3038d2",
+          "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
           "project_code": "WS18",
           "entity_type": "Asset",
-          "entity_id": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
+          "entity_id": "91058837-d928-47f6-bdd1-f3897acbe898",
           "entity_code": "WS18_CHR-HERO",
           "entity_name": "Hero",
-          "author_id": "ee2bf69d-3df3-49f6-9fa4-41f072f8c6f8",
+          "author_id": "b35fbd33-450c-428b-8e38-1cf7c08aa320",
           "author_name": "user@example.test",
           "author_avatar": "",
           "author_role": "",
@@ -339,13 +339,13 @@
           "addressed_at": null,
           "timecode_ref": "",
           "frame_number": null,
-          "created_at": "2026-11-19T12:39:43.655728Z",
-          "updated_at": "2026-11-19T12:39:43.655736Z",
+          "created_at": "2026-11-20T05:10:57.030638Z",
+          "updated_at": "2026-11-20T05:10:57.030648Z",
           "parent_id": null,
           "links": [
             {
               "entity_type": "Asset",
-              "entity_id": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
+              "entity_id": "91058837-d928-47f6-bdd1-f3897acbe898",
               "code": "WS18_CHR-HERO",
               "name": "Hero"
             }
@@ -356,14 +356,14 @@
           "mentions": []
         },
         {
-          "id": "ef11df33-2f94-4939-8a09-6060ab07b482",
-          "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+          "id": "b624dcaa-411e-4c12-a118-6cdb620abf7f",
+          "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
           "project_code": "WS18",
           "entity_type": "Shot",
-          "entity_id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
+          "entity_id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
           "entity_code": "WS18_SH0010",
           "entity_name": "Hero walk",
-          "author_id": "ee2bf69d-3df3-49f6-9fa4-41f072f8c6f8",
+          "author_id": "b35fbd33-450c-428b-8e38-1cf7c08aa320",
           "author_name": "user@example.test",
           "author_avatar": "",
           "author_role": "",
@@ -377,13 +377,13 @@
           "addressed_at": null,
           "timecode_ref": "",
           "frame_number": null,
-          "created_at": "2026-11-19T12:39:43.622453Z",
-          "updated_at": "2026-11-19T12:39:43.622462Z",
+          "created_at": "2026-11-20T05:10:56.992726Z",
+          "updated_at": "2026-11-20T05:10:56.992737Z",
           "parent_id": null,
           "links": [
             {
               "entity_type": "Shot",
-              "entity_id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
+              "entity_id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
               "code": "WS18_SH0010",
               "name": "Hero walk"
             }
@@ -399,13 +399,13 @@
   "notes_search_shot": {
     "request": {
       "method": "GET",
-      "path": "/api/organizations/projects/f083e6ae-031d-424e-b4a0-3c4be2854c03/notes/?search=WS18_SH0010",
+      "path": "/api/organizations/projects/fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8/notes/?search=WS18_SH0010",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "221951c6-2a4b-494e-8f57-fc3ce939af37",
+      "X-Request-ID": "0b92572e-62a3-4ca1-8441-53d77b0912c7",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -414,14 +414,14 @@
       "previous": null,
       "results": [
         {
-          "id": "d1879c59-c98e-4d48-afa5-389e580a5fc9",
-          "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+          "id": "e8ee9602-6931-4b68-8e97-93d450f30338",
+          "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
           "project_code": "WS18",
           "entity_type": "Project",
           "entity_id": "",
           "entity_code": "",
           "entity_name": "",
-          "author_id": "ee2bf69d-3df3-49f6-9fa4-41f072f8c6f8",
+          "author_id": "b35fbd33-450c-428b-8e38-1cf7c08aa320",
           "author_name": "user@example.test",
           "author_avatar": "",
           "author_role": "",
@@ -435,8 +435,8 @@
           "addressed_at": null,
           "timecode_ref": "",
           "frame_number": null,
-          "created_at": "2026-11-19T12:39:43.700617Z",
-          "updated_at": "2026-11-19T12:39:43.700625Z",
+          "created_at": "2026-11-20T05:10:57.083463Z",
+          "updated_at": "2026-11-20T05:10:57.083473Z",
           "parent_id": null,
           "links": [],
           "task_id": null,
@@ -445,14 +445,14 @@
           "mentions": []
         },
         {
-          "id": "ef11df33-2f94-4939-8a09-6060ab07b482",
-          "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+          "id": "b624dcaa-411e-4c12-a118-6cdb620abf7f",
+          "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
           "project_code": "WS18",
           "entity_type": "Shot",
-          "entity_id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
+          "entity_id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
           "entity_code": "WS18_SH0010",
           "entity_name": "Hero walk",
-          "author_id": "ee2bf69d-3df3-49f6-9fa4-41f072f8c6f8",
+          "author_id": "b35fbd33-450c-428b-8e38-1cf7c08aa320",
           "author_name": "user@example.test",
           "author_avatar": "",
           "author_role": "",
@@ -466,13 +466,13 @@
           "addressed_at": null,
           "timecode_ref": "",
           "frame_number": null,
-          "created_at": "2026-11-19T12:39:43.622453Z",
-          "updated_at": "2026-11-19T12:39:43.622462Z",
+          "created_at": "2026-11-20T05:10:56.992726Z",
+          "updated_at": "2026-11-20T05:10:56.992737Z",
           "parent_id": null,
           "links": [
             {
               "entity_type": "Shot",
-              "entity_id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
+              "entity_id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
               "code": "WS18_SH0010",
               "name": "Hero walk"
             }
@@ -488,13 +488,13 @@
   "notes_search_asset": {
     "request": {
       "method": "GET",
-      "path": "/api/organizations/projects/f083e6ae-031d-424e-b4a0-3c4be2854c03/notes/?search=WS18_CHR-HERO",
+      "path": "/api/organizations/projects/fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8/notes/?search=WS18_CHR-HERO",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "c4db5ea6-90fa-4430-8ff7-c6ee80c7b8a8",
+      "X-Request-ID": "8a8436be-957b-4871-92f6-455139bf5389",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -503,14 +503,14 @@
       "previous": null,
       "results": [
         {
-          "id": "4b9799ee-58e6-4c64-aa88-539db9a01fae",
-          "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+          "id": "09e56838-77cc-4e9b-9248-81c09d3038d2",
+          "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
           "project_code": "WS18",
           "entity_type": "Asset",
-          "entity_id": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
+          "entity_id": "91058837-d928-47f6-bdd1-f3897acbe898",
           "entity_code": "WS18_CHR-HERO",
           "entity_name": "Hero",
-          "author_id": "ee2bf69d-3df3-49f6-9fa4-41f072f8c6f8",
+          "author_id": "b35fbd33-450c-428b-8e38-1cf7c08aa320",
           "author_name": "user@example.test",
           "author_avatar": "",
           "author_role": "",
@@ -524,13 +524,13 @@
           "addressed_at": null,
           "timecode_ref": "",
           "frame_number": null,
-          "created_at": "2026-11-19T12:39:43.655728Z",
-          "updated_at": "2026-11-19T12:39:43.655736Z",
+          "created_at": "2026-11-20T05:10:57.030638Z",
+          "updated_at": "2026-11-20T05:10:57.030648Z",
           "parent_id": null,
           "links": [
             {
               "entity_type": "Asset",
-              "entity_id": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
+              "entity_id": "91058837-d928-47f6-bdd1-f3897acbe898",
               "code": "WS18_CHR-HERO",
               "name": "Hero"
             }
@@ -546,23 +546,23 @@
   "shot_detail": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "9d44a571-2232-43e7-a2ae-ebe4998f8ecc",
+      "X-Request-ID": "a971287c-d3f0-4a80-83ef-357cdeb305ea",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
-      "id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-      "uuid": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+      "uuid": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "show_id": null,
       "project_code": "WS18",
       "episode_id": null,
-      "sequence_id": "887f252b-13a3-4cc9-9618-c989d6383d45",
+      "sequence_id": "b27e5560-c030-434e-be4e-b70621c2a1e3",
       "sequence_code": "WS18_SQ010",
       "code": "WS18_SH0010",
       "name": "Hero walk",
@@ -590,22 +590,22 @@
       "grade": null,
       "grade_source": "",
       "grade_updated_at": null,
-      "created_at": "2026-11-19T12:39:43.559021Z",
-      "updated_at": "2026-11-19T12:39:43.559029Z"
+      "created_at": "2026-11-20T05:10:56.935350Z",
+      "updated_at": "2026-11-20T05:10:56.935358Z"
     }
   },
   "shot_assign": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/",
       "body": {
-        "assigned_artist": "e5a0f95c-f0cc-4f43-84be-a489c25a2dc9"
+        "assigned_artist": "b2a559a2-e033-4ddb-8efb-fb8867578c4f"
       }
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "7975dea6-93c0-49bc-aa37-7fa27bb28800",
+      "X-Request-ID": "28914f7e-61a4-4c2f-b02f-a639e4c87ed4",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -621,7 +621,7 @@
       "video_url": "",
       "current_version": "",
       "current_version_id": null,
-      "assigned_artist": "e5a0f95c-f0cc-4f43-84be-a489c25a2dc9",
+      "assigned_artist": "b2a559a2-e033-4ddb-8efb-fb8867578c4f",
       "supervisor_approved": false,
       "client_approved": false,
       "pipeline": {
@@ -637,15 +637,15 @@
   "shot_assign_non_member_400": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/",
       "body": {
-        "assigned_artist": "adbd4bb3-f19e-4f4d-8f7c-30291964bbcc"
+        "assigned_artist": "5dbab333-6898-4341-a35d-1ac2e4744217"
       }
     },
     "status": 400,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "dee08a47-8fe8-4164-af27-391189a30730",
+      "X-Request-ID": "b12fba48-df78-4986-82f3-97a8ed8d0a35",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -654,22 +654,22 @@
       ],
       "error": {
         "code": "validation_error",
-        "request_id": "dee08a47-8fe8-4164-af27-391189a30730"
+        "request_id": "b12fba48-df78-4986-82f3-97a8ed8d0a35"
       }
     }
   },
   "shot_assign_member_again": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/",
       "body": {
-        "assigned_artist": "e5a0f95c-f0cc-4f43-84be-a489c25a2dc9"
+        "assigned_artist": "b2a559a2-e033-4ddb-8efb-fb8867578c4f"
       }
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "3bbc0df8-0642-4071-bdc6-699c2fc5a3cd",
+      "X-Request-ID": "ed58567b-10d8-4417-967a-007b88f23b4d",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -685,7 +685,7 @@
       "video_url": "",
       "current_version": "",
       "current_version_id": null,
-      "assigned_artist": "e5a0f95c-f0cc-4f43-84be-a489c25a2dc9",
+      "assigned_artist": "b2a559a2-e033-4ddb-8efb-fb8867578c4f",
       "supervisor_approved": false,
       "client_approved": false,
       "pipeline": {
@@ -701,7 +701,7 @@
   "shot_unassign": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/",
       "body": {
         "assigned_artist": null
       }
@@ -709,7 +709,7 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "de7840a9-6b2e-4c22-99c5-198c8c61cd4a",
+      "X-Request-ID": "1d2979a0-b3c6-468f-97e9-6bb76ba1cc33",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -741,13 +741,13 @@
   "shot_approve_from_not_started_400": {
     "request": {
       "method": "POST",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/approve/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/approve/",
       "body": {}
     },
     "status": 400,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "b2254050-aaae-4634-9593-3a7c4a3225d9",
+      "X-Request-ID": "a8bc60f5-63fe-48a7-882f-fe9a8bd65314",
       "Allow": "POST, OPTIONS"
     },
     "body": {
@@ -756,14 +756,14 @@
       ],
       "error": {
         "code": "invalid_transition",
-        "request_id": "b2254050-aaae-4634-9593-3a7c4a3225d9"
+        "request_id": "a8bc60f5-63fe-48a7-882f-fe9a8bd65314"
       }
     }
   },
   "shot_to_review": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/",
       "body": {
         "status": "Pending Review"
       }
@@ -771,7 +771,7 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "f6fb733c-118a-4073-8c6d-5f112a376035",
+      "X-Request-ID": "481fb87c-0196-4772-ae81-bab1e9436067",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -803,23 +803,23 @@
   "shot_approve": {
     "request": {
       "method": "POST",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/approve/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/approve/",
       "body": {}
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "5d24f448-4321-4944-81a8-9160ed4d49cd",
+      "X-Request-ID": "08cc3ec3-e76c-4157-9974-39f855b3807c",
       "Allow": "POST, OPTIONS"
     },
     "body": {
-      "id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-      "uuid": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+      "uuid": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "show_id": null,
       "project_code": "WS18",
       "episode_id": null,
-      "sequence_id": "887f252b-13a3-4cc9-9618-c989d6383d45",
+      "sequence_id": "b27e5560-c030-434e-be4e-b70621c2a1e3",
       "sequence_code": "WS18_SQ010",
       "code": "WS18_SH0010",
       "name": "Hero walk",
@@ -847,30 +847,30 @@
       "grade": null,
       "grade_source": "",
       "grade_updated_at": null,
-      "created_at": "2026-11-19T12:39:43.559021Z",
-      "updated_at": "2026-11-19T12:39:43.929161Z"
+      "created_at": "2026-11-20T05:10:56.935350Z",
+      "updated_at": "2026-11-20T05:10:57.396559Z"
     }
   },
   "shot_archive": {
     "request": {
       "method": "POST",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/archive/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/archive/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "c3594ee0-b4e7-428e-bc4c-bad852457906",
+      "X-Request-ID": "a9a52070-49a9-456a-bdf3-1a95209b79f1",
       "Allow": "POST, OPTIONS"
     },
     "body": {
-      "id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-      "uuid": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+      "uuid": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "show_id": null,
       "project_code": "WS18",
       "episode_id": null,
-      "sequence_id": "887f252b-13a3-4cc9-9618-c989d6383d45",
+      "sequence_id": "b27e5560-c030-434e-be4e-b70621c2a1e3",
       "sequence_code": "WS18_SQ010",
       "code": "WS18_SH0010",
       "name": "Hero walk",
@@ -898,40 +898,40 @@
       "grade": null,
       "grade_source": "",
       "grade_updated_at": null,
-      "created_at": "2026-11-19T12:39:43.559021Z",
-      "updated_at": "2026-11-19T12:39:43.941101Z"
+      "created_at": "2026-11-20T05:10:56.935350Z",
+      "updated_at": "2026-11-20T05:10:57.409505Z"
     }
   },
   "shot_detail_after_archive": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/",
       "body": null
     },
     "status": 404,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "81068d70-2a1d-4179-90b4-4dc7b1bc40c5",
+      "X-Request-ID": "2b28ee08-43f1-4e27-a3e6-fbf603c54369",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
       "detail": "Not found.",
       "error": {
         "code": "not_found",
-        "request_id": "81068d70-2a1d-4179-90b4-4dc7b1bc40c5"
+        "request_id": "2b28ee08-43f1-4e27-a3e6-fbf603c54369"
       }
     }
   },
   "shots_archived": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/shots/archived/?project=f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "path": "/api/v1/shots/archived/?project=fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "e89a8c70-56ed-469b-a36a-c16726544e1f",
+      "X-Request-ID": "da09545b-8dd7-4ebb-bce2-6394a6dab226",
       "Allow": "GET, HEAD, OPTIONS"
     },
     "body": {
@@ -940,13 +940,13 @@
       "previous": null,
       "results": [
         {
-          "id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-          "uuid": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-          "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+          "id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+          "uuid": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+          "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
           "show_id": null,
           "project_code": "WS18",
           "episode_id": null,
-          "sequence_id": "887f252b-13a3-4cc9-9618-c989d6383d45",
+          "sequence_id": "b27e5560-c030-434e-be4e-b70621c2a1e3",
           "sequence_code": "WS18_SQ010",
           "code": "WS18_SH0010",
           "name": "Hero walk",
@@ -974,8 +974,8 @@
           "grade": null,
           "grade_source": "",
           "grade_updated_at": null,
-          "created_at": "2026-11-19T12:39:43.559021Z",
-          "updated_at": "2026-11-19T12:39:43.941101Z"
+          "created_at": "2026-11-20T05:10:56.935350Z",
+          "updated_at": "2026-11-20T05:10:57.409505Z"
         }
       ]
     }
@@ -983,23 +983,23 @@
   "shot_restore": {
     "request": {
       "method": "POST",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/restore/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/restore/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "662af7ce-a891-4dd4-bd79-03bb06f69831",
+      "X-Request-ID": "825aab27-43f6-4224-b83a-4970c53e4025",
       "Allow": "POST, OPTIONS"
     },
     "body": {
-      "id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-      "uuid": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+      "uuid": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "show_id": null,
       "project_code": "WS18",
       "episode_id": null,
-      "sequence_id": "887f252b-13a3-4cc9-9618-c989d6383d45",
+      "sequence_id": "b27e5560-c030-434e-be4e-b70621c2a1e3",
       "sequence_code": "WS18_SQ010",
       "code": "WS18_SH0010",
       "name": "Hero walk",
@@ -1027,19 +1027,19 @@
       "grade": null,
       "grade_source": "",
       "grade_updated_at": null,
-      "created_at": "2026-11-19T12:39:43.559021Z",
-      "updated_at": "2026-11-19T12:39:43.998863Z"
+      "created_at": "2026-11-20T05:10:56.935350Z",
+      "updated_at": "2026-11-20T05:10:57.468423Z"
     }
   },
   "shot_delete": {
     "request": {
       "method": "DELETE",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/",
       "body": null
     },
     "status": 204,
     "headers": {
-      "X-Request-ID": "5e082d11-2036-4b0c-9129-0c6465d119de",
+      "X-Request-ID": "6e611221-dba0-4aa7-aa50-9ab1c18a2e31",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -1050,33 +1050,33 @@
   "shot_detail_after_delete": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/shots/60b00dbc-46ae-4677-8d87-aac3ffd27443/",
+      "path": "/api/v1/shots/768c6e16-dfcb-44f9-8c45-eb5c899ab4cd/",
       "body": null
     },
     "status": 404,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "f329f82e-40c1-4479-ba56-57d7782877c0",
+      "X-Request-ID": "35b19be7-03ac-44b1-b13b-251824946c06",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
       "detail": "Not found.",
       "error": {
         "code": "not_found",
-        "request_id": "f329f82e-40c1-4479-ba56-57d7782877c0"
+        "request_id": "35b19be7-03ac-44b1-b13b-251824946c06"
       }
     }
   },
   "shots_archived_after_delete": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/shots/archived/?project=f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "path": "/api/v1/shots/archived/?project=fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "839d4a17-ef71-4772-9151-584bf8b21948",
+      "X-Request-ID": "5c9dc96f-7b9e-4471-8538-25296a0fedb8",
       "Allow": "GET, HEAD, OPTIONS"
     },
     "body": {
@@ -1085,13 +1085,13 @@
       "previous": null,
       "results": [
         {
-          "id": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-          "uuid": "60b00dbc-46ae-4677-8d87-aac3ffd27443",
-          "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+          "id": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+          "uuid": "768c6e16-dfcb-44f9-8c45-eb5c899ab4cd",
+          "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
           "show_id": null,
           "project_code": "WS18",
           "episode_id": null,
-          "sequence_id": "887f252b-13a3-4cc9-9618-c989d6383d45",
+          "sequence_id": "b27e5560-c030-434e-be4e-b70621c2a1e3",
           "sequence_code": "WS18_SQ010",
           "code": "WS18_SH0010",
           "name": "Hero walk",
@@ -1119,8 +1119,8 @@
           "grade": null,
           "grade_source": "",
           "grade_updated_at": null,
-          "created_at": "2026-11-19T12:39:43.559021Z",
-          "updated_at": "2026-11-19T12:39:43.998863Z"
+          "created_at": "2026-11-20T05:10:56.935350Z",
+          "updated_at": "2026-11-20T05:10:57.468423Z"
         }
       ]
     }
@@ -1128,19 +1128,19 @@
   "asset_detail": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/assets/885fbd1f-c346-41e8-9ab0-4511fa7e4c20/",
+      "path": "/api/v1/assets/91058837-d928-47f6-bdd1-f3897acbe898/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "287e45c8-f997-4e41-bd21-bfc13a12a6d6",
+      "X-Request-ID": "eb9c240c-8829-4ec1-98b8-099e60db0cc6",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
-      "id": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
-      "uuid": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "91058837-d928-47f6-bdd1-f3897acbe898",
+      "uuid": "91058837-d928-47f6-bdd1-f3897acbe898",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "show_id": null,
       "project_code": "WS18",
       "project_name": "Workspaces",
@@ -1170,22 +1170,22 @@
       "tags": [],
       "usd_prim_path": "",
       "is_archived": false,
-      "created_at": "2026-11-19T12:39:43.582761Z",
-      "updated_at": "2026-11-19T12:39:43.582769Z"
+      "created_at": "2026-11-20T05:10:56.954928Z",
+      "updated_at": "2026-11-20T05:10:56.954936Z"
     }
   },
   "asset_assign_non_member_400": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/assets/885fbd1f-c346-41e8-9ab0-4511fa7e4c20/",
+      "path": "/api/v1/assets/91058837-d928-47f6-bdd1-f3897acbe898/",
       "body": {
-        "assigned_artist": "adbd4bb3-f19e-4f4d-8f7c-30291964bbcc"
+        "assigned_artist": "5dbab333-6898-4341-a35d-1ac2e4744217"
       }
     },
     "status": 400,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "7af1ab85-67ea-4cb9-b434-b5d941514e37",
+      "X-Request-ID": "6750063b-1587-4157-8913-fbd7fc4c114c",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -1194,22 +1194,22 @@
       ],
       "error": {
         "code": "validation_error",
-        "request_id": "7af1ab85-67ea-4cb9-b434-b5d941514e37"
+        "request_id": "6750063b-1587-4157-8913-fbd7fc4c114c"
       }
     }
   },
   "asset_assign": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/assets/885fbd1f-c346-41e8-9ab0-4511fa7e4c20/",
+      "path": "/api/v1/assets/91058837-d928-47f6-bdd1-f3897acbe898/",
       "body": {
-        "assigned_artist": "e5a0f95c-f0cc-4f43-84be-a489c25a2dc9"
+        "assigned_artist": "b2a559a2-e033-4ddb-8efb-fb8867578c4f"
       }
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "73867b05-f06c-4437-93e9-55ec51214496",
+      "X-Request-ID": "518f55c0-f5f8-4b19-87c4-8b88b0f55f96",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -1226,7 +1226,7 @@
       "thumbnail_url": "",
       "department": null,
       "team": null,
-      "assigned_artist": "e5a0f95c-f0cc-4f43-84be-a489c25a2dc9",
+      "assigned_artist": "b2a559a2-e033-4ddb-8efb-fb8867578c4f",
       "parent_asset": null,
       "tags": [],
       "usd_prim_path": "",
@@ -1236,7 +1236,7 @@
   "asset_unassign": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/assets/885fbd1f-c346-41e8-9ab0-4511fa7e4c20/",
+      "path": "/api/v1/assets/91058837-d928-47f6-bdd1-f3897acbe898/",
       "body": {
         "assigned_artist": null
       }
@@ -1244,7 +1244,7 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "f64a0561-a504-435d-a0ed-222c01ac8ee8",
+      "X-Request-ID": "635ef457-ab88-459d-b88e-eaedf9fa5842",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -1271,19 +1271,19 @@
   "asset_archive": {
     "request": {
       "method": "POST",
-      "path": "/api/v1/assets/885fbd1f-c346-41e8-9ab0-4511fa7e4c20/archive/",
+      "path": "/api/v1/assets/91058837-d928-47f6-bdd1-f3897acbe898/archive/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "e258fe59-6e09-4e52-bb40-a0cde469e5ee",
+      "X-Request-ID": "068e3e71-9082-4850-ac57-ae47e4ee5bb8",
       "Allow": "POST, OPTIONS"
     },
     "body": {
-      "id": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
-      "uuid": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "91058837-d928-47f6-bdd1-f3897acbe898",
+      "uuid": "91058837-d928-47f6-bdd1-f3897acbe898",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "show_id": null,
       "project_code": "WS18",
       "project_name": "Workspaces",
@@ -1313,46 +1313,46 @@
       "tags": [],
       "usd_prim_path": "",
       "is_archived": true,
-      "created_at": "2026-11-19T12:39:43.582761Z",
-      "updated_at": "2026-11-19T12:39:44.134138Z"
+      "created_at": "2026-11-20T05:10:56.954928Z",
+      "updated_at": "2026-11-20T05:10:57.603331Z"
     }
   },
   "asset_detail_after_archive": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/assets/885fbd1f-c346-41e8-9ab0-4511fa7e4c20/",
+      "path": "/api/v1/assets/91058837-d928-47f6-bdd1-f3897acbe898/",
       "body": null
     },
     "status": 404,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "c387d52f-e0b8-48c1-9b22-b5d5038aef32",
+      "X-Request-ID": "3a877de9-25fa-44c3-a7da-3188ca2eb718",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
       "detail": "Not found.",
       "error": {
         "code": "not_found",
-        "request_id": "c387d52f-e0b8-48c1-9b22-b5d5038aef32"
+        "request_id": "3a877de9-25fa-44c3-a7da-3188ca2eb718"
       }
     }
   },
   "asset_restore": {
     "request": {
       "method": "POST",
-      "path": "/api/v1/assets/885fbd1f-c346-41e8-9ab0-4511fa7e4c20/restore/",
+      "path": "/api/v1/assets/91058837-d928-47f6-bdd1-f3897acbe898/restore/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "107f8ac0-03c0-44de-ab05-8bc8f7dde914",
+      "X-Request-ID": "83a8eed0-f96a-4834-a9d7-ef6991d39db3",
       "Allow": "POST, OPTIONS"
     },
     "body": {
-      "id": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
-      "uuid": "885fbd1f-c346-41e8-9ab0-4511fa7e4c20",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "91058837-d928-47f6-bdd1-f3897acbe898",
+      "uuid": "91058837-d928-47f6-bdd1-f3897acbe898",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "show_id": null,
       "project_code": "WS18",
       "project_name": "Workspaces",
@@ -1382,20 +1382,20 @@
       "tags": [],
       "usd_prim_path": "",
       "is_archived": false,
-      "created_at": "2026-11-19T12:39:43.582761Z",
-      "updated_at": "2026-11-19T12:39:44.134138Z"
+      "created_at": "2026-11-20T05:10:56.954928Z",
+      "updated_at": "2026-11-20T05:10:57.603331Z"
     }
   },
   "asset_shots": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/assets/885fbd1f-c346-41e8-9ab0-4511fa7e4c20/shots/",
+      "path": "/api/v1/assets/91058837-d928-47f6-bdd1-f3897acbe898/shots/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "92488c8f-08fc-4fd9-94aa-a07d89e78003",
+      "X-Request-ID": "01609fda-6df8-4423-aeb3-6a59cb0ab1b5",
       "Allow": "GET, HEAD, OPTIONS"
     },
     "body": []
@@ -1407,7 +1407,7 @@
       "body": {
         "items": [
           {
-            "id": "39475e06-3f98-4175-8087-f7e200afc10a",
+            "id": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
             "data": {
               "description": "Wrapped"
             }
@@ -1418,12 +1418,12 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "1cacd71f-a4d4-4872-aa6f-d9f1ef14a50f",
+      "X-Request-ID": "43897dca-05cf-4c01-a77a-d9415d470334",
       "Allow": "POST, PATCH, OPTIONS"
     },
     "body": {
-      "operation_id": "6673f01907574619ad474568ae62c049",
-      "timestamp": "2026-11-19T12:39:44.253473+00:00",
+      "operation_id": "20796a382a5b4021a7ff4bfaa038584e",
+      "timestamp": "2026-11-20T05:10:57.695722+00:00",
       "processed": 1,
       "successful": 1,
       "failed": 0,
@@ -1443,20 +1443,20 @@
       "results": [
         {
           "index": 0,
-          "id": "39475e06-3f98-4175-8087-f7e200afc10a",
+          "id": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
           "code": "WS18_SH0020",
           "status": "updated",
           "success": true,
           "error": null,
           "actionTaken": "updated",
           "entity": {
-            "id": "39475e06-3f98-4175-8087-f7e200afc10a",
-            "uuid": "39475e06-3f98-4175-8087-f7e200afc10a",
-            "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+            "id": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
+            "uuid": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
+            "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
             "show_id": null,
             "project_code": "WS18",
             "episode_id": null,
-            "sequence_id": "887f252b-13a3-4cc9-9618-c989d6383d45",
+            "sequence_id": "b27e5560-c030-434e-be4e-b70621c2a1e3",
             "sequence_code": "WS18_SQ010",
             "code": "WS18_SH0020",
             "name": "Bulk target",
@@ -1484,8 +1484,8 @@
             "grade": null,
             "grade_source": "",
             "grade_updated_at": null,
-            "created_at": "2026-11-19T12:39:43.604578Z",
-            "updated_at": "2026-11-19T12:39:44.250037Z"
+            "created_at": "2026-11-20T05:10:56.974337Z",
+            "updated_at": "2026-11-20T05:10:57.692499Z"
           }
         }
       ],
@@ -1499,23 +1499,23 @@
   "shot_after_bulk_wrapped": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/shots/39475e06-3f98-4175-8087-f7e200afc10a/",
+      "path": "/api/v1/shots/1d811eec-77a7-4df6-bb6b-2a27e02eeb63/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "cbc5e4b3-da7c-4a88-90b2-e28a28bbf0e5",
+      "X-Request-ID": "4e0a1f09-a698-43f5-ae0a-1b8a34e6f02b",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
-      "id": "39475e06-3f98-4175-8087-f7e200afc10a",
-      "uuid": "39475e06-3f98-4175-8087-f7e200afc10a",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
+      "uuid": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "show_id": null,
       "project_code": "WS18",
       "episode_id": null,
-      "sequence_id": "887f252b-13a3-4cc9-9618-c989d6383d45",
+      "sequence_id": "b27e5560-c030-434e-be4e-b70621c2a1e3",
       "sequence_code": "WS18_SQ010",
       "code": "WS18_SH0020",
       "name": "Bulk target",
@@ -1543,8 +1543,8 @@
       "grade": null,
       "grade_source": "",
       "grade_updated_at": null,
-      "created_at": "2026-11-19T12:39:43.604578Z",
-      "updated_at": "2026-11-19T12:39:44.250037Z"
+      "created_at": "2026-11-20T05:10:56.974337Z",
+      "updated_at": "2026-11-20T05:10:57.692499Z"
     }
   },
   "bulk_update_flat": {
@@ -1554,7 +1554,7 @@
       "body": {
         "items": [
           {
-            "id": "39475e06-3f98-4175-8087-f7e200afc10a",
+            "id": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
             "description": "Flat"
           }
         ]
@@ -1563,12 +1563,12 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "cd477b1d-489a-40f8-b979-9d7804944030",
+      "X-Request-ID": "65898843-0835-4268-9a9e-afdd089e5a5d",
       "Allow": "POST, PATCH, OPTIONS"
     },
     "body": {
-      "operation_id": "a5c47a0648134307869f145f5a3e3916",
-      "timestamp": "2026-11-19T12:39:44.303257+00:00",
+      "operation_id": "2ac3c793dab5457ab228bf8d527b30e6",
+      "timestamp": "2026-11-20T05:10:57.728064+00:00",
       "processed": 1,
       "successful": 1,
       "failed": 0,
@@ -1588,20 +1588,20 @@
       "results": [
         {
           "index": 0,
-          "id": "39475e06-3f98-4175-8087-f7e200afc10a",
+          "id": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
           "code": "WS18_SH0020",
           "status": "updated",
           "success": true,
           "error": null,
           "actionTaken": "updated",
           "entity": {
-            "id": "39475e06-3f98-4175-8087-f7e200afc10a",
-            "uuid": "39475e06-3f98-4175-8087-f7e200afc10a",
-            "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+            "id": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
+            "uuid": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
+            "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
             "show_id": null,
             "project_code": "WS18",
             "episode_id": null,
-            "sequence_id": "887f252b-13a3-4cc9-9618-c989d6383d45",
+            "sequence_id": "b27e5560-c030-434e-be4e-b70621c2a1e3",
             "sequence_code": "WS18_SQ010",
             "code": "WS18_SH0020",
             "name": "Bulk target",
@@ -1629,8 +1629,8 @@
             "grade": null,
             "grade_source": "",
             "grade_updated_at": null,
-            "created_at": "2026-11-19T12:39:43.604578Z",
-            "updated_at": "2026-11-19T12:39:44.299892Z"
+            "created_at": "2026-11-20T05:10:56.974337Z",
+            "updated_at": "2026-11-20T05:10:57.725060Z"
           }
         }
       ],
@@ -1644,23 +1644,23 @@
   "shot_after_bulk_flat": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/shots/39475e06-3f98-4175-8087-f7e200afc10a/",
+      "path": "/api/v1/shots/1d811eec-77a7-4df6-bb6b-2a27e02eeb63/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "77b0b611-d56b-440a-a3fa-fceceb43bd7e",
+      "X-Request-ID": "267fe6ee-9d4f-403a-a632-d75084e7aae8",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
-      "id": "39475e06-3f98-4175-8087-f7e200afc10a",
-      "uuid": "39475e06-3f98-4175-8087-f7e200afc10a",
-      "project_id": "f083e6ae-031d-424e-b4a0-3c4be2854c03",
+      "id": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
+      "uuid": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
+      "project_id": "fed93bcc-14fc-4b10-ab8f-f0dd3ca489d8",
       "show_id": null,
       "project_code": "WS18",
       "episode_id": null,
-      "sequence_id": "887f252b-13a3-4cc9-9618-c989d6383d45",
+      "sequence_id": "b27e5560-c030-434e-be4e-b70621c2a1e3",
       "sequence_code": "WS18_SQ010",
       "code": "WS18_SH0020",
       "name": "Bulk target",
@@ -1688,8 +1688,8 @@
       "grade": null,
       "grade_source": "",
       "grade_updated_at": null,
-      "created_at": "2026-11-19T12:39:43.604578Z",
-      "updated_at": "2026-11-19T12:39:44.299892Z"
+      "created_at": "2026-11-20T05:10:56.974337Z",
+      "updated_at": "2026-11-20T05:10:57.725060Z"
     }
   },
   "bulk_update_nothing_to_update": {
@@ -1699,7 +1699,7 @@
       "body": {
         "items": [
           {
-            "id": "39475e06-3f98-4175-8087-f7e200afc10a",
+            "id": "1d811eec-77a7-4df6-bb6b-2a27e02eeb63",
             "data": {
               "colour": "red"
             }
@@ -1710,12 +1710,12 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "8b460064-68e0-434e-84de-1d6ae24635e8",
+      "X-Request-ID": "923c63c8-bfc2-409b-bea9-2f75a9dd2c9b",
       "Allow": "POST, PATCH, OPTIONS"
     },
     "body": {
-      "operation_id": "1923402eb2f04ba892a7c287d6a4623f",
-      "timestamp": "2026-11-19T12:39:44.332155+00:00",
+      "operation_id": "d47f3f513ac14c05bb6d3a1db7a41767",
+      "timestamp": "2026-11-20T05:10:57.754241+00:00",
       "processed": 1,
       "successful": 0,
       "failed": 1,
@@ -1763,18 +1763,18 @@
   "project_detail": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/projects/b1bed68e-98ec-44a4-a2ad-151135fdf363/",
+      "path": "/api/v1/projects/cd822b18-fa0f-483b-9155-ccb2ebc834f3/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "ba155fa4-8966-46dc-bdd5-af7a03426f30",
+      "X-Request-ID": "1b4d746f-7785-4277-859e-5c610bf47cb9",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
-      "id": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
-      "uuid": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
+      "id": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
+      "uuid": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
       "code": "WS18-P",
       "project_code": "WS18-P",
       "name": "Project actions",
@@ -1792,6 +1792,8 @@
       "review_look": "",
       "review_grades": false,
       "review_downloads": "internal",
+      "review_slates": false,
+      "review_slate_note": "",
       "review_source_root": "",
       "review_source_folder": "",
       "start_date": null,
@@ -1813,14 +1815,14 @@
       "vendor_ids": [],
       "vendor_names": [],
       "vendor_team_ids": [],
-      "created_at": "2026-11-19T12:39:44.342067Z",
-      "updated_at": "2026-11-19T12:39:44.342074Z"
+      "created_at": "2026-11-20T05:10:57.763919Z",
+      "updated_at": "2026-11-20T05:10:57.763927Z"
     }
   },
   "project_patch_completed": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/projects/b1bed68e-98ec-44a4-a2ad-151135fdf363/",
+      "path": "/api/v1/projects/cd822b18-fa0f-483b-9155-ccb2ebc834f3/",
       "body": {
         "status": "Completed"
       }
@@ -1828,7 +1830,7 @@
     "status": 400,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "8538ebe5-218a-40ff-a1b5-fb6dc3e3e338",
+      "X-Request-ID": "03a6477f-c1c7-4ec3-ab2e-8e9491d33b5e",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -1837,14 +1839,14 @@
       ],
       "error": {
         "code": "validation_error",
-        "request_id": "8538ebe5-218a-40ff-a1b5-fb6dc3e3e338"
+        "request_id": "03a6477f-c1c7-4ec3-ab2e-8e9491d33b5e"
       }
     }
   },
   "project_patch_on_hold": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/projects/b1bed68e-98ec-44a4-a2ad-151135fdf363/",
+      "path": "/api/v1/projects/cd822b18-fa0f-483b-9155-ccb2ebc834f3/",
       "body": {
         "status": "On Hold"
       }
@@ -1852,7 +1854,7 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "0af0de70-1a49-46d0-9e7d-1dca7711492c",
+      "X-Request-ID": "2fd7466f-60b7-46fc-a32f-7f28a12e78bd",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -1871,6 +1873,8 @@
       "review_look": "",
       "review_grades": false,
       "review_downloads": "internal",
+      "review_slates": false,
+      "review_slate_note": "",
       "review_source_root": "",
       "review_source_folder": "",
       "start_date": null,
@@ -1891,7 +1895,7 @@
   "project_patch_approved": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/projects/b1bed68e-98ec-44a4-a2ad-151135fdf363/",
+      "path": "/api/v1/projects/cd822b18-fa0f-483b-9155-ccb2ebc834f3/",
       "body": {
         "status": "Approved"
       }
@@ -1899,7 +1903,7 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "9c46cc0c-e73d-4f37-b5d0-8fff484a799f",
+      "X-Request-ID": "d2e75205-c4ad-4abc-9ea3-3b19fa68fed8",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -1918,6 +1922,8 @@
       "review_look": "",
       "review_grades": false,
       "review_downloads": "internal",
+      "review_slates": false,
+      "review_slate_note": "",
       "review_source_root": "",
       "review_source_folder": "",
       "start_date": null,
@@ -1938,7 +1944,7 @@
   "project_patch_archived": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/projects/b1bed68e-98ec-44a4-a2ad-151135fdf363/",
+      "path": "/api/v1/projects/cd822b18-fa0f-483b-9155-ccb2ebc834f3/",
       "body": {
         "status": "Archived"
       }
@@ -1946,7 +1952,7 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "27f21617-e176-4a0c-b9b8-a4a61d7c3a33",
+      "X-Request-ID": "2a6f5d63-9e4d-460a-8d27-d76e35c57a30",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -1965,6 +1971,8 @@
       "review_look": "",
       "review_grades": false,
       "review_downloads": "internal",
+      "review_slates": false,
+      "review_slate_note": "",
       "review_source_root": "",
       "review_source_folder": "",
       "start_date": null,
@@ -1985,18 +1993,18 @@
   "project_detail_after_status_archived": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/projects/b1bed68e-98ec-44a4-a2ad-151135fdf363/",
+      "path": "/api/v1/projects/cd822b18-fa0f-483b-9155-ccb2ebc834f3/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "73a2417a-ea00-44df-ab59-9233a2f67d63",
+      "X-Request-ID": "60081ced-0849-4480-9f54-f024d2c4b453",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
-      "id": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
-      "uuid": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
+      "id": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
+      "uuid": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
       "code": "WS18-P",
       "project_code": "WS18-P",
       "name": "Project actions",
@@ -2014,6 +2022,8 @@
       "review_look": "",
       "review_grades": false,
       "review_downloads": "internal",
+      "review_slates": false,
+      "review_slate_note": "",
       "review_source_root": "",
       "review_source_folder": "",
       "start_date": null,
@@ -2035,8 +2045,8 @@
       "vendor_ids": [],
       "vendor_names": [],
       "vendor_team_ids": [],
-      "created_at": "2026-11-19T12:39:44.342067Z",
-      "updated_at": "2026-11-19T12:39:44.413114Z"
+      "created_at": "2026-11-20T05:10:57.763919Z",
+      "updated_at": "2026-11-20T05:10:57.839582Z"
     }
   },
   "projects_archived_after_status_archived": {
@@ -2048,7 +2058,7 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "c22d83b8-81a5-46a0-b6be-7de3ec5aee8b",
+      "X-Request-ID": "0b27a918-ec9a-4973-af85-0100bf5eb2ef",
       "Allow": "GET, HEAD, OPTIONS"
     },
     "body": {
@@ -2063,8 +2073,8 @@
       "method": "POST",
       "path": "/api/v1/projects/",
       "body": {
-        "id": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
-        "uuid": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
+        "id": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
+        "uuid": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
         "code": "WS18-C1",
         "project_code": "WS18-P",
         "name": "Clone of all",
@@ -2082,6 +2092,8 @@
         "review_look": "",
         "review_grades": false,
         "review_downloads": "internal",
+        "review_slates": false,
+        "review_slate_note": "",
         "review_source_root": "",
         "review_source_folder": "",
         "start_date": null,
@@ -2103,19 +2115,19 @@
         "vendor_ids": [],
         "vendor_names": [],
         "vendor_team_ids": [],
-        "created_at": "2026-11-19T12:39:44.342067Z",
-        "updated_at": "2026-11-19T12:39:44.342074Z"
+        "created_at": "2026-11-20T05:10:57.763919Z",
+        "updated_at": "2026-11-20T05:10:57.763927Z"
       }
     },
     "status": 201,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "5be62509-969c-404f-a77a-38a2c365fbb7",
+      "X-Request-ID": "3ba022a1-5c7e-4c99-8183-e85b869337e3",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
-      "id": "a58d1201-4f74-4ba7-83a7-ba2da25c8903",
-      "uuid": "a58d1201-4f74-4ba7-83a7-ba2da25c8903",
+      "id": "c12fcb53-44d1-4d47-8074-eae0b54d700c",
+      "uuid": "c12fcb53-44d1-4d47-8074-eae0b54d700c",
       "code": "WS18-C1",
       "name": "Clone of all",
       "description": "",
@@ -2132,6 +2144,8 @@
       "review_look": "",
       "review_grades": false,
       "review_downloads": "internal",
+      "review_slates": false,
+      "review_slate_note": "",
       "start_date": null,
       "delivery_date": null,
       "thumbnail_url": "",
@@ -2163,6 +2177,8 @@
         "review_burn_ins": false,
         "review_grades": false,
         "review_downloads": "internal",
+        "review_slates": false,
+        "review_slate_note": "",
         "name": "Clone of settings",
         "code": "WS18-C2"
       }
@@ -2170,12 +2186,12 @@
     "status": 201,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "57aba14f-3a64-4054-a77b-8f29ccf8cb45",
+      "X-Request-ID": "1444a4b9-00b3-46d1-b7ab-580b34df52ca",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
-      "id": "883c2d03-760a-432e-9f20-602334b82200",
-      "uuid": "883c2d03-760a-432e-9f20-602334b82200",
+      "id": "22f2317e-fed2-46c2-9e60-79aae90a198d",
+      "uuid": "22f2317e-fed2-46c2-9e60-79aae90a198d",
       "code": "WS18-C2",
       "name": "Clone of settings",
       "description": "",
@@ -2192,6 +2208,8 @@
       "review_look": "",
       "review_grades": false,
       "review_downloads": "internal",
+      "review_slates": false,
+      "review_slate_note": "",
       "start_date": null,
       "delivery_date": null,
       "thumbnail_url": "",
@@ -2210,18 +2228,18 @@
   "project_archive": {
     "request": {
       "method": "POST",
-      "path": "/api/v1/projects/b1bed68e-98ec-44a4-a2ad-151135fdf363/archive/",
+      "path": "/api/v1/projects/cd822b18-fa0f-483b-9155-ccb2ebc834f3/archive/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "fe3d4858-28b4-4ed6-8787-3ebd53d8dc19",
+      "X-Request-ID": "7c3b54ce-060c-45a2-98ea-38c1c2fc6452",
       "Allow": "POST, OPTIONS"
     },
     "body": {
-      "id": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
-      "uuid": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
+      "id": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
+      "uuid": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
       "code": "WS18-P",
       "project_code": "WS18-P",
       "name": "Project actions",
@@ -2239,6 +2257,8 @@
       "review_look": "",
       "review_grades": false,
       "review_downloads": "internal",
+      "review_slates": false,
+      "review_slate_note": "",
       "review_source_root": "",
       "review_source_folder": "",
       "start_date": null,
@@ -2260,27 +2280,27 @@
       "vendor_ids": [],
       "vendor_names": [],
       "vendor_team_ids": [],
-      "created_at": "2026-11-19T12:39:44.342067Z",
-      "updated_at": "2026-11-19T12:39:44.443210Z"
+      "created_at": "2026-11-20T05:10:57.763919Z",
+      "updated_at": "2026-11-20T05:10:57.874427Z"
     }
   },
   "project_detail_after_archive": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/projects/b1bed68e-98ec-44a4-a2ad-151135fdf363/",
+      "path": "/api/v1/projects/cd822b18-fa0f-483b-9155-ccb2ebc834f3/",
       "body": null
     },
     "status": 404,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "5b26e1cd-7fe5-4d09-a0ed-c249d022df48",
+      "X-Request-ID": "fc4d251a-0373-498f-9307-b9124836c1bf",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
       "detail": "Not found.",
       "error": {
         "code": "not_found",
-        "request_id": "5b26e1cd-7fe5-4d09-a0ed-c249d022df48"
+        "request_id": "fc4d251a-0373-498f-9307-b9124836c1bf"
       }
     }
   },
@@ -2293,7 +2313,7 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "eae97d0f-495e-4e97-b69f-482ccf6f1806",
+      "X-Request-ID": "ed9ad3df-a4d3-4d8d-91e3-d787eee789df",
       "Allow": "GET, HEAD, OPTIONS"
     },
     "body": {
@@ -2302,8 +2322,8 @@
       "previous": null,
       "results": [
         {
-          "id": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
-          "uuid": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
+          "id": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
+          "uuid": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
           "code": "WS18-P",
           "project_code": "WS18-P",
           "name": "Project actions",
@@ -2321,6 +2341,8 @@
           "review_look": "",
           "review_grades": false,
           "review_downloads": "internal",
+          "review_slates": false,
+          "review_slate_note": "",
           "review_source_root": "",
           "review_source_folder": "",
           "start_date": null,
@@ -2342,8 +2364,8 @@
           "vendor_ids": [],
           "vendor_names": [],
           "vendor_team_ids": [],
-          "created_at": "2026-11-19T12:39:44.342067Z",
-          "updated_at": "2026-11-19T12:39:44.443210Z"
+          "created_at": "2026-11-20T05:10:57.763919Z",
+          "updated_at": "2026-11-20T05:10:57.874427Z"
         }
       ]
     }
@@ -2351,18 +2373,18 @@
   "project_restore": {
     "request": {
       "method": "POST",
-      "path": "/api/v1/projects/b1bed68e-98ec-44a4-a2ad-151135fdf363/restore/",
+      "path": "/api/v1/projects/cd822b18-fa0f-483b-9155-ccb2ebc834f3/restore/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "53291bbb-62fd-4c4d-b855-495aa3cb5c1d",
+      "X-Request-ID": "baff7dcb-1c54-4262-8412-8f181db66a83",
       "Allow": "POST, OPTIONS"
     },
     "body": {
-      "id": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
-      "uuid": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
+      "id": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
+      "uuid": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
       "code": "WS18-P",
       "project_code": "WS18-P",
       "name": "Project actions",
@@ -2380,6 +2402,8 @@
       "review_look": "",
       "review_grades": false,
       "review_downloads": "internal",
+      "review_slates": false,
+      "review_slate_note": "",
       "review_source_root": "",
       "review_source_folder": "",
       "start_date": null,
@@ -2401,19 +2425,19 @@
       "vendor_ids": [],
       "vendor_names": [],
       "vendor_team_ids": [],
-      "created_at": "2026-11-19T12:39:44.342067Z",
-      "updated_at": "2026-11-19T12:39:44.443210Z"
+      "created_at": "2026-11-20T05:10:57.763919Z",
+      "updated_at": "2026-11-20T05:10:57.874427Z"
     }
   },
   "project_delete": {
     "request": {
       "method": "DELETE",
-      "path": "/api/v1/projects/b1bed68e-98ec-44a4-a2ad-151135fdf363/",
+      "path": "/api/v1/projects/cd822b18-fa0f-483b-9155-ccb2ebc834f3/",
       "body": null
     },
     "status": 204,
     "headers": {
-      "X-Request-ID": "18efac61-553e-40e6-bfd7-aa67b1f6ee31",
+      "X-Request-ID": "3db3e3bb-07f9-4adc-9351-001dff4cf3b1",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -2430,7 +2454,7 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "acd45fd4-fd7d-4194-8cce-73b11c8bdfeb",
+      "X-Request-ID": "46205e54-e23c-4592-81b6-631b87afbca1",
       "Allow": "GET, HEAD, OPTIONS"
     },
     "body": {
@@ -2439,8 +2463,8 @@
       "previous": null,
       "results": [
         {
-          "id": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
-          "uuid": "b1bed68e-98ec-44a4-a2ad-151135fdf363",
+          "id": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
+          "uuid": "cd822b18-fa0f-483b-9155-ccb2ebc834f3",
           "code": "WS18-P",
           "project_code": "WS18-P",
           "name": "Project actions",
@@ -2458,6 +2482,8 @@
           "review_look": "",
           "review_grades": false,
           "review_downloads": "internal",
+          "review_slates": false,
+          "review_slate_note": "",
           "review_source_root": "",
           "review_source_folder": "",
           "start_date": null,
@@ -2479,8 +2505,8 @@
           "vendor_ids": [],
           "vendor_names": [],
           "vendor_team_ids": [],
-          "created_at": "2026-11-19T12:39:44.342067Z",
-          "updated_at": "2026-11-19T12:39:44.443210Z"
+          "created_at": "2026-11-20T05:10:57.763919Z",
+          "updated_at": "2026-11-20T05:10:57.874427Z"
         }
       ]
     }

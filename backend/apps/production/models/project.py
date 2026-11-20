@@ -13,6 +13,7 @@ from apps.production.constants import (
     ProjectType,
     ProjectWorkflowType,
 )
+from apps.production.validators.slate import validate_single_line
 
 
 class Project(EntityModel):
@@ -100,6 +101,22 @@ class Project(EntityModel):
             "(the default), everyone who can see it (also vendors and clients), or nobody "
             "(review pipeline RP-23, C-RP-56)."
         ),
+    )
+    # RP-25 (C-RP-59, Q-RP-113, Q-RP-114): a slate before each downloaded movie copy, and the project's
+    # own line on it; the copy that plays never carries one.
+    review_slates = models.BooleanField(
+        default=False,
+        help_text=(
+            "When on, movie and sequence review copies made from now on are downloaded with a "
+            "two-second slate first; playback is unchanged (review pipeline RP-25, C-RP-59)."
+        ),
+    )
+    review_slate_note = models.CharField(
+        max_length=120,
+        blank=True,
+        default="",
+        validators=[validate_single_line],
+        help_text="One line drawn on the slate, e.g. a confidentiality notice (RP-25, C-RP-59).",
     )
     review_source_root = models.CharField(max_length=50, blank=True, default="")
     review_source_folder = models.CharField(max_length=512, blank=True, default="")

@@ -171,14 +171,16 @@ class ReviewMediaSelector(ProductionBaseSelector):
     @classmethod
     def differences(cls, project: Any) -> dict[Any, list[str]]:
         """
-        Each differing copy's id and why: ``burn_ins``, ``colour`` and/or ``grade``.
+        Each differing copy's id and why: ``burn_ins``, ``colour``, ``grade`` and/or ``slate``.
 
         Burn-ins (C-RP-38): movie and sequence copies whose burn-ins are not ``review_burn_ins``; a
         row without ``burn_ins`` counts as without, and stills never carry burn-ins. Colour (C-RP-40):
         any copy whose ``probe.ocio`` is not the transform it would be made with now; a row without
         ``ocio`` counts as made without one. Grade (RP-20, C-RP-53): any copy whose ``probe.grade`` is
-        not the grade it would be made with now; a row without ``grade`` counts as made without one. A
-        copy kept as it is against the settings the project has now does not differ (C-RP-43).
+        not the grade it would be made with now; a row without ``grade`` counts as made without one.
+        Slate (RP-25, C-RP-60): movie and sequence copies whose ``probe.slate`` is not ``review_slates``;
+        a row without ``slate`` counts as without, and the slate's line alone never counts. A copy kept
+        as it is against the settings the project has now does not differ (C-RP-43).
         """
         with_burn_ins = Q(probe__burn_ins=True)
         # spelled out: a negated key lookup would drop the rows made before RP-12, which lack the key
@@ -190,6 +192,12 @@ class ReviewMediaSelector(ProductionBaseSelector):
             .filter(without if project.review_burn_ins else with_burn_ins)
             .values_list("pk", flat=True)
         )
+        no_slate = Q(probe__isnull=True) | ~Q(probe__has_key="slate") | Q(probe__slate=False)
+        slate = set(
+            live.filter(kind__in=(ReviewMedia.Kind.MOVIE, ReviewMedia.Kind.SEQUENCE))
+            .filter(no_slate if project.review_slates else Q(probe__slate=True))
+            .values_list("pk", flat=True)
+        )
         why: dict[Any, list[str]] = {}
         for row_id in burn_ins - kept:
             why.setdefault(row_id, []).append("burn_ins")
@@ -198,6 +206,8 @@ class ReviewMediaSelector(ProductionBaseSelector):
             why.setdefault(row_id, []).append("colour")
         for row_id in set(grade_ids) - kept:
             why.setdefault(row_id, []).append("grade")
+        for row_id in slate - kept:
+            why.setdefault(row_id, []).append("slate")
         return why
 
     @staticmethod
@@ -264,6 +274,9 @@ class ReviewMediaSelector(ProductionBaseSelector):
         ):
             if not isinstance(kept, dict) or kept.get("burn_ins") != bool(project.review_burn_ins):
                 continue
+            # RP-25: a copy kept before slates counts as kept without one; a still never has one
+            if bool(kept.get("slate")) != cls._slated(project, kind):
+                continue
             target, why = cls._target_json(project, cache, kind, container, named)
             # while the config cannot be read colour does not count (above), so neither does it here
             if why == "colour_config_unavailable":
@@ -289,7 +302,13 @@ class ReviewMediaSelector(ProductionBaseSelector):
             "burn_ins": bool(project.review_burn_ins),
             "ocio": made.as_json() if made is not None else None,
             "grade": grade,
+            "slate": cls._slated(project, row.kind),
         }
+
+    @staticmethod
+    def _slated(project: Any, kind: str) -> bool:
+        """Whether a copy of ``kind`` would be made with a slated download now (RP-25)."""
+        return bool(project.review_slates) and kind != ReviewMedia.Kind.STILL
 
     @staticmethod
     def remakable(row: ReviewMedia) -> bool:
@@ -358,6 +377,9 @@ class ReviewMediaSelector(ProductionBaseSelector):
             # RP-20 (C-RP-53): how many differ in their grade
             "review_grades": bool(project.review_grades),
             "grade_out_of_date": sum("grade" in reasons for reasons in why.values()),
+            # RP-25 (C-RP-60): whether downloads get a slate, and how many copies differ in it
+            "review_slates": bool(project.review_slates),
+            "slate_out_of_date": sum("slate" in reasons for reasons in why.values()),
             # RP-16 (C-RP-42): which ones, the oldest first
             "differing": differing,
             "differing_more": more,
