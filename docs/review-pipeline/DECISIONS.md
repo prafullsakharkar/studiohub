@@ -158,7 +158,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-22 Grades from EDLs and ALEs | planned in [PLAN.md](PLAN.md#rp-22-grades-from-edls-and-ales); answered (Q-RP-101 to Q-RP-104 = A); committed `d5d2576c`, merged into `develop` and `main`, released in v4.19.0 ([rp-22-verification.md](rp-22-verification.md)) |
 | RP-23 Downloading a review copy | planned in [PLAN.md](PLAN.md#rp-23-downloading-a-review-copy); answered (Q-RP-105 to Q-RP-108 = A); committed `c58da79c`, merged into `develop` and `main`, released in v4.20.0 ([rp-23-verification.md](rp-23-verification.md)) |
 | RP-24 Waiting for my review | planned in [PLAN.md](PLAN.md#rp-24-waiting-for-my-review); answered (Q-RP-109 to Q-RP-112 = A); committed `3786373c`, merged into `develop` and `main`, released in v4.21.0 ([rp-24-verification.md](rp-24-verification.md)) |
-| RP-25 Slates on downloaded copies | planned in [PLAN.md](PLAN.md#rp-25-slates-on-downloaded-copies); answered (Q-RP-113 to Q-RP-116 = A); committed `fdebebb4` on `feature/rp-25-download-slates` ([rp-25-verification.md](rp-25-verification.md)) |
+| RP-25 Slates on downloaded copies | planned in [PLAN.md](PLAN.md#rp-25-slates-on-downloaded-copies); answered (Q-RP-113 to Q-RP-116 = A); committed `fdebebb4`, merged into `develop` and `main`, released in v4.22.0 ([rp-25-verification.md](rp-25-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
