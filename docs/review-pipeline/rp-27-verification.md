@@ -1,6 +1,6 @@
 # RP-27 verification: exporting shot grades
 
-Built 2026-11-20 on `feature/rp-27-grade-export`, off `develop` at `4637ea94` (v4.23.0), with every recommendation of Q-RP-121 to Q-RP-124 ([DECISIONS.md](DECISIONS.md#rp-27-answers)). Committed `e55bfdeb`. Contract C-RP-62 ([CONTRACTS.md](CONTRACTS.md#rp-27-exporting-shot-grades)); for tools, [docs/api/shot-grades-export.md](../api/shot-grades-export.md). No migration, permission code, setting or dependency; no ADR (who reads grades is unchanged).
+Built 2026-11-20 on `feature/rp-27-grade-export`, off `develop` at `4637ea94` (v4.23.0), with every recommendation of Q-RP-121 to Q-RP-124 ([DECISIONS.md](DECISIONS.md#rp-27-answers)). Committed `e55bfdeb`; merged into `develop` (`91146f05`) and `main` (`138cbaa0`), released in v4.24.0. CI was green on both on the first push (backend 7,997 passed). Contract C-RP-62 ([CONTRACTS.md](CONTRACTS.md#rp-27-exporting-shot-grades)); for tools, [docs/api/shot-grades-export.md](../api/shot-grades-export.md). No migration, permission code, setting or dependency; no ADR (who reads grades is unchanged).
 
 Why: grades came in (RP-20's `.cc`, `.ccc`, `.cdl`; RP-22's EDL and ALE) but did not go out, so a grade typed or corrected on a shot reached nobody else unless copied by hand.
 

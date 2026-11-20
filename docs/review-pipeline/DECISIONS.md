@@ -160,7 +160,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-24 Waiting for my review | planned in [PLAN.md](PLAN.md#rp-24-waiting-for-my-review); answered (Q-RP-109 to Q-RP-112 = A); committed `3786373c`, merged into `develop` and `main`, released in v4.21.0 ([rp-24-verification.md](rp-24-verification.md)) |
 | RP-25 Slates on downloaded copies | planned in [PLAN.md](PLAN.md#rp-25-slates-on-downloaded-copies); answered (Q-RP-113 to Q-RP-116 = A); committed `fdebebb4`, merged into `develop` and `main`, released in v4.22.0 ([rp-25-verification.md](rp-25-verification.md)) |
 | RP-26 The task on the Versions list | planned in [PLAN.md](PLAN.md#rp-26-the-task-on-the-versions-list); answered (Q-RP-117 to Q-RP-119 = A, Q-RP-120 = B); committed `8363660c`, merged into `develop` and `main`, released in v4.23.0 ([rp-26-verification.md](rp-26-verification.md)) |
-| RP-27 Exporting shot grades | planned in [PLAN.md](PLAN.md#rp-27-exporting-shot-grades); answered (Q-RP-121 to Q-RP-124 = A); committed `e55bfdeb` on `feature/rp-27-grade-export` ([rp-27-verification.md](rp-27-verification.md)) |
+| RP-27 Exporting shot grades | planned in [PLAN.md](PLAN.md#rp-27-exporting-shot-grades); answered (Q-RP-121 to Q-RP-124 = A); committed `e55bfdeb`, merged into `develop` and `main`, released in v4.24.0 ([rp-27-verification.md](rp-27-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
