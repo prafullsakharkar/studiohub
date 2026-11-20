@@ -1633,7 +1633,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-25 Slates on downloaded copies
 
-**Status:** planned 2026-11-20 on `feature/rp-25-download-slates`, off `develop` at `a9064a24` (v4.21.0); answered the same day (Q-RP-113 to Q-RP-116 = A, [DECISIONS.md](DECISIONS.md#rp-25-answers)); built, not committed ([rp-25-verification.md](rp-25-verification.md); contracts C-RP-59 and C-RP-60). RP-14 declined slates (Q-RP-63 = A) "until clients get review copies as files"; RP-23 made that so. Chosen over the task on the Versions list, someone else's review queue, exporting grades and Display P3 or HDR copies.
+**Status:** planned 2026-11-20 on `feature/rp-25-download-slates`, off `develop` at `a9064a24` (v4.21.0); answered the same day (Q-RP-113 to Q-RP-116 = A, [DECISIONS.md](DECISIONS.md#rp-25-answers)); committed `fdebebb4` ([rp-25-verification.md](rp-25-verification.md); contracts C-RP-59 and C-RP-60). RP-14 declined slates (Q-RP-63 = A) "until clients get review copies as files"; RP-23 made that so. Chosen over the task on the Versions list, someone else's review queue, exporting grades and Display P3 or HDR copies.
 
 **Goal.** A review copy that leaves StudioHub says what it is. On a project that asks for it, the **downloaded** movie starts with a short slate (the project, the shot or asset, the version, the task, the artist, the frames, the date, and the project's own line). **Playback in StudioHub is unchanged**: the player, the timeline, the filmstrip and every stored frame number still use the copy without a slate.
 

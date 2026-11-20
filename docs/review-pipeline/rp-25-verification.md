@@ -1,6 +1,6 @@
 # RP-25 verification: slates on downloaded copies
 
-Built 2026-11-20 on `feature/rp-25-download-slates`, off `develop` at `a9064a24` (v4.21.0), with every recommendation of Q-RP-113 to Q-RP-116 ([DECISIONS.md](DECISIONS.md#rp-25-answers)). Not committed yet. Contracts C-RP-59 and C-RP-60 ([CONTRACTS.md](CONTRACTS.md#rp-25-slates-on-downloaded-copies)). One migration (`production` `0018`, additive); no new route, permission code or setting, and no ADR (who may download is RP-23's).
+Built 2026-11-20 on `feature/rp-25-download-slates`, off `develop` at `a9064a24` (v4.21.0), with every recommendation of Q-RP-113 to Q-RP-116 ([DECISIONS.md](DECISIONS.md#rp-25-answers)). Committed `fdebebb4`. Contracts C-RP-59 and C-RP-60 ([CONTRACTS.md](CONTRACTS.md#rp-25-slates-on-downloaded-copies)). One migration (`production` `0018`, additive); no new route, permission code or setting, and no ADR (who may download is RP-23's).
 
 Why: RP-23 lets copies leave StudioHub as files, but a downloaded copy was the copy that plays, so once renamed or forwarded nothing in it said which show, shot or version it was, or that it was confidential. A slate inside the copy would shift every stored frame number (Q-RP-63), so only the downloaded file gets one.
 
