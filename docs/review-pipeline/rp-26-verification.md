@@ -1,6 +1,6 @@
 # RP-26 verification: the task on the Versions list
 
-Built 2026-11-20 on `feature/rp-26-version-task`, off `develop` at `680d51c6` (v4.22.0), with every recommendation of Q-RP-117 to Q-RP-120 ([DECISIONS.md](DECISIONS.md#rp-26-answers): 117 to 119 A, 120 B). Contract C-RP-61 ([CONTRACTS.md](CONTRACTS.md#rp-26-the-task-on-the-versions-list)). No migration, route, permission code, setting or dependency; no ADR (who reads what is unchanged).
+Built 2026-11-20 on `feature/rp-26-version-task`, off `develop` at `680d51c6` (v4.22.0), with every recommendation of Q-RP-117 to Q-RP-120 ([DECISIONS.md](DECISIONS.md#rp-26-answers): 117 to 119 A, 120 B). Committed `8363660c`. Contract C-RP-61 ([CONTRACTS.md](CONTRACTS.md#rp-26-the-task-on-the-versions-list)). No migration, route, permission code, setting or dependency; no ADR (who reads what is unchanged).
 
 Why: RP-24's *To review: Mine* lists the versions waiting on tasks you review, but no row said which task; the task was shown only on a version's own page (RP-21). The list could not be narrowed to a task, and a task's page had no versions.
 

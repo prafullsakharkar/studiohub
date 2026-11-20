@@ -1703,7 +1703,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-26 The task on the Versions list
 
-**Status:** planned 2026-11-20 on `feature/rp-26-version-task`, off `develop` at `680d51c6` (v4.22.0); answered the same day (Q-RP-117 to Q-RP-119 = A, Q-RP-120 = B, [DECISIONS.md](DECISIONS.md#rp-26-answers)); built ([rp-26-verification.md](rp-26-verification.md); contract C-RP-61). Left out by RP-21 (the task only on the version's own page) and RP-24 (the queue lists versions without saying which task waits). Chosen over exporting grades as `.ccc` or EDL, someone else's review queue, and Display P3 or HDR copies.
+**Status:** planned 2026-11-20 on `feature/rp-26-version-task`, off `develop` at `680d51c6` (v4.22.0); answered the same day (Q-RP-117 to Q-RP-119 = A, Q-RP-120 = B, [DECISIONS.md](DECISIONS.md#rp-26-answers)); committed `8363660c` ([rp-26-verification.md](rp-26-verification.md); contract C-RP-61). Left out by RP-21 (the task only on the version's own page) and RP-24 (the queue lists versions without saying which task waits). Chosen over exporting grades as `.ccc` or EDL, someone else's review queue, and Display P3 or HDR copies.
 
 **Goal.** Every list of versions says which task each version is for, and can be narrowed to one task; a task's page lists its versions. Nothing is shown to someone who could not open the task.
 
