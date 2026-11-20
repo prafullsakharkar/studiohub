@@ -3,11 +3,11 @@
   "body": {
    "auth_source": "local",
    "avatar_url": null,
-   "created_at": "2026-11-19T06:46:31.756870+00:00",
+   "created_at": "2026-11-20T08:23:00.031698+00:00",
    "email": "user@example.test",
    "first_name": "Supervisor",
    "full_name": "Supervisor Example",
-   "id": "65715f30-1607-49cb-a871-ba5fda12bb53",
+   "id": "172e8604-4027-47e8-8c1d-ddee4bee8968",
    "is_active": true,
    "is_staff": false,
    "is_superuser": false,
@@ -114,9 +114,9 @@
      "client_id": "",
      "department": "",
      "department_id": "",
-     "id": "4b9b8cb9-680d-4a03-881b-77da6a623cad",
+     "id": "da8908db-85f8-4abd-a05f-30d25ca581f4",
      "project_code": "RVT",
-     "project_id": "ec4a925a-24dc-416e-bcfd-fb8f1b1ce7da",
+     "project_id": "70a96673-4ff4-4f83-9193-6e70299b4396",
      "role": "VFX Supervisor",
      "roles": [
       "VFX Supervisor"
@@ -125,12 +125,12 @@
      "show_id": null,
      "status": "active",
      "team_id": "",
-     "user_id": "65715f30-1607-49cb-a871-ba5fda12bb53",
+     "user_id": "172e8604-4027-47e8-8c1d-ddee4bee8968",
      "vendor_id": ""
     }
    ],
    "role": "VFX Supervisor",
-   "updated_at": "2026-11-19T06:46:31.756877+00:00"
+   "updated_at": "2026-11-20T08:23:00.031705+00:00"
   },
   "request": {
    "body": null,
@@ -143,11 +143,11 @@
   "body": {
    "auth_source": "local",
    "avatar_url": null,
-   "created_at": "2026-11-19T06:46:31.826577+00:00",
+   "created_at": "2026-11-20T08:23:00.093476+00:00",
    "email": "user@example.test",
    "first_name": "Versions-Only",
    "full_name": "Versions-Only Example",
-   "id": "75254dc6-6053-4e15-b996-31d9773d32b8",
+   "id": "ef0aea51-8bce-45c4-a5ea-e404dc6af82b",
    "is_active": true,
    "is_staff": false,
    "is_superuser": false,
@@ -163,9 +163,9 @@
      "client_id": "",
      "department": "",
      "department_id": "",
-     "id": "eec66f65-02db-40df-9c63-3462f262b33d",
+     "id": "db439751-4cfd-4fa7-9291-af5fa52c9a8c",
      "project_code": "RVT",
-     "project_id": "ec4a925a-24dc-416e-bcfd-fb8f1b1ce7da",
+     "project_id": "70a96673-4ff4-4f83-9193-6e70299b4396",
      "role": "Coordinator",
      "roles": [
       "Coordinator"
@@ -174,12 +174,12 @@
      "show_id": null,
      "status": "active",
      "team_id": "",
-     "user_id": "75254dc6-6053-4e15-b996-31d9773d32b8",
+     "user_id": "ef0aea51-8bce-45c4-a5ea-e404dc6af82b",
      "vendor_id": ""
     }
    ],
-   "role": "Test Grants 767b5736",
-   "updated_at": "2026-11-19T06:46:31.826587+00:00"
+   "role": "Test Grants b3ec6c93",
+   "updated_at": "2026-11-20T08:23:00.093485+00:00"
   },
   "request": {
    "body": null,
@@ -193,13 +193,13 @@
    "detail": "Not found.",
    "error": {
     "code": "not_found",
-    "request_id": "efb33555-67be-4f0d-a5a5-1d3c48e2d93d"
+    "request_id": "7a557094-a7f0-4d67-ab86-580f4f08144a"
    }
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/tasks/2ba56d53-9204-4f58-bb38-d0e0f069e8eb/"
+   "path": "/api/v1/tasks/2253c200-e10a-4336-bfe1-296f72bec046/"
   },
   "status": 404
  },
@@ -207,11 +207,11 @@
   "body": {
    "asset_id": null,
    "assignee_avatar": null,
-   "assignee_id": "6e55b478-ba73-4454-8b8c-dfa56938c5d0",
+   "assignee_id": "13a8a625-777f-4885-849e-b8191c46a0a4",
    "assignee_name": "Artist Example",
    "assignee_role": "",
    "code": "RVT_SH0010_COMP",
-   "created_at": "2026-11-19T06:46:32.323579Z",
+   "created_at": "2026-11-20T08:23:00.543680Z",
    "department": "",
    "department_id": "",
    "dependencies": {},
@@ -222,16 +222,16 @@
    "entity_name": "",
    "entity_type": "General",
    "estimated_hours": "0.00",
-   "id": "2ba56d53-9204-4f58-bb38-d0e0f069e8eb",
+   "id": "2253c200-e10a-4336-bfe1-296f72bec046",
    "is_archived": false,
    "logged_hours": "0.00",
    "pending_hours": "0.00",
    "priority": "Medium",
    "project_code": "RVT",
-   "project_id": "ec4a925a-24dc-416e-bcfd-fb8f1b1ce7da",
+   "project_id": "70a96673-4ff4-4f83-9193-6e70299b4396",
    "project_name": "Version task",
    "reviewer_avatar": null,
-   "reviewer_id": "65715f30-1607-49cb-a871-ba5fda12bb53",
+   "reviewer_id": "172e8604-4027-47e8-8c1d-ddee4bee8968",
    "reviewer_name": "Supervisor Example",
    "schedule": {},
    "sequence_id": null,
@@ -245,8 +245,8 @@
    "team_id": null,
    "team_name": "",
    "title": "Comp",
-   "updated_at": "2026-11-19T06:46:32.386027Z",
-   "uuid": "2ba56d53-9204-4f58-bb38-d0e0f069e8eb",
+   "updated_at": "2026-11-20T08:23:00.589967Z",
+   "uuid": "2253c200-e10a-4336-bfe1-296f72bec046",
    "vendor_code": "",
    "vendor_id": "vendor-1",
    "vendor_name": "",
@@ -255,7 +255,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/tasks/2ba56d53-9204-4f58-bb38-d0e0f069e8eb/"
+   "path": "/api/v1/tasks/2253c200-e10a-4336-bfe1-296f72bec046/"
   },
   "status": 200
  },
@@ -263,11 +263,11 @@
   "body": {
    "asset_id": null,
    "assignee_avatar": null,
-   "assignee_id": "6e55b478-ba73-4454-8b8c-dfa56938c5d0",
+   "assignee_id": "13a8a625-777f-4885-849e-b8191c46a0a4",
    "assignee_name": "Artist Example",
    "assignee_role": "",
    "code": "RVT_SH0010_COMP",
-   "created_at": "2026-11-19T06:46:32.323579Z",
+   "created_at": "2026-11-20T08:23:00.543680Z",
    "department": "",
    "department_id": "",
    "dependencies": {},
@@ -278,16 +278,16 @@
    "entity_name": "",
    "entity_type": "General",
    "estimated_hours": "0.00",
-   "id": "2ba56d53-9204-4f58-bb38-d0e0f069e8eb",
+   "id": "2253c200-e10a-4336-bfe1-296f72bec046",
    "is_archived": false,
    "logged_hours": "0.00",
    "pending_hours": "0.00",
    "priority": "Medium",
    "project_code": "RVT",
-   "project_id": "ec4a925a-24dc-416e-bcfd-fb8f1b1ce7da",
+   "project_id": "70a96673-4ff4-4f83-9193-6e70299b4396",
    "project_name": "Version task",
    "reviewer_avatar": null,
-   "reviewer_id": "65715f30-1607-49cb-a871-ba5fda12bb53",
+   "reviewer_id": "172e8604-4027-47e8-8c1d-ddee4bee8968",
    "reviewer_name": "Supervisor Example",
    "schedule": {},
    "sequence_id": null,
@@ -301,8 +301,8 @@
    "team_id": null,
    "team_name": "",
    "title": "Comp",
-   "updated_at": "2026-11-19T06:46:32.386027Z",
-   "uuid": "2ba56d53-9204-4f58-bb38-d0e0f069e8eb",
+   "updated_at": "2026-11-20T08:23:00.589967Z",
+   "uuid": "2253c200-e10a-4336-bfe1-296f72bec046",
    "vendor_code": "",
    "vendor_id": "vendor-1",
    "vendor_name": "",
@@ -311,7 +311,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/tasks/2ba56d53-9204-4f58-bb38-d0e0f069e8eb/"
+   "path": "/api/v1/tasks/2253c200-e10a-4336-bfe1-296f72bec046/"
   },
   "status": 200
  },
@@ -319,11 +319,11 @@
   "body": {
    "asset_id": null,
    "assignee_avatar": null,
-   "assignee_id": "6e55b478-ba73-4454-8b8c-dfa56938c5d0",
+   "assignee_id": "13a8a625-777f-4885-849e-b8191c46a0a4",
    "assignee_name": "Artist Example",
    "assignee_role": "",
    "code": "RVT_SH0010_ROTO",
-   "created_at": "2026-11-19T06:46:32.425099Z",
+   "created_at": "2026-11-20T08:23:00.620259Z",
    "department": "",
    "department_id": "",
    "dependencies": {},
@@ -334,13 +334,13 @@
    "entity_name": "",
    "entity_type": "General",
    "estimated_hours": "0.00",
-   "id": "705e194a-61bf-4dac-b299-af22883a5988",
+   "id": "c3bec5f2-6176-40d0-a9b0-4acf2a2d48db",
    "is_archived": false,
    "logged_hours": "0.00",
    "pending_hours": "0.00",
    "priority": "Medium",
    "project_code": "RVT",
-   "project_id": "ec4a925a-24dc-416e-bcfd-fb8f1b1ce7da",
+   "project_id": "70a96673-4ff4-4f83-9193-6e70299b4396",
    "project_name": "Version task",
    "reviewer_avatar": null,
    "reviewer_id": null,
@@ -357,8 +357,8 @@
    "team_id": null,
    "team_name": "",
    "title": "Roto",
-   "updated_at": "2026-11-19T06:46:32.425109Z",
-   "uuid": "705e194a-61bf-4dac-b299-af22883a5988",
+   "updated_at": "2026-11-20T08:23:00.620281Z",
+   "uuid": "c3bec5f2-6176-40d0-a9b0-4acf2a2d48db",
    "vendor_code": "",
    "vendor_id": "",
    "vendor_name": "",
@@ -367,7 +367,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/tasks/705e194a-61bf-4dac-b299-af22883a5988/"
+   "path": "/api/v1/tasks/c3bec5f2-6176-40d0-a9b0-4acf2a2d48db/"
   },
   "status": 200
  },
@@ -376,13 +376,13 @@
    "detail": "You do not have permission to perform this action.",
    "error": {
     "code": "permission_denied",
-    "request_id": "7f42c2e5-2cfa-46f7-ae73-978e72ab2763"
+    "request_id": "5d0ac851-ce64-4e1b-bcb4-894cb268d907"
    }
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/tasks/2ba56d53-9204-4f58-bb38-d0e0f069e8eb/"
+   "path": "/api/v1/tasks/2253c200-e10a-4336-bfe1-296f72bec046/"
   },
   "status": 403
  },
@@ -394,7 +394,7 @@
    "changelog": "",
    "code": "RVT_SH0010_COMP_V001",
    "color_space": "ACEScg",
-   "created_at": "2026-11-19T06:46:32.449186Z",
+   "created_at": "2026-11-20T08:23:00.669707Z",
    "department": "",
    "end_frame": null,
    "entity_code": "",
@@ -405,13 +405,13 @@
    "file_size_mb": "0.00",
    "fps": "24.000",
    "frame_range": "",
-   "id": "be713a31-dfc4-418c-9616-3bb5e63fce72",
+   "id": "cf8f9af5-d370-4cba-b0dd-5a9906a38b45",
    "is_archived": false,
    "is_hero": false,
    "is_published": false,
    "notes": "",
    "project_code": "RVT",
-   "project_id": "ec4a925a-24dc-416e-bcfd-fb8f1b1ce7da",
+   "project_id": "70a96673-4ff4-4f83-9193-6e70299b4396",
    "published_at": null,
    "published_by_id": null,
    "publishing_info": {},
@@ -423,10 +423,12 @@
    "start_frame": null,
    "status": "Pending Review",
    "tags": [],
-   "task_id": "2ba56d53-9204-4f58-bb38-d0e0f069e8eb",
+   "task_code": null,
+   "task_id": "2253c200-e10a-4336-bfe1-296f72bec046",
+   "task_title": null,
    "thumbnail_url": "",
-   "updated_at": "2026-11-19T06:46:32.449200Z",
-   "uuid": "be713a31-dfc4-418c-9616-3bb5e63fce72",
+   "updated_at": "2026-11-20T08:23:00.669729Z",
+   "uuid": "cf8f9af5-d370-4cba-b0dd-5a9906a38b45",
    "version_index": 1,
    "version_number": "v001",
    "video_url": ""
@@ -434,7 +436,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/versions/be713a31-dfc4-418c-9616-3bb5e63fce72/"
+   "path": "/api/v1/versions/cf8f9af5-d370-4cba-b0dd-5a9906a38b45/"
   },
   "status": 200
  },
@@ -446,7 +448,7 @@
    "changelog": "",
    "code": "RVT_SH0010_COMP_V001",
    "color_space": "ACEScg",
-   "created_at": "2026-11-19T06:46:32.449186Z",
+   "created_at": "2026-11-20T08:23:00.669707Z",
    "department": "",
    "end_frame": null,
    "entity_code": "",
@@ -457,13 +459,13 @@
    "file_size_mb": "0.00",
    "fps": "24.000",
    "frame_range": "",
-   "id": "be713a31-dfc4-418c-9616-3bb5e63fce72",
+   "id": "cf8f9af5-d370-4cba-b0dd-5a9906a38b45",
    "is_archived": false,
    "is_hero": false,
    "is_published": false,
    "notes": "",
    "project_code": "RVT",
-   "project_id": "ec4a925a-24dc-416e-bcfd-fb8f1b1ce7da",
+   "project_id": "70a96673-4ff4-4f83-9193-6e70299b4396",
    "published_at": null,
    "published_by_id": null,
    "publishing_info": {},
@@ -475,10 +477,12 @@
    "start_frame": null,
    "status": "Pending Review",
    "tags": [],
-   "task_id": "2ba56d53-9204-4f58-bb38-d0e0f069e8eb",
+   "task_code": "RVT_SH0010_COMP",
+   "task_id": "2253c200-e10a-4336-bfe1-296f72bec046",
+   "task_title": "Comp",
    "thumbnail_url": "",
-   "updated_at": "2026-11-19T06:46:32.449200Z",
-   "uuid": "be713a31-dfc4-418c-9616-3bb5e63fce72",
+   "updated_at": "2026-11-20T08:23:00.669729Z",
+   "uuid": "cf8f9af5-d370-4cba-b0dd-5a9906a38b45",
    "version_index": 1,
    "version_number": "v001",
    "video_url": ""
@@ -486,7 +490,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/versions/be713a31-dfc4-418c-9616-3bb5e63fce72/"
+   "path": "/api/v1/versions/cf8f9af5-d370-4cba-b0dd-5a9906a38b45/"
   },
   "status": 200
  },
@@ -498,7 +502,7 @@
    "changelog": "",
    "code": "RVT_SH0010_ROTO_V001",
    "color_space": "ACEScg",
-   "created_at": "2026-11-19T06:46:32.483262Z",
+   "created_at": "2026-11-20T08:23:00.704998Z",
    "department": "",
    "end_frame": null,
    "entity_code": "",
@@ -509,13 +513,13 @@
    "file_size_mb": "0.00",
    "fps": "24.000",
    "frame_range": "",
-   "id": "b7f17603-f02b-481d-aaa1-14e0a2159979",
+   "id": "7ecf661f-5870-464a-a273-32853ade4733",
    "is_archived": false,
    "is_hero": false,
    "is_published": false,
    "notes": "",
    "project_code": "RVT",
-   "project_id": "ec4a925a-24dc-416e-bcfd-fb8f1b1ce7da",
+   "project_id": "70a96673-4ff4-4f83-9193-6e70299b4396",
    "published_at": null,
    "published_by_id": null,
    "publishing_info": {},
@@ -527,10 +531,12 @@
    "start_frame": null,
    "status": "Not Started",
    "tags": [],
-   "task_id": "705e194a-61bf-4dac-b299-af22883a5988",
+   "task_code": "RVT_SH0010_ROTO",
+   "task_id": "c3bec5f2-6176-40d0-a9b0-4acf2a2d48db",
+   "task_title": "Roto",
    "thumbnail_url": "",
-   "updated_at": "2026-11-19T06:46:32.483271Z",
-   "uuid": "b7f17603-f02b-481d-aaa1-14e0a2159979",
+   "updated_at": "2026-11-20T08:23:00.705006Z",
+   "uuid": "7ecf661f-5870-464a-a273-32853ade4733",
    "version_index": 1,
    "version_number": "v001",
    "video_url": ""
@@ -538,7 +544,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/versions/b7f17603-f02b-481d-aaa1-14e0a2159979/"
+   "path": "/api/v1/versions/7ecf661f-5870-464a-a273-32853ade4733/"
   },
   "status": 200
  },
@@ -550,7 +556,7 @@
    "changelog": "",
    "code": "RVT_SH0010_COMP_V001",
    "color_space": "ACEScg",
-   "created_at": "2026-11-19T06:46:32.449186Z",
+   "created_at": "2026-11-20T08:23:00.669707Z",
    "department": "",
    "end_frame": null,
    "entity_code": "",
@@ -561,13 +567,13 @@
    "file_size_mb": "0.00",
    "fps": "24.000",
    "frame_range": "",
-   "id": "be713a31-dfc4-418c-9616-3bb5e63fce72",
+   "id": "cf8f9af5-d370-4cba-b0dd-5a9906a38b45",
    "is_archived": false,
    "is_hero": false,
    "is_published": false,
    "notes": "",
    "project_code": "RVT",
-   "project_id": "ec4a925a-24dc-416e-bcfd-fb8f1b1ce7da",
+   "project_id": "70a96673-4ff4-4f83-9193-6e70299b4396",
    "published_at": null,
    "published_by_id": null,
    "publishing_info": {},
@@ -579,10 +585,12 @@
    "start_frame": null,
    "status": "Pending Review",
    "tags": [],
-   "task_id": "2ba56d53-9204-4f58-bb38-d0e0f069e8eb",
+   "task_code": "RVT_SH0010_COMP",
+   "task_id": "2253c200-e10a-4336-bfe1-296f72bec046",
+   "task_title": "Comp",
    "thumbnail_url": "",
-   "updated_at": "2026-11-19T06:46:32.449200Z",
-   "uuid": "be713a31-dfc4-418c-9616-3bb5e63fce72",
+   "updated_at": "2026-11-20T08:23:00.669729Z",
+   "uuid": "cf8f9af5-d370-4cba-b0dd-5a9906a38b45",
    "version_index": 1,
    "version_number": "v001",
    "video_url": ""
@@ -590,7 +598,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/versions/be713a31-dfc4-418c-9616-3bb5e63fce72/"
+   "path": "/api/v1/versions/cf8f9af5-d370-4cba-b0dd-5a9906a38b45/"
   },
   "status": 200
  },
@@ -602,39 +610,41 @@
    "changelog": "",
    "code": "RVT_SH0010_PLATE_V001",
    "color_space": "ACEScg",
-   "created_at": "2026-11-19T06:46:32.506565Z",
+   "created_at": "2026-11-20T08:23:00.727615Z",
    "department": "",
    "end_frame": null,
    "entity_code": "RVT_SH0010",
-   "entity_id": "b1f44330-b180-41f4-8428-099f2807a38f",
+   "entity_id": "0556af26-6abb-4519-b9c5-5347ed81209c",
    "entity_name": "Hero walk",
    "entity_type": "Shot",
    "file_path": "",
    "file_size_mb": "0.00",
    "fps": "24.000",
    "frame_range": "",
-   "id": "05f78a04-a672-45c8-a33f-0d8a50695881",
+   "id": "436db86a-fbef-4505-b750-e428e40daed1",
    "is_archived": false,
    "is_hero": false,
    "is_published": false,
    "notes": "",
    "project_code": "RVT",
-   "project_id": "ec4a925a-24dc-416e-bcfd-fb8f1b1ce7da",
+   "project_id": "70a96673-4ff4-4f83-9193-6e70299b4396",
    "published_at": null,
    "published_by_id": null,
    "publishing_info": {},
    "resolution": "4096x2160",
    "review_media": null,
    "review_media_job": null,
-   "shot_id": "b1f44330-b180-41f4-8428-099f2807a38f",
+   "shot_id": "0556af26-6abb-4519-b9c5-5347ed81209c",
    "source_file_url": "",
    "start_frame": null,
    "status": "Not Started",
    "tags": [],
+   "task_code": null,
    "task_id": null,
+   "task_title": null,
    "thumbnail_url": "",
-   "updated_at": "2026-11-19T06:46:32.506573Z",
-   "uuid": "05f78a04-a672-45c8-a33f-0d8a50695881",
+   "updated_at": "2026-11-20T08:23:00.727622Z",
+   "uuid": "436db86a-fbef-4505-b750-e428e40daed1",
    "version_index": 1,
    "version_number": "v001",
    "video_url": ""
@@ -642,7 +652,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/versions/05f78a04-a672-45c8-a33f-0d8a50695881/"
+   "path": "/api/v1/versions/436db86a-fbef-4505-b750-e428e40daed1/"
   },
   "status": 200
  },
@@ -654,7 +664,7 @@
    "changelog": "",
    "code": "RVT_SH0010_COMP_V001",
    "color_space": "ACEScg",
-   "created_at": "2026-11-19T06:46:32.449186Z",
+   "created_at": "2026-11-20T08:23:00.669707Z",
    "department": "",
    "end_frame": null,
    "entity_code": "",
@@ -665,13 +675,13 @@
    "file_size_mb": "0.00",
    "fps": "24.000",
    "frame_range": "",
-   "id": "be713a31-dfc4-418c-9616-3bb5e63fce72",
+   "id": "cf8f9af5-d370-4cba-b0dd-5a9906a38b45",
    "is_archived": false,
    "is_hero": false,
    "is_published": false,
    "notes": "",
    "project_code": "RVT",
-   "project_id": "ec4a925a-24dc-416e-bcfd-fb8f1b1ce7da",
+   "project_id": "70a96673-4ff4-4f83-9193-6e70299b4396",
    "published_at": null,
    "published_by_id": null,
    "publishing_info": {},
@@ -683,10 +693,12 @@
    "start_frame": null,
    "status": "Pending Review",
    "tags": [],
-   "task_id": "2ba56d53-9204-4f58-bb38-d0e0f069e8eb",
+   "task_code": null,
+   "task_id": "2253c200-e10a-4336-bfe1-296f72bec046",
+   "task_title": null,
    "thumbnail_url": "",
-   "updated_at": "2026-11-19T06:46:32.449200Z",
-   "uuid": "be713a31-dfc4-418c-9616-3bb5e63fce72",
+   "updated_at": "2026-11-20T08:23:00.669729Z",
+   "uuid": "cf8f9af5-d370-4cba-b0dd-5a9906a38b45",
    "version_index": 1,
    "version_number": "v001",
    "video_url": ""
@@ -694,7 +706,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/versions/be713a31-dfc4-418c-9616-3bb5e63fce72/"
+   "path": "/api/v1/versions/cf8f9af5-d370-4cba-b0dd-5a9906a38b45/"
   },
   "status": 200
  }

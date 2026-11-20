@@ -131,11 +131,11 @@ describe('versions', () => {
     expect(flow.versions_add_to_new_playlist.status).toBe(200);
   });
 
-  it('only entity_type + entity_id (and status, department, is_published) filter; shot_id, task_id, asset_id, artist and is_hero are ignored', () => {
+  it('only entity_type + entity_id (and status, department, is_published, and task_id since RP-26) filter; shot_id, asset_id, artist and is_hero are ignored', () => {
     const base = count('fp_versions_baseline');
     const by = (prefix: string) => count(Object.keys(flow).find((k) => k.startsWith(prefix))!);
-    for (const p of ['fp_versions_by_status', 'fp_versions_by_department', 'fp_versions_by_entity_id', 'fp_versions_by_entity_type', 'fp_versions_by_is_published']) expect(by(p), p).toBeLessThan(base);
-    for (const p of ['fp_versions_by_shot_id', 'fp_versions_by_task_id', 'fp_versions_by_asset_id', 'fp_versions_by_artist', 'fp_versions_by_is_hero', 'fp_versions_by_nonsense']) expect(by(p), p).toBe(base);
+    for (const p of ['fp_versions_by_status', 'fp_versions_by_department', 'fp_versions_by_entity_id', 'fp_versions_by_entity_type', 'fp_versions_by_is_published', 'fp_versions_by_task_id']) expect(by(p), p).toBeLessThan(base);
+    for (const p of ['fp_versions_by_shot_id', 'fp_versions_by_asset_id', 'fp_versions_by_artist', 'fp_versions_by_is_hero', 'fp_versions_by_nonsense']) expect(by(p), p).toBe(base);
   });
 
   it('the status table: a version moves like a task and enters Approved only from Pending Review', () => {

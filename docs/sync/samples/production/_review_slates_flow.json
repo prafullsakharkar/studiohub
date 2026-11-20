@@ -11,28 +11,28 @@
       "file_name": "RSL_SH0010_COMP_V001.mp4",
       "kind": "movie",
       "operation": "download",
-      "review_media_id": "17a81082-de52-4b18-8d98-7cbbd4159fdb",
+      "review_media_id": "c190f506-1db9-42b7-aa52-9abfdd66b650",
       "slate": true
      },
-     "created_at": "2026-11-20T05:07:49.495517Z",
+     "created_at": "2026-11-20T08:25:45.936771Z",
      "description": "Downloaded the review copy RSL_SH0010_COMP_V001.mp4.",
      "entity_code": "RSL_SH0010_COMP_V001",
-     "entity_id": "0457d1be-e664-43c8-ab16-028614557c1f",
+     "entity_id": "1b9c2ccd-897b-4f3e-b379-470d7d7c4300",
      "entity_type": "version",
-     "id": "b79a3c8d-741d-4a3e-b497-926e5ce3bb5c",
+     "id": "8769ace4-8d7e-4a32-906a-81530c7c8803",
      "ip_address": "127.0.0.1",
-     "updated_at": "2026-11-20T05:07:49.495527Z",
+     "updated_at": "2026-11-20T08:25:45.936782Z",
      "user_email": "user@example.test",
-     "user_id": "b7850e74-4ded-4c67-9685-e06c0e563de7",
+     "user_id": "9936623b-6631-4ddd-b52c-8360856997a1",
      "user_name": "Sam Supervisor",
-     "uuid": "b79a3c8d-741d-4a3e-b497-926e5ce3bb5c"
+     "uuid": "8769ace4-8d7e-4a32-906a-81530c7c8803"
     }
    ]
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/audit/?search=0457d1be-e664-43c8-ab16-028614557c1f&action=EXPORT"
+   "path": "/api/v1/audit/?search=1b9c2ccd-897b-4f3e-b379-470d7d7c4300&action=EXPORT"
   },
   "status": 200
  },
@@ -52,7 +52,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/review-copies/"
+   "path": "/api/v1/projects/6321b27e-20ef-4af7-ac0c-3a991d3b1c5d/review-copies/"
   },
   "status": 200
  },
@@ -66,11 +66,11 @@
      "published_file_id": null,
      "record_code": "RSL_SH0010",
      "remakable": true,
-     "review_media_id": "17a81082-de52-4b18-8d98-7cbbd4159fdb",
+     "review_media_id": "c190f506-1db9-42b7-aa52-9abfdd66b650",
      "source": "upload",
      "version": {
       "code": "RSL_SH0010_COMP_V001",
-      "id": "0457d1be-e664-43c8-ab16-028614557c1f"
+      "id": "1b9c2ccd-897b-4f3e-b379-470d7d7c4300"
      },
      "why": [
       "slate"
@@ -82,27 +82,27 @@
      "published_file_id": null,
      "record_code": "RSL_SH0010",
      "remakable": true,
-     "review_media_id": "c5e5906a-31a0-489e-bb72-9b43c621ecc9",
+     "review_media_id": "8462b759-6dda-469f-824a-8c7badbab104",
      "source": "upload",
      "version": {
       "code": "RSL_SH0010_COMP_V002",
-      "id": "f4db9d84-6a6f-42b8-bfd0-4bd7d55798f9"
+      "id": "87c62740-53a9-4f9b-972e-53002ad7d134"
      },
      "why": [
       "slate"
      ]
     },
     {
-     "frames_until": "2026-12-04T05:07:46.469642Z",
+     "frames_until": "2026-12-04T08:25:42.863788Z",
      "kind": "sequence",
      "published_file_id": null,
      "record_code": "RSL_SH0010",
      "remakable": true,
-     "review_media_id": "b6518d04-f363-4e80-b027-730ba45c80c9",
+     "review_media_id": "79823fbf-a98f-456b-b91a-8bad75765d19",
      "source": "upload",
      "version": {
       "code": "RSL_SH0010_COMP_V003",
-      "id": "03c49268-176b-4b3d-a2cf-0474dcc561d5"
+      "id": "5ed16538-2284-46df-a637-e79643e43c29"
      },
      "why": [
       "slate"
@@ -121,7 +121,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/review-copies/"
+   "path": "/api/v1/projects/6321b27e-20ef-4af7-ac0c-3a991d3b1c5d/review-copies/"
   },
   "status": 200
  },
@@ -141,7 +141,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/review-copies/"
+   "path": "/api/v1/projects/6321b27e-20ef-4af7-ac0c-3a991d3b1c5d/review-copies/"
   },
   "status": 200
  },
@@ -155,11 +155,11 @@
      "published_file_id": null,
      "record_code": "RSL_SH0010",
      "remakable": true,
-     "review_media_id": "16461387-dce1-4269-949b-f3736f7b1115",
+     "review_media_id": "7a934156-b6ea-4467-98a6-61d130b1d6a9",
      "source": "upload",
      "version": {
       "code": "RSL_SH0010_COMP_V001",
-      "id": "0457d1be-e664-43c8-ab16-028614557c1f"
+      "id": "1b9c2ccd-897b-4f3e-b379-470d7d7c4300"
      },
      "why": [
       "slate"
@@ -178,7 +178,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/review-copies/"
+   "path": "/api/v1/projects/6321b27e-20ef-4af7-ac0c-3a991d3b1c5d/review-copies/"
   },
   "status": 200
  },
@@ -193,7 +193,7 @@
   "request": {
    "body": null,
    "method": "POST",
-   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/review-copies/remake/"
+   "path": "/api/v1/projects/6321b27e-20ef-4af7-ac0c-3a991d3b1c5d/review-copies/remake/"
   },
   "status": 200
  },
@@ -205,7 +205,7 @@
   },
   "request": {
    "method": "GET",
-   "path": "/api/v1/review-media/17a81082-de52-4b18-8d98-7cbbd4159fdb/download/?token=SAMPLE"
+   "path": "/api/v1/review-media/c190f506-1db9-42b7-aa52-9abfdd66b650/download/?token=SAMPLE"
   },
   "status": 200
  },
@@ -321,7 +321,7 @@
   },
   "request": {
    "method": "GET",
-   "path": "/api/v1/review-media/17a81082-de52-4b18-8d98-7cbbd4159fdb/proxy/?token=SAMPLE"
+   "path": "/api/v1/review-media/c190f506-1db9-42b7-aa52-9abfdd66b650/proxy/?token=SAMPLE"
   },
   "status": 200
  },
@@ -339,11 +339,11 @@
    "color_space": "ACEScg",
    "coordinator_id": null,
    "coordinator_name": "",
-   "created_at": "2026-11-20T05:07:30.428535Z",
+   "created_at": "2026-11-20T08:25:26.769908Z",
    "delivery_date": null,
    "description": "",
    "fps": "24.000",
-   "id": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "id": "6321b27e-20ef-4af7-ac0c-3a991d3b1c5d",
    "in_progress_shots": 0,
    "name": "Review slates",
    "project_code": "RSL",
@@ -365,8 +365,8 @@
    "total_assets": 0,
    "total_shots": 0,
    "type": "Feature Film",
-   "updated_at": "2026-11-20T05:07:30.428544Z",
-   "uuid": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "updated_at": "2026-11-20T08:25:26.769916Z",
+   "uuid": "6321b27e-20ef-4af7-ac0c-3a991d3b1c5d",
    "vendor_ids": [],
    "vendor_names": [],
    "vendor_team_ids": [],
@@ -375,7 +375,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+   "path": "/api/v1/projects/6321b27e-20ef-4af7-ac0c-3a991d3b1c5d/"
   },
   "status": 200
  },
@@ -383,7 +383,7 @@
   "body": {
    "error": {
     "code": "validation_error",
-    "request_id": "c9d0362d-e2d8-4f6a-8955-29d8b834da47"
+    "request_id": "5b57cac1-ec18-443c-8748-13b71690003f"
    },
    "review_slate_note": [
     "One line of text, without tabs or line breaks."
@@ -394,7 +394,7 @@
     "review_slate_note": "one\ntwo"
    },
    "method": "PATCH",
-   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+   "path": "/api/v1/projects/6321b27e-20ef-4af7-ac0c-3a991d3b1c5d/"
   },
   "status": 400
  },
@@ -438,7 +438,7 @@
     "review_slate_note": "Another line"
    },
    "method": "PATCH",
-   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+   "path": "/api/v1/projects/6321b27e-20ef-4af7-ac0c-3a991d3b1c5d/"
   },
   "status": 200
  },
@@ -446,7 +446,7 @@
   "body": {
    "error": {
     "code": "validation_error",
-    "request_id": "eb1c955d-ac8f-4aaa-b458-6c728292424b"
+    "request_id": "f6ca0f24-9f8d-4cc7-b2f6-da62988be48a"
    },
    "review_slate_note": [
     "One line of text, without tabs or line breaks."
@@ -457,7 +457,7 @@
     "review_slate_note": "one\ttwo"
    },
    "method": "PATCH",
-   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+   "path": "/api/v1/projects/6321b27e-20ef-4af7-ac0c-3a991d3b1c5d/"
   },
   "status": 400
  },
@@ -465,7 +465,7 @@
   "body": {
    "error": {
     "code": "validation_error",
-    "request_id": "ec05f5ed-3d11-45c8-8296-c5fed25a24bc"
+    "request_id": "65198875-13f6-43bb-b619-448cac149eb3"
    },
    "review_slate_note": [
     "Ensure this field has no more than 120 characters."
@@ -476,7 +476,7 @@
     "review_slate_note": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
    },
    "method": "PATCH",
-   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+   "path": "/api/v1/projects/6321b27e-20ef-4af7-ac0c-3a991d3b1c5d/"
   },
   "status": 400
  },
@@ -520,7 +520,7 @@
     "review_slates": false
    },
    "method": "PATCH",
-   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+   "path": "/api/v1/projects/6321b27e-20ef-4af7-ac0c-3a991d3b1c5d/"
   },
   "status": 200
  },
@@ -565,36 +565,36 @@
     "review_slates": true
    },
    "method": "PATCH",
-   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+   "path": "/api/v1/projects/6321b27e-20ef-4af7-ac0c-3a991d3b1c5d/"
   },
   "status": 200
  },
  "version_remade_with_slate": {
   "body": {
-   "artist_id": "b7850e74-4ded-4c67-9685-e06c0e563de7",
+   "artist_id": "9936623b-6631-4ddd-b52c-8360856997a1",
    "artist_name": "Sam Supervisor",
    "asset_id": null,
    "changelog": "",
    "code": "RSL_SH0010_COMP_V001",
    "color_space": "ACEScg",
-   "created_at": "2026-11-20T05:07:32.321441Z",
+   "created_at": "2026-11-20T08:25:28.649186Z",
    "department": "",
    "end_frame": null,
    "entity_code": "RSL_SH0010",
-   "entity_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "entity_id": "1174734c-a409-4dce-994e-1c77f8768837",
    "entity_name": "Hero walk",
    "entity_type": "Shot",
    "file_path": "",
    "file_size_mb": "0.00",
    "fps": "24.000",
    "frame_range": "",
-   "id": "0457d1be-e664-43c8-ab16-028614557c1f",
+   "id": "1b9c2ccd-897b-4f3e-b379-470d7d7c4300",
    "is_archived": false,
    "is_hero": false,
    "is_published": false,
    "notes": "",
    "project_code": "RSL",
-   "project_id": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "project_id": "6321b27e-20ef-4af7-ac0c-3a991d3b1c5d",
    "published_at": null,
    "published_by_id": null,
    "publishing_info": {},
@@ -603,19 +603,19 @@
     "attempts": 1,
     "color_space": "",
     "created_by": {
-     "id": "6c0db453-045e-4cb7-9279-f857b222bfef",
+     "id": "daf2c579-c129-4b8e-891f-3f9211c04447",
      "name": "user@example.test"
     },
-    "download_url": "/api/v1/review-media/17a81082-de52-4b18-8d98-7cbbd4159fdb/download/?token=SAMPLE",
+    "download_url": "/api/v1/review-media/c190f506-1db9-42b7-aa52-9abfdd66b650/download/?token=SAMPLE",
     "error_code": "",
     "error_message": "",
     "filmstrip_tiles": 48,
-    "filmstrip_url": "/api/v1/review-media/17a81082-de52-4b18-8d98-7cbbd4159fdb/filmstrip/?token=SAMPLE",
-    "finished_at": "2026-11-20T05:07:38.021139Z",
+    "filmstrip_url": "/api/v1/review-media/c190f506-1db9-42b7-aa52-9abfdd66b650/filmstrip/?token=SAMPLE",
+    "finished_at": "2026-11-20T08:25:34.413998Z",
     "frames_until": null,
-    "id": "17a81082-de52-4b18-8d98-7cbbd4159fdb",
+    "id": "c190f506-1db9-42b7-aa52-9abfdd66b650",
     "kind": "movie",
-    "links_expire_at": "2026-11-20T06:07:38.102373Z",
+    "links_expire_at": "2026-11-20T09:25:34.503255Z",
     "probe": {
      "burn_ins": false,
      "colour": "as_stored",
@@ -636,30 +636,32 @@
      "video_codec": "h264",
      "width": 1280
     },
-    "proxy_url": "/api/v1/review-media/17a81082-de52-4b18-8d98-7cbbd4159fdb/proxy/?token=SAMPLE",
+    "proxy_url": "/api/v1/review-media/c190f506-1db9-42b7-aa52-9abfdd66b650/proxy/?token=SAMPLE",
     "published_file_id": null,
-    "queued_at": "2026-11-20T05:07:35.125606Z",
-    "remake_of": "16461387-dce1-4269-949b-f3736f7b1115",
+    "queued_at": "2026-11-20T08:25:31.465881Z",
+    "remake_of": "7a934156-b6ea-4467-98a6-61d130b1d6a9",
     "sequence": null,
     "source": "upload",
     "source_name": "comp_v001.mov",
     "source_size": 687330,
-    "started_at": "2026-11-20T05:07:35.137689Z",
+    "started_at": "2026-11-20T08:25:31.477144Z",
     "status": "ready",
     "storage_readable": false,
-    "thumbnail_url": "/api/v1/review-media/17a81082-de52-4b18-8d98-7cbbd4159fdb/thumbnail/?token=SAMPLE",
-    "version_id": "0457d1be-e664-43c8-ab16-028614557c1f"
+    "thumbnail_url": "/api/v1/review-media/c190f506-1db9-42b7-aa52-9abfdd66b650/thumbnail/?token=SAMPLE",
+    "version_id": "1b9c2ccd-897b-4f3e-b379-470d7d7c4300"
    },
    "review_media_job": null,
-   "shot_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "shot_id": "1174734c-a409-4dce-994e-1c77f8768837",
    "source_file_url": "",
    "start_frame": 1001,
    "status": "Not Started",
    "tags": [],
-   "task_id": "826d70e8-1127-4ebd-b41b-ee0c153dbf33",
+   "task_code": "RSL_SH0010_COMP",
+   "task_id": "a8030dcd-a938-4553-ad30-1380f8ffb413",
+   "task_title": "Comp",
    "thumbnail_url": "",
-   "updated_at": "2026-11-20T05:07:32.321453Z",
-   "uuid": "0457d1be-e664-43c8-ab16-028614557c1f",
+   "updated_at": "2026-11-20T08:25:28.649196Z",
+   "uuid": "1b9c2ccd-897b-4f3e-b379-470d7d7c4300",
    "version_index": 1,
    "version_number": "v001",
    "video_url": ""
@@ -667,36 +669,36 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/versions/0457d1be-e664-43c8-ab16-028614557c1f/"
+   "path": "/api/v1/versions/1b9c2ccd-897b-4f3e-b379-470d7d7c4300/"
   },
   "status": 200
  },
  "version_sequence_with_slate": {
   "body": {
-   "artist_id": "b7850e74-4ded-4c67-9685-e06c0e563de7",
+   "artist_id": "9936623b-6631-4ddd-b52c-8360856997a1",
    "artist_name": "Sam Supervisor",
    "asset_id": null,
    "changelog": "",
    "code": "RSL_SH0010_COMP_V003",
    "color_space": "ACEScg",
-   "created_at": "2026-11-20T05:07:39.340152Z",
+   "created_at": "2026-11-20T08:25:35.720309Z",
    "department": "",
    "end_frame": null,
    "entity_code": "RSL_SH0010",
-   "entity_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "entity_id": "1174734c-a409-4dce-994e-1c77f8768837",
    "entity_name": "Hero walk",
    "entity_type": "Shot",
    "file_path": "",
    "file_size_mb": "0.00",
    "fps": "24.000",
    "frame_range": "",
-   "id": "03c49268-176b-4b3d-a2cf-0474dcc561d5",
+   "id": "5ed16538-2284-46df-a637-e79643e43c29",
    "is_archived": false,
    "is_hero": false,
    "is_published": false,
    "notes": "",
    "project_code": "RSL",
-   "project_id": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "project_id": "6321b27e-20ef-4af7-ac0c-3a991d3b1c5d",
    "published_at": null,
    "published_by_id": null,
    "publishing_info": {},
@@ -705,19 +707,19 @@
     "attempts": 1,
     "color_space": "",
     "created_by": {
-     "id": "6c0db453-045e-4cb7-9279-f857b222bfef",
+     "id": "daf2c579-c129-4b8e-891f-3f9211c04447",
      "name": "user@example.test"
     },
-    "download_url": "/api/v1/review-media/b6518d04-f363-4e80-b027-730ba45c80c9/download/?token=SAMPLE",
+    "download_url": "/api/v1/review-media/79823fbf-a98f-456b-b91a-8bad75765d19/download/?token=SAMPLE",
     "error_code": "",
     "error_message": "",
     "filmstrip_tiles": 12,
-    "filmstrip_url": "/api/v1/review-media/b6518d04-f363-4e80-b027-730ba45c80c9/filmstrip/?token=SAMPLE",
-    "finished_at": "2026-11-20T05:07:46.469642Z",
-    "frames_until": "2026-12-04T05:07:46.469642Z",
-    "id": "b6518d04-f363-4e80-b027-730ba45c80c9",
+    "filmstrip_url": "/api/v1/review-media/79823fbf-a98f-456b-b91a-8bad75765d19/filmstrip/?token=SAMPLE",
+    "finished_at": "2026-11-20T08:25:42.863788Z",
+    "frames_until": "2026-12-04T08:25:42.863788Z",
+    "id": "79823fbf-a98f-456b-b91a-8bad75765d19",
     "kind": "sequence",
-    "links_expire_at": "2026-11-20T06:07:48.310348Z",
+    "links_expire_at": "2026-11-20T09:25:44.857056Z",
     "probe": {
      "burn_ins": false,
      "colour": "ocio",
@@ -744,9 +746,9 @@
      "video_codec": "exr",
      "width": 640
     },
-    "proxy_url": "/api/v1/review-media/b6518d04-f363-4e80-b027-730ba45c80c9/proxy/?token=SAMPLE",
+    "proxy_url": "/api/v1/review-media/79823fbf-a98f-456b-b91a-8bad75765d19/proxy/?token=SAMPLE",
     "published_file_id": null,
-    "queued_at": "2026-11-20T05:07:42.472742Z",
+    "queued_at": "2026-11-20T08:25:38.835070Z",
     "remake_of": null,
     "sequence": {
      "extension": "exr",
@@ -758,22 +760,24 @@
     "source": "upload",
     "source_name": "rsl_comp.[1001-1012].exr",
     "source_size": 33251424,
-    "started_at": "2026-11-20T05:07:42.481158Z",
+    "started_at": "2026-11-20T08:25:38.843792Z",
     "status": "ready",
     "storage_readable": false,
-    "thumbnail_url": "/api/v1/review-media/b6518d04-f363-4e80-b027-730ba45c80c9/thumbnail/?token=SAMPLE",
-    "version_id": "03c49268-176b-4b3d-a2cf-0474dcc561d5"
+    "thumbnail_url": "/api/v1/review-media/79823fbf-a98f-456b-b91a-8bad75765d19/thumbnail/?token=SAMPLE",
+    "version_id": "5ed16538-2284-46df-a637-e79643e43c29"
    },
    "review_media_job": null,
-   "shot_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "shot_id": "1174734c-a409-4dce-994e-1c77f8768837",
    "source_file_url": "",
    "start_frame": 1001,
    "status": "Not Started",
    "tags": [],
-   "task_id": "826d70e8-1127-4ebd-b41b-ee0c153dbf33",
+   "task_code": "RSL_SH0010_COMP",
+   "task_id": "a8030dcd-a938-4553-ad30-1380f8ffb413",
+   "task_title": "Comp",
    "thumbnail_url": "",
-   "updated_at": "2026-11-20T05:07:39.340159Z",
-   "uuid": "03c49268-176b-4b3d-a2cf-0474dcc561d5",
+   "updated_at": "2026-11-20T08:25:35.720317Z",
+   "uuid": "5ed16538-2284-46df-a637-e79643e43c29",
    "version_index": 3,
    "version_number": "v003",
    "video_url": ""
@@ -781,36 +785,36 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/versions/03c49268-176b-4b3d-a2cf-0474dcc561d5/"
+   "path": "/api/v1/versions/5ed16538-2284-46df-a637-e79643e43c29/"
   },
   "status": 200
  },
  "version_silent_with_slate": {
   "body": {
-   "artist_id": "b7850e74-4ded-4c67-9685-e06c0e563de7",
+   "artist_id": "9936623b-6631-4ddd-b52c-8360856997a1",
    "artist_name": "Sam Supervisor",
    "asset_id": null,
    "changelog": "",
    "code": "RSL_SH0010_COMP_V002",
    "color_space": "ACEScg",
-   "created_at": "2026-11-20T05:07:39.306458Z",
+   "created_at": "2026-11-20T08:25:35.687024Z",
    "department": "",
    "end_frame": null,
    "entity_code": "RSL_SH0010",
-   "entity_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "entity_id": "1174734c-a409-4dce-994e-1c77f8768837",
    "entity_name": "Hero walk",
    "entity_type": "Shot",
    "file_path": "",
    "file_size_mb": "0.00",
    "fps": "24.000",
    "frame_range": "",
-   "id": "f4db9d84-6a6f-42b8-bfd0-4bd7d55798f9",
+   "id": "87c62740-53a9-4f9b-972e-53002ad7d134",
    "is_archived": false,
    "is_hero": false,
    "is_published": false,
    "notes": "",
    "project_code": "RSL",
-   "project_id": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "project_id": "6321b27e-20ef-4af7-ac0c-3a991d3b1c5d",
    "published_at": null,
    "published_by_id": null,
    "publishing_info": {},
@@ -819,19 +823,19 @@
     "attempts": 1,
     "color_space": "",
     "created_by": {
-     "id": "6c0db453-045e-4cb7-9279-f857b222bfef",
+     "id": "daf2c579-c129-4b8e-891f-3f9211c04447",
      "name": "user@example.test"
     },
-    "download_url": "/api/v1/review-media/c5e5906a-31a0-489e-bb72-9b43c621ecc9/download/?token=SAMPLE",
+    "download_url": "/api/v1/review-media/8462b759-6dda-469f-824a-8c7badbab104/download/?token=SAMPLE",
     "error_code": "",
     "error_message": "",
     "filmstrip_tiles": 48,
-    "filmstrip_url": "/api/v1/review-media/c5e5906a-31a0-489e-bb72-9b43c621ecc9/filmstrip/?token=SAMPLE",
-    "finished_at": "2026-11-20T05:07:42.264842Z",
+    "filmstrip_url": "/api/v1/review-media/8462b759-6dda-469f-824a-8c7badbab104/filmstrip/?token=SAMPLE",
+    "finished_at": "2026-11-20T08:25:38.628761Z",
     "frames_until": null,
-    "id": "c5e5906a-31a0-489e-bb72-9b43c621ecc9",
+    "id": "8462b759-6dda-469f-824a-8c7badbab104",
     "kind": "movie",
-    "links_expire_at": "2026-11-20T06:07:47.149401Z",
+    "links_expire_at": "2026-11-20T09:25:43.728415Z",
     "probe": {
      "burn_ins": false,
      "colour": "as_stored",
@@ -852,30 +856,32 @@
      "video_codec": "h264",
      "width": 1280
     },
-    "proxy_url": "/api/v1/review-media/c5e5906a-31a0-489e-bb72-9b43c621ecc9/proxy/?token=SAMPLE",
+    "proxy_url": "/api/v1/review-media/8462b759-6dda-469f-824a-8c7badbab104/proxy/?token=SAMPLE",
     "published_file_id": null,
-    "queued_at": "2026-11-20T05:07:39.395820Z",
+    "queued_at": "2026-11-20T08:25:35.777175Z",
     "remake_of": null,
     "sequence": null,
     "source": "upload",
     "source_name": "comp_v002.mov",
     "source_size": 668308,
-    "started_at": "2026-11-20T05:07:39.408747Z",
+    "started_at": "2026-11-20T08:25:35.789138Z",
     "status": "ready",
     "storage_readable": false,
-    "thumbnail_url": "/api/v1/review-media/c5e5906a-31a0-489e-bb72-9b43c621ecc9/thumbnail/?token=SAMPLE",
-    "version_id": "f4db9d84-6a6f-42b8-bfd0-4bd7d55798f9"
+    "thumbnail_url": "/api/v1/review-media/8462b759-6dda-469f-824a-8c7badbab104/thumbnail/?token=SAMPLE",
+    "version_id": "87c62740-53a9-4f9b-972e-53002ad7d134"
    },
    "review_media_job": null,
-   "shot_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "shot_id": "1174734c-a409-4dce-994e-1c77f8768837",
    "source_file_url": "",
    "start_frame": 1001,
    "status": "Not Started",
    "tags": [],
-   "task_id": "826d70e8-1127-4ebd-b41b-ee0c153dbf33",
+   "task_code": "RSL_SH0010_COMP",
+   "task_id": "a8030dcd-a938-4553-ad30-1380f8ffb413",
+   "task_title": "Comp",
    "thumbnail_url": "",
-   "updated_at": "2026-11-20T05:07:39.306471Z",
-   "uuid": "f4db9d84-6a6f-42b8-bfd0-4bd7d55798f9",
+   "updated_at": "2026-11-20T08:25:35.687036Z",
+   "uuid": "87c62740-53a9-4f9b-972e-53002ad7d134",
    "version_index": 2,
    "version_number": "v002",
    "video_url": ""
@@ -883,36 +889,36 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/versions/f4db9d84-6a6f-42b8-bfd0-4bd7d55798f9/"
+   "path": "/api/v1/versions/87c62740-53a9-4f9b-972e-53002ad7d134/"
   },
   "status": 200
  },
  "version_still": {
   "body": {
-   "artist_id": "b7850e74-4ded-4c67-9685-e06c0e563de7",
+   "artist_id": "9936623b-6631-4ddd-b52c-8360856997a1",
    "artist_name": "Sam Supervisor",
    "asset_id": null,
    "changelog": "",
    "code": "RSL_SH0010_FRAME_V001",
    "color_space": "ACEScg",
-   "created_at": "2026-11-20T05:07:39.368448Z",
+   "created_at": "2026-11-20T08:25:35.749110Z",
    "department": "",
    "end_frame": null,
    "entity_code": "RSL_SH0010",
-   "entity_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "entity_id": "1174734c-a409-4dce-994e-1c77f8768837",
    "entity_name": "Hero walk",
    "entity_type": "Shot",
    "file_path": "",
    "file_size_mb": "0.00",
    "fps": "24.000",
    "frame_range": "",
-   "id": "8b93854a-ecae-41bd-9eec-4811a658b3b8",
+   "id": "33cbdbe5-a26b-478d-a85d-ebdddf434385",
    "is_archived": false,
    "is_hero": false,
    "is_published": false,
    "notes": "",
    "project_code": "RSL",
-   "project_id": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "project_id": "6321b27e-20ef-4af7-ac0c-3a991d3b1c5d",
    "published_at": null,
    "published_by_id": null,
    "publishing_info": {},
@@ -921,19 +927,19 @@
     "attempts": 1,
     "color_space": "",
     "created_by": {
-     "id": "6c0db453-045e-4cb7-9279-f857b222bfef",
+     "id": "daf2c579-c129-4b8e-891f-3f9211c04447",
      "name": "user@example.test"
     },
-    "download_url": "/api/v1/review-media/3c149bef-41b6-4919-b08b-4ac304469160/download/?token=SAMPLE",
+    "download_url": "/api/v1/review-media/88f08e5e-b6f8-44ce-832f-3d9233db445c/download/?token=SAMPLE",
     "error_code": "",
     "error_message": "",
     "filmstrip_tiles": 0,
     "filmstrip_url": null,
-    "finished_at": "2026-11-20T05:07:47.073292Z",
+    "finished_at": "2026-11-20T08:25:43.518561Z",
     "frames_until": null,
-    "id": "3c149bef-41b6-4919-b08b-4ac304469160",
+    "id": "88f08e5e-b6f8-44ce-832f-3d9233db445c",
     "kind": "still",
-    "links_expire_at": "2026-11-20T06:07:49.298156Z",
+    "links_expire_at": "2026-11-20T09:25:45.840501Z",
     "probe": {
      "burn_ins": false,
      "colour": "as_stored",
@@ -954,30 +960,32 @@
      "video_codec": "png",
      "width": 640
     },
-    "proxy_url": "/api/v1/review-media/3c149bef-41b6-4919-b08b-4ac304469160/proxy/?token=SAMPLE",
+    "proxy_url": "/api/v1/review-media/88f08e5e-b6f8-44ce-832f-3d9233db445c/proxy/?token=SAMPLE",
     "published_file_id": null,
-    "queued_at": "2026-11-20T05:07:46.528808Z",
+    "queued_at": "2026-11-20T08:25:42.931779Z",
     "remake_of": null,
     "sequence": null,
     "source": "upload",
     "source_name": "frame_v001.png",
     "source_size": 30324,
-    "started_at": "2026-11-20T05:07:46.541215Z",
+    "started_at": "2026-11-20T08:25:42.946143Z",
     "status": "ready",
     "storage_readable": false,
-    "thumbnail_url": "/api/v1/review-media/3c149bef-41b6-4919-b08b-4ac304469160/thumbnail/?token=SAMPLE",
-    "version_id": "8b93854a-ecae-41bd-9eec-4811a658b3b8"
+    "thumbnail_url": "/api/v1/review-media/88f08e5e-b6f8-44ce-832f-3d9233db445c/thumbnail/?token=SAMPLE",
+    "version_id": "33cbdbe5-a26b-478d-a85d-ebdddf434385"
    },
    "review_media_job": null,
-   "shot_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "shot_id": "1174734c-a409-4dce-994e-1c77f8768837",
    "source_file_url": "",
    "start_frame": 1001,
    "status": "Not Started",
    "tags": [],
-   "task_id": "826d70e8-1127-4ebd-b41b-ee0c153dbf33",
+   "task_code": "RSL_SH0010_COMP",
+   "task_id": "a8030dcd-a938-4553-ad30-1380f8ffb413",
+   "task_title": "Comp",
    "thumbnail_url": "",
-   "updated_at": "2026-11-20T05:07:39.368455Z",
-   "uuid": "8b93854a-ecae-41bd-9eec-4811a658b3b8",
+   "updated_at": "2026-11-20T08:25:35.749117Z",
+   "uuid": "33cbdbe5-a26b-478d-a85d-ebdddf434385",
    "version_index": 4,
    "version_number": "v004",
    "video_url": ""
@@ -985,36 +993,36 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/versions/8b93854a-ecae-41bd-9eec-4811a658b3b8/"
+   "path": "/api/v1/versions/33cbdbe5-a26b-478d-a85d-ebdddf434385/"
   },
   "status": 200
  },
  "version_without_slate": {
   "body": {
-   "artist_id": "b7850e74-4ded-4c67-9685-e06c0e563de7",
+   "artist_id": "9936623b-6631-4ddd-b52c-8360856997a1",
    "artist_name": "Sam Supervisor",
    "asset_id": null,
    "changelog": "",
    "code": "RSL_SH0010_COMP_V001",
    "color_space": "ACEScg",
-   "created_at": "2026-11-20T05:07:32.321441Z",
+   "created_at": "2026-11-20T08:25:28.649186Z",
    "department": "",
    "end_frame": null,
    "entity_code": "RSL_SH0010",
-   "entity_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "entity_id": "1174734c-a409-4dce-994e-1c77f8768837",
    "entity_name": "Hero walk",
    "entity_type": "Shot",
    "file_path": "",
    "file_size_mb": "0.00",
    "fps": "24.000",
    "frame_range": "",
-   "id": "0457d1be-e664-43c8-ab16-028614557c1f",
+   "id": "1b9c2ccd-897b-4f3e-b379-470d7d7c4300",
    "is_archived": false,
    "is_hero": false,
    "is_published": false,
    "notes": "",
    "project_code": "RSL",
-   "project_id": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "project_id": "6321b27e-20ef-4af7-ac0c-3a991d3b1c5d",
    "published_at": null,
    "published_by_id": null,
    "publishing_info": {},
@@ -1023,19 +1031,19 @@
     "attempts": 1,
     "color_space": "",
     "created_by": {
-     "id": "6c0db453-045e-4cb7-9279-f857b222bfef",
+     "id": "daf2c579-c129-4b8e-891f-3f9211c04447",
      "name": "user@example.test"
     },
-    "download_url": "/api/v1/review-media/16461387-dce1-4269-949b-f3736f7b1115/download/?token=SAMPLE",
+    "download_url": "/api/v1/review-media/7a934156-b6ea-4467-98a6-61d130b1d6a9/download/?token=SAMPLE",
     "error_code": "",
     "error_message": "",
     "filmstrip_tiles": 48,
-    "filmstrip_url": "/api/v1/review-media/16461387-dce1-4269-949b-f3736f7b1115/filmstrip/?token=SAMPLE",
-    "finished_at": "2026-11-20T05:07:33.945690Z",
+    "filmstrip_url": "/api/v1/review-media/7a934156-b6ea-4467-98a6-61d130b1d6a9/filmstrip/?token=SAMPLE",
+    "finished_at": "2026-11-20T08:25:30.257705Z",
     "frames_until": null,
-    "id": "16461387-dce1-4269-949b-f3736f7b1115",
+    "id": "7a934156-b6ea-4467-98a6-61d130b1d6a9",
     "kind": "movie",
-    "links_expire_at": "2026-11-20T06:07:34.163907Z",
+    "links_expire_at": "2026-11-20T09:25:30.479685Z",
     "probe": {
      "burn_ins": false,
      "colour": "as_stored",
@@ -1056,30 +1064,32 @@
      "video_codec": "h264",
      "width": 1280
     },
-    "proxy_url": "/api/v1/review-media/16461387-dce1-4269-949b-f3736f7b1115/proxy/?token=SAMPLE",
+    "proxy_url": "/api/v1/review-media/7a934156-b6ea-4467-98a6-61d130b1d6a9/proxy/?token=SAMPLE",
     "published_file_id": null,
-    "queued_at": "2026-11-20T05:07:32.363169Z",
+    "queued_at": "2026-11-20T08:25:28.686167Z",
     "remake_of": null,
     "sequence": null,
     "source": "upload",
     "source_name": "comp_v001.mov",
     "source_size": 687330,
-    "started_at": "2026-11-20T05:07:32.380112Z",
+    "started_at": "2026-11-20T08:25:28.703526Z",
     "status": "ready",
     "storage_readable": false,
-    "thumbnail_url": "/api/v1/review-media/16461387-dce1-4269-949b-f3736f7b1115/thumbnail/?token=SAMPLE",
-    "version_id": "0457d1be-e664-43c8-ab16-028614557c1f"
+    "thumbnail_url": "/api/v1/review-media/7a934156-b6ea-4467-98a6-61d130b1d6a9/thumbnail/?token=SAMPLE",
+    "version_id": "1b9c2ccd-897b-4f3e-b379-470d7d7c4300"
    },
    "review_media_job": null,
-   "shot_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "shot_id": "1174734c-a409-4dce-994e-1c77f8768837",
    "source_file_url": "",
    "start_frame": 1001,
    "status": "Not Started",
    "tags": [],
-   "task_id": "826d70e8-1127-4ebd-b41b-ee0c153dbf33",
+   "task_code": "RSL_SH0010_COMP",
+   "task_id": "a8030dcd-a938-4553-ad30-1380f8ffb413",
+   "task_title": "Comp",
    "thumbnail_url": "",
-   "updated_at": "2026-11-20T05:07:32.321453Z",
-   "uuid": "0457d1be-e664-43c8-ab16-028614557c1f",
+   "updated_at": "2026-11-20T08:25:28.649196Z",
+   "uuid": "1b9c2ccd-897b-4f3e-b379-470d7d7c4300",
    "version_index": 1,
    "version_number": "v001",
    "video_url": ""
@@ -1087,7 +1097,7 @@
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/versions/0457d1be-e664-43c8-ab16-028614557c1f/"
+   "path": "/api/v1/versions/1b9c2ccd-897b-4f3e-b379-470d7d7c4300/"
   },
   "status": 200
  }

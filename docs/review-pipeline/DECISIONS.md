@@ -159,6 +159,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-23 Downloading a review copy | planned in [PLAN.md](PLAN.md#rp-23-downloading-a-review-copy); answered (Q-RP-105 to Q-RP-108 = A); committed `c58da79c`, merged into `develop` and `main`, released in v4.20.0 ([rp-23-verification.md](rp-23-verification.md)) |
 | RP-24 Waiting for my review | planned in [PLAN.md](PLAN.md#rp-24-waiting-for-my-review); answered (Q-RP-109 to Q-RP-112 = A); committed `3786373c`, merged into `develop` and `main`, released in v4.21.0 ([rp-24-verification.md](rp-24-verification.md)) |
 | RP-25 Slates on downloaded copies | planned in [PLAN.md](PLAN.md#rp-25-slates-on-downloaded-copies); answered (Q-RP-113 to Q-RP-116 = A); committed `fdebebb4`, merged into `develop` and `main`, released in v4.22.0 ([rp-25-verification.md](rp-25-verification.md)) |
+| RP-26 The task on the Versions list | planned in [PLAN.md](PLAN.md#rp-26-the-task-on-the-versions-list); answered (Q-RP-117 to Q-RP-119 = A, Q-RP-120 = B); committed `8363660c` on `feature/rp-26-version-task` ([rp-26-verification.md](rp-26-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
@@ -305,3 +306,20 @@ Decided while building, within the answers:
 - **The probe's `slate` and `slate_skipped` are shown** (C-RP-59), as RP-20 shows `grade_skipped`, so a client can say whether a download has a slate; the Download link's title says so.
 - **The copies read counts the slate** (`review_slates`, `slate_out_of_date`, C-RP-60), as RP-20 counts grades.
 - **Each line of the card is sized to fit** the copy's width (a long code, or a 120-character line), at most the usual size.
+
+## RP-26 answers
+
+The owner took every recommendation of [PLAN.md, RP-26 questions](PLAN.md#questions-before-rp-26-starts) on 2026-11-20 ("All A, build it"; Q-RP-120's recommendation is B).
+
+| ID | Answer | Meaning |
+|---|---|---|
+| Q-RP-117 | **A** | A version row says its task's code and title (`task_code`, `task_title`); not the task's assignee or reviewer. |
+| Q-RP-118 | **A** | `versions/?task_id=<id>` lists one task's versions; an unknown or malformed id gives no rows, never a 400. |
+| Q-RP-119 | **A** | `task_code` and `task_title` are `null` when the caller could not open the task (`task.view` and the task list's own scoping), worked out once per page. |
+| Q-RP-120 | **B** | No `shot_id` or `asset_id` filter: `entity_id` already narrows to one shot or asset. |
+
+Decided while building, within the answers:
+- **A version card names the task first** in its subtitle (before the department and project), so the queue reads the same as cards and as a table.
+- **An archived task counts as one the caller cannot open**: its versions show no task, as the task list shows no archived task.
+- **No Task filter on the Versions list itself:** a task's page lists its versions (the *Versions* tab), and a select of every task of every project would not scale.
+

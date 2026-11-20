@@ -14,7 +14,8 @@ import type { ShotGrade, StatusHistoryRow } from './work';
  *    with `version_id` on their own lists (C-RP-03, C-RP-04);
  *  - a comment, reply or annotation names the version of the review it is on, or null for the whole review
  *    (C-RP-05, C-RP-06); a reply is on its thread's version;
- *  - versions are filtered by `entity_type` + `entity_id` (`shot_id`, `task_id`, `asset_id`, `artist`, `is_hero` are ignored);
+ *  - versions are filtered by `entity_type` + `entity_id`, and by `task_id` since RP-26 (C-RP-61: an unknown or malformed id gives
+ *    no rows, never a 400); `shot_id`, `asset_id`, `artist` and `is_hero` are ignored;
  *  - approving what you produced is 403 `separation_of_duties` on every path (D-04);
  *  - `simulate` on a workflow is a stub and nothing executes automation rules (§ Phase 7 notes).
  */
@@ -51,6 +52,10 @@ export interface Version {
   shot_id: string | null;
   asset_id: string | null;
   task_id: string | null;
+  /** RP-26 (C-RP-61): the task's code and title, null without a task or when the caller could not open it (a client member,
+   * a role without `task.view`, another vendor's task); `task_id` is given either way. */
+  task_code: string | null;
+  task_title: string | null;
   frame_range: string;
   start_frame: number | null;
   end_frame: number | null;

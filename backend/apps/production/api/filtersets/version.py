@@ -1,3 +1,5 @@
+import uuid
+
 import django_filters
 from django.db.models import Q
 
@@ -23,10 +25,12 @@ class VersionFilterSet(BaseFilterSet):
     # RP-24 (C-RP-58): the versions waiting for the caller's review. Only "mine": the filter never takes
     # someone else's id, so it says nothing about who reviews what (Q-RP-110).
     to_review = django_filters.ChoiceFilter(choices=(("mine", "mine"),), method="filter_to_review")
+    # RP-26 (C-RP-61, Q-RP-118): one task's versions, read as tasks/?reviewer_id= is (never a 400).
+    task_id = django_filters.CharFilter(method="filter_task")
 
     class Meta:
         model = Version
-        fields = ["status", "project", "project_id", "entity_type", "entity_id", "is_published", "is_archived", "department", "to_review"]
+        fields = ["status", "project", "project_id", "entity_type", "entity_id", "is_published", "is_archived", "department", "to_review", "task_id"]
 
 
     def filter_project(self, queryset, name, value):
@@ -53,6 +57,15 @@ class VersionFilterSet(BaseFilterSet):
             task__reviewer=user,
             task__is_deleted=False,
         ).exclude(task__status=TaskStatus.ARCHIVED)
+
+    def filter_task(self, queryset, name, value):
+        """The versions of one task; an unknown or malformed id gives no rows (Q-RP-118)."""
+        if not value:
+            return queryset
+        try:
+            return queryset.filter(task_id=uuid.UUID(str(value)))
+        except (ValueError, TypeError):
+            return queryset.none()
 
     def filter_search(self, queryset, name, value):
         if not value:
