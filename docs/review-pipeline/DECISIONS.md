@@ -159,7 +159,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-23 Downloading a review copy | planned in [PLAN.md](PLAN.md#rp-23-downloading-a-review-copy); answered (Q-RP-105 to Q-RP-108 = A); committed `c58da79c`, merged into `develop` and `main`, released in v4.20.0 ([rp-23-verification.md](rp-23-verification.md)) |
 | RP-24 Waiting for my review | planned in [PLAN.md](PLAN.md#rp-24-waiting-for-my-review); answered (Q-RP-109 to Q-RP-112 = A); committed `3786373c`, merged into `develop` and `main`, released in v4.21.0 ([rp-24-verification.md](rp-24-verification.md)) |
 | RP-25 Slates on downloaded copies | planned in [PLAN.md](PLAN.md#rp-25-slates-on-downloaded-copies); answered (Q-RP-113 to Q-RP-116 = A); committed `fdebebb4`, merged into `develop` and `main`, released in v4.22.0 ([rp-25-verification.md](rp-25-verification.md)) |
-| RP-26 The task on the Versions list | planned in [PLAN.md](PLAN.md#rp-26-the-task-on-the-versions-list); answered (Q-RP-117 to Q-RP-119 = A, Q-RP-120 = B); committed `8363660c` on `feature/rp-26-version-task` ([rp-26-verification.md](rp-26-verification.md)) |
+| RP-26 The task on the Versions list | planned in [PLAN.md](PLAN.md#rp-26-the-task-on-the-versions-list); answered (Q-RP-117 to Q-RP-119 = A, Q-RP-120 = B); committed `8363660c`, merged into `develop` and `main`, released in v4.23.0 ([rp-26-verification.md](rp-26-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
