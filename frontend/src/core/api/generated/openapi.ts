@@ -26848,6 +26848,13 @@ export interface components {
              * @enum {string|null}
              */
             grade_skipped: "no_grading_space" | "colour_config_unavailable" | null;
+            slate: boolean;
+            /**
+             * @description * `slate_failed` - slate_failed
+             *     * `font_missing` - font_missing
+             * @enum {string|null}
+             */
+            slate_skipped: "slate_failed" | "font_missing" | null;
         };
         ReviewMediaSequence: {
             name: string;
@@ -29862,6 +29869,8 @@ export interface components {
             readonly asset_id: string | null;
             /** Format: uuid */
             readonly task_id: string | null;
+            readonly task_code: string | null;
+            readonly task_title: string | null;
             department?: string;
             /** Format: uuid */
             readonly artist_id: string | null;
@@ -29941,6 +29950,8 @@ export interface components {
             readonly asset_id: string | null;
             /** Format: uuid */
             readonly task_id: string | null;
+            readonly task_code: string | null;
+            readonly task_title: string | null;
             department?: string;
             /** Format: uuid */
             readonly artist_id: string | null;
@@ -56155,6 +56166,7 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 status?: string;
+                task_id?: string;
                 /** @description * `mine` - mine */
                 to_review?: "mine";
             };
@@ -56444,6 +56456,7 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 status?: string;
+                task_id?: string;
                 /** @description * `mine` - mine */
                 to_review?: "mine";
             };
@@ -56563,6 +56576,7 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 status?: string;
+                task_id?: string;
                 /** @description * `mine` - mine */
                 to_review?: "mine";
             };

@@ -1633,7 +1633,7 @@ ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no ne
 
 ## RP-25 Slates on downloaded copies
 
-**Status:** planned 2026-11-20 on `feature/rp-25-download-slates`, off `develop` at `a9064a24` (v4.21.0); answered the same day (Q-RP-113 to Q-RP-116 = A, [DECISIONS.md](DECISIONS.md#rp-25-answers)); committed `fdebebb4` ([rp-25-verification.md](rp-25-verification.md); contracts C-RP-59 and C-RP-60). RP-14 declined slates (Q-RP-63 = A) "until clients get review copies as files"; RP-23 made that so. Chosen over the task on the Versions list, someone else's review queue, exporting grades and Display P3 or HDR copies.
+**Status:** planned 2026-11-20 on `feature/rp-25-download-slates`, off `develop` at `a9064a24` (v4.21.0); answered the same day (Q-RP-113 to Q-RP-116 = A, [DECISIONS.md](DECISIONS.md#rp-25-answers)); committed `fdebebb4`, merged into `develop` and `main`, released in v4.22.0 ([rp-25-verification.md](rp-25-verification.md); contracts C-RP-59 and C-RP-60). RP-14 declined slates (Q-RP-63 = A) "until clients get review copies as files"; RP-23 made that so. Chosen over the task on the Versions list, someone else's review queue, exporting grades and Display P3 or HDR copies.
 
 **Goal.** A review copy that leaves StudioHub says what it is. On a project that asks for it, the **downloaded** movie starts with a short slate (the project, the shot or asset, the version, the task, the artist, the frames, the date, and the project's own line). **Playback in StudioHub is unchanged**: the player, the timeline, the filmstrip and every stored frame number still use the copy without a slate.
 
@@ -1700,3 +1700,60 @@ The slate in the copy that plays; the switch not checked; a still given a slate;
 ### Gates
 
 ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production, and `apps/core/tests/test_bootstrap.py` for the migration); frontend typecheck, Biome, tests, build, unreachable check; captures and the live run (`SYNC_LIVE_MEDIA=1`); after the merge, CI green.
+
+## RP-26 The task on the Versions list
+
+**Status:** planned 2026-11-20 on `feature/rp-26-version-task`, off `develop` at `680d51c6` (v4.22.0); answered the same day (Q-RP-117 to Q-RP-119 = A, Q-RP-120 = B, [DECISIONS.md](DECISIONS.md#rp-26-answers)); committed `8363660c` ([rp-26-verification.md](rp-26-verification.md); contract C-RP-61). Left out by RP-21 (the task only on the version's own page) and RP-24 (the queue lists versions without saying which task waits). Chosen over exporting grades as `.ccc` or EDL, someone else's review queue, and Display P3 or HDR copies.
+
+**Goal.** Every list of versions says which task each version is for, and can be narrowed to one task; a task's page lists its versions. Nothing is shown to someone who could not open the task.
+
+### Why (what is there today)
+
+- **The list has no task.** The Versions list shows Version, For, Department, Artist, State and Status (`versions.tsx`). A version row carries only `task_id`; the task's code and title appear only on the version's own page, read one version at a time (`VersionTaskFacts`, RP-21).
+- **RP-24's queue needs it.** *To review: Mine* lists the versions waiting on tasks you review, but no row says which task; a reviewer of several tasks on one shot cannot tell them apart without opening each.
+- **The list cannot be narrowed to a task.** `versions/` takes `entity_id`, `department` and `to_review`, but no `task_id`; `versions.tsx` notes that the server ignores it. A task's page (`TaskWorkspace.tsx`: Time, Status history, Changes) has no versions at all.
+- **The pieces exist.** The list's query already loads the task (`VersionSelector.get_queryset` selects `task`), so its code and title cost no query per row. The task list's own scoping (`scope_by_request`, project membership, the external members' narrowing, C-RP-24) says which tasks a caller may open, and can be applied to a page's task ids in one query.
+
+### Work packages
+
+| WP | Change | Files |
+|---|---|---|
+| 26.1 | **The task on a version row** (Q-RP-117, Q-RP-119). Version answers (list, detail, the project-scoped list) gain read-only `task_code` and `task_title`, and with Q-RP-117 A nothing more. They are filled only when the caller may open that task (the task list's scoping and `task.view`), worked out once per page; otherwise `null`, like a version without a task. `task_id` stays as it is. | `api/serializers/version/base.py`, a selector for the readable task ids, the version viewsets |
+| 26.2 | **`versions/?task_id=<id>`** (Q-RP-118). The versions of one task, read as `tasks/?reviewer_id=` is read: an unknown or malformed id gives no rows, never a 400; it narrows what the caller already reads and combines with the other filters. Answers say nothing about a task the caller cannot open beyond the versions they already read. | `api/filtersets/version.py` |
+| 26.3 | **Frontend** (Q-RP-117, Q-RP-120). The Versions list gains a *Task* column (the code, linking to the task, with the title as its tooltip; "—" when `null`), in the export too. A task's page gains a *Versions* tab: its versions, newest first, through `?task_id=`, each linking to the version, for whoever holds `version.view`. With Q-RP-120 B, no `shot_id` filter. | `review/versions.tsx`, `work/TaskWorkspace.tsx`, `api/production/review.ts` and row keys |
+| 26.4 | **Capture, live, docs.** A capture: a supervisor, a client member in a review and a role without `task.view` reading the same versions; versions with and without a task; the filter with a known, an unknown and a malformed id. A live file. CONTRACTS (C-RP-61), DECISIONS, `rp-26-verification.md`. | `docs/` |
+
+### Questions before RP-26 starts
+
+| ID | Question | Options | Recommendation |
+|---|---|---|---|
+| Q-RP-117 | What does a version row say about its task? | A: **its code and title** (`task_code`, `task_title`). B: A, plus the task's assignee and reviewer. C: only a link built from `task_id`, no new fields. | **A**. The code and title tell tasks apart, which is what the queue lacks. The assignee and reviewer are on the version's page since RP-21, and adding them to every row puts people's names in every list and export for every reader of versions. C still leaves the reader with ids. |
+| Q-RP-118 | Narrowing the list to one task? | A: **`versions/?task_id=<id>`**, an unknown or malformed id giving no rows, never a 400 (as `reviewer_id`, RP-24). B: no filter; the column only. | **A**. A task's page needs it to list its versions, and a pipeline tool can use it. It reads as the other id filters do, and only narrows rows the caller already reads. |
+| Q-RP-119 | A task the caller may not open (a client member, a role without `task.view`, a vendor member and another vendor's task)? | A: **`task_code` and `task_title` are `null`** for that row, worked out once per page from the task list's own scoping. B: always shown, as part of the version. C: shown to everyone who holds `task.view`, without the per-task scoping. | **A**. It keeps RP-21's rule (a client member never sees the studio's tasks) and C-RP-24's narrowing for vendor members; B leaks task names into client reviews, and C into other vendors' work. One query per page, not per row. |
+| Q-RP-120 | `shot_id` and `asset_id` filters too? | A: yes, both. B: **no**; `entity_id` already narrows to one shot or asset. | **B**. `entity_id` with `entity_type` does it today, and a third way to say the same thing is one more thing to keep in step. |
+
+Also decided in the plan, without a question:
+- **No migration, permission code, setting or route.** The fields are read from the version's task, which the list already loads.
+- **The version form's Task picker is unchanged**, and `task_id` keeps its meaning.
+- **No ADR:** who reads what does not change (Q-RP-119 A keeps the task list's rules).
+
+### Not in RP-26
+
+- The task's assignee or reviewer on a version row (Q-RP-117 B); a version count on the Tasks list.
+- `shot_id`/`asset_id` filters (Q-RP-120 B); grouping the Versions list by task.
+
+### Tests (targeted, test database)
+
+- **26.1:** the fields for a supervisor; `null` for a version without a task, for a client member in a review, for a role without `task.view`, and for a vendor member on another vendor's task; the number of queries does not grow with the page.
+- **26.2:** the filter with a known, an unknown and a malformed id; combined with `to_review=mine` and the project filter; a task the caller cannot open gives no rows they could not already read.
+- **26.3 (from captured samples):** the column and its link, "—" when `null`, the export, the task page's tab.
+- **Live:** a supervisor's queue shows each waiting version's task; the task page lists its versions.
+
+### Mutation checks
+
+The fields shown without the per-task check; shown without `task.view`; the filter ignored; a malformed id answering 400; the column always "—"; the tab listing every version of the project.
+
+### Gates
+
+ruff check, `manage.py check`, `makemigrations --check`, basedpyright with no new errors in changed files, targeted backend tests (production); frontend typecheck, Biome, tests, build, unreachable check; the capture and the live run; after the merge, CI green.
+

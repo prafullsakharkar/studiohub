@@ -1,6 +1,6 @@
 # RP-25 verification: slates on downloaded copies
 
-Built 2026-11-20 on `feature/rp-25-download-slates`, off `develop` at `a9064a24` (v4.21.0), with every recommendation of Q-RP-113 to Q-RP-116 ([DECISIONS.md](DECISIONS.md#rp-25-answers)). Committed `fdebebb4`. Contracts C-RP-59 and C-RP-60 ([CONTRACTS.md](CONTRACTS.md#rp-25-slates-on-downloaded-copies)). One migration (`production` `0018`, additive); no new route, permission code or setting, and no ADR (who may download is RP-23's).
+Built 2026-11-20 on `feature/rp-25-download-slates`, off `develop` at `a9064a24` (v4.21.0), with every recommendation of Q-RP-113 to Q-RP-116 ([DECISIONS.md](DECISIONS.md#rp-25-answers)). Committed `fdebebb4`; merged into `develop` (`9a8a9f88`) and `main` (`6baa3da5`), released in v4.22.0. CI was green on both on the first push (backend 7,965 passed). Contracts C-RP-59 and C-RP-60 ([CONTRACTS.md](CONTRACTS.md#rp-25-slates-on-downloaded-copies)). One migration (`production` `0018`, additive); no new route, permission code or setting, and no ADR (who may download is RP-23's).
 
 Why: RP-23 lets copies leave StudioHub as files, but a downloaded copy was the copy that plays, so once renamed or forwarded nothing in it said which show, shot or version it was, or that it was confidential. A slate inside the copy would shift every stored frame number (Q-RP-63), so only the downloaded file gets one.
 
@@ -89,7 +89,6 @@ Backend: 12 mutations, 11 failed the tests. "A still given a slate" (the job's g
 
 - A slate inside the copy that plays; per-viewer or forensic marks; who downloaded on the slate (Q-RP-114 C).
 - Slates on stills; a studio-wide template or logo; downloading several copies at once.
-- The pre-deploy checklist line (the migration; disk: about one more copy's size per slated copy) is written with the release.
 - Left out of the commit, as before: `docs/sync/tools/run_role_smoke.sh`, `docs/sync/phase-34-verification.md`, `frontend/src/test/live/newScreens.live.test.tsx`, `spikes/`, `scripts/ATOM API.yaml`.
 
 ## Files

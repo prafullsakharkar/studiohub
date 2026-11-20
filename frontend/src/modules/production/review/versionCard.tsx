@@ -33,7 +33,8 @@ export function versionCard(row: Version, ctx: CardContext) {
       }
       bottomRight={row.frame_range || row.resolution ? <CardChip>{row.frame_range || row.resolution}</CardChip> : undefined}
       title={row.code}
-      subtitle={[row.department, row.project_code].filter(Boolean).join(' • ') || undefined}
+      // RP-26: the task first, so a reviewer of several tasks on one shot tells the versions apart
+      subtitle={[row.task_code, row.department, row.project_code].filter(Boolean).join(' • ') || undefined}
       footerLeft={
         <>
           <span className="inline-flex items-center gap-1 truncate">

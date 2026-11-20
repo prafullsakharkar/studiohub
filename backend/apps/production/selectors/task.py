@@ -1,3 +1,7 @@
+from collections.abc import Iterable
+from typing import Any
+from uuid import UUID
+
 from django.db.models import CharField, F, QuerySet, Value
 from django.db.models.functions import Coalesce
 
@@ -19,3 +23,17 @@ class TaskSelector(ProductionBaseSelector):
             )
             .all()
         )
+
+    @classmethod
+    def readable_ids(cls, *, request: Any, task_ids: Iterable[UUID | None]) -> set[UUID]:
+        """
+        RP-26 (C-RP-61, Q-RP-119): which of ``task_ids`` the caller could open, as the task list scopes
+        them (project membership, the external members' narrowing). ``task.view`` is the caller's
+        own check. One query, whatever the number of ids.
+        """
+        ids = {task_id for task_id in task_ids if task_id is not None}
+        if not ids:
+            return set()
+        tasks = cls.scope_by_project_membership(Task.objects.filter(pk__in=ids), request=request)
+        return set(tasks.values_list("pk", flat=True))  # pyright: ignore[reportUnknownArgumentType]
+

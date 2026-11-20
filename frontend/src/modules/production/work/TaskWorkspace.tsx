@@ -3,9 +3,11 @@ import type React from 'react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { tasksApi, timelogsApi } from '@/api/production/work';
+import { versionsApi } from '@/api/production/review';
 import type { Task } from '@/api/production/work';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { EntityHistory } from '@/components/history/EntityHistory';
+import { formatDateTime } from '@/core/locale/studioLocale';
 import { useCan } from '@/core/permissions/useCan';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
@@ -15,9 +17,11 @@ import { StatusMenu } from './StatusMenu';
 import { TaskLink, TaskTimeCell } from './tasks';
 import { formatHours } from './format';
 
-type TabId = 'time' | 'status' | 'history';
-const TABS: ReadonlyArray<{ id: TabId; label: string }> = [
+type TabId = 'time' | 'versions' | 'status' | 'history';
+const TABS: ReadonlyArray<{ id: TabId; label: string; permission?: string }> = [
   { id: 'time', label: 'Time' },
+  // RP-26 (C-RP-61): this task's versions, through versions/?task_id=
+  { id: 'versions', label: 'Versions', permission: 'version.view' },
   { id: 'status', label: 'Status history' },
   { id: 'history', label: 'Changes' },
 ];
@@ -63,9 +67,46 @@ const TaskTime: React.FC<{ taskId: string }> = ({ taskId }) => {
   );
 };
 
+/** RP-26 (C-RP-61): the versions made for this task, newest first, each linking to its page. */
+const TaskVersions: React.FC<{ taskId: string }> = ({ taskId }) => {
+  const list = usePaginatedList({ queryKey: [...versionsApi.keys.lists(), 'task', taskId], fetchPage: versionsApi.list, filters: { task_id: taskId }, ordering: '-created_at' });
+  return (
+    <QueryBoundary isLoading={list.isLoading} error={list.rows.length === 0 ? list.error : null} onRetry={() => void list.refetch()} entityName="versions" isEmpty={list.rows.length === 0} empty={{ title: 'No versions', description: 'Versions made for this task show here.' }}>
+      <table aria-label="Versions of this task" className="w-full text-xs">
+        <thead className="text-left text-slate-400">
+          <tr>
+            <th className="py-1 pr-3">Version</th>
+            <th className="py-1 pr-3">Artist</th>
+            <th className="py-1 pr-3">Status</th>
+            <th className="py-1">Made</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-800">
+          {list.rows.map((version) => (
+            <tr key={version.id}>
+              <td className="py-1.5 pr-3">
+                <Link to={`/versions/${version.id}`} className="text-cyan-300 hover:underline">
+                  {version.code} · {version.version_number}
+                </Link>
+              </td>
+              <td className="py-1.5 pr-3">{version.artist_name || '—'}</td>
+              <td className="py-1.5 pr-3">
+                <StatusBadge status={version.status} />
+              </td>
+              <td className="py-1.5">{formatDateTime(version.created_at)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </QueryBoundary>
+  );
+};
+
 export const TaskWorkspace: React.FC = () => {
   const { taskId = '' } = useParams();
   const canUpdate = useCan('task.update');
+  const canViewVersions = useCan('version.view');
+  const tabs = TABS.filter((t) => t.permission !== 'version.view' || canViewVersions);
   const [tab, setTab] = useState<TabId>('time');
   const task = useQuery({ queryKey: tasksApi.keys.detail(taskId), queryFn: ({ signal }) => tasksApi.get(taskId, signal), enabled: Boolean(taskId) });
   const row = task.data as Task | undefined;
@@ -113,13 +154,14 @@ export const TaskWorkspace: React.FC = () => {
             {row.description && <p className="text-sm text-slate-300 whitespace-pre-wrap">{row.description}</p>}
 
             <div role="tablist" aria-label="Task sections" className="flex gap-1 border-b border-slate-800">
-              {TABS.map((t) => (
+              {tabs.map((t) => (
                 <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)} className={`px-3 py-2 text-xs font-semibold ${tab === t.id ? 'text-cyan-300 border-b-2 border-cyan-400' : 'text-slate-400 hover:text-slate-200'}`}>
                   {t.label}
                 </button>
               ))}
             </div>
             {tab === 'time' && <TaskTime taskId={row.id} />}
+            {tab === 'versions' && canViewVersions && <TaskVersions taskId={row.id} />}
             {tab === 'status' && <StatusHistory queryKey={[...tasksApi.keys.detail(row.id), 'status-history']} fetch={(signal) => tasksApi.statusHistory(row.id, signal)} />}
             {tab === 'history' && <EntityHistory targetType="Task" targetId={row.id} />}
           </>
