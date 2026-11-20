@@ -21,6 +21,14 @@ const sequences = (n: number) => `${formatNumber(n)} image ${n === 1 ? 'sequence
 /** The sentence about the movies and stills that differ from the project's settings (C-RP-38; colour, RP-15). */
 export function outOfDateText(c: ReviewCopies): string {
   const verb = c.out_of_date === 1 ? 'was' : 'were';
+  // RP-25 (C-RP-60): the slate is the only one counted, so the sentence can name it alone
+  const total = c.out_of_date + c.sequences_out_of_date;
+  if (c.slate_out_of_date > 0 && c.slate_out_of_date === total && c.grade_out_of_date === 0 && c.colour_out_of_date === 0 && c.differing.every((row) => row.why.length === 1)) {
+    return c.review_slates
+      ? `${copies(c.out_of_date)} ${verb} made without the slate; the project now puts one before downloads.`
+      : `${copies(c.out_of_date)} ${verb} made with a slate; the project now leaves it off.`;
+  }
+  if (c.slate_out_of_date > 0) return `${copies(c.out_of_date)} ${verb} made with other slate, ${c.grade_out_of_date > 0 ? 'shot grade, ' : ''}colour or burn-in settings than the project has now.`;
   // RP-20 (C-RP-53): shots' grades
   if (c.grade_out_of_date > 0) return `${copies(c.out_of_date)} ${verb} made with other shot grades, colour or burn-in settings than the project has now.`;
   if (c.colour_out_of_date > 0) return `${copies(c.out_of_date)} ${verb} made with other colour or burn-in settings than the project has now.`;
@@ -67,7 +75,7 @@ export function remadeText(r: ReviewCopiesRemade): string {
   return parts.join(' ');
 }
 
-const WHY_TEXT: Record<ReviewCopyDiffering['why'][number], string> = { burn_ins: 'burn-ins', colour: 'colour', grade: 'grade' };
+const WHY_TEXT: Record<ReviewCopyDiffering['why'][number], string> = { burn_ins: 'burn-ins', colour: 'colour', grade: 'grade', slate: 'slate' };
 
 /** What differs: `burn-ins`, `burn-ins and colour`, `burn-ins, colour and grade` (the shot's, RP-20). */
 const whyText = (why: ReviewCopyDiffering['why']): string => {
@@ -188,7 +196,7 @@ export const ReviewCopiesNotice: React.FC<{ project: Project }> = ({ project }) 
       <ConfirmDialog
         isOpen={confirmKeep}
         title="Keep copies as they are"
-        message={`${copies(unremakable.length)} cannot be remade. Keep ${unremakable.length === 1 ? 'it' : 'them'} as ${unremakable.length === 1 ? 'it is' : 'they are'}? ${unremakable.length === 1 ? 'It' : 'They'} will count again if the project's burn-ins, colour space, view or look change.`}
+        message={`${copies(unremakable.length)} cannot be remade. Keep ${unremakable.length === 1 ? 'it' : 'them'} as ${unremakable.length === 1 ? 'it is' : 'they are'}? ${unremakable.length === 1 ? 'It' : 'They'} will count again if the project's burn-ins, colour space, view, look or slate change.`}
         confirmLabel="Keep as they are"
         onConfirm={keep}
         onClose={() => setConfirmKeep(false)}

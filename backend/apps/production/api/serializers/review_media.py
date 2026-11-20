@@ -16,7 +16,8 @@ from apps.production.transcode import sequence as frames
 
 #: what the probe shows (``frame_rate``, the exact rational, stays internal)
 PROBE_KEYS = ("width", "height", "fps", "frames", "duration_seconds", "video_codec", "has_audio")
-#: added by RP-12 (C-RP-32), RP-15 (C-RP-40) and RP-20 (C-RP-53), with what a row made before them answers
+#: added by RP-12 (C-RP-32), RP-15 (C-RP-40), RP-20 (C-RP-53) and RP-25 (C-RP-59), with what a row made
+#: before them answers
 PROBE_DEFAULTS = {
     "first_frame": None,
     "last_frame": None,
@@ -28,6 +29,9 @@ PROBE_DEFAULTS = {
     "grade": None,
     "grade_source": "",
     "grade_skipped": None,
+    # RP-25 (C-RP-59)
+    "slate": False,
+    "slate_skipped": None,
 }
 
 #: RP-18 (C-RP-49): where a copy is read from
@@ -69,6 +73,11 @@ class ReviewMediaProbeSerializer(serializers.Serializer[Any]):
     grade_source = serializers.CharField(allow_blank=True)
     grade_skipped = serializers.ChoiceField(
         choices=("no_grading_space", "colour_config_unavailable"), allow_null=True
+    )
+    #: RP-25 (C-RP-59): whether the download starts with a slate, or why it does not
+    slate = serializers.BooleanField()
+    slate_skipped = serializers.ChoiceField(
+        choices=("slate_failed", "font_missing"), allow_null=True
     )
 
 
@@ -299,6 +308,9 @@ class ReviewCopiesSerializer(serializers.Serializer[Any]):
     #: RP-20 (C-RP-53)
     review_grades = serializers.BooleanField()
     grade_out_of_date = serializers.IntegerField()
+    #: RP-25 (C-RP-60)
+    review_slates = serializers.BooleanField()
+    slate_out_of_date = serializers.IntegerField()
     differing = ReviewCopyDifferingSerializer(many=True)
     differing_more = serializers.IntegerField()
 

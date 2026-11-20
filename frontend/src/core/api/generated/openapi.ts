@@ -20767,6 +20767,10 @@ export interface components {
              * @enum {string}
              */
             review_downloads?: "internal" | "everyone" | "nobody";
+            /** @description When on, movie and sequence review copies made from now on are downloaded with a two-second slate first; playback is unchanged (review pipeline RP-25, C-RP-59). */
+            review_slates?: boolean;
+            /** @description One line drawn on the slate, e.g. a confidentiality notice (RP-25, C-RP-59). */
+            review_slate_note?: string;
             review_source_root?: string;
             review_source_folder?: string;
             /** Format: date */
@@ -25230,6 +25234,10 @@ export interface components {
              * @enum {string}
              */
             review_downloads?: "internal" | "everyone" | "nobody";
+            /** @description When on, movie and sequence review copies made from now on are downloaded with a two-second slate first; playback is unchanged (review pipeline RP-25, C-RP-59). */
+            review_slates?: boolean;
+            /** @description One line drawn on the slate, e.g. a confidentiality notice (RP-25, C-RP-59). */
+            review_slate_note?: string;
             /** Format: date */
             start_date?: string | null;
             /** Format: date */
@@ -25318,6 +25326,10 @@ export interface components {
              * @enum {string}
              */
             review_downloads?: "internal" | "everyone" | "nobody";
+            /** @description When on, movie and sequence review copies made from now on are downloaded with a two-second slate first; playback is unchanged (review pipeline RP-25, C-RP-59). */
+            review_slates?: boolean;
+            /** @description One line drawn on the slate, e.g. a confidentiality notice (RP-25, C-RP-59). */
+            review_slate_note?: string;
             review_source_root?: string;
             review_source_folder?: string;
             /** Format: date */
@@ -25418,6 +25430,10 @@ export interface components {
              * @enum {string}
              */
             review_downloads?: "internal" | "everyone" | "nobody";
+            /** @description When on, movie and sequence review copies made from now on are downloaded with a two-second slate first; playback is unchanged (review pipeline RP-25, C-RP-59). */
+            review_slates?: boolean;
+            /** @description One line drawn on the slate, e.g. a confidentiality notice (RP-25, C-RP-59). */
+            review_slate_note?: string;
             review_source_root?: string;
             review_source_folder?: string;
             /** Format: date */
@@ -25714,6 +25730,10 @@ export interface components {
              * @enum {string}
              */
             review_downloads?: "internal" | "everyone" | "nobody";
+            /** @description When on, movie and sequence review copies made from now on are downloaded with a two-second slate first; playback is unchanged (review pipeline RP-25, C-RP-59). */
+            review_slates?: boolean;
+            /** @description One line drawn on the slate, e.g. a confidentiality notice (RP-25, C-RP-59). */
+            review_slate_note?: string;
             review_source_root?: string;
             review_source_folder?: string;
             /** Format: date */
@@ -26524,6 +26544,8 @@ export interface components {
             colour_out_of_date: number;
             review_grades: boolean;
             grade_out_of_date: number;
+            review_slates: boolean;
+            slate_out_of_date: number;
             differing: components["schemas"]["ReviewCopyDiffering"][];
             differing_more: number;
         };

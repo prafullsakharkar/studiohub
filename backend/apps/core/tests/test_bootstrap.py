@@ -277,7 +277,8 @@ class TestFreshInitialMigrations:
             # is against (RP-16, WP 16.1 and 16.4); its 0014 the published file a copy is read from
             # (RP-17, WP 17.2); its 0015 a project's review folder on studio storage (RP-18,
             # WP 18.1); its 0016 the per-shot grades and their project switch (RP-20, WP 20.1); its
-            # 0017 who may download review copies, on the projects table (RP-23, WP 23.1).
+            # 0017 who may download review copies, on the projects table (RP-23, WP 23.1); its 0018
+            # the slate before downloaded copies and its line, on the projects table (RP-25, WP 25.1).
             # notifications' 0002 adds the review kinds and preferences (RP-11), its 0003 the delivery,
             # publishing and milestone kinds (RP-13, WP 13.3), on a table deployed databases already hold;
             # its 0004 the kind for a task's reviewer (RP-19, WP 19.1).
@@ -286,7 +287,7 @@ class TestFreshInitialMigrations:
                 "deliveries": 3,
                 "identity": 4,
                 "notifications": 4,
-                "production": 17,
+                "production": 18,
             }.get(app, 2)
             assert len(names) <= limit, (app, names)
 

@@ -343,6 +343,9 @@ class TestProcessing:
             "grade": None,
             "grade_source": "",
             "grade_skipped": None,
+            # RP-25 (C-RP-59): nor slated
+            "slate": False,
+            "slate_skipped": None,
         }
         folder = media.directory
         assert (media.proxy_path, media.thumbnail_path, media.filmstrip_path) == (
@@ -783,6 +786,9 @@ class TestServing:
                 "grade",
                 "grade_source",
                 "grade_skipped",
+                # RP-25 (C-RP-59)
+                "slate",
+                "slate_skipped",
             }
             assert current["filmstrip_tiles"] == 48
 

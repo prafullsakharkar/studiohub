@@ -82,8 +82,9 @@ describe('what the project workspace relies on (captured from the running backen
     const settings = flow.project_clone_settings;
     expect(settings.status).toBe(201);
     expect(Object.keys((settings as any).request.body).sort()).toEqual([
-      // what CloneProjectDialog sends: the settings, the approval roll-up and the review switches (burn-ins, grades, downloads)
-      'approve_task_on_version_approval', 'aspect_ratio', 'code', 'color_space', 'description', 'fps', 'name', 'resolution', 'review_burn_ins', 'review_downloads', 'review_grades', 'type', 'workflow_type',
+      // what CloneProjectDialog sends: the settings, the approval roll-up and the review switches (burn-ins, grades, downloads,
+      // the slate and its line, RP-25)
+      'approve_task_on_version_approval', 'aspect_ratio', 'code', 'color_space', 'description', 'fps', 'name', 'resolution', 'review_burn_ins', 'review_downloads', 'review_grades', 'review_slate_note', 'review_slates', 'type', 'workflow_type',
     ]);
     expect(settings.body.id).not.toBe(flow.project_detail.body.id);
     expect(flow.project_clone_whole_object.status).toBe(201);

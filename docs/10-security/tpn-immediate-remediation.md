@@ -299,6 +299,15 @@ same rules as playback and one more (docs/review-pipeline/CONTRACTS.md C-RP-56, 
 
 Not done: forensic watermarks or per-viewer burn-ins; a download count limit.
 
+**RP-25 (C-RP-59, C-RP-60): a slate on the downloaded file.** A show that turns on `review_slates`
+gets every movie and sequence copy made afterwards downloaded with a two-second slate first: the
+project, shot, version, task, artist, frames, date and the show's own line (`review_slate_note`, e.g.
+"Confidential: do not forward"). So a forwarded or renamed file still says what it is and that it is
+confidential. Who may download and the audit row are unchanged (the row now says whether the file had
+a slate). The line is drawn from a file with `drawtext` expansion off, so no text reaches the filter
+graph; it is one line of at most 120 characters. The slate is the same for every viewer: it marks the
+file, not who took it, which stays the audit row's job (Q-RP-114). Playback is unchanged.
+
 ## Correction: the object-store bucket, and its removal
 
 An earlier summary said the public-read setting on the MinIO `media` bucket had been removed. It had

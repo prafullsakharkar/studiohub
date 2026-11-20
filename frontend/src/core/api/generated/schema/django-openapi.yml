@@ -47075,6 +47075,16 @@ components:
             * `internal` - Studio members
             * `everyone` - Everyone who can see the version
             * `nobody` - Nobody
+        review_slates:
+          type: boolean
+          description: When on, movie and sequence review copies made from now on
+            are downloaded with a two-second slate first; playback is unchanged (review
+            pipeline RP-25, C-RP-59).
+        review_slate_note:
+          type: string
+          description: One line drawn on the slate, e.g. a confidentiality notice
+            (RP-25, C-RP-59).
+          maxLength: 120
         review_source_root:
           type: string
           maxLength: 50
@@ -55487,6 +55497,16 @@ components:
             * `internal` - Studio members
             * `everyone` - Everyone who can see the version
             * `nobody` - Nobody
+        review_slates:
+          type: boolean
+          description: When on, movie and sequence review copies made from now on
+            are downloaded with a two-second slate first; playback is unchanged (review
+            pipeline RP-25, C-RP-59).
+        review_slate_note:
+          type: string
+          description: One line drawn on the slate, e.g. a confidentiality notice
+            (RP-25, C-RP-59).
+          maxLength: 120
         start_date:
           type: string
           format: date
@@ -55655,6 +55675,16 @@ components:
             * `internal` - Studio members
             * `everyone` - Everyone who can see the version
             * `nobody` - Nobody
+        review_slates:
+          type: boolean
+          description: When on, movie and sequence review copies made from now on
+            are downloaded with a two-second slate first; playback is unchanged (review
+            pipeline RP-25, C-RP-59).
+        review_slate_note:
+          type: string
+          description: One line drawn on the slate, e.g. a confidentiality notice
+            (RP-25, C-RP-59).
+          maxLength: 120
         review_source_root:
           type: string
           maxLength: 50
@@ -55865,6 +55895,16 @@ components:
             * `internal` - Studio members
             * `everyone` - Everyone who can see the version
             * `nobody` - Nobody
+        review_slates:
+          type: boolean
+          description: When on, movie and sequence review copies made from now on
+            are downloaded with a two-second slate first; playback is unchanged (review
+            pipeline RP-25, C-RP-59).
+        review_slate_note:
+          type: string
+          description: One line drawn on the slate, e.g. a confidentiality notice
+            (RP-25, C-RP-59).
+          maxLength: 120
         review_source_root:
           type: string
           maxLength: 50
@@ -56513,6 +56553,16 @@ components:
             * `internal` - Studio members
             * `everyone` - Everyone who can see the version
             * `nobody` - Nobody
+        review_slates:
+          type: boolean
+          description: When on, movie and sequence review copies made from now on
+            are downloaded with a two-second slate first; playback is unchanged (review
+            pipeline RP-25, C-RP-59).
+        review_slate_note:
+          type: string
+          description: One line drawn on the slate, e.g. a confidentiality notice
+            (RP-25, C-RP-59).
+          maxLength: 120
         review_source_root:
           type: string
           maxLength: 50
@@ -58072,6 +58122,10 @@ components:
           type: boolean
         grade_out_of_date:
           type: integer
+        review_slates:
+          type: boolean
+        slate_out_of_date:
+          type: integer
         differing:
           type: array
           items:
@@ -58086,7 +58140,9 @@ components:
       - out_of_date
       - review_burn_ins
       - review_grades
+      - review_slates
       - sequences_out_of_date
+      - slate_out_of_date
     ReviewCopiesKeep:
       type: object
       description: '``POST projects/{id}/review-copies/keep/`` (C-RP-43): the copies

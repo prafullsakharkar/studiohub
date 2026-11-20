@@ -336,6 +336,8 @@ class TestRecord:
             "review_media_id": str(media.pk),
             "kind": "movie",
             "file_name": "RPTWOTHREE_SH010_V003.mp4",
+            # RP-25 (C-RP-59): the project has no slates
+            "slate": False,
         }
 
     @pytest.mark.parametrize(
