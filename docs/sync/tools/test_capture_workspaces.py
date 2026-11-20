@@ -132,7 +132,8 @@ def test_capture_workspaces(django_user_model):
     flow["project_clone_whole_object"] = call(a, "POST", "/api/v1/projects/", {**detail, "name": "Clone of all", "code": "WS18-C1", "approved_shots": 0, "status": "In Progress"})
     # the settings the Duplicate dialog copies (CloneProjectDialog), the review switches included
     keep = ("type", "workflow_type", "fps", "resolution", "aspect_ratio", "color_space", "description",
-            "approve_task_on_version_approval", "review_burn_ins", "review_grades", "review_downloads")
+            "approve_task_on_version_approval", "review_burn_ins", "review_grades", "review_downloads",
+            "review_slates", "review_slate_note")
     settings = {k: detail[k] for k in keep if k in detail}
     flow["project_clone_settings"] = call(a, "POST", "/api/v1/projects/", {**settings, "name": "Clone of settings", "code": "WS18-C2"})
     flow["project_archive"] = call(a, "POST", f"/api/v1/projects/{qid}/archive/")

@@ -88,6 +88,10 @@ export const projectsFormConfig: DirectoryFormConfig<Project> = {
     { kind: 'checkbox', name: 'review_grades', label: "Apply shot grades (ASC CDL) to colour-managed review copies" },
     // RP-23 (C-RP-56, Q-RP-105): studio members by default; clients and vendors only when a show allows it.
     { kind: 'select', name: 'review_downloads', label: 'Who may download review copies', initial: 'internal', options: [...REVIEW_DOWNLOADS], hint: 'A download saves the copy with its burn-ins and grade, and is recorded.' },
+    // RP-25 (C-RP-59, Q-RP-113, Q-RP-114): only the downloaded file gets the slate; playback is unchanged. The line is
+    // shown (and sent) only while the switch is on, so turning it off keeps the saved line.
+    { kind: 'checkbox', name: 'review_slates', label: 'Put a slate before downloaded review copies' },
+    { kind: 'text', name: 'review_slate_note', label: 'Slate line', maxLength: 120, visibleWhen: (v) => v.review_slates === true, hint: 'One line on the slate, for example "Confidential: do not forward". Up to 120 characters.' },
     // RP-18 (C-RP-47): where the studio's renders lie, so a version still in review can have its copy read by path. Read
     // and written only with project.update, set once the project exists; both blank switches it off.
     { kind: 'text', name: 'review_source_root', label: 'Review folder: storage root', permission: MANAGE_PROJECT, onlyOnEdit: true, hint: 'A storage root the server reads, for example STUDIO.' },

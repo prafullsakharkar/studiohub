@@ -103,6 +103,10 @@ export interface ReviewMediaProbe {
   grade_source: string;
   /** Why a grade that was due was left out: the config has no grading space, or could not be read. Null otherwise. */
   grade_skipped: 'no_grading_space' | 'colour_config_unavailable' | null;
+  /** RP-25 (C-RP-59): the download starts with a two-second slate; playback never does. False on copies made before. */
+  slate: boolean;
+  /** Why a slate that was due was left out: the card or the join failed, or the burn-in font is missing. Null otherwise. */
+  slate_skipped: 'slate_failed' | 'font_missing' | null;
 }
 
 /** How a copy's colour was made (C-RP-40): names from the studio's OpenColorIO config, never a server path. */
@@ -219,6 +223,9 @@ export interface ReviewCopies {
   /** RP-20 (C-RP-53): whether shots' grades are applied, and how many copies were made with another grade. */
   review_grades: boolean;
   grade_out_of_date: number;
+  /** RP-25 (C-RP-60): whether downloads get a slate, and how many copies (sequences included) were made the other way. */
+  review_slates: boolean;
+  slate_out_of_date: number;
   /** The first 100 of them, oldest first (RP-16, C-RP-42). */
   differing: ReviewCopyDiffering[];
   /** How many more differ than `differing` lists. */
@@ -226,7 +233,7 @@ export interface ReviewCopies {
 }
 
 /** Why a copy differs from its project's settings now (C-RP-42). */
-export type ReviewCopyDifference = 'burn_ins' | 'colour' | 'grade';
+export type ReviewCopyDifference = 'burn_ins' | 'colour' | 'grade' | 'slate';
 
 /** One copy made with other settings than its project has now (RP-16, C-RP-42). */
 export interface ReviewCopyDiffering {

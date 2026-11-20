@@ -95,6 +95,8 @@ class ProjectSerializer(BudgetGatedMixin, ReviewFolderGatedMixin, BaseReadSerial
             "review_look",
             "review_grades",
             "review_downloads",
+            "review_slates",
+            "review_slate_note",
             "review_source_root",
             "review_source_folder",
             "start_date",

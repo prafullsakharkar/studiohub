@@ -47,6 +47,10 @@ export interface Project {
   review_grades: boolean;
   /** RP-23 (C-RP-56): who may download a version's review copy; `internal` (studio members) by default. */
   review_downloads: ReviewDownloads;
+  /** RP-25 (C-RP-59): downloaded movie and sequence copies made while it is on start with a two-second slate. Off by default. */
+  review_slates: boolean;
+  /** RP-25 (C-RP-59): one line drawn on the slate, at most 120 characters; blank by default. */
+  review_slate_note: string;
   /**
    * RP-18 (C-RP-47): the storage root and the folder on it where the studio's renders lie, so a version still in review
    * can have its copy read by path; both blank = off. Only for those who may change the project (`project.update`); left
@@ -97,6 +101,9 @@ export interface ProjectInput {
   review_look?: string;
   review_grades?: boolean;
   review_downloads?: ReviewDownloads;
+  /** RP-25: the line is one line of text (400 on a line break or tab, or over 120 characters). */
+  review_slates?: boolean;
+  review_slate_note?: string;
   /** RP-18: the root must be one the server reads; the folder a relative folder on it (400 otherwise). Both blank = off. */
   review_source_root?: string;
   review_source_folder?: string;

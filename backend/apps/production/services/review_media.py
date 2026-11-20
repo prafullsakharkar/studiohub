@@ -73,6 +73,9 @@ LUT_FOLDER = "luts"
 
 _CHUNK = 1024 * 1024
 _LOG_TAIL = 2000
+#: why a copy has no slate although its project asks for one (RP-25, ``probe.slate_skipped``)
+SLATE_FAILED = "slate_failed"
+SLATE_FONT_MISSING = "font_missing"
 
 
 class _Failed(Exception):
@@ -174,6 +177,37 @@ def _burn_in(media: ReviewMedia) -> commands.BurnIn | None:
     )
 
 
+def _slate_lines(media: ReviewMedia, probe: commands.Probe) -> list[str] | None:
+    """What the slate before ``media``'s download says, or ``None`` (RP-25, C-RP-59: per project;
+    never on a still). Its date is the burn-in date, fixed when the copy is first made (C-RP-37)."""
+    if media.kind == ReviewMedia.Kind.STILL:
+        return None
+    version = Version.objects.select_related("project", "shot", "asset", "task", "artist").get(
+        pk=media.version_id  # pyright: ignore[reportAttributeAccessIssue]
+    )
+    project = version.project
+    if not project.review_slates:
+        return None
+    record = version.shot or version.asset
+    if media.kind == ReviewMedia.Kind.SEQUENCE:
+        first = media.first_frame or 0
+    else:
+        first = version.start_frame if version.start_frame is not None else 1
+    last = first + max(probe.frames, 1) - 1
+    task = version.task
+    artist = getattr(version.artist, "display_name", "") if version.artist_id else ""  # pyright: ignore[reportAttributeAccessIssue]
+    return [
+        "  ".join(part for part in (project.code, project.name) if part),
+        getattr(record, "code", "") or version.entity_code,
+        version.code,
+        f"Task: {task.code}  {task.title}".strip() if task is not None else "",
+        f"Artist: {artist}" if artist else "",
+        f"Frames {first}-{last} ({probe.frames})  {probe.fps:g} fps",
+        f"Made {(media.burn_in_date or timezone.now().date()).isoformat()}",
+        project.review_slate_note,
+    ]
+
+
 def _sequence_rate(media: ReviewMedia) -> str:
     fps = Version.objects.filter(pk=media.version_id).values_list("fps", flat=True).first()  # pyright: ignore[reportAttributeAccessIssue]
     return commands.rate_of(fps if fps is not None else 24)
@@ -224,6 +258,8 @@ def record_download(*, user: Any, media: ReviewMedia, request: Any) -> None:
             "review_media_id": str(media.pk),
             "kind": media.kind,
             "file_name": name,
+            # RP-25 (C-RP-59): whether the file had a slate before the copy
+            "slate": bool((media.probe or {}).get("slate")),
         },
     )
 
@@ -1320,7 +1356,84 @@ class ReviewMediaService:
                     "review_media_output_missing", review_media_id=str(media.pk), output=name
                 )
                 raise _Failed(Code.TRANSCODE_FAILED)
+        # RP-25 (C-RP-59, Q-RP-115): the download's slate; whatever goes wrong, the copy stays
+        extra["slate"], extra["slate_skipped"] = False, None
+        lines, skipped = ([], None) if is_still else cls._prepare_slate(media, probe, work)
+        if skipped:
+            extra["slate_skipped"] = skipped
+        elif lines:
+            try:
+                cls._make_slate(work, made["proxy"], lines, step)
+            except _Failed as failure:
+                logger.warning(
+                    "review_media_slate_skipped", review_media_id=str(media.pk), reason=failure.code
+                )
+                extra["slate_skipped"] = failure.code
+            else:
+                made["download"] = commands.SLATE_DOWNLOAD
+                extra["slate"] = True
         return probe, made, extra
+
+    @staticmethod
+    def _prepare_slate(
+        media: ReviewMedia, probe: commands.Probe, work: Path
+    ) -> tuple[list[int], str | None]:
+        """Write the slate's line files and font into ``work``: each line's length, or none and why not."""
+        lines = _slate_lines(media, probe)
+        if lines is None:
+            return [], None
+        try:
+            shutil.copyfile(settings.REVIEW_MEDIA_BURN_IN_FONT, work / commands.BURN_IN_FONT)
+        except OSError:
+            logger.error(
+                "review_media_burn_in_font_missing",
+                review_media_id=str(media.pk),
+                font=settings.REVIEW_MEDIA_BURN_IN_FONT,
+            )
+            return [], SLATE_FONT_MISSING
+        texts = commands.slate_texts(lines)
+        for name, text in texts.items():
+            (work / name).write_text(text, encoding="utf-8")
+        return [len(text) for text in texts.values()], None
+
+    @staticmethod
+    def _make_slate(work: Path, proxy: str, lines: list[int], step: Any) -> None:
+        """The card, encoded as the copy is, joined to it without re-encoding into the download; the
+        join is checked by its frame count and by decoding it. Raises ``_Failed`` on any problem."""
+        ffmpeg, ffprobe = settings.REVIEW_MEDIA_FFMPEG, settings.REVIEW_MEDIA_FFPROBE
+        limit = commands.PROBE_TIMEOUT_SECONDS
+        try:
+            made = commands.parse_copy_format(
+                step(
+                    commands.copy_probe_command(ffprobe, work / proxy),
+                    failure=SLATE_FAILED,
+                    limit=limit,
+                )
+            )
+        except commands.ProbeError as error:
+            raise _Failed(SLATE_FAILED) from error
+        step(
+            commands.slate_command(ffmpeg, made, lines, work / commands.SLATE_CARD),
+            failure=SLATE_FAILED,
+        )
+        (work / commands.SLATE_LIST).write_text(commands.slate_list(), encoding="utf-8")
+        download = work / commands.SLATE_DOWNLOAD
+        step(commands.join_command(ffmpeg, download), failure=SLATE_FAILED)
+
+        def frames_of(path: Path) -> int:
+            out = step(
+                commands.frame_count_command(ffprobe, path), failure=SLATE_FAILED, limit=limit
+            )
+            try:
+                return int(out.strip().split(",")[0])
+            except ValueError as error:
+                raise _Failed(SLATE_FAILED) from error
+
+        if frames_of(download) != frames_of(work / proxy) + made.card_frames:
+            raise _Failed(SLATE_FAILED)
+        step(commands.decode_check_command(ffmpeg, download), failure=SLATE_FAILED)
+        if not download.is_file() or download.stat().st_size == 0:
+            raise _Failed(SLATE_FAILED)
 
     @classmethod
     def _prepare_colour(

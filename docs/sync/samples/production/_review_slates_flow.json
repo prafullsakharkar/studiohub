@@ -1,0 +1,1094 @@
+{
+ "audit_of_download": {
+  "body": {
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "action": "export",
+     "changes_diff": {
+      "file_name": "RSL_SH0010_COMP_V001.mp4",
+      "kind": "movie",
+      "operation": "download",
+      "review_media_id": "17a81082-de52-4b18-8d98-7cbbd4159fdb",
+      "slate": true
+     },
+     "created_at": "2026-11-20T05:07:49.495517Z",
+     "description": "Downloaded the review copy RSL_SH0010_COMP_V001.mp4.",
+     "entity_code": "RSL_SH0010_COMP_V001",
+     "entity_id": "0457d1be-e664-43c8-ab16-028614557c1f",
+     "entity_type": "version",
+     "id": "b79a3c8d-741d-4a3e-b497-926e5ce3bb5c",
+     "ip_address": "127.0.0.1",
+     "updated_at": "2026-11-20T05:07:49.495527Z",
+     "user_email": "user@example.test",
+     "user_id": "b7850e74-4ded-4c67-9685-e06c0e563de7",
+     "user_name": "Sam Supervisor",
+     "uuid": "b79a3c8d-741d-4a3e-b497-926e5ce3bb5c"
+    }
+   ]
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/?search=0457d1be-e664-43c8-ab16-028614557c1f&action=EXPORT"
+  },
+  "status": 200
+ },
+ "copies_after_note_only": {
+  "body": {
+   "colour_out_of_date": 0,
+   "differing": [],
+   "differing_more": 0,
+   "grade_out_of_date": 0,
+   "out_of_date": 0,
+   "review_burn_ins": false,
+   "review_grades": false,
+   "review_slates": true,
+   "sequences_out_of_date": 0,
+   "slate_out_of_date": 0
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/review-copies/"
+  },
+  "status": 200
+ },
+ "copies_after_off": {
+  "body": {
+   "colour_out_of_date": 0,
+   "differing": [
+    {
+     "frames_until": null,
+     "kind": "movie",
+     "published_file_id": null,
+     "record_code": "RSL_SH0010",
+     "remakable": true,
+     "review_media_id": "17a81082-de52-4b18-8d98-7cbbd4159fdb",
+     "source": "upload",
+     "version": {
+      "code": "RSL_SH0010_COMP_V001",
+      "id": "0457d1be-e664-43c8-ab16-028614557c1f"
+     },
+     "why": [
+      "slate"
+     ]
+    },
+    {
+     "frames_until": null,
+     "kind": "movie",
+     "published_file_id": null,
+     "record_code": "RSL_SH0010",
+     "remakable": true,
+     "review_media_id": "c5e5906a-31a0-489e-bb72-9b43c621ecc9",
+     "source": "upload",
+     "version": {
+      "code": "RSL_SH0010_COMP_V002",
+      "id": "f4db9d84-6a6f-42b8-bfd0-4bd7d55798f9"
+     },
+     "why": [
+      "slate"
+     ]
+    },
+    {
+     "frames_until": "2026-12-04T05:07:46.469642Z",
+     "kind": "sequence",
+     "published_file_id": null,
+     "record_code": "RSL_SH0010",
+     "remakable": true,
+     "review_media_id": "b6518d04-f363-4e80-b027-730ba45c80c9",
+     "source": "upload",
+     "version": {
+      "code": "RSL_SH0010_COMP_V003",
+      "id": "03c49268-176b-4b3d-a2cf-0474dcc561d5"
+     },
+     "why": [
+      "slate"
+     ]
+    }
+   ],
+   "differing_more": 0,
+   "grade_out_of_date": 0,
+   "out_of_date": 2,
+   "review_burn_ins": false,
+   "review_grades": false,
+   "review_slates": false,
+   "sequences_out_of_date": 1,
+   "slate_out_of_date": 3
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/review-copies/"
+  },
+  "status": 200
+ },
+ "copies_after_remake": {
+  "body": {
+   "colour_out_of_date": 0,
+   "differing": [],
+   "differing_more": 0,
+   "grade_out_of_date": 0,
+   "out_of_date": 0,
+   "review_burn_ins": false,
+   "review_grades": false,
+   "review_slates": true,
+   "sequences_out_of_date": 0,
+   "slate_out_of_date": 0
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/review-copies/"
+  },
+  "status": 200
+ },
+ "copies_differing_slate": {
+  "body": {
+   "colour_out_of_date": 0,
+   "differing": [
+    {
+     "frames_until": null,
+     "kind": "movie",
+     "published_file_id": null,
+     "record_code": "RSL_SH0010",
+     "remakable": true,
+     "review_media_id": "16461387-dce1-4269-949b-f3736f7b1115",
+     "source": "upload",
+     "version": {
+      "code": "RSL_SH0010_COMP_V001",
+      "id": "0457d1be-e664-43c8-ab16-028614557c1f"
+     },
+     "why": [
+      "slate"
+     ]
+    }
+   ],
+   "differing_more": 0,
+   "grade_out_of_date": 0,
+   "out_of_date": 1,
+   "review_burn_ins": false,
+   "review_grades": false,
+   "review_slates": true,
+   "sequences_out_of_date": 0,
+   "slate_out_of_date": 1
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/review-copies/"
+  },
+  "status": 200
+ },
+ "copies_remake": {
+  "body": {
+   "queued": 1,
+   "skipped_busy": 0,
+   "skipped_missing": 0,
+   "skipped_sequence": 0,
+   "skipped_storage": 0
+  },
+  "request": {
+   "body": null,
+   "method": "POST",
+   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/review-copies/remake/"
+  },
+  "status": 200
+ },
+ "download_with_slate": {
+  "bytes": 900614,
+  "headers": {
+   "Content-Disposition": "attachment; filename=\"RSL_SH0010_COMP_V001.mp4\"",
+   "Content-Type": "video/mp4"
+  },
+  "request": {
+   "method": "GET",
+   "path": "/api/v1/review-media/17a81082-de52-4b18-8d98-7cbbd4159fdb/download/?token=SAMPLE"
+  },
+  "status": 200
+ },
+ "files_remade": {
+  "copy": {
+   "audio": true,
+   "brightness_at_2s": null,
+   "duration_seconds": 2.0,
+   "first_frame_brightness": 128.0,
+   "frames": 48,
+   "rate": "24/1",
+   "size": [
+    1280,
+    720
+   ]
+  },
+  "download": {
+   "audio": true,
+   "brightness_at_2s": 128.0,
+   "duration_seconds": 4.02,
+   "first_frame_brightness": 8.2,
+   "frames": 96,
+   "rate": "24/1",
+   "size": [
+    1280,
+    720
+   ]
+  }
+ },
+ "files_sequence": {
+  "copy": {
+   "audio": false,
+   "brightness_at_2s": null,
+   "duration_seconds": 0.5,
+   "first_frame_brightness": 103.9,
+   "frames": 12,
+   "rate": "24/1",
+   "size": [
+    640,
+    360
+   ]
+  },
+  "download": {
+   "audio": false,
+   "brightness_at_2s": 103.9,
+   "duration_seconds": 2.5,
+   "first_frame_brightness": 5.9,
+   "frames": 60,
+   "rate": "24/1",
+   "size": [
+    640,
+    360
+   ]
+  }
+ },
+ "files_silent": {
+  "copy": {
+   "audio": false,
+   "brightness_at_2s": null,
+   "duration_seconds": 2.0,
+   "first_frame_brightness": 128.0,
+   "frames": 48,
+   "rate": "24/1",
+   "size": [
+    1280,
+    720
+   ]
+  },
+  "download": {
+   "audio": false,
+   "brightness_at_2s": 128.0,
+   "duration_seconds": 4.0,
+   "first_frame_brightness": 8.2,
+   "frames": 96,
+   "rate": "24/1",
+   "size": [
+    1280,
+    720
+   ]
+  }
+ },
+ "files_without_slate": {
+  "copy": {
+   "audio": true,
+   "brightness_at_2s": null,
+   "duration_seconds": 2.0,
+   "first_frame_brightness": 128.0,
+   "frames": 48,
+   "rate": "24/1",
+   "size": [
+    1280,
+    720
+   ]
+  },
+  "download": {
+   "audio": true,
+   "brightness_at_2s": null,
+   "duration_seconds": 2.0,
+   "first_frame_brightness": 128.0,
+   "frames": 48,
+   "rate": "24/1",
+   "size": [
+    1280,
+    720
+   ]
+  }
+ },
+ "play_copy": {
+  "bytes": 849101,
+  "headers": {
+   "Content-Disposition": "inline; filename=\"proxy.mp4\"",
+   "Content-Type": "video/mp4"
+  },
+  "request": {
+   "method": "GET",
+   "path": "/api/v1/review-media/17a81082-de52-4b18-8d98-7cbbd4159fdb/proxy/?token=SAMPLE"
+  },
+  "status": 200
+ },
+ "project_default": {
+  "body": {
+   "approve_task_on_version_approval": false,
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "RSL",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-20T05:07:30.428535Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "in_progress_shots": 0,
+   "name": "Review slates",
+   "project_code": "RSL",
+   "resolution": "4096x2160 (4K DCI)",
+   "review_burn_ins": false,
+   "review_downloads": "internal",
+   "review_grades": false,
+   "review_look": "",
+   "review_slate_note": "",
+   "review_slates": false,
+   "review_source_folder": "",
+   "review_source_root": "",
+   "review_view": "",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-20T05:07:30.428544Z",
+   "uuid": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+  },
+  "status": 200
+ },
+ "project_note_newline_400": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "c9d0362d-e2d8-4f6a-8955-29d8b834da47"
+   },
+   "review_slate_note": [
+    "One line of text, without tabs or line breaks."
+   ]
+  },
+  "request": {
+   "body": {
+    "review_slate_note": "one\ntwo"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+  },
+  "status": 400
+ },
+ "project_note_only_200": {
+  "body": {
+   "approve_task_on_version_approval": false,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "RSL",
+   "color_space": "ACEScg",
+   "coordinator": null,
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "name": "Review slates",
+   "resolution": "4096x2160 (4K DCI)",
+   "review_burn_ins": false,
+   "review_downloads": "internal",
+   "review_grades": false,
+   "review_look": "",
+   "review_slate_note": "Another line",
+   "review_slates": true,
+   "review_source_folder": "",
+   "review_source_root": "",
+   "review_view": "",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor": null,
+   "thumbnail_url": "",
+   "type": "Feature Film",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": []
+  },
+  "request": {
+   "body": {
+    "review_slate_note": "Another line"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+  },
+  "status": 200
+ },
+ "project_note_tab_400": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "eb1c955d-ac8f-4aaa-b458-6c728292424b"
+   },
+   "review_slate_note": [
+    "One line of text, without tabs or line breaks."
+   ]
+  },
+  "request": {
+   "body": {
+    "review_slate_note": "one\ttwo"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+  },
+  "status": 400
+ },
+ "project_note_too_long_400": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "ec05f5ed-3d11-45c8-8296-c5fed25a24bc"
+   },
+   "review_slate_note": [
+    "Ensure this field has no more than 120 characters."
+   ]
+  },
+  "request": {
+   "body": {
+    "review_slate_note": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+  },
+  "status": 400
+ },
+ "project_slates_off_200": {
+  "body": {
+   "approve_task_on_version_approval": false,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "RSL",
+   "color_space": "ACEScg",
+   "coordinator": null,
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "name": "Review slates",
+   "resolution": "4096x2160 (4K DCI)",
+   "review_burn_ins": false,
+   "review_downloads": "internal",
+   "review_grades": false,
+   "review_look": "",
+   "review_slate_note": "Another line",
+   "review_slates": false,
+   "review_source_folder": "",
+   "review_source_root": "",
+   "review_view": "",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor": null,
+   "thumbnail_url": "",
+   "type": "Feature Film",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": []
+  },
+  "request": {
+   "body": {
+    "review_slates": false
+   },
+   "method": "PATCH",
+   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+  },
+  "status": 200
+ },
+ "project_slates_on_200": {
+  "body": {
+   "approve_task_on_version_approval": false,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "RSL",
+   "color_space": "ACEScg",
+   "coordinator": null,
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "name": "Review slates",
+   "resolution": "4096x2160 (4K DCI)",
+   "review_burn_ins": false,
+   "review_downloads": "internal",
+   "review_grades": false,
+   "review_look": "",
+   "review_slate_note": "Confidential: 100% \"internal\" -- do not forward",
+   "review_slates": true,
+   "review_source_folder": "",
+   "review_source_root": "",
+   "review_view": "",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor": null,
+   "thumbnail_url": "",
+   "type": "Feature Film",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": []
+  },
+  "request": {
+   "body": {
+    "review_slate_note": "Confidential: 100% \"internal\" -- do not forward",
+    "review_slates": true
+   },
+   "method": "PATCH",
+   "path": "/api/v1/projects/6689d44e-3a16-48d4-a77a-0764470e960d/"
+  },
+  "status": 200
+ },
+ "version_remade_with_slate": {
+  "body": {
+   "artist_id": "b7850e74-4ded-4c67-9685-e06c0e563de7",
+   "artist_name": "Sam Supervisor",
+   "asset_id": null,
+   "changelog": "",
+   "code": "RSL_SH0010_COMP_V001",
+   "color_space": "ACEScg",
+   "created_at": "2026-11-20T05:07:32.321441Z",
+   "department": "",
+   "end_frame": null,
+   "entity_code": "RSL_SH0010",
+   "entity_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "entity_name": "Hero walk",
+   "entity_type": "Shot",
+   "file_path": "",
+   "file_size_mb": "0.00",
+   "fps": "24.000",
+   "frame_range": "",
+   "id": "0457d1be-e664-43c8-ab16-028614557c1f",
+   "is_archived": false,
+   "is_hero": false,
+   "is_published": false,
+   "notes": "",
+   "project_code": "RSL",
+   "project_id": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "published_at": null,
+   "published_by_id": null,
+   "publishing_info": {},
+   "resolution": "4096x2160",
+   "review_media": {
+    "attempts": 1,
+    "color_space": "",
+    "created_by": {
+     "id": "6c0db453-045e-4cb7-9279-f857b222bfef",
+     "name": "user@example.test"
+    },
+    "download_url": "/api/v1/review-media/17a81082-de52-4b18-8d98-7cbbd4159fdb/download/?token=SAMPLE",
+    "error_code": "",
+    "error_message": "",
+    "filmstrip_tiles": 48,
+    "filmstrip_url": "/api/v1/review-media/17a81082-de52-4b18-8d98-7cbbd4159fdb/filmstrip/?token=SAMPLE",
+    "finished_at": "2026-11-20T05:07:38.021139Z",
+    "frames_until": null,
+    "id": "17a81082-de52-4b18-8d98-7cbbd4159fdb",
+    "kind": "movie",
+    "links_expire_at": "2026-11-20T06:07:38.102373Z",
+    "probe": {
+     "burn_ins": false,
+     "colour": "as_stored",
+     "colour_skipped": null,
+     "duration_seconds": 2.0,
+     "first_frame": null,
+     "fps": 24.0,
+     "frames": 48,
+     "grade": null,
+     "grade_skipped": null,
+     "grade_source": "",
+     "has_audio": true,
+     "height": 720,
+     "last_frame": null,
+     "ocio": null,
+     "slate": true,
+     "slate_skipped": null,
+     "video_codec": "h264",
+     "width": 1280
+    },
+    "proxy_url": "/api/v1/review-media/17a81082-de52-4b18-8d98-7cbbd4159fdb/proxy/?token=SAMPLE",
+    "published_file_id": null,
+    "queued_at": "2026-11-20T05:07:35.125606Z",
+    "remake_of": "16461387-dce1-4269-949b-f3736f7b1115",
+    "sequence": null,
+    "source": "upload",
+    "source_name": "comp_v001.mov",
+    "source_size": 687330,
+    "started_at": "2026-11-20T05:07:35.137689Z",
+    "status": "ready",
+    "storage_readable": false,
+    "thumbnail_url": "/api/v1/review-media/17a81082-de52-4b18-8d98-7cbbd4159fdb/thumbnail/?token=SAMPLE",
+    "version_id": "0457d1be-e664-43c8-ab16-028614557c1f"
+   },
+   "review_media_job": null,
+   "shot_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "source_file_url": "",
+   "start_frame": 1001,
+   "status": "Not Started",
+   "tags": [],
+   "task_id": "826d70e8-1127-4ebd-b41b-ee0c153dbf33",
+   "thumbnail_url": "",
+   "updated_at": "2026-11-20T05:07:32.321453Z",
+   "uuid": "0457d1be-e664-43c8-ab16-028614557c1f",
+   "version_index": 1,
+   "version_number": "v001",
+   "video_url": ""
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/versions/0457d1be-e664-43c8-ab16-028614557c1f/"
+  },
+  "status": 200
+ },
+ "version_sequence_with_slate": {
+  "body": {
+   "artist_id": "b7850e74-4ded-4c67-9685-e06c0e563de7",
+   "artist_name": "Sam Supervisor",
+   "asset_id": null,
+   "changelog": "",
+   "code": "RSL_SH0010_COMP_V003",
+   "color_space": "ACEScg",
+   "created_at": "2026-11-20T05:07:39.340152Z",
+   "department": "",
+   "end_frame": null,
+   "entity_code": "RSL_SH0010",
+   "entity_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "entity_name": "Hero walk",
+   "entity_type": "Shot",
+   "file_path": "",
+   "file_size_mb": "0.00",
+   "fps": "24.000",
+   "frame_range": "",
+   "id": "03c49268-176b-4b3d-a2cf-0474dcc561d5",
+   "is_archived": false,
+   "is_hero": false,
+   "is_published": false,
+   "notes": "",
+   "project_code": "RSL",
+   "project_id": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "published_at": null,
+   "published_by_id": null,
+   "publishing_info": {},
+   "resolution": "4096x2160",
+   "review_media": {
+    "attempts": 1,
+    "color_space": "",
+    "created_by": {
+     "id": "6c0db453-045e-4cb7-9279-f857b222bfef",
+     "name": "user@example.test"
+    },
+    "download_url": "/api/v1/review-media/b6518d04-f363-4e80-b027-730ba45c80c9/download/?token=SAMPLE",
+    "error_code": "",
+    "error_message": "",
+    "filmstrip_tiles": 12,
+    "filmstrip_url": "/api/v1/review-media/b6518d04-f363-4e80-b027-730ba45c80c9/filmstrip/?token=SAMPLE",
+    "finished_at": "2026-11-20T05:07:46.469642Z",
+    "frames_until": "2026-12-04T05:07:46.469642Z",
+    "id": "b6518d04-f363-4e80-b027-730ba45c80c9",
+    "kind": "sequence",
+    "links_expire_at": "2026-11-20T06:07:48.310348Z",
+    "probe": {
+     "burn_ins": false,
+     "colour": "ocio",
+     "colour_skipped": null,
+     "duration_seconds": 0.5,
+     "first_frame": 1001,
+     "fps": 24.0,
+     "frames": 12,
+     "grade": null,
+     "grade_skipped": null,
+     "grade_source": "",
+     "has_audio": false,
+     "height": 360,
+     "last_frame": 1012,
+     "ocio": {
+      "config": "studio-config-v5.0.0_aces-v2.1_ocio-v2.6",
+      "display": "sRGB - Display",
+      "input": "ACEScg",
+      "look": "",
+      "view": "ACES 2.0 - SDR 100 nits (Rec.709)"
+     },
+     "slate": true,
+     "slate_skipped": null,
+     "video_codec": "exr",
+     "width": 640
+    },
+    "proxy_url": "/api/v1/review-media/b6518d04-f363-4e80-b027-730ba45c80c9/proxy/?token=SAMPLE",
+    "published_file_id": null,
+    "queued_at": "2026-11-20T05:07:42.472742Z",
+    "remake_of": null,
+    "sequence": {
+     "extension": "exr",
+     "first_frame": 1001,
+     "frames_received": 12,
+     "last_frame": 1012,
+     "name": "rsl_comp"
+    },
+    "source": "upload",
+    "source_name": "rsl_comp.[1001-1012].exr",
+    "source_size": 33251424,
+    "started_at": "2026-11-20T05:07:42.481158Z",
+    "status": "ready",
+    "storage_readable": false,
+    "thumbnail_url": "/api/v1/review-media/b6518d04-f363-4e80-b027-730ba45c80c9/thumbnail/?token=SAMPLE",
+    "version_id": "03c49268-176b-4b3d-a2cf-0474dcc561d5"
+   },
+   "review_media_job": null,
+   "shot_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "source_file_url": "",
+   "start_frame": 1001,
+   "status": "Not Started",
+   "tags": [],
+   "task_id": "826d70e8-1127-4ebd-b41b-ee0c153dbf33",
+   "thumbnail_url": "",
+   "updated_at": "2026-11-20T05:07:39.340159Z",
+   "uuid": "03c49268-176b-4b3d-a2cf-0474dcc561d5",
+   "version_index": 3,
+   "version_number": "v003",
+   "video_url": ""
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/versions/03c49268-176b-4b3d-a2cf-0474dcc561d5/"
+  },
+  "status": 200
+ },
+ "version_silent_with_slate": {
+  "body": {
+   "artist_id": "b7850e74-4ded-4c67-9685-e06c0e563de7",
+   "artist_name": "Sam Supervisor",
+   "asset_id": null,
+   "changelog": "",
+   "code": "RSL_SH0010_COMP_V002",
+   "color_space": "ACEScg",
+   "created_at": "2026-11-20T05:07:39.306458Z",
+   "department": "",
+   "end_frame": null,
+   "entity_code": "RSL_SH0010",
+   "entity_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "entity_name": "Hero walk",
+   "entity_type": "Shot",
+   "file_path": "",
+   "file_size_mb": "0.00",
+   "fps": "24.000",
+   "frame_range": "",
+   "id": "f4db9d84-6a6f-42b8-bfd0-4bd7d55798f9",
+   "is_archived": false,
+   "is_hero": false,
+   "is_published": false,
+   "notes": "",
+   "project_code": "RSL",
+   "project_id": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "published_at": null,
+   "published_by_id": null,
+   "publishing_info": {},
+   "resolution": "4096x2160",
+   "review_media": {
+    "attempts": 1,
+    "color_space": "",
+    "created_by": {
+     "id": "6c0db453-045e-4cb7-9279-f857b222bfef",
+     "name": "user@example.test"
+    },
+    "download_url": "/api/v1/review-media/c5e5906a-31a0-489e-bb72-9b43c621ecc9/download/?token=SAMPLE",
+    "error_code": "",
+    "error_message": "",
+    "filmstrip_tiles": 48,
+    "filmstrip_url": "/api/v1/review-media/c5e5906a-31a0-489e-bb72-9b43c621ecc9/filmstrip/?token=SAMPLE",
+    "finished_at": "2026-11-20T05:07:42.264842Z",
+    "frames_until": null,
+    "id": "c5e5906a-31a0-489e-bb72-9b43c621ecc9",
+    "kind": "movie",
+    "links_expire_at": "2026-11-20T06:07:47.149401Z",
+    "probe": {
+     "burn_ins": false,
+     "colour": "as_stored",
+     "colour_skipped": null,
+     "duration_seconds": 2.0,
+     "first_frame": null,
+     "fps": 24.0,
+     "frames": 48,
+     "grade": null,
+     "grade_skipped": null,
+     "grade_source": "",
+     "has_audio": false,
+     "height": 720,
+     "last_frame": null,
+     "ocio": null,
+     "slate": true,
+     "slate_skipped": null,
+     "video_codec": "h264",
+     "width": 1280
+    },
+    "proxy_url": "/api/v1/review-media/c5e5906a-31a0-489e-bb72-9b43c621ecc9/proxy/?token=SAMPLE",
+    "published_file_id": null,
+    "queued_at": "2026-11-20T05:07:39.395820Z",
+    "remake_of": null,
+    "sequence": null,
+    "source": "upload",
+    "source_name": "comp_v002.mov",
+    "source_size": 668308,
+    "started_at": "2026-11-20T05:07:39.408747Z",
+    "status": "ready",
+    "storage_readable": false,
+    "thumbnail_url": "/api/v1/review-media/c5e5906a-31a0-489e-bb72-9b43c621ecc9/thumbnail/?token=SAMPLE",
+    "version_id": "f4db9d84-6a6f-42b8-bfd0-4bd7d55798f9"
+   },
+   "review_media_job": null,
+   "shot_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "source_file_url": "",
+   "start_frame": 1001,
+   "status": "Not Started",
+   "tags": [],
+   "task_id": "826d70e8-1127-4ebd-b41b-ee0c153dbf33",
+   "thumbnail_url": "",
+   "updated_at": "2026-11-20T05:07:39.306471Z",
+   "uuid": "f4db9d84-6a6f-42b8-bfd0-4bd7d55798f9",
+   "version_index": 2,
+   "version_number": "v002",
+   "video_url": ""
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/versions/f4db9d84-6a6f-42b8-bfd0-4bd7d55798f9/"
+  },
+  "status": 200
+ },
+ "version_still": {
+  "body": {
+   "artist_id": "b7850e74-4ded-4c67-9685-e06c0e563de7",
+   "artist_name": "Sam Supervisor",
+   "asset_id": null,
+   "changelog": "",
+   "code": "RSL_SH0010_FRAME_V001",
+   "color_space": "ACEScg",
+   "created_at": "2026-11-20T05:07:39.368448Z",
+   "department": "",
+   "end_frame": null,
+   "entity_code": "RSL_SH0010",
+   "entity_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "entity_name": "Hero walk",
+   "entity_type": "Shot",
+   "file_path": "",
+   "file_size_mb": "0.00",
+   "fps": "24.000",
+   "frame_range": "",
+   "id": "8b93854a-ecae-41bd-9eec-4811a658b3b8",
+   "is_archived": false,
+   "is_hero": false,
+   "is_published": false,
+   "notes": "",
+   "project_code": "RSL",
+   "project_id": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "published_at": null,
+   "published_by_id": null,
+   "publishing_info": {},
+   "resolution": "4096x2160",
+   "review_media": {
+    "attempts": 1,
+    "color_space": "",
+    "created_by": {
+     "id": "6c0db453-045e-4cb7-9279-f857b222bfef",
+     "name": "user@example.test"
+    },
+    "download_url": "/api/v1/review-media/3c149bef-41b6-4919-b08b-4ac304469160/download/?token=SAMPLE",
+    "error_code": "",
+    "error_message": "",
+    "filmstrip_tiles": 0,
+    "filmstrip_url": null,
+    "finished_at": "2026-11-20T05:07:47.073292Z",
+    "frames_until": null,
+    "id": "3c149bef-41b6-4919-b08b-4ac304469160",
+    "kind": "still",
+    "links_expire_at": "2026-11-20T06:07:49.298156Z",
+    "probe": {
+     "burn_ins": false,
+     "colour": "as_stored",
+     "colour_skipped": null,
+     "duration_seconds": 0.0,
+     "first_frame": null,
+     "fps": 1.0,
+     "frames": 1,
+     "grade": null,
+     "grade_skipped": null,
+     "grade_source": "",
+     "has_audio": false,
+     "height": 360,
+     "last_frame": null,
+     "ocio": null,
+     "slate": false,
+     "slate_skipped": null,
+     "video_codec": "png",
+     "width": 640
+    },
+    "proxy_url": "/api/v1/review-media/3c149bef-41b6-4919-b08b-4ac304469160/proxy/?token=SAMPLE",
+    "published_file_id": null,
+    "queued_at": "2026-11-20T05:07:46.528808Z",
+    "remake_of": null,
+    "sequence": null,
+    "source": "upload",
+    "source_name": "frame_v001.png",
+    "source_size": 30324,
+    "started_at": "2026-11-20T05:07:46.541215Z",
+    "status": "ready",
+    "storage_readable": false,
+    "thumbnail_url": "/api/v1/review-media/3c149bef-41b6-4919-b08b-4ac304469160/thumbnail/?token=SAMPLE",
+    "version_id": "8b93854a-ecae-41bd-9eec-4811a658b3b8"
+   },
+   "review_media_job": null,
+   "shot_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "source_file_url": "",
+   "start_frame": 1001,
+   "status": "Not Started",
+   "tags": [],
+   "task_id": "826d70e8-1127-4ebd-b41b-ee0c153dbf33",
+   "thumbnail_url": "",
+   "updated_at": "2026-11-20T05:07:39.368455Z",
+   "uuid": "8b93854a-ecae-41bd-9eec-4811a658b3b8",
+   "version_index": 4,
+   "version_number": "v004",
+   "video_url": ""
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/versions/8b93854a-ecae-41bd-9eec-4811a658b3b8/"
+  },
+  "status": 200
+ },
+ "version_without_slate": {
+  "body": {
+   "artist_id": "b7850e74-4ded-4c67-9685-e06c0e563de7",
+   "artist_name": "Sam Supervisor",
+   "asset_id": null,
+   "changelog": "",
+   "code": "RSL_SH0010_COMP_V001",
+   "color_space": "ACEScg",
+   "created_at": "2026-11-20T05:07:32.321441Z",
+   "department": "",
+   "end_frame": null,
+   "entity_code": "RSL_SH0010",
+   "entity_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "entity_name": "Hero walk",
+   "entity_type": "Shot",
+   "file_path": "",
+   "file_size_mb": "0.00",
+   "fps": "24.000",
+   "frame_range": "",
+   "id": "0457d1be-e664-43c8-ab16-028614557c1f",
+   "is_archived": false,
+   "is_hero": false,
+   "is_published": false,
+   "notes": "",
+   "project_code": "RSL",
+   "project_id": "6689d44e-3a16-48d4-a77a-0764470e960d",
+   "published_at": null,
+   "published_by_id": null,
+   "publishing_info": {},
+   "resolution": "4096x2160",
+   "review_media": {
+    "attempts": 1,
+    "color_space": "",
+    "created_by": {
+     "id": "6c0db453-045e-4cb7-9279-f857b222bfef",
+     "name": "user@example.test"
+    },
+    "download_url": "/api/v1/review-media/16461387-dce1-4269-949b-f3736f7b1115/download/?token=SAMPLE",
+    "error_code": "",
+    "error_message": "",
+    "filmstrip_tiles": 48,
+    "filmstrip_url": "/api/v1/review-media/16461387-dce1-4269-949b-f3736f7b1115/filmstrip/?token=SAMPLE",
+    "finished_at": "2026-11-20T05:07:33.945690Z",
+    "frames_until": null,
+    "id": "16461387-dce1-4269-949b-f3736f7b1115",
+    "kind": "movie",
+    "links_expire_at": "2026-11-20T06:07:34.163907Z",
+    "probe": {
+     "burn_ins": false,
+     "colour": "as_stored",
+     "colour_skipped": null,
+     "duration_seconds": 2.0,
+     "first_frame": null,
+     "fps": 24.0,
+     "frames": 48,
+     "grade": null,
+     "grade_skipped": null,
+     "grade_source": "",
+     "has_audio": true,
+     "height": 720,
+     "last_frame": null,
+     "ocio": null,
+     "slate": false,
+     "slate_skipped": null,
+     "video_codec": "h264",
+     "width": 1280
+    },
+    "proxy_url": "/api/v1/review-media/16461387-dce1-4269-949b-f3736f7b1115/proxy/?token=SAMPLE",
+    "published_file_id": null,
+    "queued_at": "2026-11-20T05:07:32.363169Z",
+    "remake_of": null,
+    "sequence": null,
+    "source": "upload",
+    "source_name": "comp_v001.mov",
+    "source_size": 687330,
+    "started_at": "2026-11-20T05:07:32.380112Z",
+    "status": "ready",
+    "storage_readable": false,
+    "thumbnail_url": "/api/v1/review-media/16461387-dce1-4269-949b-f3736f7b1115/thumbnail/?token=SAMPLE",
+    "version_id": "0457d1be-e664-43c8-ab16-028614557c1f"
+   },
+   "review_media_job": null,
+   "shot_id": "eab47d26-4f5a-452b-8b65-0917a6689b2d",
+   "source_file_url": "",
+   "start_frame": 1001,
+   "status": "Not Started",
+   "tags": [],
+   "task_id": "826d70e8-1127-4ebd-b41b-ee0c153dbf33",
+   "thumbnail_url": "",
+   "updated_at": "2026-11-20T05:07:32.321453Z",
+   "uuid": "0457d1be-e664-43c8-ab16-028614557c1f",
+   "version_index": 1,
+   "version_number": "v001",
+   "video_url": ""
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/versions/0457d1be-e664-43c8-ab16-028614557c1f/"
+  },
+  "status": 200
+ }
+}

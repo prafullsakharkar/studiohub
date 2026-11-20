@@ -158,6 +158,7 @@ The owner took every recommendation of [PLAN.md, RP-13 questions](PLAN.md#questi
 | RP-22 Grades from EDLs and ALEs | planned in [PLAN.md](PLAN.md#rp-22-grades-from-edls-and-ales); answered (Q-RP-101 to Q-RP-104 = A); committed `d5d2576c`, merged into `develop` and `main`, released in v4.19.0 ([rp-22-verification.md](rp-22-verification.md)) |
 | RP-23 Downloading a review copy | planned in [PLAN.md](PLAN.md#rp-23-downloading-a-review-copy); answered (Q-RP-105 to Q-RP-108 = A); committed `c58da79c`, merged into `develop` and `main`, released in v4.20.0 ([rp-23-verification.md](rp-23-verification.md)) |
 | RP-24 Waiting for my review | planned in [PLAN.md](PLAN.md#rp-24-waiting-for-my-review); answered (Q-RP-109 to Q-RP-112 = A); committed `3786373c`, merged into `develop` and `main`, released in v4.21.0 ([rp-24-verification.md](rp-24-verification.md)) |
+| RP-25 Slates on downloaded copies | planned in [PLAN.md](PLAN.md#rp-25-slates-on-downloaded-copies); answered (Q-RP-113 to Q-RP-116 = A); built on `feature/rp-25-download-slates`, not committed ([rp-25-verification.md](rp-25-verification.md)) |
 
 Phase numbers are not reused, so RP-7 stays empty.
 
@@ -289,3 +290,18 @@ The owner took every recommendation of [PLAN.md, RP-24 questions](PLAN.md#questi
 | Q-RP-111 | **A** | A *To review: Mine* filter on the Versions list, *Reviewer: Me* on the Tasks list, and a link from the "copy to review" notices. No dashboard widget or new page. |
 | Q-RP-112 | **A** | No count of what waits. |
 
+## RP-25 answers
+
+The owner took every recommendation of [PLAN.md, RP-25 questions](PLAN.md#questions-before-rp-25-starts) on 2026-11-20 ("All A, build it").
+
+| ID | Answer | Meaning |
+|---|---|---|
+| Q-RP-113 | **A** | A project switch, `review_slates`, off by default; movie and sequence copies made while it is on; stills never. |
+| Q-RP-114 | **A** | The slate says the facts (project, shot or asset, version, task, artist, frames, date) and the project's own line, `review_slate_note`. Not who downloaded it. |
+| Q-RP-115 | **A** | A card encoded with the copy's settings, joined to the copy without re-encoding it and checked; a failure leaves the copy without a slate (`slate_skipped`). |
+| Q-RP-116 | **A** | Copies made before the switch download without a slate and count as differing (`slate`), so *Remake them* adds it. |
+
+Decided while building, within the answers:
+- **The probe's `slate` and `slate_skipped` are shown** (C-RP-59), as RP-20 shows `grade_skipped`, so a client can say whether a download has a slate; the Download link's title says so.
+- **The copies read counts the slate** (`review_slates`, `slate_out_of_date`, C-RP-60), as RP-20 counts grades.
+- **Each line of the card is sized to fit** the copy's width (a long code, or a 120-character line), at most the usual size.

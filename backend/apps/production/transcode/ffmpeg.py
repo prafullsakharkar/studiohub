@@ -325,6 +325,147 @@ def filmstrip_command(ffmpeg: str, source: Input, probe: Probe, out: Path) -> li
     ]  # fmt: skip
 
 
+# ---------------------------------------------------------------------------- slate (RP-25, C-RP-59)
+
+#: how long the slate before a downloaded copy holds
+SLATE_SECONDS = 2
+#: the job's files: the card, the list the join reads, the download it makes
+SLATE_CARD = "slate.mp4"
+SLATE_LIST = "slate.txt"
+SLATE_DOWNLOAD = "download.mp4"
+#: one text file per line of the slate, read by ``drawtext`` with expansion off
+SLATE_LINES = tuple(f"slate_{n}.txt" for n in range(1, 9))
+#: our own outputs, read back: MP4 only, through the ``file`` protocol only
+_OWN_MP4 = ["-protocol_whitelist", "file", "-format_whitelist", "mov"]
+
+
+@dataclass(frozen=True)
+class CopyFormat:
+    """What a made copy is encoded as, read back from it, so the card is encoded the same way."""
+
+    width: int
+    height: int
+    frame_rate: str
+    sample_aspect_ratio: str
+    #: the audio's sample rate, or ``None`` for a copy without audio
+    audio_rate: int | None
+
+    @property
+    def card_frames(self) -> int:
+        return max(1, round(SLATE_SECONDS * Fraction(self.frame_rate)))
+
+
+def copy_probe_command(ffprobe: str, path: Path) -> list[str]:
+    return [
+        ffprobe, "-v", "error", *_OWN_MP4, "-show_streams", "-of", "json", f"file:{path}",
+    ]  # fmt: skip
+
+
+def parse_copy_format(raw: str) -> CopyFormat:
+    try:
+        streams = json.loads(raw).get("streams", [])
+        video = next(s for s in streams if s.get("codec_type") == "video")
+        audio = next((s for s in streams if s.get("codec_type") == "audio"), None)
+        rate = Fraction(str(video.get("r_frame_rate") or video["avg_frame_rate"]))
+        sar = str(video.get("sample_aspect_ratio") or "1:1")
+        return CopyFormat(
+            width=int(video["width"]),
+            height=int(video["height"]),
+            frame_rate=f"{rate.numerator}/{rate.denominator}",
+            sample_aspect_ratio="1:1" if sar in ("0:1", "N/A") else sar,
+            audio_rate=int(audio["sample_rate"]) if audio else None,
+        )
+    except (ValueError, KeyError, TypeError, StopIteration, ZeroDivisionError) as error:
+        raise ProbeError(f"the copy cannot be read back: {error}") from error
+
+
+def slate_texts(lines: list[str]) -> dict[str, str]:
+    """The content of each slate line's file: empty lines left out, the rest one plain line each."""
+    kept = [text for text in (_plain(line) for line in lines) if text][: len(SLATE_LINES)]
+    return dict(zip(SLATE_LINES, kept, strict=False))
+
+
+#: a glyph of the burn-in font is at most this wide, as a share of its size (DejaVu Sans: about 0.6)
+_GLYPH_WIDTH = 0.62
+
+
+def slate_font_size(made: CopyFormat, line: int, characters: int) -> int:
+    """The size (pixels) of the slate's ``line``-th line: the first larger, and every line small enough to fit
+    inside the card's margins whatever its length (a long code or a 120-character line)."""
+    usual = made.height / (18 if line == 0 else 30)
+    fits = made.width * 0.84 / (_GLYPH_WIDTH * max(characters, 1))
+    return max(8, int(min(usual, fits)))
+
+
+def _slate_filter(made: CopyFormat, lengths: list[int]) -> str:
+    """The card's ``drawtext`` filters, one per line file; text never in the graph."""
+    common = f"fontfile={BURN_IN_FONT}:fontcolor=white:expansion=none:x=w*0.08"
+    return ",".join(
+        f"drawtext={common}:textfile={name}:fontsize={slate_font_size(made, n, length)}"
+        f":y=h*{0.14 + 0.09 * n:.2f}"
+        for n, (name, length) in enumerate(zip(SLATE_LINES, lengths, strict=False))
+    )
+
+
+def slate_command(ffmpeg: str, made: CopyFormat, lengths: list[int], out: Path) -> list[str]:
+    """The card: black, one line of text per entry of ``lengths`` (each line's length in characters),
+    ``SLATE_SECONDS`` long, encoded as ``proxy_command`` encodes.
+
+    Same size, sample aspect ratio, rate, profile and pixel format as the copy, and silent stereo AAC
+    at the copy's sample rate when the copy has audio, so the two can be joined without re-encoding.
+    """
+    keyframes = max(1, round(float(Fraction(made.frame_rate))))
+    args = [
+        ffmpeg, "-nostdin", "-v", "error",
+        "-f", "lavfi", "-i", f"color=c=black:s={made.width}x{made.height}:r={made.frame_rate}",
+    ]  # fmt: skip
+    if made.audio_rate:
+        args += ["-f", "lavfi", "-i", f"anullsrc=r={made.audio_rate}:cl=stereo"]
+    seconds = Fraction(made.card_frames) / Fraction(made.frame_rate)
+    args += [
+        "-map", "0:v:0", *(["-map", "1:a:0"] if made.audio_rate else []),
+        "-vf", f"{_slate_filter(made, lengths)},setsar={made.sample_aspect_ratio.replace(':', '/')},format=yuv420p",
+        "-frames:v", str(made.card_frames), "-t", f"{float(seconds):.6f}",
+        "-fps_mode", "cfr", "-r", made.frame_rate,
+        "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-profile:v", "high",
+        "-g", str(keyframes), "-keyint_min", str(keyframes),
+    ]  # fmt: skip
+    if made.audio_rate:
+        args += ["-c:a", "aac", "-b:a", "192k", "-ac", "2", "-ar", str(made.audio_rate)]
+    return [*args, "-f", "mp4", "-y", str(out)]
+
+
+def slate_list() -> str:
+    """The join's list: the card, then the copy (both our own names, in the job's folder)."""
+    return f"file '{SLATE_CARD}'\nfile 'proxy.mp4'\n"
+
+
+def join_command(ffmpeg: str, out: Path) -> list[str]:
+    """The card and the copy as one file, the copy's frames copied as they are (``-c copy``)."""
+    return [
+        ffmpeg, "-nostdin", "-v", "error",
+        "-protocol_whitelist", "file", "-format_whitelist", "concat,mov",
+        "-f", "concat", "-i", f"file:{SLATE_LIST}",
+        "-map", "0", "-c", "copy", "-movflags", "+faststart", "-f", "mp4", "-y", str(out),
+    ]  # fmt: skip
+
+
+def frame_count_command(ffprobe: str, path: Path) -> list[str]:
+    """How many video frames ``path`` holds, counted from its packets."""
+    return [
+        ffprobe, "-v", "error", *_OWN_MP4, "-select_streams", "v:0", "-count_packets",
+        "-show_entries", "stream=nb_read_packets", "-of", "csv=p=0", f"file:{path}",
+    ]  # fmt: skip
+
+
+def decode_check_command(ffmpeg: str, path: Path) -> list[str]:
+    """Decode every frame of ``path`` and stop at the first error: a join that went wrong fails here."""
+    return [
+        ffmpeg, "-nostdin", "-v", "error", "-xerror", *_OWN_MP4, "-f", "mov",
+        "-i", f"file:{path}", "-map", "0:v:0", "-f", "null", "-",
+    ]  # fmt: skip
+
+
 def run(args: list[str], *, cwd: Path, timeout: int) -> subprocess.CompletedProcess[str]:
     """Run one command; raises ``subprocess.TimeoutExpired``, never runs a shell."""
     return subprocess.run(  # noqa: S603 - an argument list built above, never a shell

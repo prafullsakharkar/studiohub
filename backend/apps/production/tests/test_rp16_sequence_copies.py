@@ -329,6 +329,8 @@ class TestWhichDiffer:
             "colour_out_of_date": 0,
             "review_grades": False,  # RP-20 (C-RP-53)
             "grade_out_of_date": 0,
+            "review_slates": False,  # RP-25 (C-RP-60)
+            "slate_out_of_date": 0,
         }
 
     def test_colour_and_burn_ins_are_both_said(

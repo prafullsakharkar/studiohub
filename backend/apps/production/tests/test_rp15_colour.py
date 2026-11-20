@@ -507,6 +507,8 @@ class TestCopies:
             "colour_out_of_date": 0,
             "review_grades": False,  # RP-20 (C-RP-53)
             "grade_out_of_date": 0,
+            "review_slates": False,  # RP-25 (C-RP-60)
+            "slate_out_of_date": 0,
         }
 
         project.review_view = "Un-tone-mapped"
@@ -519,6 +521,8 @@ class TestCopies:
             "colour_out_of_date": 2,
             "review_grades": False,  # RP-20 (C-RP-53)
             "grade_out_of_date": 0,
+            "review_slates": False,  # RP-25 (C-RP-60)
+            "slate_out_of_date": 0,
         }
         with cap(execute=True):
             remade = _api(producer).post(f"/api/v1/projects/{project.pk}/review-copies/remake/")
@@ -588,6 +592,8 @@ class TestCopies:
             "colour_out_of_date": 0,
             "review_grades": False,  # RP-20 (C-RP-53)
             "grade_out_of_date": 0,
+            "review_slates": False,  # RP-25 (C-RP-60)
+            "slate_out_of_date": 0,
         }
         with cap(execute=True):
             remade = _api(producer).post(f"/api/v1/projects/{project.pk}/review-copies/remake/")
