@@ -7243,6 +7243,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{uuid}/grades/export/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The graded shots the caller reads as one .ccc file, or one sequence's (RP-27, C-RP-62);
+         *     each export is an audit row.
+         */
+        get: operations["v1_projects_grades_export_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{uuid}/grades/import/": {
         parameters: {
             query?: never;
@@ -46395,6 +46415,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectList"];
+                };
+            };
+        };
+    };
+    v1_projects_grades_export_retrieve: {
+        parameters: {
+            query?: {
+                sequence_id?: string;
+            };
+            header?: never;
+            path: {
+                uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A ColorCorrectionCollection (.ccc). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/xml": string;
                 };
             };
         };

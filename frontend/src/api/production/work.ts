@@ -185,7 +185,16 @@ export const shotsApi = {
     form.append('dry_run', dryRun ? 'true' : 'false');
     return apiClient.upload<GradeImport>(`${V1}/projects/${projectId}/grades/import/`, form);
   },
+  /**
+   * RP-27 (C-RP-62): the graded shots the caller reads, or one sequence's, as a `.ccc`, saved as the server names it
+   * (`gradeExportName`); `shot.view`. An unknown sequence gives an empty collection. Each export is an audit row.
+   */
+  exportGrades: (projectId: string, projectCode: string, sequenceId?: string) =>
+    apiClient.download(`${V1}/projects/${projectId}/grades/export/`, gradeExportName(projectCode), { params: { sequence_id: sequenceId } }),
 };
+
+/** RP-27 (C-RP-62): the exported file's name, as the server gives it in `Content-Disposition` (not readable cross-origin). */
+export const gradeExportName = (projectCode: string) => `${projectCode}_grades.ccc`;
 
 // ---------------------------------------------------------------------------------------------- assets
 
