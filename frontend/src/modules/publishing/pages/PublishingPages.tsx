@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useActiveProjectScope } from '@/core/production/useActiveProjectScope';
 import { Link } from 'react-router-dom';
 import { DirectoryFormPage } from '@/modules/directory/DirectoryFormPage';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
@@ -26,11 +27,12 @@ const nav = (current: 'jobs' | 'files' | 'roots' | 'templates' | 'destinations')
   </>
 );
 
-export const PublishingPage: React.FC = () => <DirectoryListPage config={{ ...usePublishListConfig(), headerExtra: nav('jobs') }} />;
+/** Export jobs and published files follow the project switcher (every project with none chosen); roots, templates and destinations are the studio's. */
+export const PublishingPage: React.FC = () => <DirectoryListPage config={{ ...usePublishListConfig(useActiveProjectScope()), headerExtra: nav('jobs') }} />;
 export const PublishFormPage: React.FC = () => <DirectoryFormPage config={publishFormConfig} />;
 
 export const PublishedFilesPage: React.FC = () => {
-  const config = useFilesListConfig();
+  const config = useFilesListConfig(useActiveProjectScope());
   return (
     <DirectoryListPage
       config={{

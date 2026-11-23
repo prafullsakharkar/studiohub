@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useActiveProjectScope } from '@/core/production/useActiveProjectScope';
 import { Link } from 'react-router-dom';
 import { DirectoryFormPage } from '@/modules/directory/DirectoryFormPage';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
@@ -6,9 +7,9 @@ import { Button } from '@/shared/components/Button';
 import { deliveriesFormConfig, useDeliveriesListConfig } from '../deliveries';
 import { destinationsFormConfig, useDestinationsListConfig } from '../destinations';
 
-/** Deliveries across the caller's projects, with a way to the destinations. */
+/** Deliveries of the project chosen in the project switcher (every project with none chosen), with a way to the destinations. */
 export const DeliveriesPage: React.FC = () => {
-  const config = useDeliveriesListConfig();
+  const config = useDeliveriesListConfig(useActiveProjectScope());
   return (
     <DirectoryListPage
       config={{

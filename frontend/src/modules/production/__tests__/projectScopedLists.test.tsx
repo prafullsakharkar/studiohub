@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, waitFor } from '@testing-library/react';
 import type React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -8,7 +8,15 @@ import type { AuthContextValue } from '@/core/auth/AuthContext';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 import { useProductionStore } from '@/core/production/useProductionStore';
 import { AssetsPage } from '@/modules/assets';
+import { DeliveriesPage } from '@/modules/deliveries';
+import { MediaPage } from '@/modules/media';
+import { PlaylistsPage } from '@/modules/playlists';
+import { PublishedFilesPage, PublishingPage } from '@/modules/publishing';
+import { ReviewsPage } from '@/modules/reviews';
+import { MilestonesPage } from '@/modules/scheduling';
 import { ShotsPage } from '@/modules/shots';
+import { TasksPage, TimelogsPage } from '@/modules/tasks';
+import { VersionsListPage } from '@/modules/versions';
 import { mockFetch } from '@/test/fetchMock';
 import type { MockCall, MockReply } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
@@ -16,9 +24,9 @@ import type { User } from '@/types/identity';
 import { EpisodesPage, SequencesPage } from '../pages/StructurePages';
 
 /**
- * The Production lists of the sidebar (Episodes, Sequences, Shots, Assets) show the project chosen in the project switcher,
- * and follow it when it changes: every list request after a switch names the new project, none the old one. With no
- * project chosen they list every project, as before.
+ * The sidebar's lists of project records show the project chosen in the project switcher, and follow it when it changes:
+ * every list request after a switch names the new project, none the old one. With no project chosen they list every
+ * project, as before. Deliveries of one project come from the project's own route, the others take `project_id`.
  */
 type Captured = { status: number; body: any };
 const structure = loadSample<Record<string, Captured>>('production/_structure_flow.json');
@@ -32,7 +40,13 @@ const standard = projects.detail_admin.body as { id: string; code: string };
 const episodicTwo = { ...episodic, id: '7d1c2a4e-0b7f-4f61-9a43-3f0e2b8a5c11', code: 'BETA' };
 
 const path = (c: MockCall) => new URL(c.url).pathname;
-const projectOf = (c: MockCall) => new URL(c.url).searchParams.get('project_id');
+/** The project a list request names (`null`: none, every project), or `undefined` when it is not a request of `list`. */
+type Reader = (c: MockCall) => string | null | undefined;
+const byParam = (list: string): Reader => (c) => (path(c) === list ? new URL(c.url).searchParams.get('project_id') : undefined);
+const deliveries: Reader = (c) => {
+  if (path(c) === '/api/v1/deliveries/') return new URL(c.url).searchParams.get('project_id');
+  return /^\/api\/organizations\/projects\/([^/]+)\/deliveries\/$/.exec(path(c))?.[1];
+};
 const page = (results: unknown[]): MockReply => ({ status: 200, body: { count: results.length, next: null, previous: null, results } });
 
 function server(c: MockCall): MockReply {
@@ -72,38 +86,49 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const cases: Array<{ name: string; ui: React.ReactNode; route: string; list: string; first: string; second: string }> = [
-  { name: 'Episodes', ui: <EpisodesPage />, route: '/episodes', list: '/api/v1/episodes/', first: episodic.id, second: episodicTwo.id },
-  { name: 'Sequences', ui: <SequencesPage />, route: '/sequences', list: '/api/v1/sequences/', first: episodic.id, second: standard.id },
-  { name: 'Shots', ui: <ShotsPage />, route: '/shots', list: '/api/v1/shots/', first: episodic.id, second: standard.id },
-  { name: 'Assets', ui: <AssetsPage />, route: '/assets', list: '/api/v1/assets/', first: episodic.id, second: standard.id },
+const cases: Array<{ name: string; ui: React.ReactNode; route: string; read: Reader; first: string; second: string }> = [
+  { name: 'Episodes', ui: <EpisodesPage />, route: '/episodes', read: byParam('/api/v1/episodes/'), first: episodic.id, second: episodicTwo.id },
+  { name: 'Sequences', ui: <SequencesPage />, route: '/sequences', read: byParam('/api/v1/sequences/'), first: episodic.id, second: standard.id },
+  { name: 'Shots', ui: <ShotsPage />, route: '/shots', read: byParam('/api/v1/shots/'), first: episodic.id, second: standard.id },
+  { name: 'Assets', ui: <AssetsPage />, route: '/assets', read: byParam('/api/v1/assets/'), first: episodic.id, second: standard.id },
+  { name: 'Tasks', ui: <TasksPage />, route: '/tasks', read: byParam('/api/v1/tasks/'), first: episodic.id, second: standard.id },
+  { name: 'Timelogs', ui: <TimelogsPage />, route: '/timelogs', read: byParam('/api/v1/timelogs/'), first: episodic.id, second: standard.id },
+  { name: 'Versions', ui: <VersionsListPage />, route: '/versions', read: byParam('/api/v1/versions/'), first: episodic.id, second: standard.id },
+  { name: 'Reviews', ui: <ReviewsPage />, route: '/reviews', read: byParam('/api/v1/reviews/'), first: episodic.id, second: standard.id },
+  { name: 'Playlists', ui: <PlaylistsPage />, route: '/playlists', read: byParam('/api/v1/playlists/'), first: episodic.id, second: standard.id },
+  { name: 'Media', ui: <MediaPage />, route: '/media', read: byParam('/api/v1/media/'), first: episodic.id, second: standard.id },
+  { name: 'Deliveries', ui: <DeliveriesPage />, route: '/deliveries', read: deliveries, first: episodic.id, second: standard.id },
+  { name: 'Export jobs', ui: <PublishingPage />, route: '/publishing', read: byParam('/api/v1/publishing/'), first: episodic.id, second: standard.id },
+  { name: 'Published files', ui: <PublishedFilesPage />, route: '/publishing/files', read: byParam('/api/v1/publishing/files/'), first: episodic.id, second: standard.id },
+  { name: 'Milestones', ui: <MilestonesPage />, route: '/scheduling/milestones', read: byParam('/api/v1/scheduling/milestones/'), first: episodic.id, second: standard.id },
 ];
 
-describe.each(cases)('$name page and the project switcher', ({ name, ui, route, list, first, second }) => {
+const listed = (calls: MockCall[], read: Reader) => calls.map(read).filter((project) => project !== undefined);
+
+describe.each(cases)('$name page and the project switcher', ({ ui, route, read, first, second }) => {
   it('lists the chosen project only, and follows a switch to another project', async () => {
     const { calls } = mockFetch(server);
     choose(first);
     renderUi(ui, route);
-    await screen.findByRole('table', { name });
-    const lists = () => calls.filter((c) => path(c) === list);
-    await waitFor(() => expect(lists().length).toBeGreaterThan(0));
-    expect(lists().map(projectOf)).toEqual(lists().map(() => first));
+    await waitFor(() => expect(listed(calls, read).length).toBeGreaterThan(0));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(listed(calls, read)).toEqual(listed(calls, read).map(() => first));
 
-    const before = lists().length;
+    const before = listed(calls, read).length;
     act(() => choose(second));
-    await waitFor(() => expect(lists().length).toBeGreaterThan(before));
-    await screen.findByRole('table', { name });
-    expect(lists().slice(before).map(projectOf)).toEqual(lists().slice(before).map(() => second));
+    await waitFor(() => expect(listed(calls, read).length).toBeGreaterThan(before));
+    await new Promise((r) => setTimeout(r, 20));
+    const after = listed(calls, read).slice(before);
+    expect(after).toEqual(after.map(() => second));
   });
 });
 
-describe.each(cases.filter((c) => c.name !== 'Episodes'))('$name page with no project chosen', ({ name, ui, route, list }) => {
+describe.each(cases.filter((c) => c.name !== 'Episodes'))('$name page with no project chosen', ({ ui, route, read }) => {
   it('lists every project', async () => {
     const { calls } = mockFetch(server);
     renderUi(ui, route);
-    await screen.findByRole('table', { name });
-    const lists = calls.filter((c) => path(c) === list);
-    expect(lists.length).toBeGreaterThan(0);
-    expect(lists.map(projectOf)).toEqual(lists.map(() => null));
+    await waitFor(() => expect(listed(calls, read).length).toBeGreaterThan(0));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(listed(calls, read)).toEqual(listed(calls, read).map(() => null));
   });
 });

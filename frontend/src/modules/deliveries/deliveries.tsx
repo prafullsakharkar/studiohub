@@ -50,8 +50,8 @@ export function useDeliveriesListConfig(scope?: { projectId: string }): Director
     title: 'Deliveries',
     noun: 'delivery',
     subtitle: 'What was sent to the client, when, by whom and after whose sign-off. The transfer itself happens outside StudioHub.',
-    queryKey: deliveriesApi.keys.lists(),
-    // A project's own route is scoped to it and takes the same filters.
+    // A project's own route is scoped to it and takes the same filters; its rows are cached under the project.
+    queryKey: scope ? [...deliveriesApi.keys.lists(), 'project', scope.projectId] : deliveriesApi.keys.lists(),
     fetchPage: scope ? deliveriesApi.ofProject(scope.projectId) : deliveriesApi.list,
     remove: deliveriesApi.remove,
     deleteLabel: 'Delete',
