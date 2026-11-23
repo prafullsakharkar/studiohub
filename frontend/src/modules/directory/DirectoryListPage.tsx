@@ -30,7 +30,7 @@ function FilterSelect({ filter, value, onChange, filters }: { filter: ListFilter
     staleTime: 60_000,
   });
   const from = filter.optionsFrom;
-  const options = filter.options ?? (loaded.data ?? []).filter((row) => !from?.keep || from.keep(row as never)).map((row) => ({ value: row.id, label: (from as NonNullable<ListFilter['optionsFrom']>).getLabel(row as never) }));
+  const options = filter.options ?? (loaded.data ?? []).map((row) => ({ value: row.id, label: (from as NonNullable<ListFilter['optionsFrom']>).getLabel(row as never) }));
   return (
     <select aria-label={`Filter by ${filter.label.toLowerCase()}`} value={value} onChange={(e) => onChange(e.target.value)} className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200">
       <option value="">All {filter.label.toLowerCase()}</option>
