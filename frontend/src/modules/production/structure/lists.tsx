@@ -53,6 +53,7 @@ export function useEpisodesListConfig(scope?: { projectId: string }): DirectoryL
     defaultOrdering: 'episode_number',
     searchPlaceholder: 'Search code or name',
     basePath: '/episodes',
+    scope: scope ? { project_id: scope.projectId } : undefined,
     createQuery: scope ? `project=${scope.projectId}` : undefined,
     filters: [projectFilter((p) => isEpisodicProject(p)), { key: 'status', label: 'Status', options: options(STATUSES) }],
     columns: [

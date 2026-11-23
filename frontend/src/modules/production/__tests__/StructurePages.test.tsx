@@ -105,14 +105,15 @@ describe('Episodes page', () => {
     expect(await screen.findByText(/404 NOT FOUND/)).toBeTruthy();
   });
 
-  it('lists the episodes for an episodic project; its Project filter offers episodic projects only', async () => {
-    mockFetch(server);
+  it('lists the episodes of the chosen episodic project, with no Project filter (the switcher chooses it)', async () => {
+    const { calls } = mockFetch(server);
     choose(episodic.id);
     renderUi(<EpisodesPage />, '/episodes');
     const table = await screen.findByRole('table', { name: 'Episodes' });
     expect(await within(table).findByText(new RegExp(`^${episodes[0].code}`))).toBeTruthy();
-    const filter = screen.getByLabelText('Filter by project') as HTMLSelectElement;
-    await waitFor(() => expect([...filter.options].map((o) => o.value)).toEqual(['', episodic.id]));
+    const lists = calls.filter((c) => path(c) === '/api/v1/episodes/');
+    expect(lists.map((c) => new URL(c.url).searchParams.get('project_id'))).toEqual(lists.map(() => episodic.id));
+    expect(screen.queryByLabelText('Filter by project')).toBeNull();
   });
 });
 

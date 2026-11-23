@@ -62,8 +62,15 @@ function filtersFromAddress(filters: ReadonlyArray<ListFilter>, address: URLSear
  * One list screen for every directory entity: server-side search / filters / ordering / paging with the
  * backend's own parameter names, export of ALL filtered rows (Q4), and delete with the server's reason
  * (a referenced row answers 409 `has_dependants`, shown by ConfirmDialog).
+ *
+ * The list's filters, search and page start from its `scope` once, so a new scope (another project chosen in the project
+ * switcher) starts the list again: otherwise its requests would keep naming the old project.
  */
 export function DirectoryListPage<T extends { id: string }>({ config }: { config: DirectoryListConfig<T> }): React.ReactElement {
+  return <DirectoryList key={JSON.stringify(config.scope ?? {})} config={config} />;
+}
+
+function DirectoryList<T extends { id: string }>({ config }: { config: DirectoryListConfig<T> }): React.ReactElement {
   const queryClient = useQueryClient();
   const canManage = useCan(config.managePermission);
   const canCreate = useCan(config.createPermission ?? config.managePermission);
