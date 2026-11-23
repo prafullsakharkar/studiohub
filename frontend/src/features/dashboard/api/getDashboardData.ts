@@ -10,9 +10,8 @@ import { logger } from '@/core/logging/logger';
  */
 export async function getDashboardData(
   projectId: string,
-  // Retained for caller compatibility until the dashboard hooks are
-  // de-orged (Task 12 [C4]); the value is no longer used.
-  _organizationId?: string | null
+  // React Query's signal: an unmount or a project switch aborts the request.
+  signal?: AbortSignal
 ): Promise<ProjectDashboardData> {
   if (!projectId) {
     throw new Error('Project ID is required to fetch dashboard telemetry');
@@ -21,7 +20,7 @@ export async function getDashboardData(
   // Primary endpoint format conforming to DRF conventions
   const primaryEndpoint = `/api/v1/projects/${projectId}/dashboard/`;
 
-  const rawData = await apiClient.get<ProjectDashboardData>(primaryEndpoint);
+  const rawData = await apiClient.get<ProjectDashboardData>(primaryEndpoint, { signal });
 
   // Optional Zod validation; safe parse with fallback
   const parsed = ProjectDashboardDataSchema.safeParse(rawData);

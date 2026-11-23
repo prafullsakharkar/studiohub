@@ -33,7 +33,9 @@ export function useProjectDashboard(options: UseProjectDashboardOptions = {}) {
       if (!projectId) {
         throw new Error('Active project context is required');
       }
-      return getDashboardData(projectId);
+      // Pass the signal on: reading it tells React Query the request can be aborted, so an
+      // unmount cancels it and the next mount starts a new one. Unpassed, both reach the backend.
+      return getDashboardData(projectId, signal);
     },
     enabled: isEnabled,
     staleTime: 30000, // 30 seconds
