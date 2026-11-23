@@ -1,5 +1,5 @@
 import { authService, LoginFormData } from '@/modules/auth';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AuthContext, AuthContextValue, Restriction } from './AuthContext';
 import { User, Role, Permission, LoginOutcome, MfaChallengeInput } from '@/types/identity';
 import {
@@ -20,6 +20,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [restriction, setRestriction] = useState<Restriction | null>(null);
+  // The start-up /auth/me, shared: StrictMode runs the mount effect twice on this same instance, and
+  // both runs wait for one request. refreshUser() does not use it; it always asks again.
+  const bootstrap = useRef<Promise<User | null> | null>(null);
 
   // Phase 4 (ADR-0033): permission state derives from the authenticated user
   // only — the removed Zustand permission store / simulation sync is gone.
@@ -27,7 +30,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const initAuth = useCallback(async () => {
     try {
       setIsLoading(true);
-      const currentUser = await authService.getCurrentUser();
+      bootstrap.current ??= authService.getCurrentUser();
+      const currentUser = await bootstrap.current;
       if (typeof window !== 'undefined') {
         setUser(currentUser);
       }
