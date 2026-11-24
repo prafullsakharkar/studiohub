@@ -8,13 +8,12 @@ import { GradeImport } from '../components/GradeImport';
 import { ShotBulkAdd } from '../components/ShotBulkAdd';
 
 /**
- * Shots across the caller's projects. Bulk add, Import grades (RP-20) and Export grades (RP-27) open on the project of the
- * Project filter, else
- * the active project.
+ * Shots of the project chosen in the project switcher; with none chosen, of every project. Bulk add, Import grades (RP-20)
+ * and Export grades (RP-27) open on that project, or on the Project filter's when none is chosen.
  */
 export const ShotsPage: React.FC = () => {
-  const config = useShotsListConfig();
   const activeProjectId = useProductionStore((s) => s.activeProjectId) || undefined;
+  const config = useShotsListConfig(activeProjectId ? { projectId: activeProjectId } : undefined);
   const projectOf = (filters: Record<string, unknown>) => (filters.project_id ? String(filters.project_id) : activeProjectId);
   return (
     <DirectoryListPage

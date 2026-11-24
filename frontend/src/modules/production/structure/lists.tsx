@@ -5,7 +5,6 @@ import type { BulkAction, DirectoryFormConfig, DirectoryListConfig, FieldDef } f
 import { StagedBulkAdd } from '../bulk/StagedBulkAdd';
 import { editFieldsAction } from '../bulk/editFields';
 import { STRUCTURE_STATUSES, sequenceBulkSpec } from '../bulk/specs';
-import { isEpisodicProject } from '../projectWorkflow';
 import { EpisodePicker, ProjectPicker } from '../work/pickers';
 import { EpisodicOnly, episodeColumn, episodeFilter, useEpisodicProjectIds } from '../work/episodic';
 
@@ -17,10 +16,10 @@ import { EpisodicOnly, episodeColumn, episodeFilter, useEpisodicProjectIds } fro
 const STATUSES = STRUCTURE_STATUSES;
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
 
-const projectFilter = (keep?: (p: Project) => boolean) => ({
+const projectFilter = () => ({
   key: 'project_id',
   label: 'Project',
-  optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: Project) => p.code) as never, ...(keep ? { keep: keep as never } : {}) },
+  optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: Project) => p.code) as never },
 });
 
 const archiveAction = (noun: string, bulkArchive: (ids: string[]) => Promise<{ successful?: number; processed: number; failed: number }>): BulkAction => ({
@@ -53,8 +52,9 @@ export function useEpisodesListConfig(scope?: { projectId: string }): DirectoryL
     defaultOrdering: 'episode_number',
     searchPlaceholder: 'Search code or name',
     basePath: '/episodes',
+    scope: scope ? { project_id: scope.projectId } : undefined,
     createQuery: scope ? `project=${scope.projectId}` : undefined,
-    filters: [projectFilter((p) => isEpisodicProject(p)), { key: 'status', label: 'Status', options: options(STATUSES) }],
+    filters: [{ key: 'status', label: 'Status', options: options(STATUSES) }],
     columns: [
       { header: 'Episode', cell: (row) => `${row.code}${row.name ? ` · ${row.name}` : ''}`, sortField: 'code' },
       { header: 'Project', cell: (row) => row.project_code },
