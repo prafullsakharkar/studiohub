@@ -87,11 +87,13 @@ artist and version) give the step its artist and hours. Needs the project, its s
    builds `payloads/tasks.json`. `--per-step 100` takes the first 100 steps of each step name by shot or asset
    code, so the first shots get their whole pipeline: a pilot.
 3. `KIND=tasks STEP=dry` then `STEP=real` with `PAYLOADS=$D/payloads/tasks.json` (`run.py`). A real run adds the
-   assignees as project members first; codes the project already has are skipped, so the full import can follow a
-   pilot. `KIND=verify` then also checks each built task's entity, type, status, assignee and ATOM details.
+   assignees as project members first. Existing tasks are matched by ATOM step (`workflow.atom.step_uid`), not by
+   code, and skipped, so the full import can follow a pilot; a new step whose code is taken gets the next free `_N`
+   (a pilot hands out `_2` codes in another order than a full build: MUS, 5 tasks). `KIND=verify` then also checks
+   each built task's entity, type, status, assignee and ATOM details, matched the same way.
 4. `KIND=departments PROJECT=MUS` (`studio.py`) if any task type had no department.
 
-What it decides (MUS pilot, 2026-11-24: 1,455 tasks, 542 assigned, 30 members added):
+What it decides (MUS, 2026-11-24: a pilot of 1,455, then the other 48,243; 49,698 tasks, 16,771 assigned, 65 members):
 - **Type:** `STEP_TYPES` maps ATOM's 26 step names to catalog task types (Cloth and Shave Hair → CFX, Blend Shape →
   Rigging, Foliage → Set Dressing ...); the title keeps ATOM's step name. A new step name stops the build.
 - **Status:** `STEP_STATUSES`; ATOM's own status goes to `workflow.atom.status`.

@@ -16,12 +16,14 @@ ERRORS    KIND=links: JSON-lines file for failed links (default <payloads>.error
 ARCHIVE_EP101=1   KIND=episodes, real: archive the EP101 studiohub makes for a new episodic project
 
 KIND=tasks (build.py tasks): a real run first adds the assignees as project members (studiohub assigns a task only to
-an active member; a new member is an Artist), then skips codes the project already has, then bulk-creates the rest.
+an active member; a new member is an Artist), then skips the ATOM steps the project already has (matched by
+workflow.atom.step_uid, not by code), gives a new step whose code is taken the next free _N, and bulk-creates the rest.
 A dry run cannot see members it has not added, so it leaves those assignees out and checks everything else.
 """
 
 import json
 import os
+import re
 import time
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -278,23 +280,37 @@ elif KIND == "tasks":
             if response.status_code not in (200, 201):
                 print("  member failed:", response.status_code, response.content[:300])
         print("member responses:", dict(added))
-    have = {
-        c.upper() for c in Task.all_objects.filter(project=project).values_list("code", flat=True)
-    }
-    batches, skipped = [], 0
-    for batch in payload["batches"]:
+    # Existing tasks are matched by ATOM step, not by code: a pilot (--per-step) hands out ``_2`` codes in another
+    # order than a full build, so a code can name a different step. A step already there is skipped; a new step
+    # whose code is taken gets the next free ``_N``.
+    existing = list(Task.all_objects.filter(project=project).values_list("code", "workflow"))
+    have_codes = {code.upper() for code, _ in existing}
+    have_steps = {((w or {}).get("atom") or {}).get("step_uid") for _, w in existing} - {None}
+    new_batches = [
+        [row for row in batch if row["workflow"]["atom"]["step_uid"] not in have_steps]
+        for batch in payload["batches"]
+    ]
+    skipped = sum(len(b) for b in payload["batches"]) - sum(len(b) for b in new_batches)
+    taken = have_codes | {r["code"].upper() for b in new_batches for r in b}
+    batches, recoded = [], 0
+    for batch in new_batches:
         rows = []
         for row in batch:
-            if row["code"].upper() in have:
-                skipped += 1
-                continue
+            if row["code"].upper() in have_codes:
+                base, n = re.sub(r"_\d+$", "", row["code"]), 2
+                while f"{base}_{n}".upper() in taken:
+                    n += 1
+                row = {**row, "code": f"{base}_{n}"}
+                taken.add(row["code"].upper())
+                recoded += 1
             if dry and row.get("assignee") in to_add:
                 row = {k: v for k, v in row.items() if k != "assignee"}
             rows.append(row)
         if rows:
             batches.append(rows)
     print(
-        f"already in studiohub: {skipped} | to create: {sum(len(b) for b in batches)} in {len(batches)} batches"
+        f"steps already in studiohub: {skipped} | to create: {sum(len(b) for b in batches)} in {len(batches)} batches"
+        f" | given a free code: {recoded}"
     )
     bulk("/api/v1/tasks/bulk-create/", batches)
     live = Task.objects.filter(project=project)
@@ -335,16 +351,21 @@ elif KIND == "verify":
         )
     tasks_file = data / "payloads" / "tasks.json"
     if tasks_file.exists():
-        built = {r["code"]: r for b in json.loads(tasks_file.read_text())["batches"] for r in b}
+        # Matched by ATOM step (codes can differ, see KIND=tasks).
+        built = {
+            r["workflow"]["atom"]["step_uid"]: r
+            for b in json.loads(tasks_file.read_text())["batches"]
+            for r in b
+        }
         stored = {
-            t.code: t
+            ((t.workflow or {}).get("atom") or {}).get("step_uid"): t
             for t in Task.objects.filter(project=project).select_related(
                 "task_type", "shot", "asset", "sequence"
             )
         }
         checks = Counter()
-        for code, row in built.items():
-            t = stored.get(code)
+        for step_uid, row in built.items():
+            t = stored.get(step_uid)
             if t is None:
                 checks["missing"] += 1
                 continue
