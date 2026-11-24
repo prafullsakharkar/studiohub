@@ -6,7 +6,7 @@
 Requests go through DRF's APIClient as ADMIN_EMAIL (default admin@studiohub.local), so every serializer,
 validator and permission the UI meets applies. Nothing here talks to ATOM.
 
-KIND      project | episodes | sequences | shots | assets | links | verify
+KIND      project | episodes | sequences | shots | assets | links | tasks | verify
 STEP      dry (bulk trial runs, nothing saved) | real (one batch at a time, stop at the first that does not commit)
 PROJECT   the studiohub project code (not needed for KIND=project)
 PAYLOADS  build.py's output; for KIND=project a JSON file with the project's fields; for KIND=verify the data folder
@@ -14,6 +14,10 @@ BATCHES   optional comma list of 1-based batch numbers
 SHOTS     KIND=links: optional comma list of shot codes to limit the run to
 ERRORS    KIND=links: JSON-lines file for failed links (default <payloads>.errors.jsonl)
 ARCHIVE_EP101=1   KIND=episodes, real: archive the EP101 studiohub makes for a new episodic project
+
+KIND=tasks (build.py tasks): a real run first adds the assignees as project members (studiohub assigns a task only to
+an active member; a new member is an Artist), then skips codes the project already has, then bulk-creates the rest.
+A dry run cannot see members it has not added, so it leaves those assignees out and checks everything else.
 """
 
 import json
@@ -25,7 +29,16 @@ from pathlib import Path
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from apps.production.models import Asset, Episode, Project, Sequence, Shot, ShotAsset
+from apps.production.models import (
+    Asset,
+    Episode,
+    Project,
+    ProjectMembership,
+    Sequence,
+    Shot,
+    ShotAsset,
+    Task,
+)
 
 KIND = os.environ["KIND"]
 STEP = os.environ.get("STEP", "dry")
@@ -242,6 +255,58 @@ elif KIND == "links":
         )
     print("links in studiohub:", ShotAsset.objects.filter(project=project).count())
 
+elif KIND == "tasks":
+    payload = json.loads(payloads.read_text())
+    members = set(
+        str(u)
+        for u in ProjectMembership.objects.filter(project=project, status="active").values_list(
+            "user_id", flat=True
+        )
+    )
+    to_add = [m for m in payload["members"] if m not in members]
+    print("members: wanted", len(payload["members"]), "| to add", len(to_add), flush=True)
+    if not dry:
+        added = Counter()
+        for user_id in to_add:
+            # The project-scoped routes live at /api/organizations/projects/<id>/... (no /v1/).
+            response = client.post(
+                f"/api/organizations/projects/{project.pk}/members/",
+                {"user_id": user_id},
+                format="json",
+            )
+            added[response.status_code] += 1
+            if response.status_code not in (200, 201):
+                print("  member failed:", response.status_code, response.content[:300])
+        print("member responses:", dict(added))
+    have = {
+        c.upper() for c in Task.all_objects.filter(project=project).values_list("code", flat=True)
+    }
+    batches, skipped = [], 0
+    for batch in payload["batches"]:
+        rows = []
+        for row in batch:
+            if row["code"].upper() in have:
+                skipped += 1
+                continue
+            if dry and row.get("assignee") in to_add:
+                row = {k: v for k, v in row.items() if k != "assignee"}
+            rows.append(row)
+        if rows:
+            batches.append(rows)
+    print(
+        f"already in studiohub: {skipped} | to create: {sum(len(b) for b in batches)} in {len(batches)} batches"
+    )
+    bulk("/api/v1/tasks/bulk-create/", batches)
+    live = Task.objects.filter(project=project)
+    print(
+        "live tasks:",
+        live.count(),
+        "| assigned:",
+        live.exclude(assignee=None).count(),
+        "| by status:",
+        dict(Counter(live.values_list("status", flat=True))),
+    )
+
 elif KIND == "verify":
     # Read only: what ATOM holds (the data folder) against what studiohub holds now.
     data = payloads
@@ -267,6 +332,41 @@ elif KIND == "verify":
         )
         print(
             f"links      ATOM {len(expected):>7}  studiohub {len(stored):>7}  missing {len(expected - stored)}  extra {len(stored - expected)}"
+        )
+    tasks_file = data / "payloads" / "tasks.json"
+    if tasks_file.exists():
+        built = {r["code"]: r for b in json.loads(tasks_file.read_text())["batches"] for r in b}
+        stored = {
+            t.code: t
+            for t in Task.objects.filter(project=project).select_related(
+                "task_type", "shot", "asset", "sequence"
+            )
+        }
+        checks = Counter()
+        for code, row in built.items():
+            t = stored.get(code)
+            if t is None:
+                checks["missing"] += 1
+                continue
+            entity = t.shot or t.asset or t.sequence
+            checks[
+                "entity ok" if entity and entity.code == row["entity_id"] else "ENTITY DIFFERENT"
+            ] += 1
+            checks[
+                "type ok"
+                if t.task_type and t.task_type.code == row["task_type_id"]
+                else "TYPE DIFFERENT"
+            ] += 1
+            checks["status ok" if t.status == row["status"] else "status changed since"] += 1
+            checks[
+                "assignee ok"
+                if str(t.assignee_id or "") == (row.get("assignee") or "")
+                else "assignee changed since"
+            ] += 1
+            checks["atom ok" if t.workflow == row["workflow"] else "WORKFLOW DIFFERENT"] += 1
+        print(
+            f"tasks      built {len(built):>7}  studiohub {len(stored):>7}  extra {len(stored.keys() - built.keys())}",
+            dict(checks),
         )
 
 else:

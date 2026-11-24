@@ -1,7 +1,7 @@
 # Importing an ATOM project
 
 These scripts copy one project from ATOM (the studio's older tracker) into studiohub: the project, its
-episodes, sequences, shots and assets, and the shot–asset links. They were used for MUS on 2026-11-23/24
+episodes, sequences, shots and assets, the shot–asset links, its tasks, and ATOM's people. They were used for MUS on 2026-11-23/24
 (70 episodes, 1,471 sequences, 13,116 shots, 1,910 assets, 59,831 links, all checked against ATOM).
 
 ## Rules
@@ -19,9 +19,10 @@ episodes, sequences, shots and assets, and the shot–asset links. They were use
 
 | File | Does |
 |---|---|
-| `fetch.py` | GETs the ATOM project and its episodes, sequences, shots and assets into a data folder |
+| `fetch.py` | GETs the ATOM project and its episodes, sequences, shots and assets into a data folder; `--work` its steps and tasks; `--users` ATOM's users |
 | `build.py` | Turns the saved files into studiohub payloads (`<data>/payloads/<kind>.json`); local files only |
-| `run.py` | Sends a payload to studiohub (`KIND=project|episodes|sequences|shots|assets|links`) or compares counts (`KIND=verify`) |
+| `run.py` | Sends a payload to studiohub (`KIND=project|episodes|sequences|shots|assets|links|tasks`) or compares (`KIND=verify`) |
+| `studio.py` | Studio setup: departments on catalog task types, the studio's task templates, a project's workflows |
 | `users.py` | Creates ATOM's users as studiohub accounts and directory people (`KIND=users`), and a resource for each active one (`KIND=resources`) |
 
 ATOM's API is described in `scripts/ATOM API.yaml` (base URL `http://192.168.1.128:8085`, header
@@ -73,6 +74,56 @@ What it decides (MUS, 2026-11-24: 2,167 accounts, 495 active; 498 resources):
 - **Skipped:** `api_user` and `test.com` / `example.com` addresses. An address studiohub refuses is reported and left out.
 - **Limit:** an account's own profile name stays empty (no API lets an admin set another person's profile); the
   name is on the directory person.
+
+## Tasks
+
+One studiohub task per ATOM **step** (a department's work on a shot, asset or sequence); ATOM's tasks (one per
+artist and version) give the step its artist and hours. Needs the project, its shots and assets, and the people.
+
+1. `python3 scripts/atom/fetch.py --code MUS --work --out $D` (about 4 minutes for MUS: per episode, then the
+   rest by id; a stopped run resumes).
+2. `python3 scripts/atom/build.py bids --data $D --project-id $P` prints the median bid hours per step (the
+   templates' hours come from it), and `build.py tasks --data $D --project-id $P --users ~/atom-data/users`
+   builds `payloads/tasks.json`. `--per-step 100` takes the first 100 steps of each step name by shot or asset
+   code, so the first shots get their whole pipeline: a pilot.
+3. `KIND=tasks STEP=dry` then `STEP=real` with `PAYLOADS=$D/payloads/tasks.json` (`run.py`). A real run adds the
+   assignees as project members first; codes the project already has are skipped, so the full import can follow a
+   pilot. `KIND=verify` then also checks each built task's entity, type, status, assignee and ATOM details.
+4. `KIND=departments PROJECT=MUS` (`studio.py`) if any task type had no department.
+
+What it decides (MUS pilot, 2026-11-24: 1,455 tasks, 542 assigned, 30 members added):
+- **Type:** `STEP_TYPES` maps ATOM's 26 step names to catalog task types (Cloth and Shave Hair → CFX, Blend Shape →
+  Rigging, Foliage → Set Dressing ...); the title keeps ATOM's step name. A new step name stops the build.
+- **Status:** `STEP_STATUSES`; ATOM's own status goes to `workflow.atom.status`.
+
+  | studiohub | ATOM step status |
+  |---|---|
+  | Not Started | Ready To Start, Not Started, Waiting To Start |
+  | In Progress | In Progress, Outsource |
+  | Pending Review | Pending Internal Review, Pending Client Review |
+  | Approved | Client Approved, Internal Approved, Final Publish, Closed, Ready To Upload, Ready To Publish |
+  | Retake | Client Reject, Internal Reject |
+  | Archived | Omitted |
+- **Code:** `<entity code>_<TYPE>` like a template's, 44 characters at most, then `_2`.
+- **Assignee:** the artist of the step's latest ATOM task, when imported and active; otherwise none (their ATOM id
+  stays in `workflow.atom`). MUS pilot: 648 steps' latest artist is inactive, 265 steps have no ATOM task.
+- **Hours:** the step's task bids (ATOM keeps minutes; a step's `bid_days` is their sum over 480). Priority stays
+  studiohub's default (ATOM's is "low" everywhere).
+- **Dates:** start, end and due to `schedule`, due also to `due_date`; dates ATOM filled in are dropped.
+- **`workflow.atom`:** step uid, ATOM status, approval times, retakes, bid minutes, artist ids, task count,
+  latest version. Never a task uid or name: those hold the artist's name.
+
+## Studio setup
+
+`studio.py`, each `KIND` with `STEP=dry` first; all skip what is there.
+- `KIND=departments`: Layout, Animation, Modeling, Texturing and Look Development, Rigging and Matchmove types get
+  their department; Vatika (shot-level environment work) goes with Set Dressing in Layout.
+- `KIND=templates`: Animation series shot, VFX shot, Character, Prop and Environment asset, studio-wide, with MUS's
+  median hours (0 where MUS has no such step).
+- `KIND=workflows PROJECT=MUS`: a two-stage review, an animation series shot pipeline and a character asset pipeline.
+
+Done by hand for MUS, not scripted: the catalog task types Previz, CFX, Vatika, Render and Set Dressing, the studio
+calendar (Monday to Friday, 8 hours, Asia/Kolkata), and 58 episode-delivery milestones.
 
 ## What the builders decide
 
