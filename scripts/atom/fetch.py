@@ -1,12 +1,14 @@
 """Read one ATOM project into a data folder. Only GET requests are ever sent.
 
     python3 -I scripts/atom/fetch.py --code MUS --out ~/atom-data/mus
+    python3 -I scripts/atom/fetch.py --users --out ~/atom-data/users
 
 The key comes from ``ATOM_API_KEY`` in the environment, else from ``backend/.env.local``; it is never printed.
 The base URL comes from ``--base``, else ``ATOM_BASE_URL``, else http://192.168.1.128:8085 (spec:
 ``scripts/ATOM API.yaml``). The folder gets ``project.json``, ``episodes.json``, ``sequences.json``,
 ``shots.json``, ``assets.json`` and ``_fetched.json`` (code, slug, episodic, and the day it was read: ATOM fills a
-missing date with that day, so the builders drop such dates). The saved files hold people's names and emails:
+missing date with that day, so the builders drop such dates). ``--users`` saves ATOM's user list as ``users.json``
+instead, without passwords, API tokens, avatars or settings. The saved files hold people's names and emails:
 keep the folder outside the repository.
 """
 
@@ -50,9 +52,28 @@ def rows(body):
     return body.get("results", body) if isinstance(body, dict) else body
 
 
+# Never saved: secrets and per-user UI state that ATOM's user list returns.
+USER_FIELDS_DROPPED = ("password", "token", "avatar", "shortcuts", "settings")
+
+
+def fetch_users(base: str, key: str, out: Path) -> None:
+    users, page = [], 1
+    while True:
+        body = get(base, key, "/api/v1/account/users/", {"page_size": 500, "page": page})
+        for user in rows(body):
+            users.append({k: v for k, v in user.items() if k not in USER_FIELDS_DROPPED})
+        if not (isinstance(body, dict) and body.get("next")):
+            break
+        page += 1
+    (out / "users.json").write_text(json.dumps(users))
+    print(f"users: {len(users)} ({sum(1 for u in users if u.get('is_active'))} active)")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--code", required=True, help="ATOM project code, e.g. MUS")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--code", help="ATOM project code, e.g. MUS")
+    group.add_argument("--users", action="store_true", help="ATOM's users instead of a project")
     parser.add_argument(
         "--out", required=True, type=Path, help="data folder (outside the repository)"
     )
@@ -63,6 +84,10 @@ def main() -> None:
     base = args.base.rstrip("/")
     out = args.out.expanduser()
     out.mkdir(parents=True, exist_ok=True)
+    out.chmod(0o700)
+    if args.users:
+        fetch_users(base, key, out)
+        return
 
     projects = rows(get(base, key, "/api/v1/entity/projects/", {"code": args.code}))
     if len(projects) != 1:
