@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useActiveProjectScope } from '@/core/production/useActiveProjectScope';
 import { DirectoryFormPage } from '@/modules/directory/DirectoryFormPage';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -34,7 +35,7 @@ export const EpisodeFormPage: React.FC = () => (
   </EpisodicGate>
 );
 
-/** Sequences across the caller's projects (every project has them). */
-export const SequencesPage: React.FC = () => <DirectoryListPage config={useSequencesListConfig()} />;
+/** Sequences of the project chosen in the project switcher (every project has them); with none chosen, of every project. */
+export const SequencesPage: React.FC = () => <DirectoryListPage config={useSequencesListConfig(useActiveProjectScope())} />;
 
 export const SequenceFormPage: React.FC = () => <DirectoryFormPage config={sequencesFormConfig} />;

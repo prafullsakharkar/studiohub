@@ -1,0 +1,273 @@
+"""Write a built payload to studiohub through its own API, or check what is there. Run inside ``manage.py shell``:
+
+    cd backend && KIND=shots STEP=dry PROJECT=MUS PAYLOADS=~/atom-data/mus/payloads/shots.json \\
+        DJANGO_ENV=local uv run python manage.py shell < ../scripts/atom/run.py
+
+Requests go through DRF's APIClient as ADMIN_EMAIL (default admin@studiohub.local), so every serializer,
+validator and permission the UI meets applies. Nothing here talks to ATOM.
+
+KIND      project | episodes | sequences | shots | assets | links | verify
+STEP      dry (bulk trial runs, nothing saved) | real (one batch at a time, stop at the first that does not commit)
+PROJECT   the studiohub project code (not needed for KIND=project)
+PAYLOADS  build.py's output; for KIND=project a JSON file with the project's fields; for KIND=verify the data folder
+BATCHES   optional comma list of 1-based batch numbers
+SHOTS     KIND=links: optional comma list of shot codes to limit the run to
+ERRORS    KIND=links: JSON-lines file for failed links (default <payloads>.errors.jsonl)
+ARCHIVE_EP101=1   KIND=episodes, real: archive the EP101 studiohub makes for a new episodic project
+"""
+
+import json
+import os
+import time
+from collections import Counter, defaultdict
+from pathlib import Path
+
+from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient
+
+from apps.production.models import Asset, Episode, Project, Sequence, Shot, ShotAsset
+
+KIND = os.environ["KIND"]
+STEP = os.environ.get("STEP", "dry")
+assert STEP in ("dry", "real"), "STEP is dry or real"
+dry = STEP == "dry"
+payloads = Path(os.environ["PAYLOADS"]).expanduser()
+wanted_batches = [int(n) for n in os.environ.get("BATCHES", "").split(",") if n]
+
+client = APIClient(SERVER_NAME="localhost")
+client.force_authenticate(
+    user=get_user_model().objects.get(email=os.environ.get("ADMIN_EMAIL", "admin@studiohub.local"))
+)
+
+
+def report(label, response):
+    body = response.json()
+    results = (body.get("results") or body.get("items") or []) if isinstance(body, dict) else []
+    statuses = (
+        Counter(str(r.get("status")) for r in results) if isinstance(results, list) else Counter()
+    )
+    flags = {k: body.get(k) for k in ("dry_run", "committed")} if isinstance(body, dict) else {}
+    print(f"{label}: HTTP {response.status_code}", flags, dict(statuses), flush=True)
+    errors = body.get("errors") if isinstance(body, dict) else None
+    if errors:
+        print("  errors:", json.dumps(errors)[:2000], flush=True)
+    elif response.status_code >= 400:
+        print("  body:", json.dumps(body)[:2000], flush=True)
+    return body
+
+
+def bulk(route, batches, resolve=None):
+    """POST each batch to ``route`` (bulk create, atomic); stop at the first real batch that does not commit."""
+    for number in wanted_batches or range(1, len(batches) + 1):
+        items = [resolve(dict(row)) if resolve else dict(row) for row in batches[number - 1]]
+        started = time.monotonic()
+        response = client.post(
+            route, {"items": items, "dry_run": dry, "atomic": True}, format="json"
+        )
+        body = report(
+            f"batch {number} ({len(items)} rows, {items[0]['code']}..{items[-1]['code']}, {time.monotonic() - started:.1f}s)",
+            response,
+        )
+        if not dry and not body.get("committed"):
+            print(f"stopping: batch {number} did not commit")
+            break
+
+
+if KIND == "project":
+    fields = json.loads(payloads.read_text())
+    taken = (
+        Project.all_objects.filter(code__iexact=fields["code"]).exists()
+        if hasattr(Project, "all_objects")
+        else Project.objects.filter(code__iexact=fields["code"]).exists()
+    )
+    print("code", fields["code"], "already taken" if taken else "free")
+    if not dry and not taken:
+        response = client.post("/api/v1/projects/", fields, format="json")
+        body = response.json()
+        print(
+            "HTTP",
+            response.status_code,
+            json.dumps(
+                {k: body.get(k) for k in ("id", "code", "workflow_type", "status")}
+                if response.status_code < 300
+                else body
+            )[:2000],
+        )
+        auto = Episode.objects.filter(project__code=fields["code"], code="EP101").exists()
+        print(
+            "auto-created EP101:",
+            auto,
+            "(archive it with KIND=episodes ARCHIVE_EP101=1 if unwanted)" if auto else "",
+        )
+    raise SystemExit
+
+project = Project.objects.get(code=os.environ["PROJECT"])
+
+if KIND == "episodes":
+    data = json.loads(payloads.read_text())
+    create = report(
+        "bulk-create",
+        client.post(
+            "/api/v1/episodes/bulk-create/",
+            {"items": data["create"], "dry_run": dry, "atomic": True},
+            format="json",
+        ),
+    )
+    if dry:
+        print("bulk-update (dates): runs after the real create;", len(data["dates"]), "rows ready")
+    elif create.get("committed"):
+        if data["dates"]:
+            report(
+                "bulk-update (dates)",
+                client.post(
+                    "/api/v1/episodes/bulk-update/",
+                    {"items": data["dates"], "dry_run": False, "atomic": True},
+                    format="json",
+                ),
+            )
+        ep101 = Episode.objects.filter(project=project, code="EP101").first()
+        if ep101 is not None and os.environ.get("ARCHIVE_EP101") == "1":
+            archive = client.post(
+                "/api/v1/episodes/bulk-archive/", {"ids": [str(ep101.pk)]}, format="json"
+            )
+            print("archive EP101: HTTP", archive.status_code)
+    live = Episode.objects.filter(project=project)
+    print(
+        "live episodes:",
+        live.count(),
+        "| with a delivery date:",
+        live.exclude(delivery_date=None).count(),
+    )
+
+elif KIND == "sequences":
+    episode_ids = {e.code: str(e.pk) for e in Episode.objects.filter(project=project)}
+
+    def resolve(item):
+        if "episode_code" in item:
+            item["episode_id"] = episode_ids[item.pop("episode_code")]
+        return item
+
+    bulk("/api/v1/sequences/bulk-create/", json.loads(payloads.read_text()), resolve)
+    print("live sequences:", Sequence.objects.filter(project=project).count())
+
+elif KIND == "shots":
+    sequence_ids = {s.code: str(s.pk) for s in Sequence.objects.filter(project=project)}
+
+    def resolve(item):
+        item["sequence_id"] = sequence_ids[item.pop("sequence_code")]
+        return item
+
+    bulk("/api/v1/shots/bulk-create/", json.loads(payloads.read_text()), resolve)
+    print("live shots:", Shot.objects.filter(project=project).count())
+
+elif KIND == "assets":
+    bulk("/api/v1/assets/bulk-create/", json.loads(payloads.read_text()))
+    print("live assets:", Asset.objects.filter(project=project).count())
+
+elif KIND == "links":
+    # One POST per link (there is no bulk route). A link already there is skipped without a request and an
+    # "already linked" answer counts as done, so a rerun is safe. STEP=dry only counts what would be sent.
+    pairs = json.loads(payloads.read_text())
+    only = {s for s in os.environ.get("SHOTS", "").split(",") if s}
+    errors_path = Path(os.environ.get("ERRORS") or f"{payloads}.errors.jsonl").expanduser()
+    shot_ids = {
+        code: str(pk) for code, pk in Shot.objects.filter(project=project).values_list("code", "pk")
+    }
+    asset_ids = {
+        code: str(pk)
+        for code, pk in Asset.objects.filter(project=project).values_list("code", "pk")
+    }
+    existing = set(
+        ShotAsset.objects.filter(project=project).values_list("shot__code", "asset__code")
+    )
+    by_shot = defaultdict(list)
+    for shot_code, asset_code in pairs:
+        if not only or shot_code in only:
+            by_shot[shot_code].append(asset_code)
+    todo = sum(len(v) for v in by_shot.values())
+    missing = sorted(
+        {s for s in by_shot if s not in shot_ids}
+        | {a for v in by_shot.values() for a in v if a not in asset_ids}
+    )
+    print(
+        f"{todo} links to make, {len(existing)} already in studiohub, {len(missing)} codes not in studiohub",
+        missing[:10],
+        flush=True,
+    )
+    counts, started = Counter(), time.monotonic()
+    if not dry and not missing:
+        with open(errors_path, "a") as errors:
+            for shot_code in sorted(by_shot):
+                for asset_code in by_shot[shot_code]:
+                    if (shot_code, asset_code) in existing:
+                        counts["already there"] += 1
+                        continue
+                    response = client.post(
+                        f"/api/v1/shots/{shot_ids[shot_code]}/assets/",
+                        {"asset_id": asset_ids[asset_code], "quantity": 1, "notes": ""},
+                        format="json",
+                    )
+                    if response.status_code == 201:
+                        counts["linked"] += 1
+                    elif (
+                        response.status_code == 400
+                        and "already" in response.content.decode(errors="replace").lower()
+                    ):
+                        counts["already linked"] += 1
+                    else:
+                        counts["failed"] += 1
+                        errors.write(
+                            json.dumps(
+                                {
+                                    "shot": shot_code,
+                                    "asset": asset_code,
+                                    "status": response.status_code,
+                                    "body": response.content.decode(errors="replace")[:500],
+                                }
+                            )
+                            + "\n"
+                        )
+                    done = sum(counts.values())
+                    if done % 1000 == 0:
+                        print(
+                            f"{done}/{todo} {dict(counts)} {done / (time.monotonic() - started):.1f}/s",
+                            flush=True,
+                        )
+        print(
+            f"done {sum(counts.values())}/{todo}",
+            dict(counts),
+            f"{time.monotonic() - started:.0f}s",
+            "| failures in",
+            errors_path,
+        )
+    print("links in studiohub:", ShotAsset.objects.filter(project=project).count())
+
+elif KIND == "verify":
+    # Read only: what ATOM holds (the data folder) against what studiohub holds now.
+    data = payloads
+    atom = {
+        name: len(json.loads((data / f"{name}.json").read_text()))
+        for name in ("episodes", "sequences", "shots", "assets")
+    }
+    live = {
+        "episodes": Episode.objects.filter(project=project).exclude(code="EP101").count(),
+        "sequences": Sequence.objects.filter(project=project).count(),
+        "shots": Shot.objects.filter(project=project).count(),
+        "assets": Asset.objects.filter(project=project).count(),
+    }
+    for name in atom:
+        print(
+            f"{name:10} ATOM {atom[name]:>7}  studiohub {live[name]:>7}  {'ok' if atom[name] == live[name] else 'DIFFERENT'}"
+        )
+    links_file = data / "payloads" / "links.json"
+    if links_file.exists():
+        expected = {tuple(p) for p in json.loads(links_file.read_text())}
+        stored = set(
+            ShotAsset.objects.filter(project=project).values_list("shot__code", "asset__code")
+        )
+        print(
+            f"links      ATOM {len(expected):>7}  studiohub {len(stored):>7}  missing {len(expected - stored)}  extra {len(stored - expected)}"
+        )
+
+else:
+    raise SystemExit(f"unknown KIND {KIND}")

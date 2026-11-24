@@ -30,7 +30,7 @@ function FilterSelect({ filter, value, onChange, filters }: { filter: ListFilter
     staleTime: 60_000,
   });
   const from = filter.optionsFrom;
-  const options = filter.options ?? (loaded.data ?? []).filter((row) => !from?.keep || from.keep(row as never)).map((row) => ({ value: row.id, label: (from as NonNullable<ListFilter['optionsFrom']>).getLabel(row as never) }));
+  const options = filter.options ?? (loaded.data ?? []).map((row) => ({ value: row.id, label: (from as NonNullable<ListFilter['optionsFrom']>).getLabel(row as never) }));
   return (
     <select aria-label={`Filter by ${filter.label.toLowerCase()}`} value={value} onChange={(e) => onChange(e.target.value)} className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200">
       <option value="">All {filter.label.toLowerCase()}</option>
@@ -62,8 +62,15 @@ function filtersFromAddress(filters: ReadonlyArray<ListFilter>, address: URLSear
  * One list screen for every directory entity: server-side search / filters / ordering / paging with the
  * backend's own parameter names, export of ALL filtered rows (Q4), and delete with the server's reason
  * (a referenced row answers 409 `has_dependants`, shown by ConfirmDialog).
+ *
+ * The list's filters, search and page start from its `scope` once, so a new scope or query key (another project chosen in
+ * the project switcher) starts the list again: otherwise its requests would keep naming the old project.
  */
 export function DirectoryListPage<T extends { id: string }>({ config }: { config: DirectoryListConfig<T> }): React.ReactElement {
+  return <DirectoryList key={JSON.stringify([config.queryKey, config.scope ?? {}])} config={config} />;
+}
+
+function DirectoryList<T extends { id: string }>({ config }: { config: DirectoryListConfig<T> }): React.ReactElement {
   const queryClient = useQueryClient();
   const canManage = useCan(config.managePermission);
   const canCreate = useCan(config.createPermission ?? config.managePermission);

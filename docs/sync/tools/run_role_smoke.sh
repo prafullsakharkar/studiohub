@@ -7,6 +7,12 @@
 #   docs/sync/tools/run_role_smoke.sh --grep "Bulk add"   # the create forms and Bulk add in a browser, then Bulk add as four roles (offered exactly where the server lets them create), about 3 minutes; screenshots in frontend/test-results/bulk-add-smoke
 #   docs/sync/tools/run_role_smoke.sh --vitest src/test/live/settings.live.test.tsx   # a live vitest file, fresh seed
 #
+# Several live files can share one run (list them after --vitest), with two limits learned the hard way:
+#   - the login throttle is 30 a minute per client, and nine files make about 57 logins: past it, sign-ins return 429 and
+#     the later files fail or skip in setup. Keep a run to about five files, or split it and let the backend finish
+#     flushing (about a minute) between runs.
+#   - files share one backend: publishing.live revokes files of the delivery versions that deliveries.live needs, so
+#     run deliveries.live first (or alone).
 # State (backend log, connection details) is kept in frontend/test-results/live, which Git ignores.
 set -u
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"

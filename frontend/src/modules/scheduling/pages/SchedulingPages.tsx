@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useActiveProjectScope } from '@/core/production/useActiveProjectScope';
 import { DirectoryFormPage } from '@/modules/directory/DirectoryFormPage';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { AssignmentsPage } from '../AssignmentsPage';
@@ -49,7 +50,8 @@ const Resources: React.FC = () => <DirectoryListPage config={useResourcesListCon
 const Bookings: React.FC = () => <DirectoryListPage config={useBookingsListConfig()} />;
 const Leaves: React.FC = () => <DirectoryListPage config={useLeavesListConfig()} />;
 const Events: React.FC = () => <DirectoryListPage config={useEventsListConfig()} />;
-const Milestones: React.FC = () => <DirectoryListPage config={useMilestonesListConfig()} />;
+/** Milestones of the project chosen in the project switcher; with none chosen, of every project. */
+const Milestones: React.FC = () => <DirectoryListPage config={useMilestonesListConfig(useActiveProjectScope())} />;
 const Holidays: React.FC = () => <DirectoryListPage config={useHolidaysListConfig()} />;
 const Calendars: React.FC = () => <DirectoryListPage config={useCalendarsListConfig()} />;
 

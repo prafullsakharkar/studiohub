@@ -482,3 +482,6 @@ backups/
 infrastructure/docker/nginx/certs/
 
 .worktrees/
+
+# ATOM import data (people's names and emails): keep it outside the repository
+scripts/atom/data/

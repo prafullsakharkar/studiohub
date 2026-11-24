@@ -82,7 +82,7 @@ export interface ListFilter {
   /** Fixed choices. */
   options?: ReadonlyArray<{ value: string; label: string }>;
   /** Or choices loaded from another list route (all rows, e.g. every department). `params` narrows them by the active filters (the chosen project's episodes). */
-  optionsFrom?: { queryKey: readonly unknown[]; fetchPage: PageFetcher<{ id: string }>; getLabel: (row: never) => string; params?: (filters: Record<string, unknown>) => Record<string, string>; /** Offer only these rows (no server filter for it: only episodic projects). */ keep?: (row: never) => boolean };
+  optionsFrom?: { queryKey: readonly unknown[]; fetchPage: PageFetcher<{ id: string }>; getLabel: (row: never) => string; params?: (filters: Record<string, unknown>) => Record<string, string> };
   /** Offer the filter only while this holds for the active filters; a hidden filter is cleared. */
   visible?: (filters: Record<string, unknown>) => boolean;
 }

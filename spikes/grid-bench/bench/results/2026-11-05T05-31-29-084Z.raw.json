@@ -1,0 +1,2024 @@
+[
+ {
+  "grid": "ag",
+  "rows": 10000,
+  "cpu": 1,
+  "runs": [
+   {
+    "readyMs": 802,
+    "dataMs": 43,
+    "scrollY": {
+     "frames": 173,
+     "frameMs": {
+      "n": 173,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 33.4,
+      "max": 33.4
+     },
+     "droppedPct": 4.6,
+     "blankPct": 0,
+     "longAnimationFrames": 1,
+     "loafMs": {
+      "n": 1,
+      "p50": 184.3,
+      "p95": 184.3,
+      "p99": 184.3,
+      "max": 184.3
+     },
+     "pxTravelled": 25950
+    },
+    "scrollX": {
+     "frames": 110,
+     "frameMs": {
+      "n": 110,
+      "p50": 16.7,
+      "p95": 33.4,
+      "p99": 33.4,
+      "max": 33.4
+     },
+     "droppedPct": 10,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 4400
+    },
+    "sort": {
+     "ms": 149.6,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "sortArtist": {
+     "ms": 166.1,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 100
+    },
+    "clearSort": {
+     "ms": 182.7,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 121
+    },
+    "filter": {
+     "ms": 199.4,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 85
+    },
+    "clearFilter": {
+     "ms": 132.7,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "group": {
+     "ms": 182.9,
+     "timedOut": false,
+     "rowsAfter": 10031,
+     "longestLoafMs": 0
+    },
+    "scrollYGrouped": {
+     "frames": 108,
+     "frameMs": {
+      "n": 108,
+      "p50": 16.7,
+      "p95": 33.3,
+      "p99": 33.4,
+      "max": 33.4
+     },
+     "droppedPct": 12,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 16200
+    },
+    "ungroup": {
+     "ms": 166.3,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 69
+   },
+   {
+    "readyMs": 685,
+    "dataMs": 37,
+    "scrollY": {
+     "frames": 169,
+     "frameMs": {
+      "n": 169,
+      "p50": 16.7,
+      "p95": 33.3,
+      "p99": 33.4,
+      "max": 33.4
+     },
+     "droppedPct": 7.1,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 25350
+    },
+    "scrollX": {
+     "frames": 115,
+     "frameMs": {
+      "n": 115,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 33.4,
+      "max": 33.4
+     },
+     "droppedPct": 5.2,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 4600
+    },
+    "sort": {
+     "ms": 149.6,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "sortArtist": {
+     "ms": 149.5,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 91
+    },
+    "clearSort": {
+     "ms": 166.1,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 111
+    },
+    "filter": {
+     "ms": 145.4,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 84
+    },
+    "clearFilter": {
+     "ms": 99.5,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "group": {
+     "ms": 182.8,
+     "timedOut": false,
+     "rowsAfter": 10031,
+     "longestLoafMs": 0
+    },
+    "scrollYGrouped": {
+     "frames": 115,
+     "frameMs": {
+      "n": 115,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 33.3,
+      "max": 33.3
+     },
+     "droppedPct": 5.2,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 17250
+    },
+    "ungroup": {
+     "ms": 182.8,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 100
+   },
+   {
+    "readyMs": 689,
+    "dataMs": 38,
+    "scrollY": {
+     "frames": 173,
+     "frameMs": {
+      "n": 173,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 33.3,
+      "max": 33.4
+     },
+     "droppedPct": 4.6,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 25950
+    },
+    "scrollX": {
+     "frames": 118,
+     "frameMs": {
+      "n": 118,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 33.2,
+      "max": 33.4
+     },
+     "droppedPct": 2.5,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 4720
+    },
+    "sort": {
+     "ms": 146.4,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 53
+    },
+    "sortArtist": {
+     "ms": 132.7,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 59
+    },
+    "clearSort": {
+     "ms": 166.3,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 108
+    },
+    "filter": {
+     "ms": 132.9,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 81
+    },
+    "clearFilter": {
+     "ms": 99.6,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 69
+    },
+    "group": {
+     "ms": 182.8,
+     "timedOut": false,
+     "rowsAfter": 10031,
+     "longestLoafMs": 0
+    },
+    "scrollYGrouped": {
+     "frames": 113,
+     "frameMs": {
+      "n": 113,
+      "p50": 16.7,
+      "p95": 33.2,
+      "p99": 33.3,
+      "max": 33.4
+     },
+     "droppedPct": 6.2,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 16950
+    },
+    "ungroup": {
+     "ms": 146.4,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 51
+   }
+  ]
+ },
+ {
+  "grid": "tanstack",
+  "rows": 10000,
+  "cpu": 1,
+  "runs": [
+   {
+    "readyMs": 490,
+    "dataMs": 39,
+    "scrollY": {
+     "frames": 180,
+     "frameMs": {
+      "n": 180,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 16.8,
+      "max": 33.3
+     },
+     "droppedPct": 0.6,
+     "blankPct": 0,
+     "longAnimationFrames": 1,
+     "loafMs": {
+      "n": 1,
+      "p50": 83.5,
+      "p95": 83.5,
+      "p99": 83.5,
+      "max": 83.5
+     },
+     "pxTravelled": 27000
+    },
+    "scrollX": {
+     "frames": 121,
+     "frameMs": {
+      "n": 121,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 16.8,
+      "max": 16.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 4840
+    },
+    "sort": {
+     "ms": 82.7,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "sortArtist": {
+     "ms": 82.9,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 91
+    },
+    "clearSort": {
+     "ms": 49.5,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 87
+    },
+    "filter": {
+     "ms": 80.6,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 63
+    },
+    "clearFilter": {
+     "ms": 49.4,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "group": {
+     "ms": 66.1,
+     "timedOut": false,
+     "rowsAfter": 10031,
+     "longestLoafMs": 0
+    },
+    "scrollYGrouped": {
+     "frames": 121,
+     "frameMs": {
+      "n": 121,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 1,
+     "loafMs": {
+      "n": 1,
+      "p50": 52.7,
+      "p95": 52.7,
+      "p99": 52.7,
+      "max": 52.7
+     },
+     "pxTravelled": 18150
+    },
+    "ungroup": {
+     "ms": 33.1,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 31
+   },
+   {
+    "readyMs": 482,
+    "dataMs": 40,
+    "scrollY": {
+     "frames": 179,
+     "frameMs": {
+      "n": 179,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 16.8,
+      "max": 33.4
+     },
+     "droppedPct": 1.1,
+     "blankPct": 0,
+     "longAnimationFrames": 1,
+     "loafMs": {
+      "n": 1,
+      "p50": 63.1,
+      "p95": 63.1,
+      "p99": 63.1,
+      "max": 63.1
+     },
+     "pxTravelled": 26850
+    },
+    "scrollX": {
+     "frames": 121,
+     "frameMs": {
+      "n": 121,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 4840
+    },
+    "sort": {
+     "ms": 82.6,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "sortArtist": {
+     "ms": 109.2,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 95
+    },
+    "clearSort": {
+     "ms": 66.1,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "filter": {
+     "ms": 82.9,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 79
+    },
+    "clearFilter": {
+     "ms": 49.7,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "group": {
+     "ms": 66.2,
+     "timedOut": false,
+     "rowsAfter": 10031,
+     "longestLoafMs": 0
+    },
+    "scrollYGrouped": {
+     "frames": 119,
+     "frameMs": {
+      "n": 119,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 16.8,
+      "max": 33.3
+     },
+     "droppedPct": 0.8,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 17850
+    },
+    "ungroup": {
+     "ms": 49.1,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 34
+   },
+   {
+    "readyMs": 483,
+    "dataMs": 35,
+    "scrollY": {
+     "frames": 181,
+     "frameMs": {
+      "n": 181,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 1,
+     "loafMs": {
+      "n": 1,
+      "p50": 67.2,
+      "p95": 67.2,
+      "p99": 67.2,
+      "max": 67.2
+     },
+     "pxTravelled": 27150
+    },
+    "scrollX": {
+     "frames": 121,
+     "frameMs": {
+      "n": 121,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 16.8,
+      "max": 16.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 4840
+    },
+    "sort": {
+     "ms": 82.6,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "sortArtist": {
+     "ms": 99.5,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 93
+    },
+    "clearSort": {
+     "ms": 47,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "filter": {
+     "ms": 99.5,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 87
+    },
+    "clearFilter": {
+     "ms": 49.5,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "group": {
+     "ms": 66.3,
+     "timedOut": false,
+     "rowsAfter": 10031,
+     "longestLoafMs": 52
+    },
+    "scrollYGrouped": {
+     "frames": 117,
+     "frameMs": {
+      "n": 117,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 33.3,
+      "max": 33.4
+     },
+     "droppedPct": 3.4,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 17550
+    },
+    "ungroup": {
+     "ms": 49.5,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 37
+   }
+  ]
+ },
+ {
+  "grid": "ag",
+  "rows": 10000,
+  "cpu": 4,
+  "runs": [
+   {
+    "readyMs": 1553,
+    "dataMs": 116,
+    "scrollY": {
+     "frames": 52,
+     "frameMs": {
+      "n": 52,
+      "p50": 50.1,
+      "p95": 83.4,
+      "p99": 100,
+      "max": 116.7
+     },
+     "droppedPct": 9.6,
+     "blankPct": 0,
+     "longAnimationFrames": 10,
+     "loafMs": {
+      "n": 10,
+      "p50": 55.8,
+      "p95": 81,
+      "p99": 81,
+      "max": 90
+     },
+     "pxTravelled": 7800
+    },
+    "scrollX": {
+     "frames": 49,
+     "frameMs": {
+      "n": 49,
+      "p50": 33.4,
+      "p95": 66.7,
+      "p99": 66.7,
+      "max": 66.7
+     },
+     "droppedPct": 26.5,
+     "blankPct": 0,
+     "longAnimationFrames": 7,
+     "loafMs": {
+      "n": 7,
+      "p50": 55.7,
+      "p95": 61.3,
+      "p99": 61.3,
+      "max": 67.5
+     },
+     "pxTravelled": 1960
+    },
+    "sort": {
+     "ms": 683.7,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 476
+    },
+    "sortArtist": {
+     "ms": 715.9,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 488
+    },
+    "clearSort": {
+     "ms": 624,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 447
+    },
+    "filter": {
+     "ms": 697.9,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 313
+    },
+    "clearFilter": {
+     "ms": 516,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 53
+    },
+    "group": {
+     "ms": 749.7,
+     "timedOut": false,
+     "rowsAfter": 10031,
+     "longestLoafMs": 724
+    },
+    "scrollYGrouped": {
+     "frames": 33,
+     "frameMs": {
+      "n": 33,
+      "p50": 66.6,
+      "p95": 83.3,
+      "p99": 83.4,
+      "max": 116.6
+     },
+     "droppedPct": 3,
+     "blankPct": 0,
+     "longAnimationFrames": 9,
+     "loafMs": {
+      "n": 9,
+      "p50": 52.7,
+      "p95": 69,
+      "p99": 69,
+      "max": 104.2
+     },
+     "pxTravelled": 4950
+    },
+    "ungroup": {
+     "ms": 744.3,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 672
+    },
+    "heapMB": 45
+   },
+   {
+    "readyMs": 1562,
+    "dataMs": 114,
+    "scrollY": {
+     "frames": 47,
+     "frameMs": {
+      "n": 47,
+      "p50": 66.7,
+      "p95": 83.4,
+      "p99": 100,
+      "max": 133.4
+     },
+     "droppedPct": 2.1,
+     "blankPct": 0,
+     "longAnimationFrames": 15,
+     "loafMs": {
+      "n": 15,
+      "p50": 55.7,
+      "p95": 92.3,
+      "p99": 92.3,
+      "max": 92.3
+     },
+     "pxTravelled": 7050
+    },
+    "scrollX": {
+     "frames": 46,
+     "frameMs": {
+      "n": 46,
+      "p50": 49.9,
+      "p95": 66.7,
+      "p99": 83.3,
+      "max": 83.4
+     },
+     "droppedPct": 4.3,
+     "blankPct": 0,
+     "longAnimationFrames": 8,
+     "loafMs": {
+      "n": 8,
+      "p50": 56.7,
+      "p95": 70.2,
+      "p99": 70.2,
+      "max": 70.9
+     },
+     "pxTravelled": 1840
+    },
+    "sort": {
+     "ms": 712.6,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 486
+    },
+    "sortArtist": {
+     "ms": 732.7,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 483
+    },
+    "clearSort": {
+     "ms": 666,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 504
+    },
+    "filter": {
+     "ms": 756.6,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 367
+    },
+    "clearFilter": {
+     "ms": 527.5,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 368
+    },
+    "group": {
+     "ms": 882.4,
+     "timedOut": false,
+     "rowsAfter": 10031,
+     "longestLoafMs": 800
+    },
+    "scrollYGrouped": {
+     "frames": 29,
+     "frameMs": {
+      "n": 29,
+      "p50": 66.7,
+      "p95": 100,
+      "p99": 100,
+      "max": 133.4
+     },
+     "droppedPct": 3.4,
+     "blankPct": 0,
+     "longAnimationFrames": 18,
+     "loafMs": {
+      "n": 18,
+      "p50": 55.9,
+      "p95": 77.7,
+      "p99": 77.7,
+      "max": 117.2
+     },
+     "pxTravelled": 4350
+    },
+    "ungroup": {
+     "ms": 905.6,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 824
+    },
+    "heapMB": 27
+   },
+   {
+    "readyMs": 1534,
+    "dataMs": 132,
+    "scrollY": {
+     "frames": 49,
+     "frameMs": {
+      "n": 49,
+      "p50": 66.6,
+      "p95": 83.3,
+      "p99": 83.4,
+      "max": 116.6
+     },
+     "droppedPct": 2,
+     "blankPct": 0,
+     "longAnimationFrames": 14,
+     "loafMs": {
+      "n": 14,
+      "p50": 54.3,
+      "p95": 82.4,
+      "p99": 82.4,
+      "max": 89.4
+     },
+     "pxTravelled": 7350
+    },
+    "scrollX": {
+     "frames": 47,
+     "frameMs": {
+      "n": 47,
+      "p50": 50,
+      "p95": 66.7,
+      "p99": 66.7,
+      "max": 83.4
+     },
+     "droppedPct": 2.1,
+     "blankPct": 0,
+     "longAnimationFrames": 8,
+     "loafMs": {
+      "n": 8,
+      "p50": 52,
+      "p95": 66.9,
+      "p99": 66.9,
+      "max": 79.8
+     },
+     "pxTravelled": 1880
+    },
+    "sort": {
+     "ms": 733.1,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 513
+    },
+    "sortArtist": {
+     "ms": 715.9,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 480
+    },
+    "clearSort": {
+     "ms": 632.7,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 477
+    },
+    "filter": {
+     "ms": 666,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 302
+    },
+    "clearFilter": {
+     "ms": 527.1,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 406
+    },
+    "group": {
+     "ms": 865.9,
+     "timedOut": false,
+     "rowsAfter": 10031,
+     "longestLoafMs": 832
+    },
+    "scrollYGrouped": {
+     "frames": 28,
+     "frameMs": {
+      "n": 28,
+      "p50": 66.7,
+      "p95": 100,
+      "p99": 100.1,
+      "max": 116.7
+     },
+     "droppedPct": 7.1,
+     "blankPct": 0,
+     "longAnimationFrames": 21,
+     "loafMs": {
+      "n": 21,
+      "p50": 57.3,
+      "p95": 76,
+      "p99": 76,
+      "max": 115.2
+     },
+     "pxTravelled": 4200
+    },
+    "ungroup": {
+     "ms": 929.6,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 837
+    },
+    "heapMB": 90
+   }
+  ]
+ },
+ {
+  "grid": "tanstack",
+  "rows": 10000,
+  "cpu": 4,
+  "runs": [
+   {
+    "readyMs": 666,
+    "dataMs": 105,
+    "scrollY": {
+     "frames": 57,
+     "frameMs": {
+      "n": 57,
+      "p50": 50,
+      "p95": 66.7,
+      "p99": 66.7,
+      "max": 83.3
+     },
+     "droppedPct": 1.8,
+     "blankPct": 0,
+     "longAnimationFrames": 4,
+     "loafMs": {
+      "n": 4,
+      "p50": 68.3,
+      "p95": 88.9,
+      "p99": 88.9,
+      "max": 176.6
+     },
+     "pxTravelled": 8550
+    },
+    "scrollX": {
+     "frames": 121,
+     "frameMs": {
+      "n": 121,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 4840
+    },
+    "sort": {
+     "ms": 249.3,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "sortArtist": {
+     "ms": 331.1,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 218
+    },
+    "clearSort": {
+     "ms": 216.1,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "filter": {
+     "ms": 382.7,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 263
+    },
+    "clearFilter": {
+     "ms": 215.5,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "group": {
+     "ms": 243.4,
+     "timedOut": false,
+     "rowsAfter": 10031,
+     "longestLoafMs": 187
+    },
+    "scrollYGrouped": {
+     "frames": 43,
+     "frameMs": {
+      "n": 43,
+      "p50": 50,
+      "p95": 66.7,
+      "p99": 66.7,
+      "max": 66.7
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 1,
+     "loafMs": {
+      "n": 1,
+      "p50": 54.8,
+      "p95": 54.8,
+      "p99": 54.8,
+      "max": 54.8
+     },
+     "pxTravelled": 6450
+    },
+    "ungroup": {
+     "ms": 210.2,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 25
+   },
+   {
+    "readyMs": 694,
+    "dataMs": 126,
+    "scrollY": {
+     "frames": 60,
+     "frameMs": {
+      "n": 60,
+      "p50": 50,
+      "p95": 66.7,
+      "p99": 83.3,
+      "max": 83.3
+     },
+     "droppedPct": 3.3,
+     "blankPct": 0,
+     "longAnimationFrames": 4,
+     "loafMs": {
+      "n": 4,
+      "p50": 68.7,
+      "p95": 93.9,
+      "p99": 93.9,
+      "max": 187.8
+     },
+     "pxTravelled": 9000
+    },
+    "scrollX": {
+     "frames": 121,
+     "frameMs": {
+      "n": 121,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 4840
+    },
+    "sort": {
+     "ms": 265.8,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "sortArtist": {
+     "ms": 330.9,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 236
+    },
+    "clearSort": {
+     "ms": 216,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "filter": {
+     "ms": 416.3,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 289
+    },
+    "clearFilter": {
+     "ms": 232.4,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "group": {
+     "ms": 245.6,
+     "timedOut": false,
+     "rowsAfter": 10031,
+     "longestLoafMs": 0
+    },
+    "scrollYGrouped": {
+     "frames": 43,
+     "frameMs": {
+      "n": 43,
+      "p50": 50,
+      "p95": 66.7,
+      "p99": 66.7,
+      "max": 83.4
+     },
+     "droppedPct": 2.3,
+     "blankPct": 0,
+     "longAnimationFrames": 2,
+     "loafMs": {
+      "n": 2,
+      "p50": 52.8,
+      "p95": 52.8,
+      "p99": 52.8,
+      "max": 55.3
+     },
+     "pxTravelled": 6450
+    },
+    "ungroup": {
+     "ms": 214,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 25
+   },
+   {
+    "readyMs": 712,
+    "dataMs": 124,
+    "scrollY": {
+     "frames": 63,
+     "frameMs": {
+      "n": 63,
+      "p50": 50,
+      "p95": 66.7,
+      "p99": 66.7,
+      "max": 83.4
+     },
+     "droppedPct": 1.6,
+     "blankPct": 0,
+     "longAnimationFrames": 4,
+     "loafMs": {
+      "n": 4,
+      "p50": 72.7,
+      "p95": 90.2,
+      "p99": 90.2,
+      "max": 217.9
+     },
+     "pxTravelled": 9450
+    },
+    "scrollX": {
+     "frames": 121,
+     "frameMs": {
+      "n": 121,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 16.8,
+      "max": 16.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 4840
+    },
+    "sort": {
+     "ms": 266.1,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "sortArtist": {
+     "ms": 316.2,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "clearSort": {
+     "ms": 199.2,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "filter": {
+     "ms": 415.9,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 283
+    },
+    "clearFilter": {
+     "ms": 232.6,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "group": {
+     "ms": 249.1,
+     "timedOut": false,
+     "rowsAfter": 10031,
+     "longestLoafMs": 0
+    },
+    "scrollYGrouped": {
+     "frames": 43,
+     "frameMs": {
+      "n": 43,
+      "p50": 50,
+      "p95": 66.6,
+      "p99": 66.7,
+      "max": 66.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 2,
+     "loafMs": {
+      "n": 2,
+      "p50": 53,
+      "p95": 53,
+      "p99": 53,
+      "max": 71
+     },
+     "pxTravelled": 6450
+    },
+    "ungroup": {
+     "ms": 207.8,
+     "timedOut": false,
+     "rowsAfter": 10000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 45
+   }
+  ]
+ },
+ {
+  "grid": "ag",
+  "rows": 25000,
+  "cpu": 4,
+  "runs": [
+   {
+    "readyMs": 1803,
+    "dataMs": 246,
+    "scrollY": {
+     "frames": 50,
+     "frameMs": {
+      "n": 50,
+      "p50": 50,
+      "p95": 83.3,
+      "p99": 83.4,
+      "max": 133.3
+     },
+     "droppedPct": 16,
+     "blankPct": 0,
+     "longAnimationFrames": 7,
+     "loafMs": {
+      "n": 7,
+      "p50": 60.9,
+      "p95": 86.8,
+      "p99": 86.8,
+      "max": 123.1
+     },
+     "pxTravelled": 7500
+    },
+    "scrollX": {
+     "frames": 52,
+     "frameMs": {
+      "n": 52,
+      "p50": 33.4,
+      "p95": 66.7,
+      "p99": 66.7,
+      "max": 66.8
+     },
+     "droppedPct": 15.4,
+     "blankPct": 0,
+     "longAnimationFrames": 4,
+     "loafMs": {
+      "n": 4,
+      "p50": 52,
+      "p95": 58.8,
+      "p99": 58.8,
+      "max": 67.3
+     },
+     "pxTravelled": 2080
+    },
+    "sort": {
+     "ms": 709.5,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 463
+    },
+    "sortArtist": {
+     "ms": 782.2,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 454
+    },
+    "clearSort": {
+     "ms": 682.8,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 442
+    },
+    "filter": {
+     "ms": 964.4,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 596
+    },
+    "clearFilter": {
+     "ms": 462,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 327
+    },
+    "group": {
+     "ms": 848.8,
+     "timedOut": false,
+     "rowsAfter": 25031,
+     "longestLoafMs": 768
+    },
+    "scrollYGrouped": {
+     "frames": 33,
+     "frameMs": {
+      "n": 33,
+      "p50": 50.1,
+      "p95": 83.4,
+      "p99": 99.9,
+      "max": 100
+     },
+     "droppedPct": 21.2,
+     "blankPct": 0,
+     "longAnimationFrames": 9,
+     "loafMs": {
+      "n": 9,
+      "p50": 53.1,
+      "p95": 65,
+      "p99": 65,
+      "max": 101.8
+     },
+     "pxTravelled": 4950
+    },
+    "ungroup": {
+     "ms": 747.9,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 114
+   },
+   {
+    "readyMs": 1688,
+    "dataMs": 236,
+    "scrollY": {
+     "frames": 49,
+     "frameMs": {
+      "n": 49,
+      "p50": 50.1,
+      "p95": 83.4,
+      "p99": 100,
+      "max": 133.3
+     },
+     "droppedPct": 18.4,
+     "blankPct": 0,
+     "longAnimationFrames": 9,
+     "loafMs": {
+      "n": 9,
+      "p50": 55.4,
+      "p95": 68.4,
+      "p99": 68.4,
+      "max": 129.9
+     },
+     "pxTravelled": 7350
+    },
+    "scrollX": {
+     "frames": 49,
+     "frameMs": {
+      "n": 49,
+      "p50": 49.9,
+      "p95": 66.7,
+      "p99": 66.7,
+      "max": 66.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 7,
+     "loafMs": {
+      "n": 7,
+      "p50": 58.9,
+      "p95": 63.9,
+      "p99": 63.9,
+      "max": 64.3
+     },
+     "pxTravelled": 1960
+    },
+    "sort": {
+     "ms": 705.9,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 466
+    },
+    "sortArtist": {
+     "ms": 782.6,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 464
+    },
+    "clearSort": {
+     "ms": 638.7,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 431
+    },
+    "filter": {
+     "ms": 958.8,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 609
+    },
+    "clearFilter": {
+     "ms": 499.1,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 64
+    },
+    "group": {
+     "ms": 782.8,
+     "timedOut": false,
+     "rowsAfter": 25031,
+     "longestLoafMs": 0
+    },
+    "scrollYGrouped": {
+     "frames": 33,
+     "frameMs": {
+      "n": 33,
+      "p50": 66.6,
+      "p95": 83.5,
+      "p99": 99.9,
+      "max": 116.7
+     },
+     "droppedPct": 3,
+     "blankPct": 0,
+     "longAnimationFrames": 7,
+     "loafMs": {
+      "n": 7,
+      "p50": 51.6,
+      "p95": 64.4,
+      "p99": 64.4,
+      "max": 105.9
+     },
+     "pxTravelled": 4950
+    },
+    "ungroup": {
+     "ms": 786.3,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 705
+    },
+    "heapMB": 37
+   },
+   {
+    "readyMs": 1704,
+    "dataMs": 230,
+    "scrollY": {
+     "frames": 49,
+     "frameMs": {
+      "n": 49,
+      "p50": 66.6,
+      "p95": 83.4,
+      "p99": 83.4,
+      "max": 133.4
+     },
+     "droppedPct": 2,
+     "blankPct": 0,
+     "longAnimationFrames": 6,
+     "loafMs": {
+      "n": 6,
+      "p50": 60.5,
+      "p95": 68.9,
+      "p99": 68.9,
+      "max": 131.4
+     },
+     "pxTravelled": 7350
+    },
+    "scrollX": {
+     "frames": 50,
+     "frameMs": {
+      "n": 50,
+      "p50": 33.4,
+      "p95": 66.7,
+      "p99": 66.7,
+      "max": 66.8
+     },
+     "droppedPct": 24,
+     "blankPct": 0,
+     "longAnimationFrames": 6,
+     "loafMs": {
+      "n": 6,
+      "p50": 57.9,
+      "p95": 64.8,
+      "p99": 64.8,
+      "max": 65.6
+     },
+     "pxTravelled": 2000
+    },
+    "sort": {
+     "ms": 687.1,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 448
+    },
+    "sortArtist": {
+     "ms": 766,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 451
+    },
+    "clearSort": {
+     "ms": 665.9,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 422
+    },
+    "filter": {
+     "ms": 947.8,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 603
+    },
+    "clearFilter": {
+     "ms": 463.4,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 63
+    },
+    "group": {
+     "ms": 766.2,
+     "timedOut": false,
+     "rowsAfter": 25031,
+     "longestLoafMs": 747
+    },
+    "scrollYGrouped": {
+     "frames": 34,
+     "frameMs": {
+      "n": 34,
+      "p50": 66.6,
+      "p95": 83.3,
+      "p99": 83.4,
+      "max": 100.1
+     },
+     "droppedPct": 2.9,
+     "blankPct": 0,
+     "longAnimationFrames": 5,
+     "loafMs": {
+      "n": 5,
+      "p50": 58.3,
+      "p95": 60.9,
+      "p99": 60.9,
+      "max": 101.8
+     },
+     "pxTravelled": 5100
+    },
+    "ungroup": {
+     "ms": 772.3,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 710
+    },
+    "heapMB": 118
+   }
+  ]
+ },
+ {
+  "grid": "tanstack",
+  "rows": 25000,
+  "cpu": 4,
+  "runs": [
+   {
+    "readyMs": 803,
+    "dataMs": 229,
+    "scrollY": {
+     "frames": 55,
+     "frameMs": {
+      "n": 55,
+      "p50": 50,
+      "p95": 83.2,
+      "p99": 83.3,
+      "max": 83.4
+     },
+     "droppedPct": 7.3,
+     "blankPct": 0,
+     "longAnimationFrames": 5,
+     "loafMs": {
+      "n": 5,
+      "p50": 78.3,
+      "p95": 98.6,
+      "p99": 98.6,
+      "max": 187.6
+     },
+     "pxTravelled": 8250
+    },
+    "scrollX": {
+     "frames": 121,
+     "frameMs": {
+      "n": 121,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 4840
+    },
+    "sort": {
+     "ms": 349.5,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "sortArtist": {
+     "ms": 527.1,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 318
+    },
+    "clearSort": {
+     "ms": 215.8,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "filter": {
+     "ms": 682.8,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 558
+    },
+    "clearFilter": {
+     "ms": 232.5,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "group": {
+     "ms": 299.6,
+     "timedOut": false,
+     "rowsAfter": 25031,
+     "longestLoafMs": 212
+    },
+    "scrollYGrouped": {
+     "frames": 33,
+     "frameMs": {
+      "n": 33,
+      "p50": 66.7,
+      "p95": 83.3,
+      "p99": 83.3,
+      "max": 83.4
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 9,
+     "loafMs": {
+      "n": 9,
+      "p50": 55.6,
+      "p95": 64.5,
+      "p99": 64.5,
+      "max": 73.4
+     },
+     "pxTravelled": 4950
+    },
+    "ungroup": {
+     "ms": 298.5,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 74
+   },
+   {
+    "readyMs": 835,
+    "dataMs": 246,
+    "scrollY": {
+     "frames": 60,
+     "frameMs": {
+      "n": 60,
+      "p50": 50,
+      "p95": 83.4,
+      "p99": 83.4,
+      "max": 100
+     },
+     "droppedPct": 6.7,
+     "blankPct": 0,
+     "longAnimationFrames": 5,
+     "loafMs": {
+      "n": 5,
+      "p50": 80.2,
+      "p95": 103.5,
+      "p99": 103.5,
+      "max": 195.3
+     },
+     "pxTravelled": 9000
+    },
+    "scrollX": {
+     "frames": 120,
+     "frameMs": {
+      "n": 120,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 4800
+    },
+    "sort": {
+     "ms": 299.2,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "sortArtist": {
+     "ms": 506.4,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 274
+    },
+    "clearSort": {
+     "ms": 199.5,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "filter": {
+     "ms": 682.7,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 547
+    },
+    "clearFilter": {
+     "ms": 265.7,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "group": {
+     "ms": 349.4,
+     "timedOut": false,
+     "rowsAfter": 25031,
+     "longestLoafMs": 0
+    },
+    "scrollYGrouped": {
+     "frames": 35,
+     "frameMs": {
+      "n": 35,
+      "p50": 50.1,
+      "p95": 66.8,
+      "p99": 83.3,
+      "max": 83.4
+     },
+     "droppedPct": 5.7,
+     "blankPct": 0,
+     "longAnimationFrames": 4,
+     "loafMs": {
+      "n": 4,
+      "p50": 62.5,
+      "p95": 66.6,
+      "p99": 66.6,
+      "max": 88.6
+     },
+     "pxTravelled": 5250
+    },
+    "ungroup": {
+     "ms": 333.9,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 43
+   },
+   {
+    "readyMs": 825,
+    "dataMs": 232,
+    "scrollY": {
+     "frames": 61,
+     "frameMs": {
+      "n": 61,
+      "p50": 50,
+      "p95": 66.7,
+      "p99": 83.3,
+      "max": 83.4
+     },
+     "droppedPct": 3.3,
+     "blankPct": 0,
+     "longAnimationFrames": 5,
+     "loafMs": {
+      "n": 5,
+      "p50": 72,
+      "p95": 101.1,
+      "p99": 101.1,
+      "max": 196.3
+     },
+     "pxTravelled": 9150
+    },
+    "scrollX": {
+     "frames": 120,
+     "frameMs": {
+      "n": 120,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8
+     },
+     "droppedPct": 0,
+     "blankPct": 0,
+     "longAnimationFrames": 0,
+     "loafMs": {
+      "n": 0,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "max": 0
+     },
+     "pxTravelled": 4800
+    },
+    "sort": {
+     "ms": 348.9,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "sortArtist": {
+     "ms": 530.8,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 316
+    },
+    "clearSort": {
+     "ms": 215.5,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "filter": {
+     "ms": 682.4,
+     "timedOut": false,
+     "rowsAfter": 40,
+     "longestLoafMs": 554
+    },
+    "clearFilter": {
+     "ms": 248.9,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "group": {
+     "ms": 299.3,
+     "timedOut": false,
+     "rowsAfter": 25031,
+     "longestLoafMs": 0
+    },
+    "scrollYGrouped": {
+     "frames": 35,
+     "frameMs": {
+      "n": 35,
+      "p50": 50.1,
+      "p95": 66.7,
+      "p99": 66.8,
+      "max": 83.3
+     },
+     "droppedPct": 2.9,
+     "blankPct": 0,
+     "longAnimationFrames": 3,
+     "loafMs": {
+      "n": 3,
+      "p50": 77.1,
+      "p95": 77.1,
+      "p99": 77.1,
+      "max": 272.4
+     },
+     "pxTravelled": 5250
+    },
+    "ungroup": {
+     "ms": 300.5,
+     "timedOut": false,
+     "rowsAfter": 25000,
+     "longestLoafMs": 0
+    },
+    "heapMB": 83
+   }
+  ]
+ }
+]
