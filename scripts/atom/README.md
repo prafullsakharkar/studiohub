@@ -22,6 +22,7 @@ episodes, sequences, shots and assets, and the shot–asset links. They were use
 | `fetch.py` | GETs the ATOM project and its episodes, sequences, shots and assets into a data folder |
 | `build.py` | Turns the saved files into studiohub payloads (`<data>/payloads/<kind>.json`); local files only |
 | `run.py` | Sends a payload to studiohub (`KIND=project|episodes|sequences|shots|assets|links`) or compares counts (`KIND=verify`) |
+| `users.py` | Creates ATOM's users as studiohub accounts and directory people (`KIND=users`), and a resource for each active one (`KIND=resources`) |
 
 ATOM's API is described in `scripts/ATOM API.yaml` (base URL `http://192.168.1.128:8085`, header
 `Authorization: Token <key>`).
@@ -48,6 +49,30 @@ Paths below use `D=~/atom-data/mus`; run `fetch.py` and `build.py` from the repo
    `ARCHIVE_EP101=1` on the real episodes run archives the auto-made `EP101`.
 4. **Check.** `KIND=verify PROJECT=MUS PAYLOADS=$D ... < ../scripts/atom/run.py` compares each count with ATOM's
    and every stored link with `payloads/links.json`.
+
+## People
+
+ATOM's users are studio-wide, so they are read once, not per project, and imported before tasks (the task import
+sets assignees from `user_map.json`).
+
+1. `python3 scripts/atom/fetch.py --users --out ~/atom-data/users` (passwords, API tokens, avatars and settings
+   are never saved).
+2. `KIND=users USERS=~/atom-data/users/users.json MAP=~/atom-data/users/user_map.json ... < ../scripts/atom/users.py`.
+   Try `ONLY=<a few ATOM ids>` first, including an inactive one. A rerun skips everyone already done.
+3. `KIND=resources` with the same `USERS` and `MAP`.
+
+What it decides (MUS, 2026-11-24: 2,167 accounts, 495 active; 498 resources):
+- **State:** ATOM's active or inactive, on the account and on the person.
+- **Password:** random, never kept; people sign in through "Forgot password" or LDAP.
+- **Roles, active people only:** artist → Artist, lead → Lead Artist, supervisor and cg_supervisor → VFX Supervisor;
+  nobody else gets one, and nobody gets `is_staff` (ATOM's superusers included).
+- **Department:** the studiohub department most of the person's ATOM departments map to (`DEPT`), production staff
+  → Production, developers → Pipeline TD; blank when they spread over more than three.
+- **Position:** from the department for artists (Animator, Rigging TD ...); Production Coordinator for production,
+  coordinators and managers; Pipeline Developer for developers.
+- **Skipped:** `api_user` and `test.com` / `example.com` addresses. An address studiohub refuses is reported and left out.
+- **Limit:** an account's own profile name stays empty (no API lets an admin set another person's profile); the
+  name is on the directory person.
 
 ## What the builders decide
 
