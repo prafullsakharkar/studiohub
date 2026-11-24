@@ -31,10 +31,11 @@ export function useMediaListConfig(scope?: { projectId: string }): DirectoryList
     renderCard: mediaCard,
     cardGrid: 'sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4',
     rowLink: () => null, // no detail page: Edit is in the last column
-    scope: scope ? { project_id: scope.projectId } : undefined,
+    // The list filters on `project` (its filterset field); `project_id` is ignored there, but its archived view reads it.
+    scope: scope ? { project: scope.projectId, project_id: scope.projectId } : undefined,
     createQuery: scope ? `project=${scope.projectId}` : undefined,
     filters: [
-      { key: 'project_id', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } },
+      { key: 'project', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } },
       // entity_type and entity_id are ignored by the server; only the type narrows the list
       { key: 'media_type', label: 'Type', options: options(['Image', 'Video', 'Audio', 'Document']) },
     ],

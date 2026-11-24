@@ -27,7 +27,7 @@ export const VersionMediaTab: React.FC<{ version: Version }> = ({ version }) => 
   const [chosen, setChosen] = useState<string | null>(null);
   const linked = useQuery({
     queryKey: [...mediaApi.keys.all, 'of', version.entity_type, version.entity_id],
-    queryFn: ({ signal }) => fetchAllRows(mediaApi.list, { project_id: version.project_id }, { signal }),
+    queryFn: ({ signal }) => fetchAllRows(mediaApi.list, { project: version.project_id }, { signal }),
     enabled: Boolean(version.entity_id),
     select: (rows) => rows.filter((m) => m.entity_id === version.entity_id && m.entity_type === version.entity_type),
   });

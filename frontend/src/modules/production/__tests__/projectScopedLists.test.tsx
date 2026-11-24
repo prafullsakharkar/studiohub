@@ -43,6 +43,8 @@ const path = (c: MockCall) => new URL(c.url).pathname;
 /** The project a list request names (`null`: none, every project), or `undefined` when it is not a request of `list`. */
 type Reader = (c: MockCall) => string | null | undefined;
 const byParam = (list: string): Reader => (c) => (path(c) === list ? new URL(c.url).searchParams.get('project_id') : undefined);
+/** Media and playlists filter on `project` (their filterset field; `project_id` is ignored by their list route). */
+const byProject = (list: string): Reader => (c) => (path(c) === list ? new URL(c.url).searchParams.get('project') : undefined);
 const deliveries: Reader = (c) => {
   if (path(c) === '/api/v1/deliveries/') return new URL(c.url).searchParams.get('project_id');
   return /^\/api\/organizations\/projects\/([^/]+)\/deliveries\/$/.exec(path(c))?.[1];
@@ -95,8 +97,8 @@ const cases: Array<{ name: string; ui: React.ReactNode; route: string; read: Rea
   { name: 'Timelogs', ui: <TimelogsPage />, route: '/timelogs', read: byParam('/api/v1/timelogs/'), first: episodic.id, second: standard.id },
   { name: 'Versions', ui: <VersionsListPage />, route: '/versions', read: byParam('/api/v1/versions/'), first: episodic.id, second: standard.id },
   { name: 'Reviews', ui: <ReviewsPage />, route: '/reviews', read: byParam('/api/v1/reviews/'), first: episodic.id, second: standard.id },
-  { name: 'Playlists', ui: <PlaylistsPage />, route: '/playlists', read: byParam('/api/v1/playlists/'), first: episodic.id, second: standard.id },
-  { name: 'Media', ui: <MediaPage />, route: '/media', read: byParam('/api/v1/media/'), first: episodic.id, second: standard.id },
+  { name: 'Playlists', ui: <PlaylistsPage />, route: '/playlists', read: byProject('/api/v1/playlists/'), first: episodic.id, second: standard.id },
+  { name: 'Media', ui: <MediaPage />, route: '/media', read: byProject('/api/v1/media/'), first: episodic.id, second: standard.id },
   { name: 'Deliveries', ui: <DeliveriesPage />, route: '/deliveries', read: deliveries, first: episodic.id, second: standard.id },
   { name: 'Export jobs', ui: <PublishingPage />, route: '/publishing', read: byParam('/api/v1/publishing/'), first: episodic.id, second: standard.id },
   { name: 'Published files', ui: <PublishedFilesPage />, route: '/publishing/files', read: byParam('/api/v1/publishing/files/'), first: episodic.id, second: standard.id },

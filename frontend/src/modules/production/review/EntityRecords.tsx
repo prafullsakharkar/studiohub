@@ -140,7 +140,7 @@ export const EntityMediaTab: React.FC<{ entity: EntityRef }> = ({ entity }) => (
   <EntityRecords<Media>
     title="Media"
     queryKey={[...mediaApi.keys.all, 'of', entity.type, entity.id]}
-    load={async (signal) => (await fetchAllRows(mediaApi.list, { project_id: entity.projectId }, { signal })).filter((m) => m.entity_id === entity.id && m.entity_type === entity.type)}
+    load={async (signal) => (await fetchAllRows(mediaApi.list, { project: entity.projectId }, { signal })).filter((m) => m.entity_id === entity.id && m.entity_type === entity.type)}
     columns={[
       { header: 'Media', cell: mediaName },
       { header: 'Type', cell: (m) => m.media_type || '—' },

@@ -22,10 +22,11 @@ export function usePlaylistsListConfig(scope?: { projectId: string }): Directory
     defaultOrdering: '-created_at',
     searchPlaceholder: 'Search name, code',
     basePath: '/playlists',
-    scope: scope ? { project_id: scope.projectId } : undefined,
+    // The list filters on `project` (its filterset field); `project_id` is ignored there, but its archived view reads it.
+    scope: scope ? { project: scope.projectId, project_id: scope.projectId } : undefined,
     createQuery: scope ? `project=${scope.projectId}` : undefined,
     filters: [
-      { key: 'project_id', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } },
+      { key: 'project', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } },
       { key: 'client_only', label: 'Audience', options: [{ value: 'true', label: 'Client only' }, { value: 'false', label: 'Internal' }] },
     ],
     columns: [
