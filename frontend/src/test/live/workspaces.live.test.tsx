@@ -13,6 +13,7 @@ import { OfficeWorkspacePage } from '@/modules/offices/pages/OfficeWorkspacePage
 import { authService } from '@/modules/auth/services/AuthService';
 import { TeamWorkspacePage } from '@/modules/teams/pages/TeamWorkspacePage';
 import { freshTotp, live } from './liveBackend';
+import { pickEntity } from '@/test/picker';
 
 /**
  * The rebuilt workspace pages against a REAL backend: what they show and what their actions do on the wire.
@@ -45,7 +46,7 @@ describe('client workspace on the wire', () => {
   it('archives, restores and then really deletes a client', async () => {
     await signInManager();
     const tag = uid();
-    const client = await clientsApi.create({ name: `Client ${tag}`, code: `C${tag}`.toUpperCase().slice(0, 20), studio_type: 'Major Studio', status: 'Active' });
+    const client = await clientsApi.create({ name: `Client ${tag}`, code: `CLI-C${tag}`.toUpperCase().slice(0, 20), studio_type: 'Major Studio', status: 'Active' });
 
     render(
       tree(
@@ -75,17 +76,17 @@ describe('team membership on the wire', () => {
   it('adds a person to a team without moving them, removes them, and clears the primary team they leave', async () => {
     await signInManager();
     const tag = uid();
-    const department = await departmentsApi.create({ code: `D${tag}`.toUpperCase(), name: `Dept ${tag}`, department_type: 'creative' });
-    const team = await teamsApi.create({ code: `T${tag}`.toUpperCase(), name: `Team ${tag}`, department: department.id });
-    const other = await teamsApi.create({ code: `U${tag}`.toUpperCase(), name: `Other ${tag}`, department: department.id });
+    const department = await departmentsApi.create({ code: `DEPT-D${tag}`.toUpperCase(), name: `Dept ${tag}`, department_type: 'creative' });
+    const team = await teamsApi.create({ code: `TEAM-T${tag}`.toUpperCase(), name: `Team ${tag}`, department: department.id });
+    const other = await teamsApi.create({ code: `TEAM-U${tag}`.toUpperCase(), name: `Other ${tag}`, department: department.id });
     const person = await peopleApi.create({ name: `Member ${tag}` });
     await teamMembershipsApi.create({ team: other.id, person: person.id });
 
     render(tree(<Routes><Route path="/teams/:id" element={<TeamWorkspacePage />} /></Routes>, `/teams/${team.id}`));
     fireEvent.click(await screen.findByRole('tab', { name: 'Members' }, T));
     fireEvent.click(await screen.findByRole('button', { name: 'Add member' }, T));
-    await screen.findByRole('option', { name: person.full_name }, T);
-    fireEvent.change(screen.getByLabelText(/^Person/), { target: { value: person.id } });
+    // The person field is a server-searched picker: search for the new person, they are not on the first page.
+    await pickEntity(/^Person/, new RegExp(person.full_name), { search: person.full_name, timeout: 15000 });
     fireEvent.click(screen.getByRole('button', { name: 'Add to team' }));
 
     // In both teams: nobody was moved, and the person's own team field was not touched.
@@ -110,7 +111,7 @@ describe('office and department pages on the wire', () => {
   it('shows the office headcount the API computes, and saves a department edit', async () => {
     await signInManager();
     const tag = uid();
-    const office = await officesApi.create({ code: `O${tag}`.toUpperCase(), name: `Office ${tag}`, office_type: 'studio', timezone: 'UTC', country: 'US', city: 'Austin' } as never);
+    const office = await officesApi.create({ code: `OFF-O${tag}`.toUpperCase(), name: `Office ${tag}`, office_type: 'studio', timezone: 'UTC', country: 'US', city: 'Austin' } as never);
     await peopleApi.create({ name: `Desk ${tag}`, office: office.id });
 
     render(tree(<Routes><Route path="/offices/:id" element={<OfficeWorkspacePage />} /></Routes>, `/offices/${office.id}`));
@@ -119,7 +120,7 @@ describe('office and department pages on the wire', () => {
     await waitFor(() => expect(headcount.textContent).toContain('1'), T);
     cleanup();
 
-    const department = await departmentsApi.create({ code: `D${tag}`.toUpperCase(), name: `Dept ${tag}`, department_type: 'creative' });
+    const department = await departmentsApi.create({ code: `DEPT-D${tag}`.toUpperCase(), name: `Dept ${tag}`, department_type: 'creative' });
     render(tree(<Routes><Route path="/departments/:id/edit" element={<EditDepartmentPage />} /><Route path="/departments/:id" element={<div>saved</div>} /></Routes>, `/departments/${department.id}/edit`));
     const name = (await screen.findByLabelText(/^Name/, {}, T)) as HTMLInputElement;
     await waitFor(() => expect(name.value).toBe(department.name));

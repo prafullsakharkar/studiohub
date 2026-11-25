@@ -95,7 +95,7 @@ class TestHeadquartersRace:
             }
             return lambda: _api(writer).post(f"{API}/offices/", body, format="json").status_code
 
-        statuses = _race(make("A"), make("B"))
+        statuses = _race(make("OFF-A"), make("OFF-B"))
 
         assert all(s in (201, 409) for s in statuses), statuses  # never a 500
         assert 201 in statuses

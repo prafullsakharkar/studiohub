@@ -75,7 +75,7 @@ def test_capture_scheduling(django_user_model):
     pid2 = call(a, "setup_project_two", "POST", "/api/v1/projects/", {"code": "OTH", "name": "Other", "workflow_type": "standard"}).json()["id"]
     for who, role in ((sup, "Supervisor"), (padmin, "Producer"), (lead, "Lead"), (artist, "Artist")):
         call(a, f"setup_member_{who.email.split('@')[0]}", "POST", f"/api/organizations/projects/{pid}/members/", {"user_id": str(who.id), "role": role})
-    dept = call(a, "setup_department", "POST", "/api/v1/departments/", {"code": "SCHCOMP", "name": "Scheduling Comp", "department_type": "creative"}).json().get("id")
+    dept = call(a, "setup_department", "POST", "/api/v1/departments/", {"code": "DEPT-SCHCOMP", "name": "Scheduling Comp", "department_type": "creative"}).json().get("id")
 
     # The migration seeds the default "STUDIO" calendar; a flushed test database has none, so make it as the service does.
     from apps.scheduling.services.calendar import WorkCalendarService

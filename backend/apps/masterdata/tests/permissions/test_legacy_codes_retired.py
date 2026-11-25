@@ -39,14 +39,14 @@ RESOURCES = [
     (
         f"{API}/departments/",
         DepartmentFactory,
-        {"code": "D", "name": "D", "department_type": "creative"},
+        {"code": "DEPT-D", "name": "D", "department_type": "creative"},
     ),
-    (f"{API}/teams/", TeamFactory, {"code": "T", "name": "T"}),
-    (f"{API}/offices/", OfficeFactory, {"code": "O", "name": "O"}),
-    (f"{API}/positions/", PositionFactory, {"code": "P", "name": "P"}),
+    (f"{API}/teams/", TeamFactory, {"code": "TEAM-T", "name": "T"}),
+    (f"{API}/offices/", OfficeFactory, {"code": "OFF-O", "name": "O"}),
+    (f"{API}/positions/", PositionFactory, {"code": "POS-P", "name": "P"}),
     (f"{API}/people/", PersonFactory, {"name": "Someone"}),
-    (f"{API}/clients/", ClientFactory, {"code": "C", "name": "C"}),
-    (f"{API}/vendors/", VendorFactory, {"code": "V", "name": "V"}),
+    (f"{API}/clients/", ClientFactory, {"code": "CLI-C", "name": "C"}),
+    (f"{API}/vendors/", VendorFactory, {"code": "VEN-V", "name": "V"}),
 ]
 #: Collections whose reads need ``masterdata.partner.view`` (docs/sync CR-53).
 PARTNER_READS = {f"{API}/clients/", f"{API}/vendors/"}
@@ -134,7 +134,7 @@ def test_the_old_code_never_combines_with_a_new_one():
 
     both = legacy_client(*LEGACY, P.DIRECTORY_MANAGE)
     only_new = legacy_client(P.DIRECTORY_MANAGE)
-    for api, code in ((both, "B"), (only_new, "N")):
+    for api, code in ((both, "CLI-B"), (only_new, "CLI-N")):
         assert (
             api.post(f"{API}/clients/", {"code": code, "name": code}, format="json").status_code
             == 201

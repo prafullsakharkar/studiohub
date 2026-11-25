@@ -28,7 +28,7 @@ test('a project’s vendors: pick, see one deleted as unknown, save without it, 
 
   const made: Record<'alpha' | 'beta', { id: string; name: string }> = {} as never;
   for (const [key, name] of [['alpha', 'Smoke Alpha Vendors'], ['beta', 'Smoke Beta Vendors']] as const) {
-    const r = await api(admin, 'POST', '/api/v1/vendors/', { name, code: `${key.slice(0, 3).toUpperCase()}SMK` });
+    const r = await api(admin, 'POST', '/api/v1/vendors/', { name, code: `VEN-${key.slice(0, 3).toUpperCase()}SMK` });
     expect(r.status, JSON.stringify(r.body)).toBe(201);
     made[key] = r.body;
   }

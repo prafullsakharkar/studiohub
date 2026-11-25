@@ -20,6 +20,7 @@ import { Pagination } from '@/shared/components/Pagination';
 import { RowActionButton, RowActions } from '@/shared/components/RowActionButton';
 import { useProjectCode } from '@/modules/production/hooks/useProjectCode';
 import { withProjectPrefix } from '@/modules/production/codePrefix';
+import { withCodePrefix } from '@/shared/utils/codePrefix';
 import { FieldInputs } from './FieldInputs';
 import { type Values, blank, buildSchema, fromRow, wireValue } from './formModel';
 import type { RelatedRecordsConfig, RowAction } from './types';
@@ -48,7 +49,7 @@ function RecordDialog<T extends { id: string }>({ config, parentId, row, onClose
       if (editing && (!(dirtyFields as Record<string, unknown>)[field.name] || config.immutableOnEdit?.includes(field.name))) continue;
       if (!editing && values[field.name] === '' && field.kind !== 'checkbox') continue;
       const wire = wireValue(field, values[field.name]);
-      payload[field.name] = !editing && field.kind === 'text' && field.projectPrefix ? withProjectPrefix(await codeOfProject(), wire) : wire;
+      payload[field.name] = editing || field.kind !== 'text' ? wire : field.projectPrefix ? withProjectPrefix(await codeOfProject(), wire) : field.codePrefix ? withCodePrefix(field.codePrefix, wire) : wire;
     }
     if (editing) await config.update((row as T).id, payload);
     else await config.create(payload);

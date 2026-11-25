@@ -65,7 +65,7 @@ beforeAll(async () => {
   admin = await signIn('admin');
   for (let i = 1; i <= BULK; i += 1) {
     const n = String(i).padStart(3, '0');
-    const d = await apiClient.post<Department>('/api/v1/departments/', { code: `LIVE-${n}`, name: `Live Dept ${n}`, department_type: i % 2 ? 'creative' : 'technical' });
+    const d = await apiClient.post<Department>('/api/v1/departments/', { code: `DEPT-LIVE-${n}`, name: `Live Dept ${n}`, department_type: i % 2 ? 'creative' : 'technical' });
     created.push(d.id);
   }
   artist = await signIn('artist');
@@ -100,7 +100,7 @@ describe('departments list against the real backend', () => {
     renderPage(<DepartmentsListPage />, admin);
     await screen.findByText(/Registered/);
     fireEvent.change(screen.getByPlaceholderText(/search name or code/i), { target: { value: 'LIVE-02' } });
-    // LIVE-020 .. LIVE-027 = 8 rows, found even though most are not on page 1
+    // DEPT-LIVE-020 .. DEPT-LIVE-027 = 8 rows, found even though most are not on page 1
     await waitFor(() => expect(screen.getByText(/8 Matching/)).toBeTruthy());
     expect(screen.getByText('Live Dept 027')).toBeTruthy();
   });
@@ -141,7 +141,7 @@ describe('create against the real backend', () => {
   it('creates a department and opens it', async () => {
     renderPage(<CreateDepartmentPage />, admin, '/departments/new', '/departments/new');
     fill(/^Name/, 'Live Created');
-    fill(/^Code/, 'LIVE-NEW');
+    fill('Code *', 'live-new'); // DEPT- and upper case are added
     fill(/Software stack/, 'Katana, USD');
     fireEvent.click(screen.getByRole('button', { name: /create department/i }));
 
@@ -149,13 +149,13 @@ describe('create against the real backend', () => {
     const id = screen.getByTestId('where').textContent!.split('/').pop()!;
     created.push(id);
     const stored = await apiClient.get<Department>(`/api/v1/departments/${id}/`);
-    expect(stored).toMatchObject({ name: 'Live Created', code: 'LIVE-NEW', department_type: 'creative', software_stack: ['Katana', 'USD'] });
+    expect(stored).toMatchObject({ name: 'Live Created', code: 'DEPT-LIVE-NEW', department_type: 'creative', software_stack: ['Katana', 'USD'] });
   });
 
   it('shows the server’s duplicate errors inline (real 400), including a name clash that ignores case', async () => {
     renderPage(<CreateDepartmentPage />, admin, '/departments/new', '/departments/new');
     fill(/^Name/, 'live dept 001'); // existing "Live Dept 001", different case
-    fill(/^Code/, 'LIVE-001'); // existing code
+    fill('Code *', 'LIVE-001'); // existing code DEPT-LIVE-001 once DEPT- is added
     fireEvent.click(screen.getByRole('button', { name: /create department/i }));
 
     expect(await screen.findByText('A department with this code already exists.')).toBeTruthy();

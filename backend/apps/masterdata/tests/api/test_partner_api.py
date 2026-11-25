@@ -66,7 +66,7 @@ def codes(response):
     return response.json()["error"]["code"]
 
 
-CLIENT = {"code": "APEX", "name": "Apex", "email": "ops@apex.vfx", "total_billed_usd": "100.00"}
+CLIENT = {"code": "CLI-APEX", "name": "Apex", "email": "ops@apex.vfx", "total_billed_usd": "100.00"}
 SENSITIVE = ("contact_name", "email", "phone")
 
 
@@ -105,13 +105,13 @@ class TestClientCrud:
         response = privileged.post(f"{API}/clients/", CLIENT, format="json")
         assert response.status_code == 201, response.content
         body = response.json()
-        assert body["code"] == "APEX" and body["contact_count"] == 0
+        assert body["code"] == "CLI-APEX" and body["contact_count"] == 0
         assert "contacts" not in body
         assert "active_projects" not in body and "active_tasks_count" not in body
         assert Decimal(body["total_billed_usd"]) == Decimal("100.00")
 
     def test_a_duplicate_code_is_a_400_with_the_field(self, privileged):
-        ClientFactory(code="apex")
+        ClientFactory(code="CLI-apex")
         response = privileged.post(f"{API}/clients/", CLIENT, format="json")
         assert response.status_code == 400
         assert "code" in str(response.json())
@@ -162,9 +162,9 @@ class TestClientCrud:
         assert [r["contact_count"] for r in listed if r["id"] == str(row.pk)] == [2]
 
     def test_vendor_create_and_rating_bounds(self, privileged):
-        ok = privileged.post(f"{API}/vendors/", {"code": "V", "name": "V", "rating": "4.5"})
+        ok = privileged.post(f"{API}/vendors/", {"code": "VEN-V", "name": "V", "rating": "4.5"})
         assert ok.status_code == 201, ok.content
-        bad = privileged.post(f"{API}/vendors/", {"code": "W", "name": "W", "rating": "9"})
+        bad = privileged.post(f"{API}/vendors/", {"code": "VEN-W", "name": "W", "rating": "9"})
         assert bad.status_code == 400
 
 

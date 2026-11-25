@@ -12,6 +12,7 @@ import type { User } from '@/types/identity';
 import { DirectoryFormPage } from '../DirectoryFormPage';
 import { DirectoryListPage } from '../DirectoryListPage';
 import { officesFormConfig, officesListConfig } from '../entities/offices';
+import { positionsFormConfig } from '../entities/positions';
 import { clientsFormConfig } from '../entities/clients';
 import { peopleFormConfig, peopleListConfig } from '../entities/people';
 import { teamsFormConfig, teamsListConfig } from '../entities/teams';
@@ -133,7 +134,7 @@ describe('DirectoryFormPage', () => {
     renderAt('/teams/new', superuser, createRoute);
 
     fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Layout' } });
-    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'LAY' } });
+    fireEvent.change(screen.getByLabelText('Code *'), { target: { value: 'LAY' } });
     fireEvent.click(screen.getByRole('button', { name: /create team/i }));
     expect(await screen.findByText('Choose a department.')).toBeTruthy();
     expect(calls.some((c) => c.method === 'POST')).toBe(false);
@@ -145,7 +146,7 @@ describe('DirectoryFormPage', () => {
     renderAt('/teams/new', superuser, createRoute);
 
     fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Layout' } });
-    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'LAY' } });
+    fireEvent.change(screen.getByLabelText('Code *'), { target: { value: 'LAY' } });
     await pickEntity(/^Department/, dept.name);
     fireEvent.click(screen.getByRole('button', { name: /create team/i }));
 
@@ -161,13 +162,13 @@ describe('DirectoryFormPage', () => {
     renderAt('/teams/new', superuser, createRoute);
 
     fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Layout' } });
-    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'LAY' } });
+    fireEvent.change(screen.getByLabelText('Code *'), { target: { value: 'LAY' } });
     await pickEntity(/^Department/, dept.name);
     fireEvent.click(screen.getByRole('button', { name: /create team/i }));
 
     expect(await screen.findByText('team page')).toBeTruthy();
     const post = calls.find((c) => c.method === 'POST')!;
-    expect(post.body).toMatchObject({ name: 'Layout', code: 'LAY', department: dept.id });
+    expect(post.body).toMatchObject({ name: 'Layout', code: 'TEAM-LAY', department: dept.id });
     expect(post.body).not.toHaveProperty('description'); // untouched optional blanks are not sent
   });
 
@@ -241,10 +242,10 @@ describe('clients, vendors and people', () => {
       </>
     );
     fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Acme Pictures' } });
-    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'ACME' } });
+    fireEvent.change(screen.getByLabelText('Code *'), { target: { value: 'ACME' } });
     fireEvent.click(screen.getByRole('button', { name: /create client/i }));
     await screen.findByText('client page');
-    expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ name: 'Acme Pictures', code: 'ACME', portal_access: false });
+    expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ name: 'Acme Pictures', code: 'CLI-ACME', portal_access: false });
   });
 
   it('a record form looks like the department form: back to the list, titled card, two-column fields', async () => {
@@ -330,5 +331,59 @@ describe('DirectoryFormPage refetch safety', () => {
     await waitFor(() => expect(client.isFetching()).toBe(0));
     await new Promise((resolve) => setTimeout(resolve, 50)); // let the new data reach the component
     expect((screen.getByLabelText(/^City/) as HTMLInputElement).value).toBe('Typed City');
+  });
+});
+
+describe('studio codes start with their kind’s prefix (DEPT-, TEAM-, POS-, OFF-, CLI-, VEN-)', () => {
+  const office = offices.detail_admin.body as Record<string, any>;
+  const forms = [
+    ['teams', teamsFormConfig, 'TEAM-', 30],
+    ['positions', positionsFormConfig, 'POS-', 30],
+    ['offices', officesFormConfig, 'OFF-', 30],
+    ['clients', clientsFormConfig, 'CLI-', 20],
+    ['vendors', vendorsFormConfig, 'VEN-', 20],
+  ] as const;
+
+  it.each(forms)('a new %s record shows its prefix beside the code input, which leaves room for it', async (base, config, prefix, max) => {
+    mockFetch(() => ({ body: { count: 0, next: null, previous: null, results: [] } }));
+    renderAt(`/${base}/new`, superuser, <Route path={`/${base}/new`} element={<DirectoryFormPage config={config as never} />} />);
+    expect((await screen.findByLabelText('Code prefix')).textContent).toBe(prefix);
+    expect((screen.getByLabelText('Code *') as HTMLInputElement).maxLength).toBe(max - prefix.length);
+    expect(screen.getByText((text) => text.startsWith(`${prefix} is added in front of what you type.`))).toBeTruthy();
+  });
+
+  it('a code typed with its prefix gets it once, upper case', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? { status: 201, body: { id: 'v1' } } : { body: { count: 0, next: null, previous: null, results: [] } }));
+    renderAt(
+      '/vendors/new',
+      superuser,
+      <>
+        <Route path="/vendors/new" element={<DirectoryFormPage config={vendorsFormConfig} />} />
+        <Route path="/vendors/:id" element={<div>vendor page</div>} />
+      </>
+    );
+    fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Pixel Farm' } });
+    fireEvent.change(screen.getByLabelText('Code *'), { target: { value: 'ven-pix' } });
+    fireEvent.click(screen.getByRole('button', { name: /create vendor/i }));
+    await screen.findByText('vendor page');
+    expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ code: 'VEN-PIX' });
+  });
+
+  it('an edit shows the saved code as it is and sends a changed one without a prefix', async () => {
+    const { calls } = mockFetch(() => ({ body: office }));
+    renderAt(
+      `/offices/${office.id}/edit`,
+      superuser,
+      <>
+        <Route path="/offices/:id/edit" element={<DirectoryFormPage config={officesFormConfig} />} />
+        <Route path="/offices/:id" element={<div>office page</div>} />
+      </>
+    );
+    await waitFor(() => expect((screen.getByLabelText('Code *') as HTMLInputElement).value).toBe(office.code));
+    expect(screen.queryByLabelText('Code prefix')).toBeNull();
+    fireEvent.change(screen.getByLabelText('Code *'), { target: { value: 'LDN2' } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    await screen.findByText('office page');
+    expect(calls.find((c) => c.method === 'PATCH')!.body).toEqual({ code: 'LDN2' });
   });
 });

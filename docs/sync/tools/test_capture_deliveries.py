@@ -78,7 +78,7 @@ def test_capture_deliveries(django_user_model):
     pid2 = call(a, "setup_project_two", "POST", "/api/v1/projects/", {"code": "OTH", "name": "Other", "workflow_type": "standard"}).json()["id"]
     for who, role in ((sup, "Supervisor"), (padmin, "Producer"), (lead, "Lead"), (artist, "Artist")):
         call(a, f"setup_member_{who.email.split('@')[0]}", "POST", f"/api/organizations/projects/{pid}/members/", {"user_id": str(who.id), "role": role})
-    cid = call(a, "setup_client", "POST", "/api/v1/clients/", {"name": "Acme Pictures", "code": "ACME"}).json()["id"]
+    cid = call(a, "setup_client", "POST", "/api/v1/clients/", {"name": "Acme Pictures", "code": "CLI-ACME"}).json()["id"]
     project = Project.objects.get(pk=pid)
 
     counter = iter(range(1, 1000))

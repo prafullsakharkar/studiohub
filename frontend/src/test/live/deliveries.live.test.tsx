@@ -60,7 +60,7 @@ beforeAll(async () => {
   const outcome = await authService.login(live.users.manager);
   if (outcome.status !== 'mfa_required') throw new Error('expected an MFA challenge for the manager');
   await authService.completeMfaLogin({ challenge: outcome.challenge, code: await freshTotp(live.manager.secret) });
-  const client = await clientsApi.create({ name: `Acme ${uid}`, code: `AC${uid}` } as never);
+  const client = await clientsApi.create({ name: `Acme ${uid}`, code: `CLI-AC${uid}` } as never);
   fixture.client = client.id;
   tokenStorage.clearTokens();
   await signIn('supervisor');
