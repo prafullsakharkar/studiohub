@@ -6,7 +6,7 @@
 Requests go through DRF's APIClient as ADMIN_EMAIL (default admin@studiohub.local), so every serializer,
 validator and permission the UI meets applies. Nothing here talks to ATOM.
 
-KIND      project | episodes | sequences | shots | assets | links | tasks | verify
+KIND      project | episodes | sequences | shots | assets | links | tasks | versions | publish-versions | verify
 STEP      dry (bulk trial runs, nothing saved) | real (one batch at a time, stop at the first that does not commit)
 PROJECT   the studiohub project code (not needed for KIND=project)
 PAYLOADS  build.py's output; for KIND=project a JSON file with the project's fields; for KIND=verify the data folder
@@ -19,14 +19,20 @@ KIND=tasks (build.py tasks): a real run first adds the assignees as project memb
 an active member; a new member is an Artist), then skips the ATOM steps the project already has (matched by
 workflow.atom.step_uid, not by code), gives a new step whose code is taken the next free _N, and bulk-creates the rest.
 A dry run cannot see members it has not added, so it leaves those assignees out and checks everything else.
+
+KIND=versions / publish-versions (build.py): one POST per version, on the task of its ATOM step, coded
+``<task code>_<suffix>``; existing codes are skipped. Afterwards every version from ATOM gets its ATOM date as
+created_at (the API cannot set it), so a shot's current version is the real latest. A dry run sends nothing.
 """
 
+import datetime
 import json
 import os
 import re
 import time
 from collections import Counter, defaultdict
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
@@ -40,7 +46,11 @@ from apps.production.models import (
     Shot,
     ShotAsset,
     Task,
+    Version,
 )
+
+# ATOM's dates carry no zone; they are the studio's local time.
+ATOM_TZ = ZoneInfo("Asia/Kolkata")
 
 KIND = os.environ["KIND"]
 STEP = os.environ.get("STEP", "dry")
@@ -323,6 +333,94 @@ elif KIND == "tasks":
         dict(Counter(live.values_list("status", flat=True))),
     )
 
+elif KIND in ("versions", "publish-versions"):
+    # One POST per version (there is no bulk route). The task is found by ATOM step; the code is
+    # ``<task code>_<suffix>``; a code already in the project is skipped, so a rerun is safe. A publish version is
+    # made only while its task is Approved. STEP=dry sends nothing and counts what a real run would do.
+    rows = json.loads(payloads.read_text())["rows"]
+    tasks = {
+        ((w or {}).get("atom") or {}).get("step_uid"): (pk, code, status, department)
+        for pk, code, status, department, w in Task.objects.filter(project=project).values_list(
+            "pk", "code", "status", "department", "workflow"
+        )
+    }
+    have = {
+        c.upper()
+        for c in Version.all_objects.filter(project=project).values_list("code", flat=True)
+    }
+    active = {
+        str(pk)
+        for pk in get_user_model().objects.filter(is_active=True).values_list("pk", flat=True)
+    }
+    extra = {
+        "resolution": project.resolution,
+        "fps": str(project.fps),
+        "color_space": project.color_space,
+    }
+    counts, started = Counter(), time.monotonic()
+    for row in rows:
+        task = tasks.get(row["step_uid"])
+        if task is None:
+            counts["no task for the ATOM step"] += 1
+            continue
+        task_id, task_code, task_status, department = task
+        if KIND == "publish-versions" and task_status != "Approved":
+            counts["task no longer Approved"] += 1
+            continue
+        code = f"{task_code}_{row['suffix']}".upper()
+        if code in have:
+            counts["already there"] += 1
+            continue
+        body = {
+            "project_id": str(project.pk), "task": str(task_id), "code": code, "status": row["status"],
+            "artist": row["artist"] if row["artist"] in active else None, "department": department or "",
+            "file_path": row["file_path"], "tags": row["tags"], "publishing_info": row["publishing_info"], **extra,
+        }  # fmt: skip
+        if dry:
+            counts["would create"] += 1
+            have.add(code)
+            continue
+        response = client.post("/api/v1/versions/", body, format="json")
+        if response.status_code == 201:
+            counts["created"] += 1
+            have.add(code)
+        else:
+            counts["failed"] += 1
+            print(
+                "  failed:",
+                code,
+                response.status_code,
+                response.content.decode(errors="replace")[:500],
+            )
+    print(dict(counts), f"{time.monotonic() - started:.0f}s", flush=True)
+    # The API stamps a version with the moment it is made, so a shot's current version (D-16: latest published,
+    # else latest created) would follow the import's order. Every version from ATOM gets its ATOM date instead
+    # (the publish's, or a publish version's newest); only created_at changes.
+    dated = Counter()
+    for pk, created, info in Version.all_objects.filter(
+        project=project, publishing_info__has_key="atom"
+    ).values_list("pk", "created_at", "publishing_info"):
+        atom = info["atom"]
+        raw = atom.get("published_at") or atom.get("latest_published_at")
+        if not raw:
+            continue
+        when = datetime.datetime.fromisoformat(raw).replace(tzinfo=ATOM_TZ)
+        if created == when:
+            dated["date already ATOM's"] += 1
+        elif dry:
+            dated["date to set"] += 1
+        else:
+            Version.all_objects.filter(pk=pk).update(created_at=when)
+            dated["date set"] += 1
+    print("dates:", dict(dated))
+    live = Version.objects.filter(project=project)
+    print(
+        "live versions:",
+        live.count(),
+        "| by status:",
+        dict(Counter(live.values_list("status", flat=True))),
+    )
+
 elif KIND == "verify":
     # Read only: what ATOM holds (the data folder) against what studiohub holds now.
     data = payloads
@@ -387,6 +485,34 @@ elif KIND == "verify":
             checks["atom ok" if t.workflow == row["workflow"] else "WORKFLOW DIFFERENT"] += 1
         print(
             f"tasks      built {len(built):>7}  studiohub {len(stored):>7}  extra {len(stored.keys() - built.keys())}",
+            dict(checks),
+        )
+    codes = {
+        ((w or {}).get("atom") or {}).get("step_uid"): code
+        for code, w in Task.objects.filter(project=project).values_list("code", "workflow")
+    }
+    for name in ("versions", "publish-versions"):
+        built_file = data / "payloads" / f"{name}.json"
+        if not built_file.exists():
+            continue
+        # Matched by code (<task code>_<suffix>); the ATOM details must be the built ones.
+        stored = {v.code: v for v in Version.objects.filter(project=project)}
+        checks = Counter()
+        for row in json.loads(built_file.read_text())["rows"]:
+            v = stored.get(f"{codes.get(row['step_uid'], '?')}_{row['suffix']}".upper())
+            if v is None:
+                checks["missing"] += 1
+                continue
+            checks["status ok" if v.status == row["status"] else "status changed since"] += 1
+            atom = v.publishing_info.get("atom")
+            checks[
+                "atom ok" if atom == row["publishing_info"]["atom"] else "ATOM DETAILS DIFFERENT"
+            ] += 1
+            raw = atom and (atom.get("published_at") or atom.get("latest_published_at"))
+            when = raw and datetime.datetime.fromisoformat(raw).replace(tzinfo=ATOM_TZ)
+            checks["date ok" if v.created_at == when else "DATE NOT ATOM'S"] += 1
+        print(
+            f"{name:16} built {sum(checks[k] for k in ('missing', 'status ok', 'status changed since')):>6}",
             dict(checks),
         )
 

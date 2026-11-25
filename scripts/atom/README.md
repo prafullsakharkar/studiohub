@@ -1,7 +1,7 @@
 # Importing an ATOM project
 
 These scripts copy one project from ATOM (the studio's older tracker) into studiohub: the project, its
-episodes, sequences, shots and assets, the shot–asset links, its tasks, and ATOM's people. They were used for MUS on 2026-11-23/24
+episodes, sequences, shots and assets, the shot–asset links, its tasks, versions from its publishes, and ATOM's people. They were used for MUS on 2026-11-23/24
 (70 episodes, 1,471 sequences, 13,116 shots, 1,910 assets, 59,831 links, all checked against ATOM).
 
 ## Rules
@@ -19,9 +19,9 @@ episodes, sequences, shots and assets, the shot–asset links, its tasks, and AT
 
 | File | Does |
 |---|---|
-| `fetch.py` | GETs the ATOM project and its episodes, sequences, shots and assets into a data folder; `--work` its steps and tasks; `--users` ATOM's users |
+| `fetch.py` | GETs the ATOM project and its episodes, sequences, shots and assets into a data folder; `--work` its steps and tasks; `--publishes` its publishes; `--users` ATOM's users |
 | `build.py` | Turns the saved files into studiohub payloads (`<data>/payloads/<kind>.json`); local files only |
-| `run.py` | Sends a payload to studiohub (`KIND=project|episodes|sequences|shots|assets|links|tasks`) or compares (`KIND=verify`) |
+| `run.py` | Sends a payload to studiohub (`KIND=project|episodes|sequences|shots|assets|links|tasks|versions|publish-versions`) or compares (`KIND=verify`) |
 | `studio.py` | Studio setup: departments on catalog task types, the studio's task templates, a project's workflows |
 | `users.py` | Creates ATOM's users as studiohub accounts and directory people (`KIND=users`), and a resource for each active one (`KIND=resources`) |
 
@@ -114,6 +114,47 @@ What it decides (MUS, 2026-11-24: a pilot of 1,455, then the other 48,243; 49,69
 - **Dates:** start, end and due to `schedule`, due also to `due_date`; dates ATOM filled in are dropped.
 - **`workflow.atom`:** step uid, ATOM status, approval times, retakes, bid minutes, artist ids, task count,
   latest version. Never a task uid or name: those hold the artist's name.
+
+## Versions
+
+ATOM's review history for MUS is on its **publishes** (MUS has one ATOM Version record; its reviews were in
+ShotGrid). Versions come from publishes in two kinds. Needs the tasks: a version's task is found by its ATOM step.
+
+1. `python3 scripts/atom/fetch.py --code MUS --publishes --out $D` (one GET per shot or asset: MUS has 15,026 and
+   about 326,000 publishes, about an hour; a stopped run resumes). `--only <uid>,<uid>` reads a sample.
+2. `build.py versions` and `build.py publish-versions`, each with `--data $D --project-id $P --users ~/atom-data/users`.
+3. `KIND=versions STEP=dry`, then `STEP=real`, with `PAYLOADS=$D/payloads/versions.json` (`run.py`); the same for
+   `publish-versions`. One request per version (no bulk route); a code already there is skipped. `KIND=verify` then
+   checks each built version's status, ATOM details and date.
+
+What it decides (MUS pilot, 2026-11-25: 131 dailies versions on 5 shots and 5 assets, 19 publish versions on 10
+shots and 10 assets):
+- **Dailies version:** one per publish that carries review media (`review_mov`, `mov` or `review_img`), on the task
+  of its ATOM step, coded `<task code>_<ATOM publish name>` (`MUS_101_008_0880_ANIMATION_REVIEW_V013`), so artists
+  see ATOM's number; studiohub numbers the task's versions v001, v002 ... in ATOM's order. Most departments publish
+  review media on one stream ("Review" for Animation, Layout and Cloth; "Comp Out" for Lighting; the geometry for
+  asset work); Layout, Render and much of Texturing publish none.
+- **Status** (`PUBLISH_STATUSES`): Pending Internal or Client Review → Pending Review; Internal or Client Approved →
+  Approved; Internal or Client Reject → Retake. Superseded versions keep theirs (ATOM's review status mostly came
+  from ShotGrid; `sg_status_list` is "apr" on every MUS step and means nothing). A new status stops the build.
+- **Publish version:** for an approved step (its ATOM status maps to Approved, as for tasks) with no review media,
+  one Approved version `<task code>_PUBLISH` holding the step's current set: the latest publish of each stream
+  (asset type and name). Not marked published: that waits for its files to be registered (size and SHA-256 need
+  read access to the share). Attaching publishes to dailies versions by ATOM's order was tried and dropped: most of
+  MUS was bulk-loaded into ATOM on 27–28 June 2024, and some shots have automated cache republishes (up to v1481).
+- **Artist:** the publisher (a publish version: the newest publisher) when imported and active; otherwise none, and
+  the ATOM id stays in `publishing_info.atom`.
+- **`publishing_info.atom`:** publish uid, step uid, name, stream, ATOM version and status, date, publisher id, and
+  every component's path (`review`, `review_img` for review copies); `file_path` is the scene (`source`).
+- **Resolution, fps and colour space** are the project's (a version's defaults are 4K and ACEScg).
+- **Date:** the API stamps a version with the moment it is made, and a shot's current version (D-16: latest
+  published, else latest created) would then follow the import's order. `run.py` gives every version from ATOM its
+  ATOM date as `created_at` (the publish's; a publish version's newest). ATOM's dates carry no zone and are
+  Asia/Kolkata time.
+- **Not done:** review copies (the share is not readable from the server, and `PUBLISHING_STORAGE_MOUNTS` and
+  review media are off in development), registering files, ATOM's notes (unlinked, ShotGrid-synced test messages).
+  For registering files, the file types `json`, `wav`, `atom` and `rs` were added to the catalogue and a storage
+  root `ASE` (`/ASE/01prj`) created by hand; a component with no extension is a frame-sequence folder.
 
 ## Studio setup
 
