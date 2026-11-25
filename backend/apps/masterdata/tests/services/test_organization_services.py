@@ -32,8 +32,18 @@ def actor():
     return UserFactory.create()
 
 
+def with_prefix(prefix, code):
+    """New studio codes start with their kind's prefix (CR-56); a code that has it is kept."""
+    return code if code.strip().upper().startswith(prefix) else f"{prefix}{code}"
+
+
 def dept(actor, code, name=None, **kw):
-    data = {"code": code, "name": name or code, "department_type": "creative", **kw}
+    data = {
+        "code": with_prefix("DEPT-", code),
+        "name": name or code,
+        "department_type": "creative",
+        **kw,
+    }
     return DepartmentService.create(actor=actor, data=data)
 
 
@@ -47,8 +57,8 @@ def chain(actor, length):
 
 class TestDepartment:
     def test_create_normalizes_and_records_the_actor(self, actor):
-        row = dept(actor, " comp ", " Compositing ")
-        assert (row.code, row.name, row.created_by) == ("comp", "Compositing", actor)
+        row = dept(actor, " DEPT-comp ", " Compositing ")
+        assert (row.code, row.name, row.created_by) == ("DEPT-comp", "Compositing", actor)
 
     def test_the_type_must_be_known(self, actor):
         with pytest.raises(ValidationError) as caught:
@@ -153,8 +163,8 @@ class TestHierarchy:
         assert DepartmentService.move(actor=actor, department=b, new_parent=None).parent is None
 
     def test_positions_follow_the_same_rules(self, actor):
-        a = PositionService.create(actor=actor, data={"code": "a", "name": "A"})
-        b = PositionService.create(actor=actor, data={"code": "b", "name": "B", "parent": a})
+        a = PositionService.create(actor=actor, data={"code": "POS-a", "name": "A"})
+        b = PositionService.create(actor=actor, data={"code": "POS-b", "name": "B", "parent": a})
         with pytest.raises(ValidationError):
             PositionService.update(actor=actor, instance=a, data={"parent": b})
         with pytest.raises(ValidationError):
@@ -163,12 +173,12 @@ class TestHierarchy:
         for i in range(MAX_DEPTH - 1):
             rows.append(
                 PositionService.create(
-                    actor=actor, data={"code": f"p{i}", "name": f"P{i}", "parent": rows[-1]}
+                    actor=actor, data={"code": f"POS-p{i}", "name": f"P{i}", "parent": rows[-1]}
                 )
             )
         with pytest.raises(ValidationError):
             PositionService.create(
-                actor=actor, data={"code": "deep", "name": "Deep", "parent": rows[-1]}
+                actor=actor, data={"code": "POS-deep", "name": "Deep", "parent": rows[-1]}
             )
 
 
@@ -271,7 +281,7 @@ class TestTeam:
         with pytest.raises(ValidationError) as caught:
             TeamService.create(
                 actor=actor,
-                data={"code": "t2", "name": "roto", "department": DepartmentFactory()},
+                data={"code": "TEAM-t2", "name": "roto", "department": DepartmentFactory()},
             )
         assert "name" in caught.value.message_dict
 
@@ -293,7 +303,13 @@ class TestOffice:
 
     def make(self, actor, code, **kw):
         return OfficeService.create(
-            actor=actor, data={"code": code, "name": kw.pop("name", code), **self.base, **kw}
+            actor=actor,
+            data={
+                "code": with_prefix("OFF-", code),
+                "name": kw.pop("name", code),
+                **self.base,
+                **kw,
+            },
         )
 
     @pytest.mark.parametrize("zone", ["Mars/Olympus", "IST", "", "Asia/Kolkata (IST)"])
@@ -347,8 +363,10 @@ class TestPosition:
     def test_level_is_at_least_one(self, actor):
         for bad in (0, -1, "2", True):
             with pytest.raises(ValidationError):
-                PositionService.create(actor=actor, data={"code": "p", "name": "P", "level": bad})
-        assert PositionService.create(actor=actor, data={"code": "p", "name": "P", "level": 3})
+                PositionService.create(
+                    actor=actor, data={"code": "POS-p", "name": "P", "level": bad}
+                )
+        assert PositionService.create(actor=actor, data={"code": "POS-p", "name": "P", "level": 3})
 
     def test_the_department_must_be_live(self, actor):
         with pytest.raises(ValidationError):
@@ -371,7 +389,7 @@ class TestAudit:
         with django_capture_on_commit_callbacks(execute=True):
             row = DepartmentService.create(
                 actor=actor,
-                data={"code": "comp", "name": "Compositing", "department_type": "creative"},
+                data={"code": "DEPT-COMP", "name": "Compositing", "department_type": "creative"},
             )
             DepartmentService.update(actor=actor, instance=row, data={"description": "secret text"})
         logs = list(AuditLog.objects.filter(target_type="masterdata").order_by("created_at"))

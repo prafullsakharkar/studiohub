@@ -10,6 +10,7 @@ import { AuthContext } from '@/core/auth/AuthContext';
 import { notify } from '@/core/notifications/notify';
 import { useProjectCode } from '@/modules/production/hooks/useProjectCode';
 import { withProjectPrefix } from '@/modules/production/codePrefix';
+import { withCodePrefix } from '@/shared/utils/codePrefix';
 import { FormPage } from '@/shared/forms/FormPage';
 import { formDialogCopy } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
@@ -87,7 +88,7 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
       if (!editing && values[field.name] === '' && field.kind !== 'checkbox') continue; // leave optional blanks to the server defaults
       if (editing && config.immutableOnEdit?.includes(field.name)) continue;
       const wire = wireValue(field, values[field.name]);
-      payload[field.name] = !editing && field.kind === 'text' && field.projectPrefix ? withProjectPrefix(await codeOfChosenProject(), wire) : wire;
+      payload[field.name] = editing || field.kind !== 'text' ? wire : field.projectPrefix ? withProjectPrefix(await codeOfChosenProject(), wire) : field.codePrefix ? withCodePrefix(field.codePrefix, wire) : wire;
     }
     const saved = editing ? await config.update(id as string, payload) : await config.create(payload);
     // The server made the caller a member of what they just created; /auth/me must say so before the detail route checks it.

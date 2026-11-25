@@ -49,7 +49,7 @@ const uid = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}
 describe('History panel, end to end', () => {
   it('editing a department shows a change-log row with the actor and the field diff', async () => {
     await signInManager();
-    const dept = await departmentsApi.create({ code: `H${uid()}`.toUpperCase(), name: `History ${uid()}`, department_type: 'creative' });
+    const dept = await departmentsApi.create({ code: `DEPT-H${uid()}`.toUpperCase(), name: `History ${uid()}`, department_type: 'creative' });
     await departmentsApi.update(dept.id, { name: `${dept.name} v2`, color: '#336699' });
 
     render(tree(<EntityHistory targetType="Department" targetId={dept.id} />));
@@ -67,8 +67,8 @@ describe('History panel, end to end', () => {
 
   it('saving the real team form adds an entry to the open History without a reload', async () => {
     await signInManager();
-    const department = await departmentsApi.create({ code: `T${uid()}`.toUpperCase(), name: `Dept ${uid()}`, department_type: 'creative' });
-    const team = await teamsApi.create({ code: `TH${uid()}`.toUpperCase(), name: `Team ${uid()}`, department: department.id });
+    const department = await departmentsApi.create({ code: `DEPT-T${uid()}`.toUpperCase(), name: `Dept ${uid()}`, department_type: 'creative' });
+    const team = await teamsApi.create({ code: `TEAM-TH${uid()}`.toUpperCase(), name: `Team ${uid()}`, department: department.id });
 
     render(
       tree(
@@ -150,9 +150,9 @@ describe('log pages, end to end', () => {
 describe('what the backend does NOT record (CR-04, confirmed live)', () => {
   it('edits to positions, contracts and catalog rows leave no change-log entry, while clients do', async () => {
     await signInManager();
-    const position = await positionsApi.create({ code: `P${uid()}`.toUpperCase(), name: `Pos ${uid()}` });
+    const position = await positionsApi.create({ code: `POS-P${uid()}`.toUpperCase(), name: `Pos ${uid()}` });
     await positionsApi.update(position.id, { description: 'edited' });
-    const client = await clientsApi.create({ name: `Cl ${uid()}`, code: `CL${uid()}`.toUpperCase() });
+    const client = await clientsApi.create({ name: `Cl ${uid()}`, code: `CLI-CL${uid()}`.toUpperCase() });
     await clientsApi.update(client.id, { headquarters: 'Pune' }); // only some client fields are tracked: contact_name is not
     const contract = await clientContractsApi.create({ client: client.id, contract_number: `K${uid()}`, title: 'T', status: 'Draft' });
     await clientContractsApi.update(contract.id, { title: 'T2' });

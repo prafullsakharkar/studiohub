@@ -64,10 +64,10 @@ def test_capture_vendor_ids_cr42(django_user_model):
     flow: dict = {}
 
     flow["vendor_create_north"] = call(
-        a, "POST", "/api/v1/vendors/", {"name": "Northlight Roto", "code": "NLR"}
+        a, "POST", "/api/v1/vendors/", {"name": "Northlight Roto", "code": "VEN-NLR"}
     )
     flow["vendor_create_ember"] = call(
-        a, "POST", "/api/v1/vendors/", {"name": "Ember FX", "code": "EMB"}
+        a, "POST", "/api/v1/vendors/", {"name": "Ember FX", "code": "VEN-EMB"}
     )
     north = flow["vendor_create_north"]["body"]["id"]
     ember = flow["vendor_create_ember"]["body"]["id"]

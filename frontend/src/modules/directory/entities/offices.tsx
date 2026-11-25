@@ -3,6 +3,7 @@ import type { Office } from '@/api/masterdata/directory';
 import { Badge } from '@/shared/components/Badge';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import type { DirectoryFormConfig, DirectoryListConfig } from '../types';
+import { STUDIO_CODE_PREFIX } from '@/shared/utils/codePrefix';
 
 export const officesListConfig: DirectoryListConfig<Office> = {
   title: 'Offices',
@@ -56,7 +57,7 @@ export const officesFormConfig: DirectoryFormConfig<Office> = {
   update: (id, patch) => officesApi.update(id, patch as never),
   fields: [
     { kind: 'text', name: 'name', label: 'Name', required: true },
-    { kind: 'text', name: 'code', label: 'Code', required: true },
+    { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 30, codePrefix: STUDIO_CODE_PREFIX.office },
     { kind: 'text', name: 'office_type', label: 'Type', required: true, hint: 'For example headquarters or branch.' },
     { kind: 'text', name: 'city', label: 'City', required: true },
     { kind: 'text', name: 'country', label: 'Country', required: true, hint: 'Country code, for example IN.' },

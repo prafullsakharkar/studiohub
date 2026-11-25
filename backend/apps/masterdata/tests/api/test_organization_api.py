@@ -52,10 +52,10 @@ def code_of(response):
 
 
 PAYLOADS = {
-    "departments": {"code": "COMP", "name": "Compositing", "department_type": "creative"},
-    "positions": {"code": "SUP", "name": "Supervisor"},
+    "departments": {"code": "DEPT-COMP", "name": "Compositing", "department_type": "creative"},
+    "positions": {"code": "POS-SUP", "name": "Supervisor"},
     "offices": {
-        "code": "LON",
+        "code": "OFF-LON",
         "name": "London",
         "office_type": "studio",
         "timezone": "Europe/London",

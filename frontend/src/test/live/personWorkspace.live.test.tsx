@@ -39,9 +39,9 @@ describe('person workspace on the wire', () => {
   it('adds a skill, joins two teams and chooses one as primary, and deactivates then reactivates the person', async () => {
     await signInManager();
     const tag = uid();
-    const department = await departmentsApi.create({ code: `D${tag}`.toUpperCase(), name: `Dept ${tag}`, department_type: 'creative' });
-    const team = await teamsApi.create({ code: `T${tag}`.toUpperCase(), name: `Team ${tag}`, department: department.id });
-    const second = await teamsApi.create({ code: `V${tag}`.toUpperCase(), name: `Second ${tag}`, department: department.id });
+    const department = await departmentsApi.create({ code: `DEPT-D${tag}`.toUpperCase(), name: `Dept ${tag}`, department_type: 'creative' });
+    const team = await teamsApi.create({ code: `TEAM-T${tag}`.toUpperCase(), name: `Team ${tag}`, department: department.id });
+    const second = await teamsApi.create({ code: `TEAM-V${tag}`.toUpperCase(), name: `Second ${tag}`, department: department.id });
     const person = await peopleApi.create({ name: `Artist ${tag}` });
 
     render(tree(<Routes><Route path="/people/:id" element={<PersonWorkspacePage />} /></Routes>, `/people/${person.id}`));

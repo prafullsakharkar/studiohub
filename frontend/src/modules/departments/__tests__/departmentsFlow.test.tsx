@@ -224,20 +224,21 @@ describe('create department', () => {
     expect(calls.some((c) => c.method === 'POST')).toBe(false);
   });
 
-  it('rejects a code longer than the model allows (30)', async () => {
+  it('rejects a code longer than the model allows (30, of which DEPT- takes 5)', async () => {
     mockFetch(pickerServer);
     renderPage(<CreateDepartmentPage />, superuser, '/departments/new', '/departments/new');
     fill(/^Name/, 'X');
-    fill(/^Code/, 'C'.repeat(31));
+    fill('Code *', 'C'.repeat(26));
     fireEvent.click(screen.getByRole('button', { name: /create department/i }));
-    expect(await screen.findByText(/at most 30 characters/)).toBeTruthy();
+    expect(await screen.findByText('Code can be at most 25 characters after DEPT-')).toBeTruthy();
   });
 
   it('posts only fields the backend has, then opens the new department', async () => {
     const { calls } = mockFetch(pickerServer);
     renderPage(<CreateDepartmentPage />, superuser, '/departments/new', '/departments/new');
     fill(/^Name/, 'Lookdev');
-    fill(/^Code/, 'DEPT-LOOK');
+    expect(screen.getByLabelText('Code prefix').textContent).toBe('DEPT-');
+    fill('Code *', ' look ');
     fill(/Software stack/, 'Katana, USD');
     fireEvent.click(screen.getByRole('button', { name: /create department/i }));
 
@@ -260,7 +261,7 @@ describe('create department', () => {
     mockFetch((call) => (call.method === 'POST' ? reply(flow.create_duplicate_code) : pickerServer(call)));
     renderPage(<CreateDepartmentPage />, superuser, '/departments/new', '/departments/new');
     fill(/^Name/, 'Lookdev');
-    fill(/^Code/, 'DEPT-LOOK');
+    fill('Code *', 'DEPT-LOOK');
     fireEvent.click(screen.getByRole('button', { name: /create department/i }));
 
     expect(await screen.findByText('A department with this code already exists.')).toBeTruthy();
@@ -272,7 +273,7 @@ describe('create department', () => {
     mockFetch((call) => (call.method === 'POST' ? reply(flow.create_as_artist_403) : pickerServer(call)));
     renderPage(<CreateDepartmentPage />, artist, '/departments/new', '/departments/new');
     fill(/^Name/, 'Lookdev');
-    fill(/^Code/, 'DEPT-ART');
+    fill('Code *', 'DEPT-ART');
     fireEvent.click(screen.getByRole('button', { name: /create department/i }));
     expect(await screen.findByText('You do not have permission to perform this action.')).toBeTruthy();
   });

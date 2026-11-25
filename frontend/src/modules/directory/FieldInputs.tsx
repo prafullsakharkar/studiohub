@@ -15,7 +15,7 @@ export interface FieldInputsProps {
   control: Control<Values>;
   errors: FieldErrors<Values>;
   clearServerError: () => void;
-  /** The chosen project's code, for a field with `projectPrefix` (its `CODE_` is shown before the input and added on save). */
+  /** The chosen project's code, for a field with `projectPrefix` (its `CODE_` is shown before the input and added on save; a `codePrefix` is shown the same way). */
   projectCode?: string;
   /** A page form: two columns on wide screens, long fields (text areas, JSON, several records) across both. A dialog stacks them. */
   grid?: boolean;
@@ -58,7 +58,7 @@ export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, edit
         />
       );
     }
-    const prefix = field.kind === 'text' && field.projectPrefix && !editing ? projectCodePrefix(projectCode) : '';
+    const prefix = field.kind !== 'text' || editing ? '' : field.projectPrefix ? projectCodePrefix(projectCode) : (field.codePrefix ?? '');
     return (
       <Field key={field.name} id={id} label={`${field.label}${field.required ? ' *' : ''}`} error={err(field.name)} hint={readOnly ? 'Cannot be changed after creation.' : prefix ? `${prefix} is added in front of what you type. ${field.hint ?? ''}`.trim() : field.hint}>
         {field.kind === 'json' ? (

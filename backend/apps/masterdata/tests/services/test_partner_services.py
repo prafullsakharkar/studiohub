@@ -47,21 +47,21 @@ class TestClientCrud:
         client = ClientService.create(
             actor=actor,
             data={
-                "code": " APEX ",
+                "code": " CLI-APEX ",
                 "name": " Apex ",
                 "email": " Ops@Apex.VFX ",
                 "phone": "+1  (514) 555-0101",
                 "total_billed_usd": "1250.5",
             },
         )
-        assert (client.code, client.name) == ("APEX", "Apex")
+        assert (client.code, client.name) == ("CLI-APEX", "Apex")
         assert client.email == "ops@apex.vfx"
         assert client.phone == "+1 (514) 555-0101"
         assert client.total_billed_usd == Decimal("1250.50")
         assert client.created_by == actor
 
     def test_the_billed_total_has_no_default_and_may_be_cleared(self, actor):
-        client = ClientService.create(actor=actor, data={"code": "A", "name": "A"})
+        client = ClientService.create(actor=actor, data={"code": "CLI-A", "name": "A"})
         assert client.total_billed_usd is None
         client = ClientService.update(actor=actor, instance=client, data={"total_billed_usd": "5"})
         assert client.total_billed_usd == Decimal("5.00")
@@ -72,43 +72,45 @@ class TestClientCrud:
     def test_a_bad_billed_total_is_refused(self, actor, bad):
         with pytest.raises(ValidationError) as caught:
             ClientService.create(
-                actor=actor, data={"code": "A", "name": "A", "total_billed_usd": bad}
+                actor=actor, data={"code": "CLI-A", "name": "A", "total_billed_usd": bad}
             )
         assert "total_billed_usd" in caught.value.message_dict
 
     @pytest.mark.parametrize("email", ["nope", "a@b", "a b@c.io"])
     def test_a_bad_email_is_refused(self, actor, email):
         with pytest.raises(ValidationError) as caught:
-            ClientService.create(actor=actor, data={"code": "A", "name": "A", "email": email})
+            ClientService.create(actor=actor, data={"code": "CLI-A", "name": "A", "email": email})
         assert "email" in caught.value.message_dict
 
     @pytest.mark.parametrize("phone", ["call me", "555-0100; DROP", "<b>1</b>"])
     def test_a_phone_with_letters_or_markup_is_refused(self, actor, phone):
         with pytest.raises(ValidationError) as caught:
-            ClientService.create(actor=actor, data={"code": "A", "name": "A", "phone": phone})
+            ClientService.create(actor=actor, data={"code": "CLI-A", "name": "A", "phone": phone})
         assert "phone" in caught.value.message_dict
 
     def test_code_is_unique_ignoring_case_among_live_rows(self, actor):
-        ClientFactory(code="apex", name="One")
+        ClientFactory(code="CLI-apex", name="One")
         with pytest.raises(ValidationError) as caught:
-            ClientService.create(actor=actor, data={"code": "APEX", "name": "Two"})
+            ClientService.create(actor=actor, data={"code": "CLI-APEX", "name": "Two"})
         assert set(caught.value.message_dict) == {"code"}
 
     def test_a_deleted_clients_code_can_be_reused(self, actor):
-        old = ClientFactory(code="apex")
+        old = ClientFactory(code="CLI-apex")
         ClientService.soft_delete(actor=actor, instance=old)
-        assert ClientService.create(actor=actor, data={"code": "apex", "name": "New"}).pk != old.pk
+        assert (
+            ClientService.create(actor=actor, data={"code": "CLI-apex", "name": "New"}).pk != old.pk
+        )
 
     def test_restore_refuses_when_the_code_was_taken(self, actor):
-        old = ClientFactory(code="apex")
+        old = ClientFactory(code="CLI-apex")
         ClientService.soft_delete(actor=actor, instance=old)
-        ClientService.create(actor=actor, data={"code": "apex", "name": "New"})
+        ClientService.create(actor=actor, data={"code": "CLI-apex", "name": "New"})
         with pytest.raises(ValidationError):
             ClientService.restore(actor=actor, instance=old)
 
     def test_unknown_fields_are_a_programming_error(self, actor):
         with pytest.raises(ValueError):
-            ClientService.create(actor=actor, data={"code": "A", "name": "A", "id": "x"})
+            ClientService.create(actor=actor, data={"code": "CLI-A", "name": "A", "id": "x"})
 
     def test_update_changes_only_what_it_is_given(self, actor):
         client = ClientFactory(code="A", name="A", email="a@x.io", total_billed_usd=Decimal("9"))
@@ -121,7 +123,7 @@ class TestVendorCrud:
     @pytest.mark.parametrize("rating", ["5.01", "-0.1", "x"])
     def test_rating_is_between_zero_and_five(self, actor, rating):
         with pytest.raises(ValidationError) as caught:
-            VendorService.create(actor=actor, data={"code": "V", "name": "V", "rating": rating})
+            VendorService.create(actor=actor, data={"code": "VEN-V", "name": "V", "rating": rating})
         assert "rating" in caught.value.message_dict
 
     def test_a_vendor_is_created_and_audited_by_field_names_only(
@@ -130,7 +132,7 @@ class TestVendorCrud:
         with django_capture_on_commit_callbacks(execute=True):
             VendorService.create(
                 actor=actor,
-                data={"code": "V", "name": "V", "contact_name": "Jane Doe", "email": "j@x.io"},
+                data={"code": "VEN-V", "name": "V", "contact_name": "Jane Doe", "email": "j@x.io"},
             )
         log = AuditLog.objects.get(target_type="masterdata")
         assert log.metadata["fields"] == ["code", "contact_name", "email", "name"]

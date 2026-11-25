@@ -11,20 +11,29 @@ import { fetchAllRows, listFetcher } from '@/shared/data/listing';
 import { Field, inputClass } from '@/shared/forms/FormParts';
 import { FormPage } from '@/shared/forms/FormPage';
 import type { Department } from '@/api/masterdata/departments';
+import { STUDIO_CODE_PREFIX, withCodePrefix } from '@/shared/utils/codePrefix';
 import { useCreateDepartment, useUpdateDepartment } from '../hooks/useDepartmentList';
 
 // Limits mirror the model: code max_length=30, color max_length=20 (apps/masterdata/models/department.py).
-const schema = z.object({
-  name: z.string().trim().min(1, 'Name is required').max(255),
-  code: z.string().trim().min(1, 'Code is required').max(30, 'Code can be at most 30 characters'),
-  department_type: z.enum(['production', 'creative', 'technical', 'support', 'administration']),
-  description: z.string(),
-  parent: z.string(),
-  manager: z.string(),
-  color: z.string().max(20),
-  software_stack: z.string(),
-});
-type FormValues = z.infer<typeof schema>;
+const CODE_MAX = 30;
+// A new department's code starts with DEPT- (typed without it, added on save); an edit shows the saved code as it is.
+const PREFIX = STUDIO_CODE_PREFIX.department;
+const withoutPrefix = (code: string) => (code.trim().toUpperCase().startsWith(PREFIX) ? code.trim().slice(PREFIX.length) : code);
+
+const schemaFor = (editing: boolean) => {
+  const max = editing ? CODE_MAX : CODE_MAX - PREFIX.length;
+  return z.object({
+    name: z.string().trim().min(1, 'Name is required').max(255),
+    code: z.string().trim().min(1, 'Code is required').refine((code) => (editing ? code : withoutPrefix(code)).length <= max, editing ? `Code can be at most ${max} characters` : `Code can be at most ${max} characters after ${PREFIX}`),
+    department_type: z.enum(['production', 'creative', 'technical', 'support', 'administration']),
+    description: z.string(),
+    parent: z.string(),
+    manager: z.string(),
+    color: z.string().max(20),
+    software_stack: z.string(),
+  });
+};
+type FormValues = z.infer<ReturnType<typeof schemaFor>>;
 
 const peopleFetcher = listFetcher<{ id: string; full_name: string }>('/api/v1/people/');
 
@@ -53,7 +62,7 @@ export const DepartmentForm: React.FC<{ department?: Department }> = ({ departme
     clearServerError,
     formState: { errors, isSubmitting, isDirty },
   } = useServerForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schemaFor(Boolean(department))),
     defaultValues: department
       ? { name: department.name, code: department.code, department_type: department.department_type, description: department.description ?? '', parent: department.parent ?? '', manager: department.manager ?? '', color: department.color ?? '', software_stack: (department.software_stack ?? []).join(', ') }
       : { name: '', code: '', department_type: 'creative', description: '', parent: '', manager: '', color: '#6366f1', software_stack: '' },
@@ -62,7 +71,7 @@ export const DepartmentForm: React.FC<{ department?: Department }> = ({ departme
   const onSubmit = submit(async (values) => {
     const input: DepartmentInput = {
       name: values.name,
-      code: values.code,
+      code: department ? values.code : withCodePrefix(PREFIX, values.code),
       department_type: values.department_type,
       description: values.description,
       color: values.color,
@@ -94,9 +103,20 @@ export const DepartmentForm: React.FC<{ department?: Department }> = ({ departme
         <Field id="dept-name" label="Name *" error={errors.name?.message}>
           <input id="dept-name" type="text" placeholder="e.g. Lighting & LookDev" className={inputClass(Boolean(errors.name))} {...text('name')} />
         </Field>
-        <Field id="dept-code" label="Code *" error={errors.code?.message}>
-          <input id="dept-code" type="text" placeholder="e.g. DEPT-LGT" className={`${inputClass(Boolean(errors.code))} font-mono`} {...text('code')} />
-        </Field>
+        {department ? (
+          <Field id="dept-code" label="Code *" error={errors.code?.message}>
+            <input id="dept-code" type="text" className={`${inputClass(Boolean(errors.code))} font-mono`} {...text('code')} />
+          </Field>
+        ) : (
+          <Field id="dept-code" label="Code *" error={errors.code?.message} hint={`${PREFIX} is added in front of what you type.`}>
+            <div className="flex items-stretch gap-2">
+              <span aria-label="Code prefix" className="flex items-center px-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-mono text-sm">
+                {PREFIX}
+              </span>
+              <input id="dept-code" type="text" placeholder="e.g. LGT" className={`${inputClass(Boolean(errors.code))} font-mono flex-1`} {...text('code')} />
+            </div>
+          </Field>
+        )}
         <Field id="dept-type" label="Type *" error={errors.department_type?.message}>
           <select id="dept-type" className={inputClass(Boolean(errors.department_type))} {...text('department_type')}>
             {DEPARTMENT_TYPES.map((t) => (
