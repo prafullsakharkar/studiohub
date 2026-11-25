@@ -3,13 +3,15 @@
     python3 scripts/atom/build.py <episodes|sequences|shots|assets|links> --data ~/atom-data/mus --project-id <uuid>
     python3 scripts/atom/build.py tasks --data ~/atom-data/mus --project-id <uuid> --users ~/atom-data/users [--per-step 100]
     python3 scripts/atom/build.py bids --data ~/atom-data/mus --project-id <uuid>
+    python3 scripts/atom/build.py <versions|publish-versions> --data ~/atom-data/mus --project-id <uuid> --users ~/atom-data/users
 
 Writes ``<data>/payloads/<kind>.json``. Codes are ``<CODE>_...`` in upper case (CR-49):
 episode ``MUS_100``, sequence ``MUS_100_001``, shot ``MUS_100_001_0010``, asset ``MUS_ALFREDARMOR``.
 Bulk rows are cut into batches of at most 500 (CR-48), at episode or sequence boundaries so a parent and its
 children stay together. ATOM fills a missing date with the day it is read (``fetched_on`` in ``_fetched.json``,
 as both start and due); such dates are dropped. ``tasks`` and ``bids`` need ``fetch.py --work``; ``tasks`` also
-needs the people import's ``user_map.json`` and ``users.json`` (``--users``).
+needs the people import's ``user_map.json`` and ``users.json`` (``--users``). ``versions`` (dailies) and
+``publish-versions`` need ``fetch.py --publishes`` and ``--users``; ``publish-versions`` also ``fetch.py --work``.
 """
 
 import argparse
@@ -395,6 +397,128 @@ def bids(data, meta, project_id):
     return table
 
 
+# A publish carrying one of these is review media: it becomes a dailies version.
+REVIEW_COMPONENTS = {"review_mov", "mov", "review_img"}
+# ATOM publish status -> studiohub version status.
+PUBLISH_STATUSES = {
+    "Pending Internal Review": "Pending Review",
+    "Pending Client Review": "Pending Review",
+    "Internal Approved": "Approved",
+    "Client Approved": "Approved",
+    "Internal Reject": "Retake",
+    "Client Reject": "Retake",
+}
+
+
+def publishes(data):
+    """Every saved publish (``fetch.py --publishes``), grouped by ATOM step uid."""
+    by_step = defaultdict(list)
+    for line in (data / "publishes.jsonl").read_text().splitlines():
+        for p in json.loads(line)["publishes"]:
+            by_step[p["step"]].append(p)
+    unknown = sorted(
+        {str(p["status"]) for ps in by_step.values() for p in ps} - PUBLISH_STATUSES.keys()
+    )
+    if unknown:
+        sys.exit(f"ATOM publish statuses with no mapping in PUBLISH_STATUSES: {unknown}")
+    return by_step
+
+
+def artists(users_dir):
+    """ATOM user id -> studiohub user id, for people imported and active."""
+    user_map = json.loads((users_dir / "user_map.json").read_text())
+    active = {str(u["id"]) for u in load(users_dir, "users.json") if u.get("is_active")}
+    return {
+        k: v["user_id"]
+        for k, v in user_map.items()
+        if v.get("done") and v.get("user_id") and k in active
+    }
+
+
+def is_review(p):
+    return bool(REVIEW_COMPONENTS & {c["name"] for c in p["components"] or []})
+
+
+def components(p):
+    return {c["name"]: c["location"] for c in p["components"] or []}
+
+
+def versions(data, meta, project_id, users_dir):
+    """
+    Dailies: one version per publish carrying review media, on its ATOM step's task (run.py finds the task and codes
+    the version ``<task code>_<ATOM publish name>``). Status from ATOM's (PUBLISH_STATUSES), superseded ones too;
+    artist: the publisher when imported and active. ATOM's details go to ``publishing_info.atom``.
+    """
+    by_step, people = publishes(data), artists(users_dir)
+    rows = []
+    for step, ps in sorted(by_step.items()):
+        latest = Counter()
+        for p in ps:
+            k = (p["asset_type"], p["asset_name"])
+            latest[k] = max(latest[k], p["version_number"])
+        for p in sorted(ps, key=lambda p: (p["created_at"], p["version_number"])):
+            if not is_review(p):
+                continue
+            comps = components(p)
+            rows.append({
+                "step_uid": step, "suffix": p["name"], "status": PUBLISH_STATUSES[p["status"]],
+                "artist": people.get(str(p["published_by"])), "file_path": comps.get("source", ""), "tags": ["atom"],
+                "publishing_info": {"atom": {
+                    "publish_uid": p["uid"], "step_uid": step, "name": p["name"],
+                    "stream": [p["asset_type"], p["asset_name"]], "version": p["version_number"], "status": p["status"],
+                    "published_at": p["created_at"], "published_by": p["published_by"],
+                    "superseded": p["version_number"] < latest[(p["asset_type"], p["asset_name"])],
+                    "review": comps.get("review_mov") or comps.get("mov") or "", "review_img": comps.get("review_img", ""),
+                    "components": comps}},
+            })  # fmt: skip
+    counts = Counter(r["status"] for r in rows)
+    print(f"dailies versions: {len(rows)} on {len({r['step_uid'] for r in rows})} steps", dict(counts),
+          f"| with an artist {sum(1 for r in rows if r['artist'])}")  # fmt: skip
+    return {"rows": rows}
+
+
+def publish_versions(data, meta, project_id, users_dir):
+    """
+    One Approved "publish" version per approved step (its ATOM status maps to Approved, as for tasks) that has no
+    review media, holding the step's current set (the latest publish of each stream) in
+    ``publishing_info.atom.current_set``; coded ``<task code>_PUBLISH`` by run.py. Not marked published: that
+    waits for its files to be registered.
+    """
+    by_step, people = publishes(data), artists(users_dir)
+    steps, _, statuses, _ = work(data)
+    approved = {
+        s["uid"] for s in steps if STEP_STATUSES.get(statuses.get(s["status"], "")) == "Approved"
+    }
+    rows = []
+    for step, ps in sorted(by_step.items()):
+        if step not in approved or any(is_review(p) for p in ps):
+            continue
+        current = {}
+        for p in ps:
+            k = (p["asset_type"], p["asset_name"])
+            if k not in current or p["version_number"] > current[k]["version_number"]:
+                current[k] = p
+        current = sorted(current.values(), key=lambda p: (p["asset_type"], p["asset_name"]))
+        last = max(current, key=lambda p: p["created_at"])
+        scene = next((p for p in current if p["asset_type"] == "Scene"), None)
+        rows.append({
+            "step_uid": step, "suffix": "PUBLISH", "status": "Approved", "artist": people.get(str(last["published_by"])),
+            "file_path": components(scene).get("source", "") if scene else "", "tags": ["atom", "publish"],
+            "publishing_info": {"atom": {
+                "kind": "publish", "step_uid": step, "rule": "approved step, latest publish of each stream",
+                "latest_published_at": last["created_at"],
+                "current_set": [{"publish_uid": p["uid"], "name": p["name"], "stream": [p["asset_type"], p["asset_name"]],
+                                 "version": p["version_number"], "status": p["status"], "published_at": p["created_at"],
+                                 "published_by": p["published_by"], "components": components(p)} for p in current]}},
+        })  # fmt: skip
+    files = sum(
+        len(p["components"]) for r in rows for p in r["publishing_info"]["atom"]["current_set"]
+    )
+    print(f"publish versions: {len(rows)} | streams {sum(len(r['publishing_info']['atom']['current_set']) for r in rows)}"
+          f" | components {files}", dict(Counter(r["step_uid"].rsplit(":", 1)[1] for r in rows)))  # fmt: skip
+    return {"rows": rows}
+
+
 KINDS = {
     "episodes": episodes,
     "sequences": sequences,
@@ -403,6 +527,8 @@ KINDS = {
     "links": links,
     "tasks": tasks,
     "bids": bids,
+    "versions": versions,
+    "publish-versions": publish_versions,
 }
 
 
@@ -422,10 +548,12 @@ def main() -> None:
 
     data = args.data.expanduser()
     meta = load(data, "_fetched.json")
+    if args.kind in ("tasks", "versions", "publish-versions") and not args.users:
+        parser.error(f"{args.kind} needs --users")
     if args.kind == "tasks":
-        if not args.users:
-            parser.error("tasks needs --users")
         result = tasks(data, meta, args.project_id, args.users.expanduser(), args.per_step)
+    elif args.kind in ("versions", "publish-versions"):
+        result = KINDS[args.kind](data, meta, args.project_id, args.users.expanduser())
     elif args.kind == "bids":
         result = bids(data, meta, args.project_id)
     else:
