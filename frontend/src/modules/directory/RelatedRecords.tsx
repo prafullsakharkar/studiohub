@@ -17,6 +17,7 @@ import { FormDialog, formDialogCopy } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
+import { RowActionButton, RowActions } from '@/shared/components/RowActionButton';
 import { useProjectCode } from '@/modules/production/hooks/useProjectCode';
 import { withProjectPrefix } from '@/modules/production/codePrefix';
 import { FieldInputs } from './FieldInputs';
@@ -112,37 +113,33 @@ export function RelatedRecords<T extends { id: string }>({ config, parentId }: {
                   {c.cell(row)}
                 </td>
               ))}
-              <td className="px-4 py-2 text-right space-x-3 whitespace-nowrap">
-                {canManage && inArchive && (
-                  <button type="button" className="text-cyan-300 hover:underline" aria-label={`Restore ${config.rowName(row)}`} onClick={() => setAction({ label: 'Restore', confirm: `Restore ${config.rowName(row)}?`, rowName: config.rowName(row), run: () => (config.archived as NonNullable<typeof config.archived>).restore(row.id) })}>
-                    Restore
-                  </button>
-                )}
-                {canManage && !inArchive &&
-                  config.rowActions?.(row).map((a) => (
-                    <button
-                      key={a.label}
-                      type="button"
-                      className="text-cyan-300 hover:underline"
-                      aria-label={`${a.label} ${config.rowName(row)}`}
-                      onClick={() => {
-                        setDate(a.askDate?.initial ?? '');
-                        setAction({ ...a, rowName: config.rowName(row) });
-                      }}
-                    >
-                      {a.label}
-                    </button>
-                  ))}
-                {canManage && !inArchive && (
-                  <>
-                    <button type="button" className="text-cyan-300 hover:underline" aria-label={`Edit ${config.rowName(row)}`} onClick={() => setDialog({ row })}>
-                      Edit
-                    </button>
-                    <button type="button" className="text-rose-400 hover:underline" aria-label={`${config.deleteLabel ?? 'Delete'} ${config.rowName(row)}`} onClick={() => setToDelete(row)}>
-                      {config.deleteLabel ?? 'Delete'}
-                    </button>
-                  </>
-                )}
+              <td className="px-4 py-2 text-right whitespace-nowrap">
+                <RowActions>
+                  {canManage && inArchive && (
+                    <RowActionButton label="Restore" aria-label={`Restore ${config.rowName(row)}`} onClick={() => setAction({ label: 'Restore', confirm: `Restore ${config.rowName(row)}?`, rowName: config.rowName(row), run: () => (config.archived as NonNullable<typeof config.archived>).restore(row.id) })} />
+                  )}
+                  {canManage &&
+                    !inArchive &&
+                    config.rowActions?.(row).map((a) => (
+                      <RowActionButton
+                        key={a.label}
+                        label={a.label}
+                        icon={a.icon}
+                        tone={a.destructive ? 'warning' : 'default'}
+                        aria-label={`${a.label} ${config.rowName(row)}`}
+                        onClick={() => {
+                          setDate(a.askDate?.initial ?? '');
+                          setAction({ ...a, rowName: config.rowName(row) });
+                        }}
+                      />
+                    ))}
+                  {canManage && !inArchive && (
+                    <>
+                      <RowActionButton label="Edit" aria-label={`Edit ${config.rowName(row)}`} onClick={() => setDialog({ row })} />
+                      <RowActionButton label={config.deleteLabel ?? 'Delete'} tone="danger" aria-label={`${config.deleteLabel ?? 'Delete'} ${config.rowName(row)}`} onClick={() => setToDelete(row)} />
+                    </>
+                  )}
+                </RowActions>
               </td>
             </tr>
           ))}

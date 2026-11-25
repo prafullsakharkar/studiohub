@@ -14,6 +14,7 @@ import { usePaginatedList } from '@/shared/data/usePaginatedList';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
 import { SearchInput } from '@/shared/components/SearchInput';
+import { RowActionButton, RowActions } from '@/shared/components/RowActionButton';
 import { formatNumber } from '@/core/locale/studioLocale';
 
 export interface LogFilter {
@@ -148,18 +149,14 @@ export function LogListPage<T extends { id: string }>({ config }: { config: LogL
                   {c.cell(row)}
                 </td>
               ))}
-              <td className="px-4 py-2 text-right space-x-3 whitespace-nowrap">
-                {canAct &&
-                  config.actions
-                    ?.filter((a) => a.when(row))
-                    .map((a) => (
-                      <button key={a.label} type="button" className="text-amber-400 hover:underline" aria-label={`${a.label} ${config.rowTitle(row)}`} onClick={() => setPending({ action: a, row })}>
-                        {a.label}
-                      </button>
-                    ))}
-                <button type="button" className="text-cyan-300 hover:underline" aria-label={`Details of ${config.rowTitle(row)}`} onClick={() => setSelected(row)}>
-                  Details
-                </button>
+              <td className="px-4 py-2 text-right whitespace-nowrap">
+                <RowActions>
+                  {canAct &&
+                    config.actions
+                      ?.filter((a) => a.when(row))
+                      .map((a) => <RowActionButton key={a.label} label={a.label} tone="warning" aria-label={`${a.label} ${config.rowTitle(row)}`} onClick={() => setPending({ action: a, row })} />)}
+                  <RowActionButton label="Details" aria-label={`Details of ${config.rowTitle(row)}`} onClick={() => setSelected(row)} />
+                </RowActions>
               </td>
             </tr>
           ))}

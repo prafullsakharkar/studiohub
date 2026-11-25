@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, Columns3, Download, LayoutGrid, List, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Columns3, Download, LayoutGrid, List, Plus } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -16,6 +16,7 @@ import { usePaginatedList } from '@/shared/data/usePaginatedList';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
+import { RowActionButton, RowActionLink, RowActions } from '@/shared/components/RowActionButton';
 import { SearchInput } from '@/shared/components/SearchInput';
 import { useListViewMode } from './listViewMode';
 import type { BulkAction, DirectoryListConfig, ListFilter, RowAction } from './types';
@@ -148,28 +149,18 @@ function DirectoryList<T extends { id: string }>({ config }: { config: Directory
     );
   /** Restore, the row's own actions, Edit and Delete: the same controls in a table row and on a card. */
   const rowControls = (row: T) => (
-    <>
+    <RowActions>
       {inArchive && (
-        <button type="button" className="text-cyan-300 hover:underline" aria-label={`Restore ${config.rowName(row)}`} onClick={() => setPendingAction({ label: 'Restore', confirm: `Restore ${config.rowName(row)}?`, run: () => (config.archived as NonNullable<typeof config.archived>).restore(row.id), rowName: config.rowName(row) })}>
-          Restore
-        </button>
+        <RowActionButton label="Restore" aria-label={`Restore ${config.rowName(row)}`} onClick={() => setPendingAction({ label: 'Restore', confirm: `Restore ${config.rowName(row)}?`, run: () => (config.archived as NonNullable<typeof config.archived>).restore(row.id), rowName: config.rowName(row) })} />
       )}
       {!inArchive && config.rowActions?.(row).map((action) => (
-        <button key={action.label} type="button" className={action.destructive ? 'text-amber-400 hover:underline' : 'text-cyan-300 hover:underline'} aria-label={`${action.label} ${config.rowName(row)}`} onClick={() => { setActionText(''); setActionDate(action.askDate?.initial ?? ''); setPendingAction({ ...action, rowName: config.rowName(row) }); }}>
-          {action.label}
-        </button>
+        <RowActionButton key={action.label} label={action.label} icon={action.icon} tone={action.destructive ? 'warning' : 'default'} aria-label={`${action.label} ${config.rowName(row)}`} onClick={() => { setActionText(''); setActionDate(action.askDate?.initial ?? ''); setPendingAction({ ...action, rowName: config.rowName(row) }); }} />
       ))}
-      {!inArchive && (config.canEdit?.(row) ?? true) && (
-        <Link to={`${config.basePath}/${row.id}/edit`} className="text-cyan-300 hover:underline" aria-label={`Edit ${config.rowName(row)}`}>
-          Edit
-        </Link>
-      )}
+      {!inArchive && (config.canEdit?.(row) ?? true) && <RowActionLink label="Edit" to={`${config.basePath}/${row.id}/edit`} aria-label={`Edit ${config.rowName(row)}`} />}
       {!inArchive && canDelete && (config.canRemove?.(row) ?? true) && (
-        <button type="button" className="text-rose-400 hover:text-rose-300" aria-label={`${config.deleteLabel ?? 'Delete'} ${config.rowName(row)}`} onClick={() => setToDelete(row)}>
-          {config.deleteLabel ?? <Trash2 className="inline w-3.5 h-3.5" />}
-        </button>
+        <RowActionButton label={config.deleteLabel ?? 'Delete'} tone="danger" aria-label={`${config.deleteLabel ?? 'Delete'} ${config.rowName(row)}`} onClick={() => setToDelete(row)} />
       )}
-    </>
+    </RowActions>
   );
   const sortable = columns.filter((column) => column.sortField);
 
@@ -306,7 +297,7 @@ function DirectoryList<T extends { id: string }>({ config }: { config: Directory
                       )}
                     </td>
                   ))}
-                  {canManage && <td className="px-4 py-2 text-right space-x-3 whitespace-nowrap">{rowControls(row)}</td>}
+                  {canManage && <td className="px-4 py-2 text-right whitespace-nowrap">{rowControls(row)}</td>}
                 </tr>
               ))}
             </tbody>

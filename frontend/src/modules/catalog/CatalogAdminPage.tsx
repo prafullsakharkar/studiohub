@@ -7,6 +7,7 @@ import { Dialog } from '@/components/ui/Dialog';
 import type { FieldDef } from '@/modules/directory/types';
 import { cn } from '@/shared/utils/cn';
 import { CatalogTable } from './CatalogTable';
+import { RowActionButton } from '@/shared/components/RowActionButton';
 
 const base: FieldDef[] = [
   { kind: 'text', name: 'name', label: 'Name', required: true },
@@ -122,9 +123,7 @@ function KindPanel({ kind }: { kind: CatalogKind }) {
             fields={[...base, { kind: 'text', name: 'publisher', label: 'Publisher' }, { kind: 'text', name: 'category', label: 'Category' }, { kind: 'url', name: 'website', label: 'Website' }, ...withOrder]}
             columns={[...nameCode<Software & CatalogRowBase>(), { header: 'Publisher', cell: (r) => r.publisher || '—' }, { header: 'Versions', cell: (r) => r.version_count }]}
             rowExtra={(row) => (
-              <button type="button" className="text-cyan-300 hover:underline" aria-label={`Versions of ${row.name}`} onClick={() => setVersionsOf(row)}>
-                Versions
-              </button>
+              <RowActionButton label="Versions" aria-label={`Versions of ${row.name}`} onClick={() => setVersionsOf(row)} />
             )}
           />
           {versionsOf && <VersionsDialog software={versionsOf} onClose={() => setVersionsOf(null)} />}

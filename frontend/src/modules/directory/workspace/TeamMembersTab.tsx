@@ -18,6 +18,7 @@ import { Pagination } from '@/shared/components/Pagination';
 import { usePaginatedList } from '@/shared/data/usePaginatedList';
 import { FormDialog } from '@/shared/forms/FormDialog';
 import { PersonPicker } from '../pickers';
+import { RowActionButton } from '@/shared/components/RowActionButton';
 
 const MANAGE = 'masterdata.directory.manage';
 
@@ -92,9 +93,7 @@ export const TeamMembersTab: React.FC<{ teamId: string; teamName: string }> = ({
               </td>
               {canManage && (
                 <td className="px-4 py-2 text-right">
-                  <button type="button" className="inline-flex items-center gap-1 text-rose-400 hover:underline" aria-label={`Remove ${m.person_name} from ${teamName}`} onClick={() => setRemoving(m)}>
-                    <UserMinus className="w-3.5 h-3.5" aria-hidden="true" /> Remove
-                  </button>
+                  <RowActionButton label="Remove from team" icon={UserMinus} tone="danger" aria-label={`Remove ${m.person_name} from ${teamName}`} onClick={() => setRemoving(m)} />
                 </td>
               )}
             </tr>
