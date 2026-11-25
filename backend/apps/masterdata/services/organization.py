@@ -83,6 +83,7 @@ class _OrganizationService[T: PlatformScopedModel](DirectoryService[T]):
 class DepartmentService(_OrganizationService[Department]):
     model = Department
     label = "Department"
+    code_prefix = "DEPT-"
     required = ("code", "name", "department_type")
     writable = (
         "code",
@@ -125,6 +126,7 @@ class DepartmentService(_OrganizationService[Department]):
 class TeamService(_OrganizationService[Team]):
     model = Team
     label = "Team"
+    code_prefix = "TEAM-"
     required = ("code", "name", "department")
     writable = (
         "code",
@@ -156,6 +158,7 @@ class TeamService(_OrganizationService[Team]):
 class OfficeService(_OrganizationService[Office]):
     model = Office
     label = "Office"
+    code_prefix = "OFF-"
     required = ("code", "name", "office_type", "timezone", "country", "city")
     writable = (
         "code",
@@ -229,6 +232,7 @@ class OfficeService(_OrganizationService[Office]):
 class PositionService(_OrganizationService[Position]):
     model = Position
     label = "Position"
+    code_prefix = "POS-"
     writable = (
         "code",
         "name",

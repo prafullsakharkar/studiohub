@@ -63,7 +63,7 @@ def test_capture_vendor_ids(django_user_model):
     flow: dict = {}
 
     flow["vendor_create"] = call(
-        a, "POST", "/api/v1/vendors/", {"name": "Northlight Roto", "code": "NLR"}
+        a, "POST", "/api/v1/vendors/", {"name": "Northlight Roto", "code": "VEN-NLR"}
     )
     vendor = flow["vendor_create"]["body"]
     vid = vendor["id"]

@@ -50,13 +50,13 @@ def test_capture_audit(django_user_model):
     a, _ = sign_in_with_mfa("root@example.test", "Admin-Pass-Phase4!9", admin)
 
     # -------------------------------------------------- make some history through the API
-    dept = call(a, "dept_create", "POST", "/api/v1/departments/", {"code": "XLD", "name": "Look Dev Unit", "department_type": "creative"}).json()
+    dept = call(a, "dept_create", "POST", "/api/v1/departments/", {"code": "DEPT-XLD", "name": "Look Dev Unit", "department_type": "creative"}).json()
     did = dept["id"]
     call(a, "dept_patch_1", "PATCH", f"/api/v1/departments/{did}/", {"name": "Look Dev Unit Renamed", "description": "Look development"})
     call(a, "dept_patch_2", "PATCH", f"/api/v1/departments/{did}/", {"color": "#ff8800"})
-    team = call(a, "team_create", "POST", "/api/v1/teams/", {"code": "XLD-A", "name": "Look Dev A", "department": did}).json()
+    team = call(a, "team_create", "POST", "/api/v1/teams/", {"code": "TEAM-XLD-A", "name": "Look Dev A", "department": did}).json()
     call(a, "team_patch", "PATCH", f"/api/v1/teams/{team['id']}/", {"capacity": 5})
-    call(a, "client_create", "POST", "/api/v1/clients/", {"name": "Acme", "code": "ACME"})
+    call(a, "client_create", "POST", "/api/v1/clients/", {"name": "Acme", "code": "CLI-ACME"})
 
     # -------------------------------------------------- change logs
     call(a, "changelogs_for_dept", "GET", f"/api/v1/audit/change-logs/?target_id={did}")

@@ -1166,7 +1166,7 @@ The budget cannot be filtered, searched or ordered on (`ProjectViewSet` and `Pro
 - (b) Let the vfx-supervisor read the budget but not write it (grant only the read code). That is a different answer to the matrix comment; say if supervisors should see budgets.
 - (c) Do nothing.
 
-### CR-56: new studio codes start with their kind's prefix (**feature**, **PROPOSED**)
+### CR-56: new studio codes start with their kind's prefix (**feature**, **APPLIED** on `feature/studio-code-prefix`)
 
 Asked by the owner (2026-11-25): "While creating Department the DEPT- prefix should add default like what we do for production entities … for all studio entity form where ever code is needed".
 
@@ -1182,3 +1182,5 @@ Asked by the owner (2026-11-25): "While creating Department the DEPT- prefix sho
 **Why no frontend workaround.** None can bind another client: the rule is the server's to enforce. The frontend part works whether or not this is approved.
 
 **Compatibility.** Breaking for an API client or script that creates bare studio codes (it gets a 400). Existing data is untouched. **Risk.** Low to medium: test fixtures that create studio records by code change. **Alternative.** Frontend only, as now.
+
+**Approved** by the owner ("approved", 2026-11-25) and applied as proposed, with these details settled while building it: the check is one hook in `DirectoryService.create` (a `code_prefix` class attribute on the six services), after field cleaning and before the uniqueness check; the code must have something after the prefix; the prefix is compared in any case and the code is stored as written. Seeds already used the prefixes; 38 masterdata tests that created bare codes, six capture tools (`docs/sync/tools/`) and the frontend live tests were changed to prefixed codes (the captured samples were not recaptured). Contract DOM-MD-COD (`docs/masterdata/CONTRACTS.md` §5.7). Verification: `docs/sync/backend-cr-56-verification.md`.

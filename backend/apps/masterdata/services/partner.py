@@ -91,6 +91,7 @@ class PartnerService[T: PlatformScopedModel](DirectoryService[T]):
 class ClientService(PartnerService[Client]):
     model = Client
     label = "Client"
+    code_prefix = "CLI-"
     writable = (
         "name",
         "code",
@@ -123,6 +124,7 @@ class ClientService(PartnerService[Client]):
 class VendorService(PartnerService[Vendor]):
     model = Vendor
     label = "Vendor"
+    code_prefix = "VEN-"
     writable = (
         "name",
         "code",

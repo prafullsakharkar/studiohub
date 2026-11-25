@@ -225,6 +225,7 @@ Tests: `tests/models/test_software_models.py`, `tests/services/test_software_ser
 | DOM-MD-BIZ-05 | `Client.active_projects`, `Vendor.active_projects` and `Vendor.active_tasks_count` are **omitted from responses**. They come back only through a selector exposed by the Projects module and keyed by the masterdata **UUID**; **never matched by code, and masterdata never imports Projects**. The stored columns are kept until Phase 8 (dropping needs approval). | **DECIDED D11 (user, 2026-10-23)** |
 | DOM-MD-BIZ-07 | `Client.total_billed_usd` is a **nullable `DecimalField(12, 2)`**, default `NULL`, **entered by hand**: not computed and not reconciled with any billing system (the API docs say so). Read **and** write need `masterdata.client.view_financial` (writes also `masterdata.directory.manage`); omitted without it, writes refused with 403; audited as the field name only. Not a SEC-MD-02 field. | **DECIDED D11 (approved 2026-10-23)** |
 | DOM-MD-BIZ-06 | Soft delete is refused (409 `has_dependants`) while an `active` contract or a live `deliveries.DeliveryPackage` references the row. Contacts are soft-deleted with the parent. | PROPOSED D6 |
+| DOM-MD-BIZ-08 | A NEW client's code starts with `CLI-`, a new vendor's with `VEN-` (DOM-MD-COD-01, §5.7) | **IMPLEMENTED (CR-56, 2026-11-25)** |
 
 API: CURRENT routes `clients/`, `vendors/` (+ `restore`, `?hard=true`). Filters (CURRENT): client `status, studio_type`; vendor `status, specialization`. Selector: drop the unused contact/contract prefetch (`apps/masterdata/selectors/directory.py:74,82`).
 Services: `ClientService`, `VendorService`, sharing a `PartnerService` base.
@@ -350,6 +351,13 @@ A person can be in several teams. Membership is a plain link between a team and 
 API: `team-memberships/` (`GET`/`POST`, `GET`/`DELETE …/{id}/`, `POST …/{id}/restore/`, `?hard=true`). Filters `team`, `person`; search `person__name`, `team__name`; ordering `created_at`. Reads: any signed-in user. Writes: `masterdata.directory.manage` (`masterdata.hard_delete` for `?hard=true`). A row carries `id, team, team_name, person, person_name, person_status, person_department_name, person_office_name, created_at, updated_at`; the names are read-only. `GET /people/?team=<id>` still filters on the **primary** team only: list a team's members with `team-memberships/?team=<id>`. Service: `TeamMembershipService.create/ensure/soft_delete/restore/hard_delete`.
 
 ---
+
+### 5.7 Code prefixes of new records (DOM-MD-COD; CR-56, 2026-11-25) — **IMPLEMENTED**
+
+- **DOM-MD-COD-01:** a NEW department, team, position, office, client or vendor code starts with its kind's prefix, in any case, with something after it: `DEPT-`, `TEAM-`, `POS-`, `OFF-`, `CLI-`, `VEN-` (`code_prefix` on each service). Otherwise 400 `code: ["Department codes start with DEPT-."]` (the service's label and prefix). The code is stored as written (trimmed; not upper-cased).
+- **DOM-MD-COD-02:** the prefix counts towards the code's length limit (30, or 20 for clients and vendors; DOM-MD-BIZ-01).
+- **DOM-MD-COD-03:** checked on create only, in `DirectoryService.create`, after field cleaning and before the uniqueness check, so every route, seed and script that creates through the services is held to it. Update, restore and hard delete do not check it: a record made before the rule stays editable and can keep or change a bare code. Rows made by factories or directly through the ORM are not checked.
+- Not covered: catalog types and statuses, settings, feature flags, scheduling and publishing-registry codes (other code reads them by their code).
 
 ## 6. Platform overview
 

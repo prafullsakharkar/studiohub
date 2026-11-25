@@ -1,7 +1,7 @@
 /**
  * A new record's code starts with a fixed prefix: a production record with its project's (`TST_SQ0010`,
  * `modules/production/codePrefix.ts`), a studio record with its kind's (`DEPT-LGT`, below). The form shows the prefix
- * beside the input and adds it on save; a record that exists keeps its code as it is.
+ * beside the input and adds it on save; a record that exists keeps its code as it is. The backend enforces both (CR-49, CR-56).
  */
 
 /** The prefix of each studio record's code, as the seeded and imported records have them (`init_platform`, `scripts/atom`). */

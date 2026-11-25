@@ -328,7 +328,7 @@ class TestMemberCount:
         created = manager.post(
             f"{API}/teams/",
             {
-                "code": "CNT-1",
+                "code": "TEAM-CNT-1",
                 "name": "Counting",
                 "department": str(department.pk),
                 "member_count": 9,

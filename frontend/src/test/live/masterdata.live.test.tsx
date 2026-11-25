@@ -47,7 +47,7 @@ const uid = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}
 describe('directory pages, end to end', () => {
   it('creates a team with a department chosen in the picker, edits one field, then a referenced department refuses deletion with the server’s reason', async () => {
     await signInManager();
-    const department = await departmentsApi.create({ code: `D${uid()}`.toUpperCase(), name: `Dept ${uid()}`, department_type: 'creative' });
+    const department = await departmentsApi.create({ code: `DEPT-D${uid()}`.toUpperCase(), name: `Dept ${uid()}`, department_type: 'creative' });
     const code = `T${uid()}`.toUpperCase();
 
     // Create through the real form.
@@ -101,7 +101,7 @@ describe('directory pages, end to end', () => {
   it('a caller without the grants gets no sensitive fields, and cannot see contacts at all', async () => {
     await signInManager();
     const person = await peopleApi.create({ name: `Person ${uid()}`, email: `p${uid()}@example.test` } as never);
-    const client = await clientsApi.create({ name: `Client ${uid()}`, code: `C${uid()}`.toUpperCase() });
+    const client = await clientsApi.create({ name: `Client ${uid()}`, code: `CLI-C${uid()}`.toUpperCase() });
     tokenStorage.clearTokens();
 
     await authService.login(live.users.artist);
@@ -134,7 +134,7 @@ describe('directory pages, end to end', () => {
 describe('contract lifecycle on the wire', () => {
   it('Draft → Active → end date corrected → Terminated; status cannot be written directly', async () => {
     await signInManager();
-    const client = await clientsApi.create({ name: `Acme ${uid()}`, code: `AC${uid()}`.toUpperCase() });
+    const client = await clientsApi.create({ name: `Acme ${uid()}`, code: `CLI-AC${uid()}`.toUpperCase() });
     const contract = await clientContractsApi.create({ client: client.id, contract_number: `K${uid()}`, title: 'Framework', type: 'SOW', status: 'Draft', effective_date: '2030-01-01', expiry_date: '2030-12-31' });
     expect(contract.status).toBe('Draft');
 

@@ -42,6 +42,9 @@ class DirectoryService[T: PlatformScopedModel]:
     #: Attributes shown in the audit event. ``None`` for personal data.
     event_name_field: ClassVar[str | None] = "name"
     event_code_field: ClassVar[str | None] = "code"
+    #: A NEW record's ``code`` starts with this, in any case (``DEPT-``; CR-56). ``None``: no rule.
+    #: Update and restore do not check it, so a record made before the rule stays editable.
+    code_prefix: ClassVar[str | None] = None
 
     # ---- hooks ---------------------------------------------------------
 
@@ -132,6 +135,16 @@ class DirectoryService[T: PlatformScopedModel]:
         return {name: cls.clean_field(name, value) for name, value in data.items()}
 
     @classmethod
+    def _require_code_prefix(cls, values: Mapping[str, Any]) -> None:
+        """A new code must start with ``code_prefix`` and have something after it (CR-56)."""
+        prefix = cls.code_prefix
+        if not prefix:
+            return
+        code = str(values.get("code") or "")
+        if len(code) <= len(prefix) or not code.upper().startswith(prefix.upper()):
+            raise ValidationError({"code": [f"{cls.label} codes start with {prefix}."]})
+
+    @classmethod
     def _refuse_duplicates(
         cls,
         values: Mapping[str, Any],
@@ -165,6 +178,7 @@ class DirectoryService[T: PlatformScopedModel]:
             parent = cls.lock_parent(parent)
             data, extra = cls.prepare_create(data, parent)
             values = cls._clean(data, creating=True)
+            cls._require_code_prefix(values)
             cls._refuse_duplicates(values, scope=cls.duplicate_scope({**values, **extra}))
             instance = cls.model(**values, **extra)
             instance.created_by = instance.updated_by = actor_or_none(actor)  # pyright: ignore[reportAttributeAccessIssue]
