@@ -10,6 +10,7 @@ import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 import { Table, formatDate } from '../components/ui';
 import { errorText } from '../errorText';
+import { RowActionButton } from '@/shared/components/RowActionButton';
 
 export const SessionsPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -54,9 +55,7 @@ export const SessionsPage: React.FC = () => {
               <td className="px-4 py-2 text-slate-400">{formatDate(s.expires_at)}</td>
               <td className="px-4 py-2 text-right">
                 {!s.is_current && (
-                  <button type="button" className="text-rose-400 hover:underline" aria-label={`End session started ${formatDate(s.created_at)}`} onClick={() => setRevoking(s)}>
-                    End
-                  </button>
+                  <RowActionButton label="End session" tone="danger" aria-label={`End session started ${formatDate(s.created_at)}`} onClick={() => setRevoking(s)} />
                 )}
               </td>
             </tr>

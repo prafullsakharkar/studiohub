@@ -1,5 +1,4 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -14,6 +13,7 @@ import { Button } from '@/shared/components/Button';
 import { Field, PageShell, Table, formatDate, inputClass } from '../components/ui';
 import { groupQuery, useAfterAccessChange, useUsersIndex } from '../hooks/useIdentityData';
 import { ACCESS_TABS } from '../routes';
+import { RowActionButton } from '@/shared/components/RowActionButton';
 
 type Tab = 'members' | 'roles';
 
@@ -102,9 +102,7 @@ const MembersTab: React.FC<{ groupId: string; canEdit: boolean }> = ({ groupId, 
               <td className="px-4 py-2 text-slate-400">{formatDate(m.joined_at)}</td>
               <td className="px-4 py-2 text-right">
                 {canEdit && (
-                <button type="button" aria-label={`Remove ${m.user.email}`} className="text-rose-400 hover:text-rose-300" onClick={() => setRemoving({ id: m.user.id, email: m.user.email })}>
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                  <RowActionButton label="Remove" tone="danger" aria-label={`Remove ${m.user.email}`} onClick={() => setRemoving({ id: m.user.id, email: m.user.email })} />
                 )}
               </td>
             </tr>
@@ -196,9 +194,7 @@ const RolesTab: React.FC<{ groupId: string; canEdit: boolean }> = ({ groupId, ca
               <td className="px-4 py-2 font-mono text-slate-300">{l.role.code}</td>
               <td className="px-4 py-2 text-right">
                 {canEdit && (
-                <button type="button" aria-label={`Detach ${l.role.name}`} className="text-rose-400 hover:text-rose-300" onClick={() => setDetaching({ id: l.role.id, name: l.role.name })}>
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                  <RowActionButton label="Detach" tone="danger" aria-label={`Detach ${l.role.name}`} onClick={() => setDetaching({ id: l.role.id, name: l.role.name })} />
                 )}
               </td>
             </tr>

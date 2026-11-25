@@ -17,6 +17,7 @@ import { createQueryKeys } from '@/shared/data/queryKeys';
 import { Field, FormBanner, PageShell, Table, formatDate, inputClass } from '../components/ui';
 import { useUsersIndex } from '../hooks/useIdentityData';
 import { ACCESS_TABS } from '../routes';
+import { RowActionButton, RowActions } from '@/shared/components/RowActionButton';
 
 const ledgerKeys = createQueryKeys('identity-ledgers');
 
@@ -159,17 +160,11 @@ const IpBlacklist: React.FC = () => {
               <td className="px-4 py-2">
                 <StatusBadge status={entry.expired ? 'Expired' : entry.is_active ? 'Blocking' : 'Paused'} />
               </td>
-              <td className="px-4 py-2 text-right space-x-2">
-                {canUpdate && (
-                  <button type="button" className="text-cyan-300 hover:underline" onClick={() => toggle.mutate({ id: entry.id, is_active: entry.is_active })}>
-                    {entry.is_active ? 'Pause' : 'Resume'}
-                  </button>
-                )}
-                {canDelete && (
-                  <button type="button" className="text-rose-400 hover:underline" onClick={() => setRemoving({ id: entry.id, ip: entry.ip_address ?? entry.network ?? '' })}>
-                    Remove
-                  </button>
-                )}
+              <td className="px-4 py-2 text-right whitespace-nowrap">
+                <RowActions>
+                  {canUpdate && <RowActionButton label={entry.is_active ? 'Pause' : 'Resume'} onClick={() => toggle.mutate({ id: entry.id, is_active: entry.is_active })} />}
+                  {canDelete && <RowActionButton label="Remove" tone="danger" onClick={() => setRemoving({ id: entry.id, ip: entry.ip_address ?? entry.network ?? '' })} />}
+                </RowActions>
               </td>
             </tr>
           ))}

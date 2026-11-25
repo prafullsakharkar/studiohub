@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react';
 import type React from 'react';
 import type { PageFetcher } from '@/shared/data/listing';
 
@@ -174,6 +175,8 @@ export interface BulkAction {
 
 export interface RowAction {
   label: string;
+  /** The round button's icon; by default the one for the label (`rowActionIcon`), else the label as a pill. */
+  icon?: LucideIcon;
   confirm: string;
   destructive?: boolean;
   /** Ask for a date first (e.g. the new end date of a contract); it is passed to `run`. */

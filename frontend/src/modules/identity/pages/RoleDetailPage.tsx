@@ -14,6 +14,7 @@ import { Button } from '@/shared/components/Button';
 import { Field, PageShell, Table, formatDate, inputClass } from '../components/ui';
 import { roleQuery, useAfterAccessChange, usePermissionsIndex, useUsersIndex } from '../hooks/useIdentityData';
 import { ACCESS_TABS } from '../routes';
+import { RowActionButton } from '@/shared/components/RowActionButton';
 
 type Tab = 'permissions' | 'users' | 'groups';
 
@@ -91,9 +92,7 @@ const PermissionsTab: React.FC<{ roleId: string; canEdit: boolean }> = ({ roleId
                 <td className="px-4 py-2 text-slate-400">{g.expires_at ? formatDate(g.expires_at) : 'Never'}</td>
                 <td className="px-4 py-2 text-right">
                   {canEdit && (
-                    <button type="button" aria-label={`Revoke ${permission.code}`} className="text-rose-400 hover:text-rose-300" onClick={() => setRevoking({ id: permission.id, code: permission.code })}>
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    <RowActionButton label="Revoke" icon={Trash2} tone="danger" aria-label={`Revoke ${permission.code}`} onClick={() => setRevoking({ id: permission.id, code: permission.code })} />
                   )}
                 </td>
               </tr>
@@ -186,9 +185,7 @@ const UsersTab: React.FC<{ roleId: string; canEdit: boolean }> = ({ roleId, canE
               <td className="px-4 py-2 text-slate-400">{formatDate(a.created_at)}</td>
               <td className="px-4 py-2 text-right">
                 {canEdit && (
-                  <button type="button" aria-label={`Remove ${a.user.email}`} className="text-rose-400 hover:text-rose-300" onClick={() => setRemoving({ id: a.user.id, email: a.user.email })}>
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <RowActionButton label="Remove" tone="danger" aria-label={`Remove ${a.user.email}`} onClick={() => setRemoving({ id: a.user.id, email: a.user.email })} />
                 )}
               </td>
             </tr>

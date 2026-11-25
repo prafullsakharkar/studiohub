@@ -15,6 +15,7 @@ import { Button } from '@/shared/components/Button';
 import { MemberSelect } from '@/modules/production/work/pickers';
 import { VersionPicker } from './pickers';
 import { isClientMemberOf } from './clientMember';
+import { RowActionButton, RowActions } from '@/shared/components/RowActionButton';
 import { formatDateTime } from '@/core/locale/studioLocale';
 
 /** Runs a write on a review, refreshes the review and its history afterwards, and shows the server's own refusal. */
@@ -101,17 +102,11 @@ export const ReviewVersionsPanel: React.FC<{ review: Review; onCompare?: (versio
                 <td className="py-1.5 pr-3">
                   <StatusBadge status={v.status} />
                 </td>
-                <td className="space-x-3 py-1.5 text-right">
-                  {onCompare && v.id !== first && (
-                    <button type="button" className="text-indigo-300 hover:text-indigo-200" aria-label={`Compare ${v.code} in A/B Wipe`} onClick={() => onCompare(v.id)}>
-                      Compare in A/B Wipe
-                    </button>
-                  )}
-                  {canEdit && (
-                    <button type="button" className="text-rose-400 hover:text-rose-300" aria-label={`Remove ${v.code}`} onClick={() => void write(() => reviewsApi.removeVersion(review.id, v.id))}>
-                      Remove
-                    </button>
-                  )}
+                <td className="py-1.5 text-right whitespace-nowrap">
+                  <RowActions>
+                    {onCompare && v.id !== first && <RowActionButton label="Compare in A/B Wipe" aria-label={`Compare ${v.code} in A/B Wipe`} onClick={() => onCompare(v.id)} />}
+                    {canEdit && <RowActionButton label="Remove" tone="danger" aria-label={`Remove ${v.code}`} onClick={() => void write(() => reviewsApi.removeVersion(review.id, v.id))} />}
+                  </RowActions>
                 </td>
               </tr>
             ))}
@@ -172,11 +167,7 @@ export const ReviewParticipantsPanel: React.FC<{ review: Review }> = ({ review }
                   {p.verdict_notes && <span className="ml-2 text-slate-400">{p.verdict_notes}</span>}
                 </td>
                 <td className="py-1.5 text-right">
-                  {canEdit && (
-                    <button type="button" className="text-rose-400 hover:text-rose-300" aria-label={`Remove ${p.name}`} onClick={() => void write(() => reviewsApi.removeParticipant(review.id, p.id))}>
-                      Remove
-                    </button>
-                  )}
+                  {canEdit && <RowActionButton label="Remove" tone="danger" aria-label={`Remove ${p.name}`} onClick={() => void write(() => reviewsApi.removeParticipant(review.id, p.id))} />}
                 </td>
               </tr>
             ))}

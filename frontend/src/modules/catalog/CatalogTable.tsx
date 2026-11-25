@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 import { catalogKeys } from '@/api/masterdata/catalog';
@@ -19,6 +19,7 @@ import { Badge } from '@/shared/components/Badge';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { SearchInput } from '@/shared/components/SearchInput';
+import { RowActionButton, RowActions } from '@/shared/components/RowActionButton';
 
 const MANAGE = 'masterdata.catalog.manage';
 
@@ -146,44 +147,34 @@ export function CatalogTable<Row extends CatalogRowBase>(props: CatalogTableProp
                 <StatusBadge status={row.status} />
                 {row.is_system && <Badge variant="purple">System</Badge>}
               </td>
-              <td className="px-4 py-2 text-right space-x-3 whitespace-nowrap">
-                {props.rowExtra?.(row)}
-                {canReorder && (
-                  <>
-                    <button type="button" disabled={index === 0} aria-label={`Move ${row.name} up`} className="text-slate-400 hover:text-white disabled:opacity-30" onClick={() => void move(index, -1)}>
-                      <ArrowUp className="inline w-3.5 h-3.5" />
-                    </button>
-                    <button type="button" disabled={index === rows.length - 1} aria-label={`Move ${row.name} down`} className="text-slate-400 hover:text-white disabled:opacity-30" onClick={() => void move(index, 1)}>
-                      <ArrowDown className="inline w-3.5 h-3.5" />
-                    </button>
-                  </>
-                )}
-                {canManage && row.status !== 'archived' && (
-                  <button type="button" className="text-cyan-300 hover:underline" aria-label={`Edit ${row.name}`} onClick={() => setDialog({ row })}>
-                    Edit
-                  </button>
-                )}
-                {canManage && (
-                  <button
-                    type="button"
-                    className="text-amber-400 hover:underline"
-                    aria-label={`${row.status === 'archived' ? 'Restore' : 'Archive'} ${row.name}`}
-                    onClick={() =>
-                      setConfirm(
-                        row.status === 'archived'
-                          ? { title: `Restore ${row.name}`, message: 'Make it available again?', label: 'Restore', run: () => props.api.restore(row.id) }
-                          : { title: `Archive ${row.name}`, message: 'It stays on existing records but can no longer be chosen.', label: 'Archive', destructive: true, run: () => props.api.archive(row.id) }
-                      )
-                    }
-                  >
-                    {row.status === 'archived' ? 'Restore' : 'Archive'}
-                  </button>
-                )}
-                {canManage && !row.is_system && (
-                  <button type="button" className="text-rose-400 hover:underline" aria-label={`Delete ${row.name}`} onClick={() => setConfirm({ title: `Delete ${row.name}`, message: 'This cannot be undone.', label: 'Delete', destructive: true, run: () => props.api.remove(row.id) })}>
-                    Delete
-                  </button>
-                )}
+              <td className="px-4 py-2 text-right whitespace-nowrap">
+                <RowActions>
+                  {props.rowExtra?.(row)}
+                  {canReorder && (
+                    <>
+                      <RowActionButton label={`Move ${row.name} up`} disabled={index === 0} onClick={() => void move(index, -1)} />
+                      <RowActionButton label={`Move ${row.name} down`} disabled={index === rows.length - 1} onClick={() => void move(index, 1)} />
+                    </>
+                  )}
+                  {canManage && row.status !== 'archived' && <RowActionButton label="Edit" aria-label={`Edit ${row.name}`} onClick={() => setDialog({ row })} />}
+                  {canManage && (
+                    <RowActionButton
+                      label={row.status === 'archived' ? 'Restore' : 'Archive'}
+                      tone="warning"
+                      aria-label={`${row.status === 'archived' ? 'Restore' : 'Archive'} ${row.name}`}
+                      onClick={() =>
+                        setConfirm(
+                          row.status === 'archived'
+                            ? { title: `Restore ${row.name}`, message: 'Make it available again?', label: 'Restore', run: () => props.api.restore(row.id) }
+                            : { title: `Archive ${row.name}`, message: 'It stays on existing records but can no longer be chosen.', label: 'Archive', destructive: true, run: () => props.api.archive(row.id) }
+                        )
+                      }
+                    />
+                  )}
+                  {canManage && !row.is_system && (
+                    <RowActionButton label="Delete" tone="danger" aria-label={`Delete ${row.name}`} onClick={() => setConfirm({ title: `Delete ${row.name}`, message: 'This cannot be undone.', label: 'Delete', destructive: true, run: () => props.api.remove(row.id) })} />
+                  )}
+                </RowActions>
               </td>
             </tr>
           ))}

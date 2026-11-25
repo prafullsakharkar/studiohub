@@ -15,6 +15,7 @@ import { FormDialog } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { RowActionButton, RowActions } from '@/shared/components/RowActionButton';
 
 const KINDS: ReadonlyArray<{ id: CredentialKind; label: string; noun: string }> = [
   { id: 'tokens', label: 'Personal access tokens', noun: 'token' },
@@ -208,16 +209,12 @@ export const TokensPage: React.FC = () => {
               <td className="px-4 py-2">
                 <StatusBadge status={c.revoked_at ? 'Revoked' : c.is_active ? 'Active' : 'Inactive'} />
               </td>
-              <td className="px-4 py-2 text-right space-x-3">
+              <td className="px-4 py-2 text-right whitespace-nowrap">
                 {!c.revoked_at && (
-                  <>
-                    <button type="button" className="text-cyan-300 hover:underline" aria-label={`Rotate ${c.name}`} onClick={() => setRotating(c)}>
-                      Rotate
-                    </button>
-                    <button type="button" className="text-rose-400 hover:underline" aria-label={`Revoke ${c.name}`} onClick={() => setRevoking(c)}>
-                      Revoke
-                    </button>
-                  </>
+                  <RowActions>
+                    <RowActionButton label="Rotate" aria-label={`Rotate ${c.name}`} onClick={() => setRotating(c)} />
+                    <RowActionButton label="Revoke" tone="danger" aria-label={`Revoke ${c.name}`} onClick={() => setRevoking(c)} />
+                  </RowActions>
                 )}
               </td>
             </tr>
