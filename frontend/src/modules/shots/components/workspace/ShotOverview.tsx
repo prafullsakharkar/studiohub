@@ -4,6 +4,7 @@ import { DetailGrid } from '@/modules/directory/workspace/DetailGrid';
 import { gradeText } from '@/modules/production/work/ShotGradeField';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { safeWebUrl } from '@/shared/utils/safeUrl';
+import { CurrentVersion } from './CurrentVersion';
 
 /** A shot's own fields as the API sends them; a stage or link the shot does not have is left out, not invented. */
 export const ShotOverview: React.FC<{ shot: Shot }> = ({ shot }) => {
@@ -23,7 +24,7 @@ export const ShotOverview: React.FC<{ shot: Shot }> = ({ shot }) => {
           { label: 'Frame range', value: `${shot.frame_in} to ${shot.frame_out} (${shot.frame_count} frames)` },
           { label: 'Handles', value: shot.handle_frames === undefined ? null : `${shot.handle_frames} frames` },
           { label: 'Assigned artist', value: shot.assigned_artist_name },
-          { label: 'Current version', value: shot.current_version },
+          { label: 'Current version', value: <CurrentVersion shot={shot} /> },
           { label: 'Supervisor approved', value: shot.supervisor_approved ? 'Yes' : 'No' },
           { label: 'Client approved', value: shot.client_approved ? 'Yes' : 'No' },
           // RP-20 (C-RP-52): the grade review copies are made with while the project applies grades

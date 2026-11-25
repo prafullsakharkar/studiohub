@@ -15,6 +15,7 @@ import { Button } from '@/shared/components/Button';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { ScrollableTabs, type TabItem } from '@/shared/components/tabs/ScrollableTabs';
 import { type BreadcrumbItem, CanonicalWorkspaceHeader, WorkspaceShell, type WorkspaceAction } from '@/shared/workspace/canonical';
+import { CurrentVersion } from '../components/workspace/CurrentVersion';
 import { ShotOverview } from '../components/workspace/ShotOverview';
 
 const TABS: TabItem[] = [
@@ -149,7 +150,7 @@ export const ShotWorkspacePage: React.FC = () => {
             { icon: Clock, label: 'Frames', value: `${shot.frame_in} - ${shot.frame_out} (${shot.frame_count}f)` },
             { label: 'Handles', value: `${shot.handle_frames}f` },
             { label: 'Artist', value: shot.assigned_artist_name || 'Unassigned' },
-            { label: 'Version', value: shot.current_version || '—' },
+            { label: 'Version', value: <CurrentVersion shot={shot} /> },
           ]}
           actions={actions}
         />
