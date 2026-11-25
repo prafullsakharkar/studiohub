@@ -6,12 +6,14 @@
 Requests go through DRF's APIClient as ADMIN_EMAIL (default admin@studiohub.local), so every serializer,
 validator and permission the UI meets applies. Nothing here talks to ATOM.
 
-KIND      project | episodes | sequences | shots | assets | links | tasks | versions | publish-versions | verify
+KIND      project | episodes | sequences | shots | assets | links | tasks | versions | publish-versions | publish | verify
 STEP      dry (bulk trial runs, nothing saved) | real (one batch at a time, stop at the first that does not commit)
 PROJECT   the studiohub project code (not needed for KIND=project)
 PAYLOADS  build.py's output; for KIND=project a JSON file with the project's fields; for KIND=verify the data folder
 BATCHES   optional comma list of 1-based batch numbers
 SHOTS     KIND=links: optional comma list of shot codes to limit the run to
+ONLY      KIND=publish: optional comma list of shot and asset codes to limit the run to
+UNDO=1    KIND=publish: unpublish what KIND=publish published (files_registered false)
 ERRORS    KIND=links: JSON-lines file for failed links (default <payloads>.errors.jsonl)
 ARCHIVE_EP101=1   KIND=episodes, real: archive the EP101 studiohub makes for a new episodic project
 
@@ -23,6 +25,12 @@ A dry run cannot see members it has not added, so it leaves those assignees out 
 KIND=versions / publish-versions (build.py): one POST per version, on the task of its ATOM step, coded
 ``<task code>_<suffix>``; existing codes are skipped. Afterwards every version from ATOM gets its ATOM date as
 created_at (the API cannot set it), so a shot's current version is the real latest. A dry run sends nothing.
+
+KIND=publish (no payload): for every task holding versions from ATOM whose status is Approved, publishes its publish
+version, else its latest dailies version (by ATOM date), through POST /versions/<id>/publish/. The API publishes
+only an Approved version; a latest dailies version ATOM left Pending Review is listed, not changed. Files are not
+registered (that needs read access to the share): each is published with ``files_registered: false``. A dry run
+sends nothing.
 """
 
 import datetime
@@ -56,7 +64,7 @@ KIND = os.environ["KIND"]
 STEP = os.environ.get("STEP", "dry")
 assert STEP in ("dry", "real"), "STEP is dry or real"
 dry = STEP == "dry"
-payloads = Path(os.environ["PAYLOADS"]).expanduser()
+payloads = Path(os.environ.get("PAYLOADS", "")).expanduser()  # KIND=publish needs none
 wanted_batches = [int(n) for n in os.environ.get("BATCHES", "").split(",") if n]
 
 client = APIClient(SERVER_NAME="localhost")
@@ -419,6 +427,89 @@ elif KIND in ("versions", "publish-versions"):
         live.count(),
         "| by status:",
         dict(Counter(live.values_list("status", flat=True))),
+    )
+
+elif KIND == "publish":
+    # The approved publishing rule: an approved step publishes its current set. A step without review media has a
+    # publish version holding that set; otherwise the set goes on the step's latest dailies version. The publish
+    # action merges its body into publishing_info one level deep, so the body never carries an ``atom`` key.
+    only = {c.upper() for c in os.environ.get("ONLY", "").split(",") if c}
+    versions = Version.objects.filter(
+        project=project, publishing_info__has_key="atom"
+    ).select_related("task", "shot", "asset")
+    if only:
+        versions = [
+            v for v in versions if (v.shot or v.asset) and (v.shot or v.asset).code.upper() in only
+        ]
+    counts, todo = Counter(), []
+    if os.environ.get("UNDO") == "1":
+        todo = [
+            v
+            for v in versions
+            if v.is_published and v.publishing_info.get("files_registered") is False
+        ]
+        for v in todo:
+            if dry:
+                counts["would unpublish"] += 1
+                continue
+            response = client.post(f"/api/v1/versions/{v.pk}/unpublish/", {}, format="json")
+            counts[
+                "unpublished" if response.status_code == 200 else f"HTTP {response.status_code}"
+            ] += 1
+        print("undo:", dict(counts))
+        raise SystemExit
+    by_task = defaultdict(list)
+    for v in versions:
+        by_task[v.task_id].append(v)
+    for its in by_task.values():
+        task = its[0].task
+        if task is None or task.status != "Approved":
+            counts[f"task {task.status if task else 'missing'}: left alone"] += 1
+            continue
+        publish = [v for v in its if v.publishing_info["atom"].get("kind") == "publish"]
+        dailies = sorted((v for v in its if v not in publish), key=lambda v: (v.created_at, v.pk))
+        pick = publish[0] if publish else dailies[-1]
+        kind = "publish version" if publish else "latest dailies"
+        if pick.is_published:
+            counts[f"{kind}: already published"] += 1
+        elif pick.status != "Approved":
+            counts[f"{kind}: {pick.status}, not publishable"] += 1
+            print(f"  not publishable ({pick.status}): {pick.code}")
+        else:
+            todo.append(pick)
+            counts[f"{kind}: to publish"] += 1
+    print(dict(sorted(counts.items())), flush=True)
+    body = {
+        "publishing_info": {
+            "comment": "Published from ATOM: approved step, its latest dailies or current set. "
+            "Files not registered yet (the share is not readable).",
+            "files_registered": False,
+        }
+    }
+    sent = Counter()
+    for v in [] if dry else todo:
+        before = v.publishing_info["atom"]
+        response = client.post(f"/api/v1/versions/{v.pk}/publish/", body, format="json")
+        if response.status_code != 200:
+            sent["failed"] += 1
+            print(
+                "  failed:",
+                v.code,
+                response.status_code,
+                response.content.decode(errors="replace")[:300],
+            )
+            continue
+        v.refresh_from_db()
+        sent[
+            "published"
+            if v.publishing_info.get("atom") == before
+            else "PUBLISHED, ATOM DETAILS CHANGED"
+        ] += 1
+    if sent:
+        print("sent:", dict(sent))
+    live = Version.objects.filter(project=project, publishing_info__has_key="atom")
+    print(
+        "published versions from ATOM:", live.filter(is_published=True).count(), "of", live.count()
     )
 
 elif KIND == "verify":

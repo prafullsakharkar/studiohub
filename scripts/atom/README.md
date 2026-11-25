@@ -21,7 +21,7 @@ episodes, sequences, shots and assets, the shot–asset links, its tasks, versio
 |---|---|
 | `fetch.py` | GETs the ATOM project and its episodes, sequences, shots and assets into a data folder; `--work` its steps and tasks; `--publishes` its publishes; `--users` ATOM's users |
 | `build.py` | Turns the saved files into studiohub payloads (`<data>/payloads/<kind>.json`); local files only |
-| `run.py` | Sends a payload to studiohub (`KIND=project|episodes|sequences|shots|assets|links|tasks|versions|publish-versions`) or compares (`KIND=verify`) |
+| `run.py` | Sends a payload to studiohub (`KIND=project|episodes|sequences|shots|assets|links|tasks|versions|publish-versions`), publishes (`KIND=publish`) or compares (`KIND=verify`) |
 | `studio.py` | Studio setup: departments on catalog task types, the studio's task templates, a project's workflows |
 | `users.py` | Creates ATOM's users as studiohub accounts and directory people (`KIND=users`), and a resource for each active one (`KIND=resources`) |
 
@@ -126,6 +126,8 @@ ShotGrid). Versions come from publishes in two kinds. Needs the tasks: a version
 3. `KIND=versions STEP=dry`, then `STEP=real`, with `PAYLOADS=$D/payloads/versions.json` (`run.py`); the same for
    `publish-versions`. One request per version (no bulk route); a code already there is skipped. `KIND=verify` then
    checks each built version's status, ATOM details and date.
+4. `KIND=publish STEP=dry`, then `STEP=real` (no `PAYLOADS`; `ONLY=<shot or asset codes>` limits it) publishes
+   the approved steps' versions; `UNDO=1` unpublishes what it published.
 
 What it decides (MUS pilot, 2026-11-25: 131 dailies versions on 5 shots and 5 assets, 19 publish versions on 10
 shots and 10 assets):
@@ -151,6 +153,14 @@ shots and 10 assets):
   published, else latest created) would then follow the import's order. `run.py` gives every version from ATOM its
   ATOM date as `created_at` (the publish's; a publish version's newest). ATOM's dates carry no zone and are
   Asia/Kolkata time.
+- **Publishing:** for each task with versions from ATOM whose status is Approved, its publish version, or else its
+  latest dailies version by ATOM date, is published through the version's publish action. The API publishes only an
+  Approved version, so a latest dailies version that ATOM left Pending Review on an approved step is listed and left
+  alone (MUS sample: 6). Tasks not Approved are left alone. Files are not registered yet: each version is published
+  with `files_registered: false` and a comment saying so, and keeps ATOM's paths; registering them later needs no
+  republish. Published at and by are the run's (the admin, that day); a shot's current version still follows ATOM's
+  dates. Only shots have a current version: an asset's "Version" field is its own text (`v001`). MUS sample,
+  2026-11-25: 26 published (19 publish versions, 7 dailies) on all 10 shots and 3 of the 10 assets.
 - **Not done:** review copies (the share is not readable from the server, and `PUBLISHING_STORAGE_MOUNTS` and
   review media are off in development), registering files, ATOM's notes (unlinked, ShotGrid-synced test messages).
   For registering files, the file types `json`, `wav`, `atom` and `rs` were added to the catalogue and a storage
