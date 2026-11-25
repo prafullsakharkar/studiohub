@@ -15,6 +15,7 @@ import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 import { Table, formatDate } from '../components/ui';
 import { ReauthDialog } from './ReauthDialog';
+import { RowActionButton } from '@/shared/components/RowActionButton';
 
 const mfaKeys = { config: ['identity-mfa', 'config'] as const, recovery: ['identity-mfa', 'recovery'] as const, devices: ['identity-mfa', 'devices'] as const };
 
@@ -50,9 +51,7 @@ const TrustedDevices: React.FC = () => {
               <td className="px-4 py-2 text-slate-400">{formatDate(d.last_login_at)}</td>
               <td className="px-4 py-2 text-right">
                 {canRevoke && (
-                  <button type="button" className="text-rose-400 hover:underline" aria-label={`Revoke ${d.browser || 'device'}`} onClick={() => setRevoking(d.id)}>
-                    Revoke
-                  </button>
+                  <RowActionButton label="Revoke" tone="danger" aria-label={`Revoke ${d.browser || 'device'}`} onClick={() => setRevoking(d.id)} />
                 )}
               </td>
             </tr>

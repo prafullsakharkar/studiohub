@@ -191,3 +191,44 @@ describe('shot workspace', () => {
     for (const key of ['entity_code', 'entity_name', 'status', 'task_id']) expect(sent).not.toHaveProperty(key);
   });
 });
+
+// The current version (D-16) is shown by its code: the shot sends only its number and id, and the number alone does
+// not say whose version it is when several departments work on the shot. Captured in production/_review_flow.json.
+describe('shot current version', () => {
+  const review = loadSample<Record<string, Captured>>('production/_review_flow.json');
+  const withVersion = review.shots_detail_current_version.body as { id: string; current_version: string; current_version_id: string };
+  const version = review.versions_unpublish.body as { id: string; code: string; version_number: string };
+  const label = `${version.code} · ${version.version_number}`;
+  const server =
+    (versionReply: MockReply) =>
+    (c: MockCall): MockReply => {
+      const p = path(c);
+      if (p === `/api/v1/shots/${withVersion.id}/`) return { body: withVersion };
+      if (p === `/api/v1/versions/${version.id}/`) return versionReply;
+      return { body: page([]) };
+    };
+
+  it('names the current version by its code and number, linked to the version, in the header and the overview', async () => {
+    expect(withVersion.current_version_id).toBe(version.id);
+    mockFetch(server({ body: version }));
+    mount(`/shots/${withVersion.id}`);
+    await waitFor(() => expect(screen.getAllByRole('link', { name: label })).toHaveLength(2));
+    for (const link of screen.getAllByRole('link', { name: label })) expect(link.getAttribute('href')).toBe(`/versions/${version.id}`);
+  });
+
+  it('falls back to the number when the version cannot be read', async () => {
+    const { calls } = mockFetch(server({ status: 404, body: { detail: 'Not found.' } }));
+    mount(`/shots/${withVersion.id}`);
+    await waitFor(() => expect(calls.some((c) => path(c) === `/api/v1/versions/${version.id}/`)).toBe(true));
+    await waitFor(() => expect(screen.getAllByRole('link', { name: withVersion.current_version })).toHaveLength(2));
+    expect(screen.queryByText(label)).toBeNull();
+  });
+
+  it('asks for no version when the shot has none', async () => {
+    const { calls } = mockFetch((c) => (path(c) === `/api/v1/shots/${shot.id}/` ? { body: flow.shot_detail.body } : { body: page([]) }));
+    mount();
+    expect(await screen.findByRole('heading', { name: shot.name })).toBeTruthy();
+    expect(calls.some((c) => path(c).startsWith('/api/v1/versions/') && path(c) !== '/api/v1/versions/')).toBe(false);
+    expect(screen.queryByRole('link', { name: /v0\d\d/ })).toBeNull();
+  });
+});

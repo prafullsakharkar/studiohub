@@ -72,6 +72,7 @@ Domain behaviour stays in `src/modules/<module>/`.
 | `createQueryKeys` | `shared/data/queryKeys` | |
 | `exportAll` | `shared/data/exportAll` | CSV/JSON export of a whole list |
 | `DirectoryListPage` | `modules/directory/DirectoryListPage` | a list screen from a config (filters, columns, row actions, archive/restore) |
+| `RowActionButton`, `RowActionLink`, `RowActions`, `rowActionIcon` | `shared/components/RowActionButton` | a table row's actions (Edit, Archive, Delete, Revoke …) as round icon buttons; the label is the tooltip and the accessible name; tones `default`, `warning`, `danger`; a label with no icon is a text pill. Every table's action column uses it |
 | `RelatedRecords` | `modules/directory/RelatedRecords` | the records that point at this one, with a server-side count |
 | `EntityHistory` | `components/history/EntityHistory` | the record's audit history |
 | bulk grid | `shared/components/bulk/BulkImportGrid.tsx` | editable rows with a paste dialog; the caller parses pasted text (`onPaste`), else the built-in parser; `sampleRows` adds "Load Template". "Bulk add" of sequences, assets and tasks: `modules/production/bulk/StagedBulkManager` (the shot manager's steps, driven by `specs.ts`); "Edit fields" on selected rows (`editFieldsAction`) for all four |

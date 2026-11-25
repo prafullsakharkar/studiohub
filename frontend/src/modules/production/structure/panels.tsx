@@ -16,6 +16,7 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { fetchAllRows } from '@/shared/data/listing';
 import { useServerForm } from '@/shared/forms/useServerForm';
+import { RowActionButton } from '@/shared/components/RowActionButton';
 
 const key = (projectId: string, name: string) => ['production', 'scoped', projectId, name] as const;
 
@@ -238,9 +239,7 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
               {canAdd && (
                 <td className="px-4 py-2 text-right">
                   {!isMe(m) && (
-                    <Button type="button" size="sm" variant="ghost" aria-label={`Remove ${m.name}`} onClick={() => setRemoving(m)}>
-                      Remove
-                    </Button>
+                    <RowActionButton label="Remove" tone="danger" aria-label={`Remove ${m.name}`} onClick={() => setRemoving(m)} />
                   )}
                 </td>
               )}

@@ -18,6 +18,7 @@ import { StatusHistory } from './StatusHistory';
 import { StatusMenu } from './StatusMenu';
 import { formatHours } from './format';
 import { AssetPicker } from './pickers';
+import { RowActionButton } from '@/shared/components/RowActionButton';
 
 /** The record a panel belongs to: a shot or an asset, with the project the new tasks go into. */
 export interface WorkTarget {
@@ -189,11 +190,7 @@ export const ShotAssetsPanel: React.FC<{ shot: Pick<Shot, 'id' | 'code' | 'proje
                   {canLink ? <input type="number" min={1} aria-label={`Quantity of ${l.asset_code}`} defaultValue={l.quantity} onBlur={(e) => Number(e.target.value) > 0 && Number(e.target.value) !== l.quantity && quantity.mutate({ link: l, value: Number(e.target.value) })} className="w-16 bg-slate-950 border border-slate-800 rounded px-2 py-1" /> : l.quantity}
                 </td>
                 <td className="py-1.5 text-right">
-                  {canLink && (
-                    <button type="button" className="text-rose-400 hover:text-rose-300" aria-label={`Unlink ${l.asset_code}`} onClick={() => setUnlink(l)}>
-                      Unlink
-                    </button>
-                  )}
+                  {canLink && <RowActionButton label="Unlink" tone="danger" aria-label={`Unlink ${l.asset_code}`} onClick={() => setUnlink(l)} />}
                 </td>
               </tr>
             ))}
