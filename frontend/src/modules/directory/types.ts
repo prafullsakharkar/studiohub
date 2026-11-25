@@ -46,6 +46,11 @@ export interface FieldGate {
    * beside the input, the user types the rest, and the code is sent with the prefix. An edit shows the saved code as it is.
    */
   projectPrefix?: boolean;
+  /**
+   * A text field whose value, on a NEW record, starts with this fixed prefix (`DEPT-`, `STUDIO_CODE_PREFIX`): shown and
+   * added like `projectPrefix`. An edit shows the saved code as it is.
+   */
+  codePrefix?: string;
   /** Required while creating; an existing record that lacks the value can still be saved (a legacy shot with no sequence). */
   requiredOnCreate?: boolean;
 }

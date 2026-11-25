@@ -3,6 +3,7 @@ import type { Position } from '@/api/masterdata/directory';
 import { Badge } from '@/shared/components/Badge';
 import type { DirectoryFormConfig, DirectoryListConfig } from '../types';
 import { DepartmentPicker, PositionPicker } from '../pickers';
+import { STUDIO_CODE_PREFIX } from '@/shared/utils/codePrefix';
 
 export const positionsListConfig: DirectoryListConfig<Position> = {
   title: 'Positions',
@@ -43,7 +44,7 @@ export const positionsFormConfig: DirectoryFormConfig<Position> = {
   update: (id, patch) => positionsApi.update(id, patch as never),
   fields: [
     { kind: 'text', name: 'name', label: 'Name', required: true },
-    { kind: 'text', name: 'code', label: 'Code', required: true },
+    { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 30, codePrefix: STUDIO_CODE_PREFIX.position },
     { kind: 'textarea', name: 'description', label: 'Description' },
     { kind: 'entity', name: 'department', label: 'Department', render: (p) => <DepartmentPicker {...p} value={p.value || null} onChange={(id) => p.onChange(id ?? '')} /> },
     { kind: 'entity', name: 'parent', label: 'Reports to (parent position)', render: (p) => <PositionPicker label="Parent position" {...p} value={p.value || null} onChange={(id) => p.onChange(id ?? '')} /> },

@@ -15,6 +15,7 @@ import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { clientsFormConfig } from '@/modules/directory/entities/clients';
 import { peopleFormConfig, peopleListConfig } from '@/modules/directory/entities/people';
 import { teamsFormConfig, teamsListConfig } from '@/modules/directory/entities/teams';
+import { pickEntity } from '@/test/picker';
 import { freshTotp, live } from './liveBackend';
 
 /**
@@ -60,14 +61,15 @@ describe('directory pages, end to end', () => {
       )
     );
     fireEvent.change(await screen.findByLabelText(/^Name/, {}, { timeout: 15000 }), { target: { value: `Team ${code}` } });
-    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: code } });
-    await screen.findByRole('option', { name: department.name }, { timeout: 15000 });
-    fireEvent.change(screen.getByLabelText(/^Department/), { target: { value: department.id } });
+    fireEvent.change(screen.getByLabelText('Code *'), { target: { value: code } }); // saved as TEAM-<code>
+    // The department field is a server-searched picker: search for the new department, it is not on the first page.
+    await pickEntity(/^Department/, new RegExp(department.name), { search: department.name, timeout: 15000 });
     fireEvent.click(screen.getByRole('button', { name: /create team/i }));
     await screen.findByText('team saved', {}, { timeout: 15000 });
 
     const created = (await teamsApi.list({ search: code })).results[0];
     expect(created.department).toBe(department.id);
+    expect(created.code).toBe(`TEAM-${code}`);
     cleanup();
 
     // The list finds it by server-side search.

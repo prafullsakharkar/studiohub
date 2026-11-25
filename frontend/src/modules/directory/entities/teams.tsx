@@ -3,6 +3,7 @@ import type { Team } from '@/api/masterdata/directory';
 import type { DirectoryFormConfig, DirectoryListConfig } from '../types';
 import { DepartmentPicker } from '../pickers';
 import { formatDate } from '@/core/locale/studioLocale';
+import { STUDIO_CODE_PREFIX } from '@/shared/utils/codePrefix';
 
 export const teamsListConfig: DirectoryListConfig<Team> = {
   title: 'Teams',
@@ -43,7 +44,7 @@ export const teamsFormConfig: DirectoryFormConfig<Team> = {
   update: (id, patch) => teamsApi.update(id, patch as never),
   fields: [
     { kind: 'text', name: 'name', label: 'Name', required: true },
-    { kind: 'text', name: 'code', label: 'Code', required: true, hint: 'Unique, e.g. LGT-A.' },
+    { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 30, codePrefix: STUDIO_CODE_PREFIX.team, hint: 'Unique, e.g. LGT-A for TEAM-LGT-A.' },
     { kind: 'entity', name: 'department', label: 'Department', required: true, render: (p) => <DepartmentPicker required {...p} value={p.value || null} onChange={(id) => p.onChange(id ?? '')} /> },
     { kind: 'textarea', name: 'description', label: 'Description' },
     { kind: 'text', name: 'focus_discipline', label: 'Focus discipline' },

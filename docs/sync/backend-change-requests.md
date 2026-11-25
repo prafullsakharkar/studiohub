@@ -1165,3 +1165,20 @@ The budget cannot be filtered, searched or ordered on (`ProjectViewSet` and `Pro
 - (a) Reuse `masterdata.client.view_financial` instead of a new code: the same holders today, one code fewer. But it is masterdata's code and is named for clients, so the production app would read another app's permission for its own field.
 - (b) Let the vfx-supervisor read the budget but not write it (grant only the read code). That is a different answer to the matrix comment; say if supervisors should see budgets.
 - (c) Do nothing.
+
+### CR-56: new studio codes start with their kind's prefix (**feature**, **PROPOSED**)
+
+Asked by the owner (2026-11-25): "While creating Department the DEPT- prefix should add default like what we do for production entities … for all studio entity form where ever code is needed".
+
+**Done in the frontend already (no backend change).** The department, team, position, office, client and vendor create forms show `DEPT-`, `TEAM-`, `POS-`, `OFF-`, `CLI-`, `VEN-` beside the code input and send `<PREFIX><typed>`, upper case (`docs/masterdata/DECISIONS.md`, "Studio code prefixes"). Edits are unchanged.
+
+**Problem.** Only the UI enforces it, as CR-49 found for production codes: `POST /api/v1/departments/` (or a script such as `scripts/atom/`) still accepts `LGT`, so the convention holds only for people who use these screens.
+
+**Minimal diff (create only, nothing existing is touched).**
+1. In `_OrganizationService` (departments, positions, offices, teams) and `PartnerService` (clients, vendors), on create: the code must start with its kind's prefix (any case), else 400 `code: "Department codes start with DEPT-."`. The prefix counts towards the length limit (30, or 20 for clients and vendors). Update and restore are unchanged.
+2. Seeds and factories already use the prefixes; tests that create with bare codes change.
+3. `CONTRACTS.md` (masterdata) gets the rule.
+
+**Why no frontend workaround.** None can bind another client: the rule is the server's to enforce. The frontend part works whether or not this is approved.
+
+**Compatibility.** Breaking for an API client or script that creates bare studio codes (it gets a 400). Existing data is untouched. **Risk.** Low to medium: test fixtures that create studio records by code change. **Alternative.** Frontend only, as now.

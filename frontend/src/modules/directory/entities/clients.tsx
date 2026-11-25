@@ -2,6 +2,7 @@ import { clientsApi } from '@/api/masterdata/directory';
 import type { Client } from '@/api/masterdata/directory';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import type { DirectoryFormConfig, DirectoryListConfig } from '../types';
+import { STUDIO_CODE_PREFIX } from '@/shared/utils/codePrefix';
 
 export const clientsListConfig: DirectoryListConfig<Client> = {
   title: 'Clients',
@@ -44,7 +45,7 @@ export const clientsFormConfig: DirectoryFormConfig<Client> = {
   update: (id, patch) => clientsApi.update(id, patch as never),
   fields: [
     { kind: 'text', name: 'name', label: 'Name', required: true },
-    { kind: 'text', name: 'code', label: 'Code', required: true },
+    { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 20, codePrefix: STUDIO_CODE_PREFIX.client },
     { kind: 'text', name: 'contact_name', label: 'Main contact' },
     { kind: 'email', name: 'email', label: 'Email' },
     { kind: 'tel', name: 'phone', label: 'Phone' },

@@ -2,6 +2,7 @@ import { vendorsApi } from '@/api/masterdata/directory';
 import type { Vendor } from '@/api/masterdata/directory';
 import { Badge } from '@/shared/components/Badge';
 import type { DirectoryFormConfig, DirectoryListConfig } from '../types';
+import { STUDIO_CODE_PREFIX } from '@/shared/utils/codePrefix';
 
 export const vendorsListConfig: DirectoryListConfig<Vendor> = {
   title: 'Vendors',
@@ -43,7 +44,7 @@ export const vendorsFormConfig: DirectoryFormConfig<Vendor> = {
   update: (id, patch) => vendorsApi.update(id, patch as never),
   fields: [
     { kind: 'text', name: 'name', label: 'Name', required: true },
-    { kind: 'text', name: 'code', label: 'Code', required: true },
+    { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 20, codePrefix: STUDIO_CODE_PREFIX.vendor },
     { kind: 'text', name: 'contact_name', label: 'Main contact' },
     { kind: 'email', name: 'email', label: 'Email' },
     { kind: 'text', name: 'specialization', label: 'Specialization' },
