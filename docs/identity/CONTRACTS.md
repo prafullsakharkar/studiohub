@@ -139,7 +139,7 @@ The contract is **fail-closed**: any uncertainty yields the empty set. The curre
 |---|---|---|
 | DOM-RBAC-01 | Resolver rules 1–8 above | `PermissionResolver` (WP 4.4) |
 | DOM-RBAC-02 | `Role.name` and `Group.name` are unique | DB constraint (WP 4.5) |
-| DOM-RBAC-03 | `code` and `is_system` are immutable after creation; system rows cannot be deleted | Serializer read-only + service guard (WP 4.3) |
+| DOM-RBAC-03 | `code` and `is_system` are immutable after creation; system rows cannot be deleted. When a role or group is deleted, its code is renamed to `<code>--deleted-<first 8 of the id>` so a live row may take it again (the security event keeps the original; `identity.0005` did the same for rows deleted before) | Serializer read-only + service guard (WP 4.3); `RbacGuardMixin._release_code` (CR-59) |
 | DOM-RBAC-04 | A grant cannot exceed the grantor's effective permissions | Assignment service (WP 4.2) |
 | DOM-RBAC-05 | The last user holding an administrative permission cannot be demoted/deleted | Service guard (WP 4.2) |
 | DOM-RBAC-06 | Every grant/revoke/assign/membership change emits a `SecurityEvent` and invalidates the permission cache synchronously | Signals + service (WPs 4.1, 4.4, 4.6) |
@@ -406,12 +406,12 @@ These shapes are consumed by the frontend and **must not change** without a cont
 
 | ID | Endpoint | Contract |
 |---|---|---|
-| API-RBAC-01 | `roles/` | CRUD; `code`/`is_system` read-only; system rows protected |
+| API-RBAC-01 | `roles/` | CRUD; `code`/`is_system` read-only; system rows protected. `DELETE` is a soft delete: the role then leaves the list, and its detail, edit, delete and nested routes answer 404 (CR-59) |
 | API-RBAC-02 | `roles/{id}/permissions/` **(new)** | `GET` list, `POST {permission_id, expires_at?}` grant, `DELETE {permission_id}` revoke (WP 4.1) |
 | API-RBAC-03 | `roles/{id}/users/` **(new)** | `GET` list, `POST {user_id}` assign, `DELETE {user_id}` unassign (WP 4.1) |
-| API-RBAC-04 | `groups/` | CRUD; `is_system` read-only |
+| API-RBAC-04 | `groups/` | CRUD; `is_system` read-only. A deleted group is gone from every route, as for roles (CR-59) |
 | API-RBAC-05 | `groups/{id}/members/` **(new)** | add/remove; removal sets `left_at` (WP 4.1) |
-| API-RBAC-06 | `groups/{id}/roles/` **(new)** | attach/detach (WP 4.1) |
+| API-RBAC-06 | `groups/{id}/roles/` **(new)** | attach/detach (WP 4.1); the list leaves out deleted roles, and attaching a deleted role or group is a 400 (CR-59) |
 | API-RBAC-07 | `permissions/` | CRUD; system catalog protected |
 | API-RBAC-08 | All RBAC writes | escalation guards + `SecurityEvent` (WPs 4.2, 4.6) |
 
