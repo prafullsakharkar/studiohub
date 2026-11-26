@@ -1251,3 +1251,29 @@ An administrator without shell access cannot link an account that already existe
 - **The screen.** Link is enabled only after a Check of the same e-mail and username. Sync now is enabled only after a Preview, and both buttons are off while sign-in is off.
 
 Captured: `docs/sync/samples/identity/_directory_link_sync_cr58_flow.json` (`docs/sync/tools/test_capture_directory_link_sync_cr58.py`). Verification: `docs/sync/backend-cr-58-verification.md`.
+
+### CR-59: a deleted role or group stays on the list, can be deleted again, and keeps its code (**bug**, **PROPOSED**)
+
+Reported by the owner (2026-11-26): "unable to delete temporary role".
+
+**Problem.** `DELETE /api/v1/roles/{id}/` (and `/groups/{id}/`) is a soft delete: `BusinessService.delete` sets `is_deleted` and `deleted_at` and answers 204. But `RoleSelector` and `GroupSelector` (`apps/identity/selectors/rbac.py`) read through `Role.objects` and `Group.objects`. Those are a plain `BaseManager` that does not hide deleted rows. As a result, after a delete:
+- the role stays in `GET /roles/`, and its page still opens (200);
+- it can be edited (`PATCH` 200) and deleted again (204);
+- its code stays taken: creating a role with that code again is 400 "role with this code already exists.";
+- the frontend says "Role deleted.", returns to the list, and the role is still there. That is what "unable to delete" looks like from the screen.
+
+Reproduced on the test database for a role with no links, and for roles with a permission, a user or a group attached. Every case gives the same result, as superuser and as platform-admin. Groups behave the same way.
+
+Not a security hole: the permission resolver and the user's role label already skip deleted roles (`role__is_deleted=False`), so a deleted role grants nothing.
+
+**Minimal diff.**
+1. `RoleSelector.get_queryset` and `GroupSelector.get_queryset` add `.filter(is_deleted=False)`. A deleted role or group leaves the list, and its detail, edit, delete and nested actions (`permissions`, `users`, `groups`) answer 404.
+2. **Free the code when deleting.** `RoleService.delete` and `GroupService.delete`, inside the same transaction, rename the code to `<code>--deleted-<first 8 characters of the id>` (cut to fit the field's length). The security event keeps the original code. A data migration (`identity.0005`) does the same for roles and groups that are already deleted, so the "temporary" code can be used again straight away.
+3. `AttachRoleSerializer.role_id` and `AttachGroupSerializer.group_id` choose from live rows only. Today a deleted role or group can be passed by id; the services refuse some of these, and this makes all of them a 400.
+4. Unchanged: the links of a deleted role (`UserRole`, `GroupRole`, `RolePermission`) are left as they are. Every reader already ignores them through `role__is_deleted=False`.
+
+**Why no frontend workaround.** The list and detail are the server's. Hiding deleted rows in the browser would leave the code taken and the routes open.
+
+**Compatibility.** Deleted roles and groups disappear from the API, which was the point of deleting them. Deleted codes change, and nothing looks a deleted row up by its code. One data migration; `apps/core/tests/test_bootstrap.py`'s per-app migration limit goes up by one. **Risk.** Low.
+
+**Alternative.** Make the code unique among live rows only (a partial constraint, like the existing `uq_identity_role_name_live` on the name) instead of renaming. Not proposed: several lookups (`bootstrap`, the seed commands) take `Role.objects.filter(code=…).first()` without `is_deleted`, and these would become ambiguous.
