@@ -1184,3 +1184,21 @@ Asked by the owner (2026-11-25): "While creating Department the DEPT- prefix sho
 **Compatibility.** Breaking for an API client or script that creates bare studio codes (it gets a 400). Existing data is untouched. **Risk.** Low to medium: test fixtures that create studio records by code change. **Alternative.** Frontend only, as now.
 
 **Approved** by the owner ("approved", 2026-11-25) and applied as proposed, with these details settled while building it: the check is one hook in `DirectoryService.create` (a `code_prefix` class attribute on the six services), after field cleaning and before the uniqueness check; the code must have something after the prefix; the prefix is compared in any case and the code is stored as written. Seeds already used the prefixes; 38 masterdata tests that created bare codes, six capture tools (`docs/sync/tools/`) and the frontend live tests were changed to prefixed codes (the captured samples were not recaptured). Contract DOM-MD-COD (`docs/masterdata/CONTRACTS.md` §5.7). Verification: `docs/sync/backend-cr-56-verification.md`.
+
+### CR-57: a project member's name is their name, not their e-mail; people with a login can be listed (**bug** + **feature**, PROPOSED)
+
+Asked by the owner (2026-11-26): "In Project -> Member tab should have member search option and also while adding user and role should be in dropdown to add also add sort for role and name, name shows email please correct".
+
+**Done in the frontend (no backend change):** a search box over the members (name, e-mail, role, show, department), Name and Role sort by a click on their header, and the add form picks a person and a role (a studio position) from dropdowns instead of typing an e-mail and a role.
+
+**Problem 1, the name.** `ProjectMembershipSerializer.name` (`apps/production/api/serializers/membership.py`, `_user_display_name`) is the profile's `display_name`, else the e-mail. Most accounts have no profile name: the ATOM import (`scripts/atom/users.py`) and the LDAP link put the name on the linked directory person, and say so ("A linked person's name comes from the account's profile, which these accounts lack"). So the Members tab shows the e-mail twice (captured: `docs/sync/samples/production/_structure_flow.json` `members_get`, `name` = `email` on both rows), and every notice built from it ("… is on the project") names an address.
+
+**Problem 2, the person dropdown.** Who may add members (a global admin role or the project's creator, D-14) is mostly not staff, and `GET /identity/users/` shows a non-staff caller only themselves (ADR-0034), so it cannot feed a dropdown. `GET /people/` is open to every signed-in user and has the person's `user`, but it cannot be narrowed to people who have a login, and only those can be added.
+
+**Minimal diff.**
+1. `name` falls back in this order: the profile's `display_name`; the profile's first and last name; the linked live person's `name`; the e-mail. The members list looks the people up in one query (`Person.objects.filter(user_id__in=…, is_deleted=False)`), not one per row, and selects `user__profile`. Production reads masterdata through the model only (it already does for vendors). Nothing is stored.
+2. `GET /people/?has_user=true|false`: people with (or without) a linked login.
+
+**Why no frontend workaround.** The members response is the contract for the name; mapping user ids to people in the browser would make a second request per tab, and every other reader of `name` (the add notice, notes, the API) would still get the e-mail. A dropdown that hides people without a login on the client cannot page correctly.
+
+**Compatibility.** `name` changes from the e-mail to a person's name for members with no profile name; nothing keys on it (the frontend matches members by `user_id` and `email`). The filter is new and optional. **Risk.** Low. **Alternative.** Leave the name as is; list every person in the dropdown and refuse one without a login when it is picked (what the frontend does until this lands).
