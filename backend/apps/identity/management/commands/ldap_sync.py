@@ -12,14 +12,9 @@ command stops and changes nothing, so an outage never deactivates anyone. Run it
 from __future__ import annotations
 
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
+from rest_framework.exceptions import APIException
 
-from apps.identity.models import ExternalIdentity
-from apps.identity.models.directory import ExternalIdentityProvider
-from apps.identity.services.directory.client import DirectoryAmbiguous, DirectoryUnavailable
-from apps.identity.services.directory.configuration import DirectoryConfigurationService
-from apps.identity.services.directory.secret import DirectorySecretUnavailable
-from apps.identity.services.directory.sign_in import DirectorySignIn
+from apps.identity.services.directory.accounts import DirectoryAccountService
 
 
 class Command(BaseCommand):
@@ -29,52 +24,14 @@ class Command(BaseCommand):
         parser.add_argument("--dry-run", action="store_true", help="Report; change nothing.")
 
     def handle(self, *args, **options):
-        from apps.identity.services.user import UserService
-
         dry = options["dry_run"]
-        config = DirectoryConfigurationService.active()
-        if config is None:
-            raise CommandError("Directory sign-in is off; nothing to compare with.")
-
         try:
-            client = DirectoryConfigurationService.client(config)
-            identities = list(
-                ExternalIdentity.objects.select_related("user").filter(
-                    provider=ExternalIdentityProvider.LDAP, user__is_active=True
-                )
-            )
-            # Ask the directory about everyone first: an outage half-way through changes nothing.
-            found = {}
-            ambiguous = set()
-            for identity in identities:
-                try:
-                    found[identity.pk] = client.find(identity.username)
-                except DirectoryAmbiguous:
-                    # A filter that matches too much is a configuration fault, not a leaver.
-                    ambiguous.add(identity.pk)
-        except (DirectoryUnavailable, DirectorySecretUnavailable) as exc:
-            raise CommandError(
-                f"The directory cannot be reached ({exc}); nothing changed."
-            ) from None
-
-        refreshed = deactivated = 0
-        for identity in identities:
-            if identity.pk in ambiguous:
-                self.stdout.write(f"skipped (more than one entry matches): {identity.username}")
-                continue
-            entry = found[identity.pk]
-            label = identity.username
-            if entry is None or entry.subject != identity.subject:
-                deactivated += 1
-                self.stdout.write(f"{'would deactivate' if dry else 'deactivated'}: {label}")
-                if not dry:
-                    with transaction.atomic():
-                        UserService.deactivate(identity.user)
-                continue
-            refreshed += 1
-            if not dry:
-                with transaction.atomic():
-                    DirectorySignIn.refresh(identity=identity, entry=entry)
-
+            result = DirectoryAccountService.sync(actor=None, dry_run=dry)
+        except APIException as exc:
+            raise CommandError(str(exc.detail)) from None
+        for username in result.skipped:
+            self.stdout.write(f"skipped (more than one entry matches): {username}")
+        for username in result.deactivated:
+            self.stdout.write(f"{'would deactivate' if dry else 'deactivated'}: {username}")
         verb = "would refresh" if dry else "refreshed"
-        self.stdout.write(f"{verb}: {refreshed}; deactivated: {deactivated}")
+        self.stdout.write(f"{verb}: {result.refreshed}; deactivated: {len(result.deactivated)}")

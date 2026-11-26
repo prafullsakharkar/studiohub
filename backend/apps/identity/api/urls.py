@@ -134,4 +134,14 @@ urlpatterns = router_urls + [
         DirectoryConfigurationViewSet.as_view({"post": "test_user"}),
         name="directory-test-user",
     ),
+    path(
+        "directory/link/",
+        DirectoryConfigurationViewSet.as_view({"post": "link"}),
+        name="directory-link",
+    ),
+    path(
+        "directory/sync/",
+        DirectoryConfigurationViewSet.as_view({"post": "sync"}),
+        name="directory-sync",
+    ),
 ]

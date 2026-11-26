@@ -1,0 +1,291 @@
+{
+ "link": {
+  "body": {
+   "dn": "uid=jdoe,ou=people,dc=studio,dc=test",
+   "email": "jane@example.test",
+   "linked": true,
+   "username": "jdoe"
+  },
+  "request": {
+   "body": {
+    "email": "jane@example.test",
+    "username": "jdoe"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/link/"
+  },
+  "status": 200
+ },
+ "link_again": {
+  "body": {
+   "email": [
+    "This account is already linked to the directory."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "baa9af7a-4f5b-4eb3-86ca-a09a87490256"
+   }
+  },
+  "request": {
+   "body": {
+    "email": "jane@example.test",
+    "username": "jdoe"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/link/"
+  },
+  "status": 400
+ },
+ "link_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "b683965a-8a70-4dd7-a413-180d9942c855"
+   }
+  },
+  "request": {
+   "body": {
+    "email": "jane@example.test",
+    "username": "jdoe"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/link/"
+  },
+  "status": 403
+ },
+ "link_bad_email": {
+  "body": {
+   "email": [
+    "Enter a valid email address."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "46eede1a-8dcc-49aa-9cbf-f8a5ac382688"
+   },
+   "username": [
+    "This field may not be blank."
+   ]
+  },
+  "request": {
+   "body": {
+    "email": "jane",
+    "username": ""
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/link/"
+  },
+  "status": 400
+ },
+ "link_check": {
+  "body": {
+   "dn": "uid=jdoe,ou=people,dc=studio,dc=test",
+   "email": "jane@example.test",
+   "linked": false,
+   "username": "jdoe"
+  },
+  "request": {
+   "body": {
+    "dry_run": true,
+    "email": "jane@example.test",
+    "username": "jdoe"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/link/"
+  },
+  "status": 200
+ },
+ "link_entry_taken": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "ae66e59d-1289-4a9a-9ed1-0d9c0154351e"
+   },
+   "username": [
+    "This directory entry is already linked to another account."
+   ]
+  },
+  "request": {
+   "body": {
+    "email": "omar@example.test",
+    "username": "jdoe"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/link/"
+  },
+  "status": 400
+ },
+ "link_no_account": {
+  "body": {
+   "email": [
+    "No account has this e-mail."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "d7026d8c-dfad-4fc0-8647-4a5a22b9571d"
+   }
+  },
+  "request": {
+   "body": {
+    "email": "nobody@example.test",
+    "username": "jdoe"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/link/"
+  },
+  "status": 400
+ },
+ "link_no_entry": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "73b77337-cb0f-4b87-9c27-aaebcbdd7c3f"
+   },
+   "username": [
+    "No directory entry has this username."
+   ]
+  },
+  "request": {
+   "body": {
+    "email": "jane@example.test",
+    "username": "ghost"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/link/"
+  },
+  "status": 400
+ },
+ "link_outage": {
+  "body": {
+   "detail": "The directory cannot be reached (fake outage); nothing changed.",
+   "error": {
+    "code": "directory_unavailable",
+    "request_id": "df8b93e5-b2dd-4c5b-b29e-0d6d26772b9a"
+   }
+  },
+  "request": {
+   "body": {
+    "email": "omar@example.test",
+    "username": "stayer"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/link/"
+  },
+  "status": 503
+ },
+ "link_two_entries": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "0198f850-4197-475a-bb3c-75d5dcf12fee"
+   },
+   "username": [
+    "More than one entry has this username."
+   ]
+  },
+  "request": {
+   "body": {
+    "email": "jane@example.test",
+    "username": "twin"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/link/"
+  },
+  "status": 400
+ },
+ "sync": {
+  "body": {
+   "deactivated": [
+    "leaver"
+   ],
+   "dry_run": false,
+   "refreshed": 2,
+   "skipped": []
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/identity/directory/sync/"
+  },
+  "status": 200
+ },
+ "sync_after": {
+  "body": {
+   "deactivated": [],
+   "dry_run": true,
+   "refreshed": 2,
+   "skipped": []
+  },
+  "request": {
+   "body": {
+    "dry_run": true
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/sync/"
+  },
+  "status": 200
+ },
+ "sync_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "42127693-eebe-45d6-b026-85abab79a025"
+   }
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/identity/directory/sync/"
+  },
+  "status": 403
+ },
+ "sync_outage": {
+  "body": {
+   "detail": "The directory cannot be reached (fake outage); nothing changed.",
+   "error": {
+    "code": "directory_unavailable",
+    "request_id": "e838f1d0-abe4-45cc-97cf-78ad7209a39f"
+   }
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/identity/directory/sync/"
+  },
+  "status": 503
+ },
+ "sync_preview": {
+  "body": {
+   "deactivated": [
+    "leaver"
+   ],
+   "dry_run": true,
+   "refreshed": 2,
+   "skipped": []
+  },
+  "request": {
+   "body": {
+    "dry_run": true
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/sync/"
+  },
+  "status": 200
+ },
+ "sync_sign_in_off": {
+  "body": {
+   "detail": "Directory sign-in is off; nothing to compare with.",
+   "error": {
+    "code": "directory_sign_in_off",
+    "request_id": "32ebf8e6-6d4e-430c-a052-b3dfc72dafd6"
+   }
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/identity/directory/sync/"
+  },
+  "status": 409
+ }
+}
