@@ -15,7 +15,7 @@ import { loadSample } from '@/test/samples';
 import type { User } from '@/types/identity';
 import { projectsFormConfig, projectsListConfig, sequencesConfig } from '../configs';
 import { MembersPanel, NotesPanel, OverviewPanel } from '../panels';
-import { openPicker } from '@/test/picker';
+import { openPicker, pickEntity } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('production/_structure_flow.json');
@@ -524,27 +524,33 @@ describe('project children and panels', () => {
     expect(calls.some((c) => c.method === 'DELETE')).toBe(false);
   });
 
-  it('members: adds by e-mail and shows the API’s "User not found." for an unknown address', async () => {
+  it('members: adds the picked person’s login and shows the API’s "User not found." when it is gone', async () => {
+    const people = loadSample<Record<string, Captured>>('masterdata/people.json');
+    const person = { ...people.detail_admin.body, name: 'Gone Login', full_name: 'Gone Login', user: 'a1b2c3d4-0000-4000-8000-0000000000ff' };
     const { calls } = mockFetch((c) => {
       if (c.method === 'POST') return reply(flow.members_add_unknown);
       if (path(c) === '/api/v1/shows/') return reply(flow.shows_list);
+      if (path(c) === '/api/v1/positions/') return reply(loadSample<Record<string, Captured>>('masterdata/positions.json').list_admin);
+      if (path(c) === '/api/v1/people/') return { body: { count: 1, next: null, previous: null, results: [person] } };
+      if (path(c).startsWith('/api/v1/people/')) return { body: person };
       return reply(flow.members_get);
     });
     renderAt('/x', superuser, <Route path="/x" element={<MembersPanel projectId={PID} />} />);
     await screen.findByRole('table', { name: 'Project members' });
 
-    fireEvent.change(screen.getByLabelText('Add a member by email'), { target: { value: 'nobody@example.test' } });
+    await pickEntity('Add a member', 'Gone Login');
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
     expect(await screen.findByText('User not found.')).toBeTruthy();
     expect(path(calls.find((c) => c.method === 'POST')!)).toBe(`/api/organizations/projects/${PID}/members/`);
-    expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ email: 'nobody@example.test', role: 'Artist' });
+    expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ user_id: person.user, role: 'Artist' });
   });
 
   it('members: the add form is only for users who may update the project', async () => {
-    mockFetch((c) => reply(path(c) === '/api/v1/shows/' ? flow.shows_list : flow.members_get));
+    const { calls } = mockFetch((c) => reply(path(c) === '/api/v1/shows/' ? flow.shows_list : flow.members_get));
     renderAt('/x', artist, <Route path="/x" element={<MembersPanel projectId={PID} />} />);
     await screen.findByRole('table', { name: 'Project members' });
-    expect(screen.queryByLabelText('Add a member by email')).toBeNull();
+    expect(screen.queryByLabelText('Add a member', { selector: 'button' })).toBeNull();
+    expect(calls.some((c) => path(c) === '/api/v1/positions/' || path(c) === '/api/v1/people/')).toBe(false);
   });
 
   it('notes: lists the threads, requires a subject and posts it about no record', async () => {

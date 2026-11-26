@@ -7,13 +7,26 @@ from apps.core.api.serializers.fields import CaseInsensitiveChoiceField
 from apps.production.models import ProjectMembership, Show
 
 
-def _user_display_name(user) -> str:
+def _user_display_name(user, person_names: dict[str, str] | None = None) -> str:
+    """The profile's display name, else its first and last name, else the linked person's name, else the e-mail (CR-57).
+
+    Most accounts have no profile name (the ATOM import and the LDAP link put it on the directory person).
+    ``person_names`` (login id -> person name) is the list's single lookup; without it the person is looked up here.
+    """
     if user is None:
         return ""
     profile = getattr(user, "profile", None)
-    if profile and getattr(profile, "display_name", None):
-        return profile.display_name
-    return getattr(user, "email", "") or ""
+    if profile is not None:
+        if getattr(profile, "display_name", ""):
+            return profile.display_name
+        full = f"{profile.first_name or ''} {profile.last_name or ''}".strip()
+        if full:
+            return full
+    if person_names is None:
+        from apps.masterdata.selectors.directory import PersonSelector
+
+        person_names = PersonSelector.names_by_user([user.pk])
+    return person_names.get(str(user.pk)) or getattr(user, "email", "") or ""
 
 
 def _user_avatar(user):
@@ -92,7 +105,7 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
         return obj.project.name if obj.project else ""
 
     def get_name(self, obj):
-        return _user_display_name(obj.user)
+        return _user_display_name(obj.user, self.context.get("person_names"))
 
     def get_email(self, obj):
         return getattr(obj.user, "email", "") or ""

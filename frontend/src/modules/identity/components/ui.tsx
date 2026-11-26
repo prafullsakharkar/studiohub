@@ -1,3 +1,4 @@
+import { ArrowDown, ArrowUp } from 'lucide-react';
 import type React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/shared/utils/cn';
@@ -44,16 +45,36 @@ export const PageShell: React.FC<{
 
 export { Field, FormBanner, inputClass } from '@/shared/forms/FormParts';
 
-export const Table: React.FC<{ columns: ReadonlyArray<string>; children: React.ReactNode; label: string }> = ({ columns, children, label }) => (
+/** Which column a table is sorted by; `onSort` gets a header from `columns` and the caller sorts the rows. */
+export interface TableSort {
+  /** The headers that sort on a click. */
+  columns: ReadonlyArray<string>;
+  by: string;
+  direction: 'asc' | 'desc';
+  onSort: (column: string) => void;
+}
+
+export const Table: React.FC<{ columns: ReadonlyArray<string>; children: React.ReactNode; label: string; sort?: TableSort }> = ({ columns, children, label, sort }) => (
   <div className="overflow-x-auto rounded-xl border border-slate-800">
     <table aria-label={label} className="w-full text-xs">
       <thead className="bg-slate-900 text-slate-400 text-left">
         <tr>
-          {columns.map((c) => (
-            <th key={c} scope="col" className="px-4 py-2 font-semibold">
-              {c}
-            </th>
-          ))}
+          {columns.map((c) => {
+            const sortable = Boolean(sort?.columns.includes(c));
+            const active = sortable && sort?.by === c ? sort.direction : null;
+            return (
+              <th key={c} scope="col" aria-sort={active ? (active === 'asc' ? 'ascending' : 'descending') : undefined} className="px-4 py-2 font-semibold">
+                {sortable ? (
+                  <button type="button" className="inline-flex items-center gap-1 hover:text-slate-200" onClick={() => sort?.onSort(c)}>
+                    {c}
+                    {active && (active === 'asc' ? <ArrowUp className="w-3 h-3" aria-hidden="true" /> : <ArrowDown className="w-3 h-3" aria-hidden="true" />)}
+                  </button>
+                ) : (
+                  c
+                )}
+              </th>
+            );
+          })}
         </tr>
       </thead>
       <tbody className="divide-y divide-slate-800">{children}</tbody>
