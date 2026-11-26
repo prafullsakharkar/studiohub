@@ -172,6 +172,13 @@ All platform-global, no organization column (ADR-0034). Additive migrations; no 
 - `UserSelector` shows other accounts only to staff and superusers, so an `org-admin` who is not
   staff gets `404` on a person's `require-mfa`, as on every other account action there. Unchanged
   here (the verification report lists it).
+- CR-58 (2026-11-26): the bodies of `ldap_link` and `ldap_sync` moved to
+  `DirectoryAccountService` (`services/directory/accounts.py`), which the commands and two routes
+  call: `POST /api/v1/identity/directory/link/` and `…/sync/`, both with a dry run, under
+  `identity.directory.manage` and the `sensitive` throttle. The Directory (LDAP) screen links an
+  account (Check, then a confirmed Link) and syncs (Preview, then a confirmed Sync now). The
+  sync runs inside the request, one directory search per linked account; a directory of
+  thousands of accounts would want a background task instead.
 
 ## Not decided here
 

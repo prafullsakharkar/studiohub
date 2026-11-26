@@ -3,7 +3,15 @@ import type React from 'react';
 import { useState } from 'react';
 import { mapHttpError } from '@/api/errors/errorMapper';
 import { directoryApi, directoryKeys } from '@/api/identity/directory';
-import type { DirectoryConfiguration, DirectoryConfigurationPatch, DirectoryConnectionResult, DirectoryUserResult } from '@/api/identity/directory';
+import type {
+  DirectoryConfiguration,
+  DirectoryConfigurationPatch,
+  DirectoryConnectionResult,
+  DirectoryLinkResult,
+  DirectorySyncResult,
+  DirectoryUserResult,
+} from '@/api/identity/directory';
+import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
 import { SystemNav } from '@/modules/settings';
@@ -67,6 +75,13 @@ const toPatch = ({ bind_password, clear_bind_password, ...rest }: FormValues): D
 
 /** A 400 here names one field (`enabled`, `username`): its sentence says why, the generic line does not. */
 const failureText = (error: unknown) => Object.values(mapHttpError(error).fieldErrors).flat()[0] ?? errorText(error);
+
+/** The directory's own refusals (it cannot be reached, sign-in is off) carry the sentence the administrator needs. */
+const DIRECTORY_CODES = new Set(['directory_unavailable', 'directory_sign_in_off']);
+const accountActionText = (error: unknown) => {
+  const e = mapHttpError(error);
+  return (e.code && DIRECTORY_CODES.has(e.code) && e.message) || failureText(error);
+};
 
 const ATTRIBUTES: ReadonlyArray<{ name: keyof FormValues; label: string }> = [
   { name: 'attr_subject', label: 'Unique id (never changes)' },
@@ -330,7 +345,183 @@ const UserTest: React.FC = () => {
   );
 };
 
-/** `/settings/system/directory`: the directory (LDAP) sign-in settings (CR-40). Needs `identity.directory.manage`. */
+/**
+ * Link a local account to its directory entry (CR-58, ADR-0039 decision 6). Sign-in never links by e-mail
+ * by itself, so an administrator does it once they know the two are the same person: Check names the entry,
+ * then Link (confirmed) removes the local password and ends the account's sessions.
+ */
+const LinkAccount: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [checked, setChecked] = useState<DirectoryLinkResult | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+
+  const edited = (set: (v: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    set(e.target.value);
+    setChecked(null);
+    setFieldErrors({});
+    setError(null);
+  };
+  const check = useMutation({
+    mutationFn: () => directoryApi.link({ email: email.trim(), username: username.trim(), dry_run: true }),
+    onSuccess: (r) => setChecked(r),
+    onError: (e) => {
+      const fields = mapHttpError(e).fieldErrors;
+      const named = Object.fromEntries(['email', 'username'].filter((f) => fields[f]?.length).map((f) => [f, fields[f][0]]));
+      setFieldErrors(named);
+      setError(Object.keys(named).length ? null : accountActionText(e));
+    },
+  });
+  const link = async () => {
+    const r = await directoryApi.link({ email: email.trim(), username: username.trim(), dry_run: false });
+    notify.success(`${r.email} now signs in as ${r.username}.`);
+    setEmail('');
+    setUsername('');
+    setChecked(null);
+  };
+
+  return (
+    <Card title="Link an account">
+      <p className="text-[11px] text-slate-500">
+        For an account made before directory sign-in. Once linked it signs in with the directory username only: its local password is removed and its sessions end.
+      </p>
+      <form
+        noValidate
+        className="space-y-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          check.mutate();
+        }}
+      >
+        <Field id="dir-link-email" label="Account e-mail" error={fieldErrors.email}>
+          <input id="dir-link-email" aria-invalid={Boolean(fieldErrors.email)} type="email" autoComplete="off" className={inputClass(Boolean(fieldErrors.email))} value={email} onChange={edited(setEmail)} />
+        </Field>
+        <Field id="dir-link-username" label="Directory username" error={fieldErrors.username}>
+          <input id="dir-link-username" aria-invalid={Boolean(fieldErrors.username)} type="text" autoComplete="off" className={inputClass(Boolean(fieldErrors.username))} value={username} onChange={edited(setUsername)} />
+        </Field>
+        <div className="flex gap-2">
+          <Button type="submit" size="sm" variant="secondary" isLoading={check.isPending} disabled={!email.trim() || !username.trim()}>
+            Check
+          </Button>
+          <Button type="button" size="sm" variant="primary" disabled={!checked} onClick={() => setConfirming(true)}>
+            Link
+          </Button>
+        </div>
+      </form>
+      {error && (
+        <p role="alert" className="text-[11px] text-rose-400">
+          {error}
+        </p>
+      )}
+      {checked && (
+        <p role="status" className="text-[11px] text-emerald-300">
+          {checked.email} can be linked to {checked.username} ({checked.dn}).
+        </p>
+      )}
+      <ConfirmDialog
+        isOpen={confirming && Boolean(checked)}
+        title="Link this account to the directory?"
+        message={checked ? `${checked.email} will sign in as ${checked.username}. Their local password is removed and their sessions end.` : ''}
+        confirmLabel="Link"
+        destructive
+        onConfirm={link}
+        onClose={() => setConfirming(false)}
+      />
+    </Card>
+  );
+};
+
+const names = (list: string[]) => (list.length ? list.join(', ') : 'none');
+
+/**
+ * Bring the directory accounts in step now, as the scheduled `ldap_sync` does (CR-58, ADR-0039 decision 10):
+ * Preview lists who would be deactivated; Sync (confirmed) does it. An outage changes nothing.
+ */
+const SyncAccounts: React.FC<{ config: DirectoryConfiguration }> = ({ config }) => {
+  const [preview, setPreview] = useState<DirectorySyncResult | null>(null);
+  const [done, setDone] = useState<DirectorySyncResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const on = Boolean(config.enabled) && !config.forced_off;
+
+  const look = useMutation({
+    mutationFn: () => directoryApi.sync(true),
+    onSuccess: (r) => {
+      setError(null);
+      setDone(null);
+      setPreview(r);
+    },
+    onError: (e) => {
+      setPreview(null);
+      setError(accountActionText(e));
+    },
+  });
+  const sync = async () => {
+    const r = await directoryApi.sync(false);
+    setPreview(null);
+    setDone(r);
+    notify.success(r.deactivated.length ? `Directory accounts synced; ${r.deactivated.length} deactivated.` : 'Directory accounts synced.');
+  };
+
+  return (
+    <Card title="Sync the directory accounts">
+      <p className="text-[11px] text-slate-500">
+        Deactivates the accounts whose directory entry is gone or no longer matches the filter, and refreshes the others' names and e-mails. Usually run on a schedule (ldap_sync).
+      </p>
+      {!on && (
+        <p role="status" className="text-[11px] text-amber-300">
+          Directory sign-in is off, so there is nothing to compare with.
+        </p>
+      )}
+      <div className="flex gap-2">
+        <Button size="sm" variant="secondary" isLoading={look.isPending} disabled={!on} onClick={() => look.mutate()}>
+          Preview
+        </Button>
+        <Button size="sm" variant="primary" disabled={!on || !preview} onClick={() => setConfirming(true)}>
+          Sync now
+        </Button>
+      </div>
+      {error && (
+        <p role="alert" className="text-[11px] text-rose-400">
+          {error}
+        </p>
+      )}
+      {preview && (
+        <dl aria-label="Sync preview" className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-[11px]">
+          <dt className="text-slate-500">Would refresh</dt>
+          <dd className="text-slate-200">{preview.refreshed}</dd>
+          <dt className="text-slate-500">Would deactivate</dt>
+          <dd className="font-mono text-slate-200 break-all">{names(preview.deactivated)}</dd>
+          <dt className="text-slate-500">Skipped (more than one entry matches)</dt>
+          <dd className="font-mono text-slate-200 break-all">{names(preview.skipped)}</dd>
+        </dl>
+      )}
+      {done && (
+        <p role="status" className="text-[11px] text-emerald-300">
+          Refreshed {done.refreshed}; deactivated: {names(done.deactivated)}
+          {done.skipped.length ? `; skipped: ${names(done.skipped)}` : ''}.
+        </p>
+      )}
+      <ConfirmDialog
+        isOpen={confirming && Boolean(preview)}
+        title="Sync the directory accounts now?"
+        message={
+          preview?.deactivated.length
+            ? `These accounts will be deactivated and signed out: ${names(preview.deactivated)}. The others are refreshed.`
+            : 'No account will be deactivated; the others are refreshed.'
+        }
+        confirmLabel="Sync now"
+        destructive={Boolean(preview?.deactivated.length)}
+        onConfirm={sync}
+        onClose={() => setConfirming(false)}
+      />
+    </Card>
+  );
+};
+
+/** `/settings/system/directory`: the directory (LDAP) sign-in settings (CR-40), linking and syncing accounts (CR-58). Needs `identity.directory.manage`. */
 export const DirectorySettingsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const config = useQuery({ queryKey: directoryKeys.all, queryFn: ({ signal }) => directoryApi.get(signal) });
@@ -349,6 +540,8 @@ export const DirectorySettingsPage: React.FC = () => {
                 <StatusCard config={config.data} onChanged={onChanged} />
                 <ConnectionTest onTested={refetch} />
                 <UserTest />
+                <LinkAccount />
+                <SyncAccounts config={config.data} />
               </div>
             </div>
           )}

@@ -8,6 +8,7 @@ vi.mock('@/core/auth/useCurrentUser', () => ({ useCurrentUser: vi.fn() }));
 
 import { Sidebar } from '../Sidebar';
 import { useCurrentUser } from '@/core/auth/useCurrentUser';
+import { ROUTE_PERMISSIONS_REGISTRY } from '@/core/permissions/routePermissionsRegistry';
 
 // The Sidebar reads the chosen project (Episodes item, CR-47), so it renders under a query client as in the app.
 const render = (ui: React.ReactElement) =>
@@ -138,5 +139,53 @@ describe('Sidebar direct navigation (org-free)', () => {
     for (const link of links) {
       expect(link.querySelectorAll('span').length).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+describe('Sidebar settings section', () => {
+  const settingsLinks = (permissions: string[], is_superuser = false) => {
+    userSpy.mockReturnValue({ user: { ...baseUser, is_superuser, role: 'Artist', permissions } });
+    const { unmount } = render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+    const hrefs = (screen.queryAllByRole('link') as HTMLAnchorElement[])
+      .map((a) => a.getAttribute('href') ?? '')
+      .filter((href) => href.startsWith('/settings/'));
+    unmount();
+    return hrefs.sort();
+  };
+
+  // Every system settings screen (a /settings/system/<screen> route, not its new or edit form).
+  const screens = Object.keys(ROUTE_PERMISSIONS_REGISTRY)
+    .filter((path) => /^\/settings\/system\/[a-z]+$/.test(path))
+    .sort();
+
+  it('links every system settings screen for a superuser', () => {
+    expect(screens).toContain('/settings/system/directory');
+    expect(screens.length).toBe(8);
+    expect(settingsLinks([], true)).toEqual(screens);
+  });
+
+  it('links each screen under the same code as its route', () => {
+    for (const path of screens) {
+      expect(settingsLinks(ROUTE_PERMISSIONS_REGISTRY[path].permissions ?? [])).toContain(path);
+    }
+  });
+
+  it('gives settings.view the settings screens, not the directory', () => {
+    const links = settingsLinks(['settings.view']);
+    expect(links).toEqual(screens.filter((path) => path !== '/settings/system/directory'));
+    expect(screen.queryByRole('link', { name: 'Directory (LDAP)' })).toBeNull();
+  });
+
+  it('gives identity.directory.manage the directory screen only', () => {
+    expect(settingsLinks(['identity.directory.manage'])).toEqual(['/settings/system/directory']);
+  });
+
+  it('shows no settings section to a member without either code', () => {
+    expect(settingsLinks([])).toEqual([]);
+    expect(screen.queryByText('SETTINGS')).toBeNull();
   });
 });

@@ -45,6 +45,8 @@ export const Header: React.FC = () => {
     can('settings.view') ||
     can('page.settings')
   );
+  // The directory (LDAP) screen is the one system screen under identity's own code (CR-40).
+  const canManageDirectory = Boolean(user?.is_superuser || can('identity.directory.manage'));
 
   // Platform health telemetry is an admin surface (route
   // `/platform/health` requires `platform.admin.view`); the header HUD link
@@ -219,9 +221,9 @@ export const Header: React.FC = () => {
                     <span>Command Palette</span>
                     <kbd className="text-[10px] font-mono text-slate-500 bg-slate-950 px-1 py-0.2 rounded">⌘K</kbd>
                   </button>
-                  {canViewSettings && (
+                  {(canViewSettings || canManageDirectory) && (
                     <Link
-                      to="/settings/system/values"
+                      to={canViewSettings ? '/settings/system/values' : '/settings/system/directory'}
                       onClick={() => setShowUserMenu(false)}
                       className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-300 hover:bg-slate-800 flex items-center justify-between cursor-pointer"
                     >

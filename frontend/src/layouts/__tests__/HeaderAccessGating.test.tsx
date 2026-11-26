@@ -122,6 +122,13 @@ describe('Header admin option gating', () => {
     expect(link('Theme & Accent Editor')).toBe('/settings/system/themes');
   });
 
+  it('sends a directory-only administrator to the Directory (LDAP) screen', async () => {
+    state.grants = ['identity.directory.manage'];
+    await renderHeader();
+    expect(screen.getByText('Pipeline Settings').closest('a')?.getAttribute('href')).toBe('/settings/system/directory');
+    expect(screen.queryByText('Theme & Accent Editor')).toBeNull();
+  });
+
   it('hides the API health HUD link without the platform grant', async () => {
     const { container } = await (async () => {
       const { Header } = await import('../Header');

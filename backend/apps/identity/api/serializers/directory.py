@@ -80,3 +80,17 @@ class DirectoryConfigurationSerializer(serializers.ModelSerializer[DirectoryConf
 
 class DirectoryTestUserSerializer(serializers.Serializer[Any]):
     username = serializers.CharField(max_length=255)
+
+
+class DirectoryLinkSerializer(serializers.Serializer[Any]):
+    """``POST …/directory/link/`` (CR-58): the local account's e-mail and the directory username."""
+
+    email = serializers.EmailField(max_length=254)
+    username = serializers.CharField(max_length=255)
+    dry_run = serializers.BooleanField(default=False)
+
+
+class DirectorySyncSerializer(serializers.Serializer[Any]):
+    """``POST …/directory/sync/`` (CR-58)."""
+
+    dry_run = serializers.BooleanField(default=False)
