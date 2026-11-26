@@ -398,6 +398,7 @@ class GroupViewSet(
             queryset = GroupRole.objects.filter(
                 group=group,
                 is_deleted=False,
+                role__is_deleted=False,  # a deleted role is gone from every route (CR-59)
             ).select_related("role")
             serializer = GroupRoleListSerializer(
                 queryset,

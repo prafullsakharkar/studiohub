@@ -263,7 +263,8 @@ class TestFreshInitialMigrations:
             # deliveries' 0003 changes a QC item foreign key to SET_NULL on tables that deployed
             # databases already hold, so it cannot be folded into 0001 (CR-21); identity's 0003 adds
             # directory sign-in (ADR-0039, CR-40) to a users table deployed databases already hold,
-            # and its 0004 the TLS options of that configuration row (CR-41); production's 0003 adds the
+            # and its 0004 the TLS options of that configuration row (CR-41), and its 0005 frees the codes of
+            # roles and groups deleted before deleting released them (CR-59); production's 0003 adds the
             # version of a review comment and annotation, and its 0004 drops six JSON copies from the
             # versions table (review-pipeline RP-1, C-RP-05 and WP 1.6), both on tables deployed
             # databases already hold; its 0005 adds note replies, links and a task to the notes table,
@@ -285,7 +286,7 @@ class TestFreshInitialMigrations:
             limit = {
                 "audit": 3,
                 "deliveries": 3,
-                "identity": 4,
+                "identity": 5,
                 "notifications": 4,
                 "production": 18,
             }.get(app, 2)

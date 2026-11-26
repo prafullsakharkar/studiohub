@@ -1252,7 +1252,7 @@ An administrator without shell access cannot link an account that already existe
 
 Captured: `docs/sync/samples/identity/_directory_link_sync_cr58_flow.json` (`docs/sync/tools/test_capture_directory_link_sync_cr58.py`). Verification: `docs/sync/backend-cr-58-verification.md`.
 
-### CR-59: a deleted role or group stays on the list, can be deleted again, and keeps its code (**bug**, **PROPOSED**)
+### CR-59: a deleted role or group stays on the list, can be deleted again, and keeps its code (**bug**, **APPLIED** on `fix/role-delete`)
 
 Reported by the owner (2026-11-26): "unable to delete temporary role".
 
@@ -1277,3 +1277,10 @@ Not a security hole: the permission resolver and the user's role label already s
 **Compatibility.** Deleted roles and groups disappear from the API, which was the point of deleting them. Deleted codes change, and nothing looks a deleted row up by its code. One data migration; `apps/core/tests/test_bootstrap.py`'s per-app migration limit goes up by one. **Risk.** Low.
 
 **Alternative.** Make the code unique among live rows only (a partial constraint, like the existing `uq_identity_role_name_live` on the name) instead of renaming. Not proposed: several lookups (`bootstrap`, the seed commands) take `Role.objects.filter(code=…).first()` without `is_deleted`, and these would become ambiguous.
+
+**Approved** by the owner ("approvde", 2026-11-26) and applied as proposed, with these details settled while building it:
+- **Security events.** A delete now records a `role_changed` event (`delete_role` or `delete_group`) with the actor and the original code. Before this, a delete left no security event.
+- **The group's role list.** `groups/{id}/roles/` leaves out links to deleted roles, so a deleted role does not linger on the group's page, where it could not be detached.
+- **Contract.** DOM-RBAC-03 (`docs/identity/CONTRACTS.md`) now says how a deleted row's code is renamed. The trust model is unchanged, so no ADR.
+
+No frontend change: the role page's Delete already returns to the list, which now leaves the role out. Verification: `docs/sync/backend-cr-59-verification.md`.

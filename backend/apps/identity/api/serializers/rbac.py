@@ -279,13 +279,13 @@ class AddMemberSerializer(serializers.Serializer):  # pyright: ignore[reportMiss
 
 class AttachRoleSerializer(serializers.Serializer):  # pyright: ignore[reportMissingTypeArgument]
     role_id = serializers.PrimaryKeyRelatedField(
-        queryset=Role.objects.all(),
+        queryset=Role.objects.filter(is_deleted=False),  # CR-59
         source="role",
     )
 
 
 class AttachGroupSerializer(serializers.Serializer):  # pyright: ignore[reportMissingTypeArgument]
     group_id = serializers.PrimaryKeyRelatedField(
-        queryset=Group.objects.all(),
+        queryset=Group.objects.filter(is_deleted=False),  # CR-59
         source="group",
     )
