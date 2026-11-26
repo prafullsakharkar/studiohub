@@ -1205,7 +1205,7 @@ Asked by the owner (2026-11-26): "In Project -> Member tab should have member se
 
 **Approved** by the owner ("Approved", 2026-11-26) and applied as proposed, with these details settled while building it: the people lookup is `PersonSelector.names_by_user` (masterdata, one query; a person with a blank name does not count); the members list passes the names to the serializer, and the add and the edit answers look their one person up. Note mentions (`ProjectNoteSerializer.mentions`) use the same name and now look the people of a whole page of notes up once (the RP-6 bounded-query test caught a lookup per mention). The dashboard's own `_user_display_name` (`selectors/dashboard.py`) is unchanged. `has_user` is a `BooleanFilter` in `masterdata/api/filtersets/people.py`. The members panel's person dropdown sends `has_user=true`. Captured: `docs/sync/samples/production/_member_name_cr57_flow.json` (`docs/sync/tools/test_capture_member_name_cr57.py`). Verification: `docs/sync/backend-cr-57-verification.md`.
 
-### CR-58: link an account to the directory and sync the directory from the Directory (LDAP) screen (**feature**, **PROPOSED**)
+### CR-58: link an account to the directory and sync the directory from the Directory (LDAP) screen (**feature**, **APPLIED** on `feature/ldap-admin-page`)
 
 Asked by the owner (2026-11-26): "Can you make available on frontend page for admin only", then "Make all settings available on frontend for admin". The owner chose both the navigation and the two actions.
 
@@ -1243,3 +1243,11 @@ An administrator without shell access cannot link an account that already existe
 - a sync runs inside the request, with one directory search per linked account (each limited by the screen's timeout). That is fine for a studio's few hundred accounts. A directory with thousands of accounts would need a background task instead (not proposed).
 
 **Alternative.** Keep both as shell-only commands, as now.
+
+**Approved** by the owner ("approved", 2026-11-26) and applied as proposed, with these details settled while building it:
+- **Errors.** A refusal is a 400 on the field it concerns (`email` or `username`), with the command's own sentence. An outage, or a missing `DIRECTORY_ENCRYPTION_KEY`, is a 503 `directory_unavailable` whose detail names the LDAP error class. Sign-in being off is a 409 `directory_sign_in_off`.
+- **Behaviour kept from the commands.** Link works while sign-in is off, as the command does. Sync lists accounts by username; the commands print the same lines as before, with skipped accounts listed before deactivated ones.
+- **The actor is recorded.** It is in the link's security event and passed on to `UserService.deactivate`.
+- **The screen.** Link is enabled only after a Check of the same e-mail and username. Sync now is enabled only after a Preview, and both buttons are off while sign-in is off.
+
+Captured: `docs/sync/samples/identity/_directory_link_sync_cr58_flow.json` (`docs/sync/tools/test_capture_directory_link_sync_cr58.py`). Verification: `docs/sync/backend-cr-58-verification.md`.
