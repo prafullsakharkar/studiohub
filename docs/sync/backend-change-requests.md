@@ -1204,3 +1204,42 @@ Asked by the owner (2026-11-26): "In Project -> Member tab should have member se
 **Compatibility.** `name` changes from the e-mail to a person's name for members with no profile name; nothing keys on it (the frontend matches members by `user_id` and `email`). The filter is new and optional. **Risk.** Low. **Alternative.** Leave the name as is; list every person in the dropdown and refuse one without a login when it is picked (what the frontend does until this lands).
 
 **Approved** by the owner ("Approved", 2026-11-26) and applied as proposed, with these details settled while building it: the people lookup is `PersonSelector.names_by_user` (masterdata, one query; a person with a blank name does not count); the members list passes the names to the serializer, and the add and the edit answers look their one person up. Note mentions (`ProjectNoteSerializer.mentions`) use the same name and now look the people of a whole page of notes up once (the RP-6 bounded-query test caught a lookup per mention). The dashboard's own `_user_display_name` (`selectors/dashboard.py`) is unchanged. `has_user` is a `BooleanFilter` in `masterdata/api/filtersets/people.py`. The members panel's person dropdown sends `has_user=true`. Captured: `docs/sync/samples/production/_member_name_cr57_flow.json` (`docs/sync/tools/test_capture_member_name_cr57.py`). Verification: `docs/sync/backend-cr-57-verification.md`.
+
+### CR-58: link an account to the directory and sync the directory from the Directory (LDAP) screen (**feature**, **PROPOSED**)
+
+Asked by the owner (2026-11-26): "Can you make available on frontend page for admin only", then "Make all settings available on frontend for admin". The owner chose both the navigation and the two actions.
+
+**Done in the frontend already (no backend change).** The sidebar has a SETTINGS section that links every system settings screen. System settings, Feature flags, Themes, Localizations, Setting categories, Setting definitions and Tags need `settings.view`. Directory (LDAP) needs `identity.directory.manage`. Each link uses the same code as its route. The user menu's Pipeline Settings entry also reaches someone who holds only the directory code.
+
+**Problem.** Everything on the directory screen is reachable through the API except two operations, which exist only as management commands:
+- `manage.py ldap_link <email> <username> [--dry-run]` links an existing local account to its directory entry (ADR-0039 decision 6);
+- `manage.py ldap_sync [--dry-run]` deactivates accounts whose entry is gone and refreshes the others (decision 10).
+
+An administrator without shell access cannot link an account that already existed before directory sign-in. They also cannot run a sync after removing someone from the directory; they have to wait for the schedule.
+
+**Minimal diff.**
+1. **Move the logic into a service.** `apps/identity/services/directory/accounts.py` gets `DirectoryAccountService.link(actor, email, username, dry_run)` and `.sync(actor, dry_run)`, containing the bodies of the two commands, unchanged. The commands become thin callers with the same output, so a scheduled `ldap_sync` keeps working.
+2. **`POST /api/v1/identity/directory/link/`** with `{"email", "username", "dry_run": false}`:
+   - 200 `{"email", "username", "dn", "linked": true|false}`, where `linked: false` is a dry run;
+   - 400 with the command's own messages: no account has this e-mail; already linked; no entry has this username; more than one entry; the entry is linked to another account;
+   - 503 when the directory cannot be reached or `DIRECTORY_ENCRYPTION_KEY` is missing.
+   
+   A real link does what the command does: it removes the local password, ends the account's sessions, and records the security event. The event's metadata adds the actor.
+3. **`POST /api/v1/identity/directory/sync/`** with `{"dry_run": true|false}`:
+   - 200 `{"dry_run", "refreshed": n, "deactivated": [usernames], "skipped": [usernames]}`, where `skipped` means more than one entry matched;
+   - 409 when directory sign-in is off;
+   - 503 when the directory cannot be reached, in which case nothing changed (the command's existing guarantee).
+4. **Access and limits.** Both routes need `identity.directory.manage` (platform-admin only, as for the rest of the screen). Both use the `sensitive` throttle (20/min), like `test-connection` and `test-user`, because they open outbound connections.
+5. **Frontend.** The Directory (LDAP) screen gets two cards:
+   - **Link an account:** e-mail and directory username, with **Check** (dry run, which shows the matched entry) and then **Link**. Link asks for confirmation: "the local password is removed and their sessions end".
+   - **Sync now:** **Preview** (dry run, which lists who would be deactivated) and **Sync**, which also asks for confirmation.
+   
+   Captured responses come from a new tool in `docs/sync/tools/`.
+
+**Why no frontend workaround.** These are server-side writes. There is no route to call, and the browser must not reach the directory itself.
+
+**Compatibility.** New routes only. The commands keep their arguments and output. **Risk.** Low to medium:
+- a link removes a password and ends sessions, which the dry run and the confirmation guard;
+- a sync runs inside the request, with one directory search per linked account (each limited by the screen's timeout). That is fine for a studio's few hundred accounts. A directory with thousands of accounts would need a background task instead (not proposed).
+
+**Alternative.** Keep both as shell-only commands, as now.
