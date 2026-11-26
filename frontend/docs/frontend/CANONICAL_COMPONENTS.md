@@ -55,6 +55,7 @@ Domain behaviour stays in `src/modules/<module>/`.
 | `FormPage` | `shared/forms/FormPage` | the create/edit page, in the look of the department form: back button, icon + title + line, one card, two-column grid (`FieldInputs grid`), ruled footer. Used by `DirectoryFormPage`, the department form and the task-template form |
 | `FormActions` | `shared/forms/FormActions` | Cancel + primary footer for `FormDialog` (`dialog`) and `FormPage` (`page`) |
 | `Field`, `inputClass`, `FormBanner` | `shared/forms/FormParts` | label + input + hint/error, the input class, the server-error banner (re-exported by `modules/identity/components/ui`) |
+| `Table` | `modules/identity/components/ui` | a plain table with a label and headers; `sort` makes the named headers buttons with `aria-sort` and an arrow, the caller sorts the rows (first use: a project's members, by name and role) |
 | `useServerForm` | `shared/forms/useServerForm` | a `useForm` that puts a 400's field errors on the inputs and the rest in a banner |
 | `serverErrors` | `shared/forms/serverErrors` | the mapping |
 | `EntityPicker` | `components/forms/EntityPicker` | combobox over a typed, paginated list: the search box sits inside the menu (server-side, 300 ms debounce), Load more pages, keyboard ↑ ↓ Enter Esc; tests drive it with `pickEntity` / `openPicker` from `test/picker` |

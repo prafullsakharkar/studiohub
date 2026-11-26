@@ -2,12 +2,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { projectScopedApi, projectsApi, showsApi } from '@/api/production/structure';
+import { projectScopedApi, projectsApi, sequencesApi, showsApi } from '@/api/production/structure';
 import { shotsApi } from '@/api/production/work';
 import { AuthProvider } from '@/core/auth/AuthProvider';
 import { authService } from '@/modules/auth/services/AuthService';
 import { MembersPanel } from '@/modules/production/structure/panels';
 import { freshTotp, live, rawPost } from './liveBackend';
+import { personFor } from './livePeople';
+import { pickEntity } from '@/test/picker';
 
 /**
  * CR-36 and CR-37 against a REAL backend: a member bound to a show through the members panel sees only that show's records;
@@ -16,7 +18,7 @@ import { freshTotp, live, rawPost } from './liveBackend';
  */
 const T = { timeout: 15000 };
 const uid = `${Date.now().toString(36)}`.toUpperCase();
-const fixture = {} as { project: string; showA: string; showB: string; shotA: string; shotB: string; shotLoose: string };
+const fixture = {} as { person: string; project: string; showA: string; showB: string; shotA: string; shotB: string; shotLoose: string };
 
 beforeEach(() => localStorage.clear());
 afterEach(() => cleanup());
@@ -28,10 +30,14 @@ beforeAll(async () => {
   const project = await projectsApi.create({ code: `MS${uid}`, name: 'Member shows', workflow_type: 'standard' });
   const showA = await showsApi.create({ project: project.id, code: `A${uid}`, name: 'Season A' });
   const showB = await showsApi.create({ project: project.id, code: `B${uid}`, name: 'Season B' });
-  const shotA = await shotsApi.create({ project: project.id, code: `SA${uid}`, name: 'In A', show_id: showA.id });
-  const shotB = await shotsApi.create({ project: project.id, code: `SB${uid}`, name: 'In B', show_id: showB.id });
-  const shotLoose = await shotsApi.create({ project: project.id, code: `SL${uid}`, name: 'In no show' });
-  Object.assign(fixture, { project: project.id, showA: showA.id, showB: showB.id, shotA: shotA.id, shotB: shotB.id, shotLoose: shotLoose.id });
+  // A shot needs a sequence, and its code starts with the project's (CR-49).
+  const sequence = (code: string, show_id?: string) => sequencesApi.create({ project: project.id, code: `${project.code}_${code}`, name: code, ...(show_id ? { show_id } : {}) } as never);
+  const [seqA, seqB, seqLoose] = await Promise.all([sequence('QA', showA.id), sequence('QB', showB.id), sequence('QL')]);
+  const shotA = await shotsApi.create({ project: project.id, sequence_id: seqA.id, code: `${project.code}_SA${uid}`, name: 'In A', show_id: showA.id } as never);
+  const shotB = await shotsApi.create({ project: project.id, sequence_id: seqB.id, code: `${project.code}_SB${uid}`, name: 'In B', show_id: showB.id } as never);
+  const shotLoose = await shotsApi.create({ project: project.id, sequence_id: seqLoose.id, code: `${project.code}_SL${uid}`, name: 'In no show' } as never);
+  const person = await personFor(live.users.artist.email, `Live Artist ${Date.now().toString(36)}`);
+  Object.assign(fixture, { person: person.name, project: project.id, showA: showA.id, showB: showB.id, shotA: shotA.id, shotB: shotB.id, shotLoose: shotLoose.id });
 }, 60000);
 
 /** The artist's membership row; fails clearly when there is none. */
@@ -73,7 +79,7 @@ async function shotsSeenByArtist() {
 describe('member bound to a show, on the wire', () => {
   it('is bound from the panel, sees only that show, and is released again from the panel', async () => {
     mount();
-    fireEvent.change(await screen.findByLabelText('Add a member by email', {}, T), { target: { value: live.users.artist.email } });
+    await pickEntity('Add a member', fixture.person, { search: fixture.person, timeout: 15000 });
     const picker = await screen.findByLabelText('Show', {}, T);
     await waitFor(() => expect(picker.querySelectorAll('option').length).toBe(3), T);
     fireEvent.change(picker, { target: { value: fixture.showA } });

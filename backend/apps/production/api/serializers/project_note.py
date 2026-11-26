@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from rest_framework import serializers
 
@@ -112,10 +112,31 @@ class ProjectNoteSerializer(BaseReadSerializer[Any]):
         """The people the note mentions, in the order written (RP-6, C-RP-25)."""
         from apps.production.api.serializers.membership import _user_display_name
 
+        mentions = list(obj.mentions.all())
+        names = self._person_names([str(m.user_id) for m in mentions])
         return [
-            {"id": str(mention.user_id), "name": _user_display_name(mention.user)}
-            for mention in obj.mentions.all()
+            {"id": str(mention.user_id), "name": _user_display_name(mention.user, names)}
+            for mention in mentions
         ]
+
+    def _person_names(self, user_ids: list[str]) -> dict[str, str]:
+        """Linked people's names for the mentioned logins (CR-57), looked up once for every note of the list being serialized."""
+        from apps.masterdata.selectors.directory import PersonSelector
+
+        # The root's own dict, shared by every note of the list.
+        context = cast(dict[str, Any], self.context)
+        cache: dict[str, str] = context.setdefault("_person_names", {})
+        if any(uid not in cache for uid in user_ids):
+            wanted = set(user_ids)
+            listed = getattr(self.root, "instance", None)
+            if isinstance(
+                listed, list
+            ):  # a page of notes: every mention on it at once (they are prefetched)
+                wanted |= {str(m.user_id) for note in listed for m in note.mentions.all()}
+            wanted -= cache.keys()
+            found = PersonSelector.names_by_user(wanted)
+            cache.update({uid: found.get(uid, "") for uid in wanted})
+        return cache
 
 
 class ProjectNoteDetailSerializer(ProjectNoteSerializer):

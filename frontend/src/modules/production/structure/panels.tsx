@@ -2,7 +2,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
 import { useState } from 'react';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
+import { peopleApi, positionsApi } from '@/api/masterdata/directory';
 import { MEMBER_STATUSES, projectScopedApi, showsApi } from '@/api/production/structure';
 import type { MemberStatus, ProjectMember, ProjectMemberPatch } from '@/api/production/structure';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
@@ -17,6 +19,8 @@ import { Button } from '@/shared/components/Button';
 import { fetchAllRows } from '@/shared/data/listing';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { RowActionButton } from '@/shared/components/RowActionButton';
+import { SearchInput } from '@/shared/components/SearchInput';
+import { PersonPicker } from '@/modules/directory/pickers';
 
 const key = (projectId: string, name: string) => ['production', 'scoped', projectId, name] as const;
 
@@ -60,8 +64,24 @@ export const OverviewPanel: React.FC<{ projectId: string }> = ({ projectId }) =>
 };
 
 // ---------------------------------------------------------------- members
-const memberSchema = z.object({ email: z.string().trim().min(1, 'Enter an email address').email('Enter a valid email address'), role: z.string().trim().min(1, 'Enter a role'), show: z.string() });
+const memberSchema = z.object({ person: z.string().min(1, 'Choose a person'), role: z.string().trim().min(1, 'Choose a role'), show: z.string() });
 const WHOLE_PROJECT = '';
+/** The role a new member gets when the studio has no positions yet (the server's own default). */
+const DEFAULT_ROLE = 'Artist';
+const SORTABLE = ['Name', 'Role'] as const;
+type MemberSort = { by: (typeof SORTABLE)[number]; direction: 'asc' | 'desc' };
+
+const roleOf = (m: ProjectMember) => m.roles.join(', ') || m.role;
+const byText = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true }).compare;
+
+/** The members that match `search` (name, e-mail, role, show, department), sorted; the server sends them all, by e-mail. */
+export function visibleMembers(members: ReadonlyArray<ProjectMember>, search: string, sort: MemberSort): ProjectMember[] {
+  const needle = search.trim().toLowerCase();
+  const matches = needle ? members.filter((m) => [m.name, m.email, roleOf(m), m.show_code, m.department].some((v) => (v ?? '').toLowerCase().includes(needle))) : [...members];
+  const key = sort.by === 'Name' ? (m: ProjectMember) => m.name || m.email : roleOf;
+  const sign = sort.direction === 'asc' ? 1 : -1;
+  return matches.sort((a, b) => sign * byText(key(a), key(b)) || byText(a.email, b.email));
+}
 
 export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => {
   const queryClient = useQueryClient();
@@ -70,35 +90,61 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
   // A member can be bound to one show of the project (CR-36): they then see only that show's records.
   const shows = useQuery({ queryKey: key(projectId, 'shows'), queryFn: ({ signal }) => fetchAllRows(showsApi.list, { project: projectId }, { signal }) });
   const showList = shows.data ?? [];
+  // A member's role is a studio position (the directory reads are open to everyone signed in).
+  const positions = useQuery({ queryKey: [...positionsApi.keys.all, 'all'], queryFn: ({ signal }) => fetchAllRows(positionsApi.list, { ordering: 'name' }, { signal }), enabled: canAdd });
+  const roleNames = (() => {
+    const names = [...new Set((positions.data ?? []).map((p) => p.name).filter(Boolean))];
+    return names.length > 0 ? names : [DEFAULT_ROLE];
+  })();
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState<MemberSort>({ by: 'Name', direction: 'asc' });
   const [changing, setChanging] = useState<string | null>(null);
   const [removing, setRemoving] = useState<ProjectMember | null>(null);
   const { user } = useCurrentUser();
   const {
     register,
+    control,
     submit,
     reset,
+    setValue,
+    setError,
+    getFieldState,
     serverError,
     clearServerError,
     formState: { errors, isSubmitting },
-  } = useServerForm<z.infer<typeof memberSchema>>({ resolver: zodResolver(memberSchema), defaultValues: { email: '', role: 'Artist', show: WHOLE_PROJECT } });
+  } = useServerForm<z.infer<typeof memberSchema>>({ resolver: zodResolver(memberSchema), defaultValues: { person: '', role: DEFAULT_ROLE, show: WHOLE_PROJECT } });
+
+  /** A picked person's position becomes the role, unless a role was already chosen by hand. */
+  const pickPerson = async (personId: string | null) => {
+    if (!personId || getFieldState('role').isDirty) return;
+    const person = await queryClient.fetchQuery({ queryKey: peopleApi.keys.detail(personId), queryFn: ({ signal }) => peopleApi.get(personId, signal), staleTime: 60_000 }).catch(() => null);
+    const position = person?.role ? (positions.data ?? []).find((p) => p.id === person.role) : undefined;
+    if (position?.name) setValue('role', position.name);
+  };
 
   const onAdd = submit(async (values) => {
-    // 404 "User not found." (unknown e-mail) is shown by the form.
+    const person = await queryClient.fetchQuery({ queryKey: peopleApi.keys.detail(values.person), queryFn: ({ signal }) => peopleApi.get(values.person, signal), staleTime: 60_000 });
+    const label = person.full_name || person.name;
+    // The list holds only people with a login (CR-57); one may have been unlinked since it loaded.
+    if (!person.user) {
+      setError('person', { type: 'login', message: `${label} has no login yet. Link one to them in People first.` });
+      return;
+    }
+    // 404 "User not found." (the login is gone) is shown by the form.
     // Someone already on the project is not added again (CR-38): the add would still replace their role with the one in this
     // form, and their status stays as it is, so say so and point to the table, where each field is edited on its own.
-    const email = values.email.toLowerCase(); // the schema has trimmed it
-    const already = (members.data?.results ?? []).find((m) => m.email.toLowerCase() === email);
+    const already = (members.data?.results ?? []).find((m) => m.user_id === person.user);
     if (already) {
-      reset({ email: '', role: values.role, show: values.show });
-      notify.info(`${already.name} is already on this project (${already.status}). Change their role, status, show or department in the table below.`);
+      reset({ person: '', role: values.role, show: values.show });
+      notify.info(`${already.name} is already on this project (${already.status}). Change their status, show or department in the table below.`);
       return;
     }
     // The whole project sends no show: a new member belongs to it.
-    const { show, ...member } = values;
-    await projectScopedApi.addMember(projectId, show === WHOLE_PROJECT ? member : { ...member, show });
-    reset({ email: '', role: values.role, show: values.show });
+    const member = { user_id: person.user, role: values.role };
+    await projectScopedApi.addMember(projectId, values.show === WHOLE_PROJECT ? member : { ...member, show: values.show });
+    reset({ person: '', role: values.role, show: values.show });
     await queryClient.invalidateQueries({ queryKey: key(projectId, 'members') });
-    notify.success(`${values.email} is on the project.`);
+    notify.success(`${label} is on the project.`);
   });
 
   /** One change to an existing member (CR-37): only what is sent changes; the server says why when it refuses. */
@@ -125,6 +171,8 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
     notify.success(`${member.name} was removed from the project.`);
   };
   const isMe = (member: ProjectMember) => Boolean(user) && member.user_id === user?.id;
+  const allMembers = members.data?.results ?? [];
+  const shown = visibleMembers(allMembers, search, sort);
 
   return (
     <div className="space-y-4">
@@ -133,13 +181,34 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
           <FormBanner error={serverError} />
           <div className="flex flex-col sm:flex-row sm:items-end gap-3">
             <div className="flex-1">
-              <Field id="member-email" label="Add a member by email" error={errors.email?.message}>
-                <input id="member-email" type="email" className={inputClass(Boolean(errors.email))} {...register('email', { onChange: clearServerError })} />
-              </Field>
+              <Controller
+                control={control}
+                name="person"
+                render={({ field }) => (
+                  <PersonPicker
+                    label="Add a member"
+                    // Only people with a login can be on a project (CR-57).
+                    filters={{ has_user: true }}
+                    value={field.value || null}
+                    onChange={(id) => {
+                      field.onChange(id ?? '');
+                      clearServerError();
+                      void pickPerson(id);
+                    }}
+                    error={errors.person?.message}
+                  />
+                )}
+              />
             </div>
-            <div className="sm:w-48">
+            <div className="sm:w-56">
               <Field id="member-role" label="Role" error={errors.role?.message}>
-                <input id="member-role" className={inputClass(Boolean(errors.role))} {...register('role')} />
+                <select id="member-role" className={inputClass(Boolean(errors.role))} {...register('role')}>
+                  {roleNames.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
               </Field>
             </div>
             {showList.length > 0 && (
@@ -168,15 +237,26 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
         error={members.error}
         onRetry={() => void members.refetch()}
         entityName="members"
-        isEmpty={(members.data?.results ?? []).length === 0}
+        isEmpty={allMembers.length === 0}
         empty={{ title: 'No members yet', description: 'Only members can see the project.' }}
       >
-        <Table label="Project members" columns={canAdd ? ['Name', 'Email', 'Role', 'Show', 'Department', 'Status', 'Added', ''] : ['Name', 'Email', 'Role', 'Show', 'Department', 'Status', 'Added']}>
-          {(members.data?.results ?? []).map((m) => (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <SearchInput aria-label="Search members" placeholder="Search by name, email, role, show or department" className="sm:w-96" value={search} onChange={(event) => setSearch(event.target.value)} />
+          <p className="text-xs text-slate-500">{shown.length === allMembers.length ? `${allMembers.length} members` : `${shown.length} of ${allMembers.length} members`}</p>
+        </div>
+        {shown.length === 0 ? (
+          <p className="text-xs text-slate-500">No member matches “{search.trim()}”.</p>
+        ) : (
+        <Table
+          label="Project members"
+          columns={canAdd ? ['Name', 'Email', 'Role', 'Show', 'Department', 'Status', 'Added', ''] : ['Name', 'Email', 'Role', 'Show', 'Department', 'Status', 'Added']}
+          sort={{ columns: SORTABLE, by: sort.by, direction: sort.direction, onSort: (column) => setSort((now) => ({ by: column as MemberSort['by'], direction: now.by === column && now.direction === 'asc' ? 'desc' : 'asc' })) }}
+        >
+          {shown.map((m) => (
             <tr key={m.id}>
               <td className="px-4 py-2 text-slate-200">{m.name}</td>
               <td className="px-4 py-2 text-slate-400">{m.email}</td>
-              <td className="px-4 py-2 text-slate-300">{m.roles.join(', ') || m.role}</td>
+              <td className="px-4 py-2 text-slate-300">{roleOf(m)}</td>
               <td className="px-4 py-2 text-slate-300">
                 {canAdd && showList.length > 0 ? (
                   <select
@@ -246,6 +326,7 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
             </tr>
           ))}
         </Table>
+        )}
       </QueryBoundary>
       <ConfirmDialog
         isOpen={removing !== null}
