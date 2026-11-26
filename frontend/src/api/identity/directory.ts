@@ -39,6 +39,30 @@ export interface DirectoryUserResult {
   problems?: string[];
 }
 
+/**
+ * `POST …/link/` (CR-58): link the local account with `email` to the entry with `username`. `dry_run`
+ * checks and names the entry without linking (`linked: false`). A 400 names `email` or `username`; a 503
+ * (`directory_unavailable`) means the directory could not be asked. Shape from `_directory_link_sync_cr58_flow.json`.
+ */
+export interface DirectoryLinkResult {
+  email: string;
+  username: string;
+  dn: string;
+  linked: boolean;
+}
+
+/**
+ * `POST …/sync/` (CR-58): deactivate the directory accounts whose entry is gone, refresh the others.
+ * `skipped` are usernames more than one entry matches (left alone). 409 (`directory_sign_in_off`) while sign-in
+ * is off; 503 (`directory_unavailable`) when the directory cannot be asked, and then nothing changed.
+ */
+export interface DirectorySyncResult {
+  dry_run: boolean;
+  refreshed: number;
+  deactivated: string[];
+  skipped: string[];
+}
+
 export const directoryKeys = createQueryKeys('identity-directory');
 
 const BASE = '/api/v1/identity/directory/';
@@ -48,4 +72,6 @@ export const directoryApi = {
   update: (patch: DirectoryConfigurationPatch) => apiClient.patch<DirectoryConfiguration>(BASE, patch),
   testConnection: () => apiClient.post<DirectoryConnectionResult>(`${BASE}test-connection/`, {}),
   testUser: (username: string) => apiClient.post<DirectoryUserResult>(`${BASE}test-user/`, { username }),
+  link: (body: { email: string; username: string; dry_run: boolean }) => apiClient.post<DirectoryLinkResult>(`${BASE}link/`, body),
+  sync: (dryRun: boolean) => apiClient.post<DirectorySyncResult>(`${BASE}sync/`, { dry_run: dryRun }),
 };
