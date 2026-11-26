@@ -18,7 +18,8 @@ class RoleSelector(BaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Role]:
-        return Role.objects.select_related("parent").all()
+        # A deleted role is gone from every route (CR-59): the default manager keeps it.
+        return Role.objects.select_related("parent").filter(is_deleted=False)
 
 
 class GroupSelector(BaseSelector):
@@ -26,7 +27,7 @@ class GroupSelector(BaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Group]:
-        return Group.objects.all()
+        return Group.objects.filter(is_deleted=False)
 
 
 class PermissionSelector(BaseSelector):

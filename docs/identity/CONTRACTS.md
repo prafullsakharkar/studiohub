@@ -139,7 +139,7 @@ The contract is **fail-closed**: any uncertainty yields the empty set. The curre
 |---|---|---|
 | DOM-RBAC-01 | Resolver rules 1–8 above | `PermissionResolver` (WP 4.4) |
 | DOM-RBAC-02 | `Role.name` and `Group.name` are unique | DB constraint (WP 4.5) |
-| DOM-RBAC-03 | `code` and `is_system` are immutable after creation; system rows cannot be deleted | Serializer read-only + service guard (WP 4.3) |
+| DOM-RBAC-03 | `code` and `is_system` are immutable after creation; system rows cannot be deleted. When a role or group is deleted, its code is renamed to `<code>--deleted-<first 8 of the id>` so a live row may take it again (the security event keeps the original; `identity.0005` did the same for rows deleted before) | Serializer read-only + service guard (WP 4.3); `RbacGuardMixin._release_code` (CR-59) |
 | DOM-RBAC-04 | A grant cannot exceed the grantor's effective permissions | Assignment service (WP 4.2) |
 | DOM-RBAC-05 | The last user holding an administrative permission cannot be demoted/deleted | Service guard (WP 4.2) |
 | DOM-RBAC-06 | Every grant/revoke/assign/membership change emits a `SecurityEvent` and invalidates the permission cache synchronously | Signals + service (WPs 4.1, 4.4, 4.6) |
@@ -400,18 +400,18 @@ These shapes are consumed by the frontend and **must not change** without a cont
 | API-ID-06 | `/identity/login-attempts/` | **read + create only**; scoped (WP 5.4/5.5) |
 | API-ID-07 | `/identity/ip-blacklist/` | CRUD + `activate/deactivate`; CIDR semantics (WP 5.8) |
 | API-ID-08 | `POST /identity/users/{id}/require-mfa/` | `{"required": bool}` → `200 {"mfa_required"}`; needs `identity.user.require_mfa` (platform-admin, org-admin) and the usual user-administration guard; audited. User rows carry `mfa_required` (read-only; a plain update does not set it) and `auth_source` (CR-40) |
-| API-ID-09 | `/identity/directory/` | `GET`, `PATCH` the one directory configuration; `POST directory/test-connection/` (service bind and a read of the search base; a pass is what allows `enabled: true` until a connection field changes), `POST directory/test-user/ {"username"}` (the entry's attributes that would be copied; never a user's password). All need `identity.directory.manage` (platform-admin only). `PATCH` refuses `ldap://` without `start_tls`, a filter without `{username}`, an unknown `default_role_code`, and `enabled: true` without a passing test; `bind_password` is write-only (absent keeps it, `""` clears it) (CR-40). Two TLS options, both off/empty by default: `tls_allow_legacy_ciphers` (adds the static-RSA AES-GCM suites) and `tls_server_name` (one host name or IP address the certificate must carry; a wildcard, scheme, port or space is refused). Changing either clears the last test (CR-41) |
+| API-ID-09 | `/identity/directory/` | `GET`, `PATCH` the one directory configuration; `POST directory/test-connection/` (service bind and a read of the search base; a pass is what allows `enabled: true` until a connection field changes), `POST directory/test-user/ {"username"}` (the entry's attributes that would be copied; never a user's password). All need `identity.directory.manage` (platform-admin only). `PATCH` refuses `ldap://` without `start_tls`, a filter without `{username}`, an unknown `default_role_code`, and `enabled: true` without a passing test; `bind_password` is write-only (absent keeps it, `""` clears it) (CR-40). Two TLS options, both off/empty by default: `tls_allow_legacy_ciphers` (adds the static-RSA AES-GCM suites) and `tls_server_name` (one host name or IP address the certificate must carry; a wildcard, scheme, port or space is refused). Changing either clears the last test (CR-41). `POST directory/link/ {"email", "username", "dry_run"}` links an existing local account to its entry (`ldap_link`): 200 `{email, username, dn, linked}` (`linked: false` on a dry run); 400 on `email` (no account, already linked) or `username` (no entry, more than one, entry linked to another account); 503 `directory_unavailable`. A link removes the local password, ends the sessions and records a security event naming the actor. `POST directory/sync/ {"dry_run"}` is `ldap_sync`: 200 `{dry_run, refreshed, deactivated, skipped}`; 409 `directory_sign_in_off`; 503 `directory_unavailable` with nothing changed. Both use the `sensitive` throttle (CR-58) |
 
 ### 4.4 RBAC tree — `/api/v1/{roles,groups,permissions}/`
 
 | ID | Endpoint | Contract |
 |---|---|---|
-| API-RBAC-01 | `roles/` | CRUD; `code`/`is_system` read-only; system rows protected |
+| API-RBAC-01 | `roles/` | CRUD; `code`/`is_system` read-only; system rows protected. `DELETE` is a soft delete: the role then leaves the list, and its detail, edit, delete and nested routes answer 404 (CR-59) |
 | API-RBAC-02 | `roles/{id}/permissions/` **(new)** | `GET` list, `POST {permission_id, expires_at?}` grant, `DELETE {permission_id}` revoke (WP 4.1) |
 | API-RBAC-03 | `roles/{id}/users/` **(new)** | `GET` list, `POST {user_id}` assign, `DELETE {user_id}` unassign (WP 4.1) |
-| API-RBAC-04 | `groups/` | CRUD; `is_system` read-only |
+| API-RBAC-04 | `groups/` | CRUD; `is_system` read-only. A deleted group is gone from every route, as for roles (CR-59) |
 | API-RBAC-05 | `groups/{id}/members/` **(new)** | add/remove; removal sets `left_at` (WP 4.1) |
-| API-RBAC-06 | `groups/{id}/roles/` **(new)** | attach/detach (WP 4.1) |
+| API-RBAC-06 | `groups/{id}/roles/` **(new)** | attach/detach (WP 4.1); the list leaves out deleted roles, and attaching a deleted role or group is a 400 (CR-59) |
 | API-RBAC-07 | `permissions/` | CRUD; system catalog protected |
 | API-RBAC-08 | All RBAC writes | escalation guards + `SecurityEvent` (WPs 4.2, 4.6) |
 

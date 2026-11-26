@@ -28,6 +28,14 @@ import {
   Briefcase,
   ListVideo,
   Tv,
+  Sliders,
+  ToggleLeft,
+  Palette,
+  Languages,
+  FolderTree,
+  ListTree,
+  Tags,
+  KeyRound,
 } from 'lucide-react';
 import { useSidebarStore } from '@/shared/stores/useSidebarStore';
 import { useCurrentUser } from '@/core/auth/useCurrentUser';
@@ -284,6 +292,21 @@ export const Sidebar: React.FC = () => {
           icon: Activity,
           pagePermission: 'page.platform_admin',
         },
+      ],
+    },
+    {
+      // Every system settings screen, under the same codes as its route (routePermissionsRegistry):
+      // settings.view for the settings app, identity.directory.manage for the directory (LDAP).
+      title: 'SETTINGS',
+      items: [
+        { id: 'settings-values', to: '/settings/system/values', label: 'System settings', icon: Sliders, permissions: ['settings.view'] },
+        { id: 'settings-flags', to: '/settings/system/flags', label: 'Feature flags', icon: ToggleLeft, permissions: ['settings.view'] },
+        { id: 'settings-themes', to: '/settings/system/themes', label: 'Themes', icon: Palette, permissions: ['settings.view'] },
+        { id: 'settings-localizations', to: '/settings/system/localizations', label: 'Localizations', icon: Languages, permissions: ['settings.view'] },
+        { id: 'settings-categories', to: '/settings/system/categories', label: 'Setting categories', icon: FolderTree, permissions: ['settings.view'] },
+        { id: 'settings-definitions', to: '/settings/system/definitions', label: 'Setting definitions', icon: ListTree, permissions: ['settings.view'] },
+        { id: 'settings-tags', to: '/settings/system/tags', label: 'Tags', icon: Tags, permissions: ['settings.view'] },
+        { id: 'settings-directory', to: '/settings/system/directory', label: 'Directory (LDAP)', icon: KeyRound, permissions: ['identity.directory.manage'] },
       ],
     },
     {

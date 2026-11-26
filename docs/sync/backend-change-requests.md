@@ -1204,3 +1204,83 @@ Asked by the owner (2026-11-26): "In Project -> Member tab should have member se
 **Compatibility.** `name` changes from the e-mail to a person's name for members with no profile name; nothing keys on it (the frontend matches members by `user_id` and `email`). The filter is new and optional. **Risk.** Low. **Alternative.** Leave the name as is; list every person in the dropdown and refuse one without a login when it is picked (what the frontend does until this lands).
 
 **Approved** by the owner ("Approved", 2026-11-26) and applied as proposed, with these details settled while building it: the people lookup is `PersonSelector.names_by_user` (masterdata, one query; a person with a blank name does not count); the members list passes the names to the serializer, and the add and the edit answers look their one person up. Note mentions (`ProjectNoteSerializer.mentions`) use the same name and now look the people of a whole page of notes up once (the RP-6 bounded-query test caught a lookup per mention). The dashboard's own `_user_display_name` (`selectors/dashboard.py`) is unchanged. `has_user` is a `BooleanFilter` in `masterdata/api/filtersets/people.py`. The members panel's person dropdown sends `has_user=true`. Captured: `docs/sync/samples/production/_member_name_cr57_flow.json` (`docs/sync/tools/test_capture_member_name_cr57.py`). Verification: `docs/sync/backend-cr-57-verification.md`.
+
+### CR-58: link an account to the directory and sync the directory from the Directory (LDAP) screen (**feature**, **APPLIED** on `feature/ldap-admin-page`)
+
+Asked by the owner (2026-11-26): "Can you make available on frontend page for admin only", then "Make all settings available on frontend for admin". The owner chose both the navigation and the two actions.
+
+**Done in the frontend already (no backend change).** The sidebar has a SETTINGS section that links every system settings screen. System settings, Feature flags, Themes, Localizations, Setting categories, Setting definitions and Tags need `settings.view`. Directory (LDAP) needs `identity.directory.manage`. Each link uses the same code as its route. The user menu's Pipeline Settings entry also reaches someone who holds only the directory code.
+
+**Problem.** Everything on the directory screen is reachable through the API except two operations, which exist only as management commands:
+- `manage.py ldap_link <email> <username> [--dry-run]` links an existing local account to its directory entry (ADR-0039 decision 6);
+- `manage.py ldap_sync [--dry-run]` deactivates accounts whose entry is gone and refreshes the others (decision 10).
+
+An administrator without shell access cannot link an account that already existed before directory sign-in. They also cannot run a sync after removing someone from the directory; they have to wait for the schedule.
+
+**Minimal diff.**
+1. **Move the logic into a service.** `apps/identity/services/directory/accounts.py` gets `DirectoryAccountService.link(actor, email, username, dry_run)` and `.sync(actor, dry_run)`, containing the bodies of the two commands, unchanged. The commands become thin callers with the same output, so a scheduled `ldap_sync` keeps working.
+2. **`POST /api/v1/identity/directory/link/`** with `{"email", "username", "dry_run": false}`:
+   - 200 `{"email", "username", "dn", "linked": true|false}`, where `linked: false` is a dry run;
+   - 400 with the command's own messages: no account has this e-mail; already linked; no entry has this username; more than one entry; the entry is linked to another account;
+   - 503 when the directory cannot be reached or `DIRECTORY_ENCRYPTION_KEY` is missing.
+   
+   A real link does what the command does: it removes the local password, ends the account's sessions, and records the security event. The event's metadata adds the actor.
+3. **`POST /api/v1/identity/directory/sync/`** with `{"dry_run": true|false}`:
+   - 200 `{"dry_run", "refreshed": n, "deactivated": [usernames], "skipped": [usernames]}`, where `skipped` means more than one entry matched;
+   - 409 when directory sign-in is off;
+   - 503 when the directory cannot be reached, in which case nothing changed (the command's existing guarantee).
+4. **Access and limits.** Both routes need `identity.directory.manage` (platform-admin only, as for the rest of the screen). Both use the `sensitive` throttle (20/min), like `test-connection` and `test-user`, because they open outbound connections.
+5. **Frontend.** The Directory (LDAP) screen gets two cards:
+   - **Link an account:** e-mail and directory username, with **Check** (dry run, which shows the matched entry) and then **Link**. Link asks for confirmation: "the local password is removed and their sessions end".
+   - **Sync now:** **Preview** (dry run, which lists who would be deactivated) and **Sync**, which also asks for confirmation.
+   
+   Captured responses come from a new tool in `docs/sync/tools/`.
+
+**Why no frontend workaround.** These are server-side writes. There is no route to call, and the browser must not reach the directory itself.
+
+**Compatibility.** New routes only. The commands keep their arguments and output. **Risk.** Low to medium:
+- a link removes a password and ends sessions, which the dry run and the confirmation guard;
+- a sync runs inside the request, with one directory search per linked account (each limited by the screen's timeout). That is fine for a studio's few hundred accounts. A directory with thousands of accounts would need a background task instead (not proposed).
+
+**Alternative.** Keep both as shell-only commands, as now.
+
+**Approved** by the owner ("approved", 2026-11-26) and applied as proposed, with these details settled while building it:
+- **Errors.** A refusal is a 400 on the field it concerns (`email` or `username`), with the command's own sentence. An outage, or a missing `DIRECTORY_ENCRYPTION_KEY`, is a 503 `directory_unavailable` whose detail names the LDAP error class. Sign-in being off is a 409 `directory_sign_in_off`.
+- **Behaviour kept from the commands.** Link works while sign-in is off, as the command does. Sync lists accounts by username; the commands print the same lines as before, with skipped accounts listed before deactivated ones.
+- **The actor is recorded.** It is in the link's security event and passed on to `UserService.deactivate`.
+- **The screen.** Link is enabled only after a Check of the same e-mail and username. Sync now is enabled only after a Preview, and both buttons are off while sign-in is off.
+
+Captured: `docs/sync/samples/identity/_directory_link_sync_cr58_flow.json` (`docs/sync/tools/test_capture_directory_link_sync_cr58.py`). Verification: `docs/sync/backend-cr-58-verification.md`.
+
+### CR-59: a deleted role or group stays on the list, can be deleted again, and keeps its code (**bug**, **APPLIED** on `fix/role-delete`)
+
+Reported by the owner (2026-11-26): "unable to delete temporary role".
+
+**Problem.** `DELETE /api/v1/roles/{id}/` (and `/groups/{id}/`) is a soft delete: `BusinessService.delete` sets `is_deleted` and `deleted_at` and answers 204. But `RoleSelector` and `GroupSelector` (`apps/identity/selectors/rbac.py`) read through `Role.objects` and `Group.objects`. Those are a plain `BaseManager` that does not hide deleted rows. As a result, after a delete:
+- the role stays in `GET /roles/`, and its page still opens (200);
+- it can be edited (`PATCH` 200) and deleted again (204);
+- its code stays taken: creating a role with that code again is 400 "role with this code already exists.";
+- the frontend says "Role deleted.", returns to the list, and the role is still there. That is what "unable to delete" looks like from the screen.
+
+Reproduced on the test database for a role with no links, and for roles with a permission, a user or a group attached. Every case gives the same result, as superuser and as platform-admin. Groups behave the same way.
+
+Not a security hole: the permission resolver and the user's role label already skip deleted roles (`role__is_deleted=False`), so a deleted role grants nothing.
+
+**Minimal diff.**
+1. `RoleSelector.get_queryset` and `GroupSelector.get_queryset` add `.filter(is_deleted=False)`. A deleted role or group leaves the list, and its detail, edit, delete and nested actions (`permissions`, `users`, `groups`) answer 404.
+2. **Free the code when deleting.** `RoleService.delete` and `GroupService.delete`, inside the same transaction, rename the code to `<code>--deleted-<first 8 characters of the id>` (cut to fit the field's length). The security event keeps the original code. A data migration (`identity.0005`) does the same for roles and groups that are already deleted, so the "temporary" code can be used again straight away.
+3. `AttachRoleSerializer.role_id` and `AttachGroupSerializer.group_id` choose from live rows only. Today a deleted role or group can be passed by id; the services refuse some of these, and this makes all of them a 400.
+4. Unchanged: the links of a deleted role (`UserRole`, `GroupRole`, `RolePermission`) are left as they are. Every reader already ignores them through `role__is_deleted=False`.
+
+**Why no frontend workaround.** The list and detail are the server's. Hiding deleted rows in the browser would leave the code taken and the routes open.
+
+**Compatibility.** Deleted roles and groups disappear from the API, which was the point of deleting them. Deleted codes change, and nothing looks a deleted row up by its code. One data migration; `apps/core/tests/test_bootstrap.py`'s per-app migration limit goes up by one. **Risk.** Low.
+
+**Alternative.** Make the code unique among live rows only (a partial constraint, like the existing `uq_identity_role_name_live` on the name) instead of renaming. Not proposed: several lookups (`bootstrap`, the seed commands) take `Role.objects.filter(code=…).first()` without `is_deleted`, and these would become ambiguous.
+
+**Approved** by the owner ("approvde", 2026-11-26) and applied as proposed, with these details settled while building it:
+- **Security events.** A delete now records a `role_changed` event (`delete_role` or `delete_group`) with the actor and the original code. Before this, a delete left no security event.
+- **The group's role list.** `groups/{id}/roles/` leaves out links to deleted roles, so a deleted role does not linger on the group's page, where it could not be detached.
+- **Contract.** DOM-RBAC-03 (`docs/identity/CONTRACTS.md`) now says how a deleted row's code is renamed. The trust model is unchanged, so no ADR.
+
+No frontend change: the role page's Delete already returns to the list, which now leaves the role out. Verification: `docs/sync/backend-cr-59-verification.md`.

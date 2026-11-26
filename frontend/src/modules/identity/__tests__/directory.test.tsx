@@ -17,6 +17,8 @@ import { DirectorySettingsPage } from '../pages/DirectorySettingsPage';
 // CR-40: every reply below was captured from the backend (docs/sync/tools/test_capture_directory.py).
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('identity/_directory_flow.json');
+// CR-58: linking and syncing (docs/sync/tools/test_capture_directory_link_sync_cr58.py).
+const accounts = loadSample<Record<string, Captured>>('identity/_directory_link_sync_cr58_flow.json');
 const auth = loadSample('identity/_auth_flow.json');
 const artist = auth.me_artist.body as unknown as User;
 const withCodes = (...codes: string[]) => ({ ...artist, permissions: [...artist.permissions, ...codes] }) as User;
@@ -198,6 +200,131 @@ describe('directory (LDAP) settings page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save settings' }));
     expect(await screen.findByText(`Ref: ${flow.patch_password_without_key.body.error.request_id}`)).toBeTruthy();
     expect(screen.getByText(/no DIRECTORY_ENCRYPTION_KEY/)).toBeTruthy();
+  });
+});
+
+describe('linking an account and syncing the directory accounts (CR-58)', () => {
+  const linkCalls = (calls: MockCall[]) => calls.filter((c) => path(c).endsWith('/link/'));
+  const syncCalls = (calls: MockCall[]) => calls.filter((c) => path(c).endsWith('/sync/'));
+  const link = () => screen.getByRole('region', { name: 'Link an account' });
+  const sync = () => screen.getByRole('region', { name: 'Sync the directory accounts' });
+  const fillLink = (email: string, username: string) => {
+    change('Account e-mail', email);
+    change('Directory username', username);
+  };
+
+  it('checks first, then links after a confirmation that says what it ends', async () => {
+    const { calls } = mockFetch((call) => {
+      if (!path(call).endsWith('/link/')) return { body: configured };
+      return reply((call.body as { dry_run: boolean }).dry_run ? accounts.link_check : accounts.link);
+    });
+    renderWith(admin, <DirectorySettingsPage />);
+    await screen.findByLabelText('Account e-mail');
+    const linkButton = () => within(link()).getByRole('button', { name: 'Link' }) as HTMLButtonElement;
+    expect(linkButton().disabled).toBe(true);
+
+    fillLink(' jane@example.test ', ' jdoe ');
+    fireEvent.click(within(link()).getByRole('button', { name: 'Check' }));
+    expect(await within(link()).findByText(/jane@example.test can be linked to jdoe \(uid=jdoe,ou=people/)).toBeTruthy();
+    expect(linkCalls(calls)[0].body).toEqual({ email: 'jane@example.test', username: 'jdoe', dry_run: true });
+
+    fireEvent.click(linkButton());
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(/Their local password is removed and their sessions end/)).toBeTruthy();
+    expect(linkCalls(calls)).toHaveLength(1);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Link' }));
+    await waitFor(() => expect(linkCalls(calls)).toHaveLength(2));
+    expect(linkCalls(calls)[1].body).toEqual({ email: 'jane@example.test', username: 'jdoe', dry_run: false });
+    await waitFor(() => expect((screen.getByLabelText('Account e-mail') as HTMLInputElement).value).toBe(''));
+    expect(linkButton().disabled).toBe(true);
+  });
+
+  it('editing after a check asks for a new check before Link', async () => {
+    mockFetch((call) => (path(call).endsWith('/link/') ? reply(accounts.link_check) : { body: configured }));
+    renderWith(admin, <DirectorySettingsPage />);
+    await screen.findByLabelText('Account e-mail');
+    fillLink('jane@example.test', 'jdoe');
+    fireEvent.click(within(link()).getByRole('button', { name: 'Check' }));
+    await within(link()).findByText(/can be linked/);
+    change('Directory username', 'jdoe2');
+    expect((within(link()).getByRole('button', { name: 'Link' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(within(link()).queryByText(/can be linked/)).toBeNull();
+  });
+
+  it.each([
+    ['link_no_account', 'Account e-mail', 'No account has this e-mail.'],
+    ['link_no_entry', 'Directory username', 'No directory entry has this username.'],
+    ['link_two_entries', 'Directory username', 'More than one entry has this username.'],
+    ['link_entry_taken', 'Directory username', 'This directory entry is already linked to another account.'],
+    ['link_again', 'Account e-mail', 'This account is already linked to the directory.'],
+  ])('puts the refusal %s on its field', async (sample, field, message) => {
+    mockFetch((call) => (path(call).endsWith('/link/') ? reply(accounts[sample]) : { body: configured }));
+    renderWith(admin, <DirectorySettingsPage />);
+    await screen.findByLabelText('Account e-mail');
+    fillLink('jane@example.test', 'jdoe');
+    fireEvent.click(within(link()).getByRole('button', { name: 'Check' }));
+    expect(await within(link()).findByText(message)).toBeTruthy();
+    expect(screen.getByLabelText(field).getAttribute('aria-invalid')).toBe('true');
+    expect((within(link()).getByRole('button', { name: 'Link' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('says when the directory cannot be reached', async () => {
+    mockFetch((call) => (path(call).endsWith('/link/') ? reply(accounts.link_outage) : { body: configured }));
+    renderWith(admin, <DirectorySettingsPage />);
+    await screen.findByLabelText('Account e-mail');
+    fillLink('omar@example.test', 'stayer');
+    fireEvent.click(within(link()).getByRole('button', { name: 'Check' }));
+    expect(await within(link()).findByText(accounts.link_outage.body.detail)).toBeTruthy();
+  });
+
+  it('previews the sync, then syncs after a confirmation that names who is deactivated', async () => {
+    const { calls } = mockFetch((call) => {
+      if (!path(call).endsWith('/sync/')) return { body: configured };
+      return reply((call.body as { dry_run: boolean }).dry_run ? accounts.sync_preview : accounts.sync);
+    });
+    renderWith(admin, <DirectorySettingsPage />);
+    const syncNow = async () => (await within(await screen.findByRole('region', { name: 'Sync the directory accounts' })).findByRole('button', { name: 'Sync now' })) as HTMLButtonElement;
+    expect((await syncNow()).disabled).toBe(true);
+
+    fireEvent.click(within(sync()).getByRole('button', { name: 'Preview' }));
+    const preview = await within(sync()).findByLabelText('Sync preview');
+    expect(within(preview).getByText('leaver')).toBeTruthy();
+    expect(within(preview).getByText('2')).toBeTruthy();
+    expect(syncCalls(calls)[0].body).toEqual({ dry_run: true });
+
+    fireEvent.click(await syncNow());
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(/These accounts will be deactivated and signed out: leaver/)).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Sync now' }));
+    expect(await within(sync()).findByText(/Refreshed 2; deactivated: leaver/)).toBeTruthy();
+    expect(syncCalls(calls).map((c) => c.body)).toEqual([{ dry_run: true }, { dry_run: false }]);
+  });
+
+  it('a preview with nobody to deactivate says so', async () => {
+    mockFetch((call) => (path(call).endsWith('/sync/') ? reply(accounts.sync_after) : { body: configured }));
+    renderWith(admin, <DirectorySettingsPage />);
+    fireEvent.click(await within(await screen.findByRole('region', { name: 'Sync the directory accounts' })).findByRole('button', { name: 'Preview' }));
+    await within(sync()).findByLabelText('Sync preview');
+    fireEvent.click(within(sync()).getByRole('button', { name: 'Sync now' }));
+    expect(await within(await screen.findByRole('dialog')).findByText('No account will be deactivated; the others are refreshed.')).toBeTruthy();
+  });
+
+  it.each([['sync_outage'], ['sync_sign_in_off']])('shows the server’s sentence for %s', async (sample) => {
+    mockFetch((call) => (path(call).endsWith('/sync/') ? reply(accounts[sample]) : { body: configured }));
+    renderWith(admin, <DirectorySettingsPage />);
+    fireEvent.click(await within(await screen.findByRole('region', { name: 'Sync the directory accounts' })).findByRole('button', { name: 'Preview' }));
+    expect(await within(sync()).findByText(accounts[sample].body.detail)).toBeTruthy();
+    expect((within(sync()).getByRole('button', { name: 'Sync now' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('offers no sync while directory sign-in is off', async () => {
+    const { calls } = mockFetch(() => ({ body: { ...configured, enabled: false } }));
+    renderWith(admin, <DirectorySettingsPage />);
+    const region = await screen.findByRole('region', { name: 'Sync the directory accounts' });
+    expect(within(region).getByText(/Directory sign-in is off/)).toBeTruthy();
+    expect((within(region).getByRole('button', { name: 'Preview' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(within(region).getByRole('button', { name: 'Preview' }));
+    expect(syncCalls(calls)).toHaveLength(0);
   });
 });
 

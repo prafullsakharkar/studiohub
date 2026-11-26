@@ -154,6 +154,24 @@ class RbacGuardMixin:
         if getattr(instance, "is_system", False):
             raise ValidationError("System records cannot be deleted.")
 
+    #: A deleted row's code becomes ``<code>--deleted-<first 8 of its id>`` (CR-59).
+    DELETED_CODE_MARK = "--deleted-"
+
+    @classmethod
+    def _release_code(cls, instance) -> str:
+        """
+        Rename a deleted role's or group's code so a live one may take it again (CR-59).
+
+        The code is unique across every row, deleted ones included, and nothing looks a deleted
+        row up by its code. Returns the original code for the audit trail.
+        """
+        original = instance.code
+        suffix = f"{cls.DELETED_CODE_MARK}{str(instance.pk).replace('-', '')[:8]}"
+        max_length = type(instance)._meta.get_field("code").max_length
+        instance.code = f"{original[: max_length - len(suffix)]}{suffix}"
+        instance.save(update_fields=["code"])
+        return original
+
     @classmethod
     def _activate_link(cls, model, *, lookup, **fields):
         """
@@ -320,6 +338,13 @@ class RoleService(RbacGuardMixin, BusinessService):
         before = cls._admin_holder_ids()
         result = super().delete(instance, user=user)
         cls._ensure_admins_remain(before)
+        code = cls._release_code(instance)
+        cls._audit(
+            actor=user,
+            event_type=SecurityEventType.ROLE_CHANGED,
+            description=f"Deleted role {instance.name}.",
+            metadata={"action": "delete_role", "role_id": str(instance.pk), "code": code},
+        )
         return result
 
     # ------------------------------------------------------------------
@@ -606,7 +631,15 @@ class GroupService(RbacGuardMixin, BusinessService):
     @transaction.atomic
     def delete(cls, instance, *, user=None):
         cls._guard_system_delete(instance)
-        return super().delete(instance, user=user)
+        result = super().delete(instance, user=user)
+        code = cls._release_code(instance)
+        cls._audit(
+            actor=user,
+            event_type=SecurityEventType.ROLE_CHANGED,
+            description=f"Deleted group {instance.name}.",
+            metadata={"action": "delete_group", "group_id": str(instance.pk), "code": code},
+        )
+        return result
 
     # ------------------------------------------------------------------
     # Membership
