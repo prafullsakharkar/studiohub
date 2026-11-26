@@ -14,6 +14,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.masterdata.api.filtersets.people import PersonFilter
 from apps.masterdata.api.serializers.directory import (
     DeactivateSerializer,
     DepartmentSerializer,
@@ -100,7 +101,7 @@ class PersonViewSet(ServiceRecordViewSet):
     selector_class = PersonSelector
     service_class = PersonService
     extra_write_actions = ("link_user", "unlink_user", "deactivate", "reactivate")
-    filterset_fields = ["status", "department", "team", "office"]
+    filterset_class = PersonFilter
     # Without masterdata.person.view_sensitive the search runs over ``name`` only.
     search_fields = ["name", "email"]
     ordering_fields = ["name", "created_at"]

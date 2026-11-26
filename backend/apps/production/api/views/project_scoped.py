@@ -277,12 +277,16 @@ class ProjectMembersView(ProjectScopedAPIView):
         qs = (
             ProjectMembershipSelector.get_queryset(request=request, view=self)
             .filter(project=self.project)
-            .select_related("user", "project", "show")
+            .select_related("user", "user__profile", "project", "show")
             .order_by("user__email")
         )
         members = list(qs)
+        # The members' names, for those whose profile has none, in one query (CR-57).
+        from apps.masterdata.selectors.directory import PersonSelector
+
+        person_names = PersonSelector.names_by_user([m.user.pk for m in members])
         data = ProjectMembershipSerializer(
-            members, many=True, context={"request": request}
+            members, many=True, context={"request": request, "person_names": person_names}
         ).data
         return Response({"count": len(data), "results": data})
 

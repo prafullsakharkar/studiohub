@@ -1,0 +1,464 @@
+{
+ "add_linked": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-26T05:46:46.165895Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "3f6f0f33-3da0-4580-9fd4-a606c4304c9f",
+   "name": "Priya Person",
+   "projectId": "98f8198a-8792-4494-8bc7-4ede8251035f",
+   "project_code": "CR57",
+   "project_id": "98f8198a-8792-4494-8bc7-4ede8251035f",
+   "project_name": "Member names",
+   "role": "Lead Artist",
+   "role_id": null,
+   "roles": [
+    "Lead Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-26T05:46:46.165905Z",
+   "userId": "c7b662e0-fc0f-41af-9e0a-4753815c0660",
+   "user_id": "c7b662e0-fc0f-41af-9e0a-4753815c0660",
+   "vendor_id": ""
+  },
+  "headers": {
+   "Content-Type": "application/json",
+   "X-Request-ID": "6e037005-c2aa-48c2-9016-e6a38fa1f7da"
+  },
+  "request": {
+   "body": {
+    "role": "Lead Artist",
+    "user_id": "c7b662e0-fc0f-41af-9e0a-4753815c0660"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/98f8198a-8792-4494-8bc7-4ede8251035f/members/"
+  },
+  "status": 201
+ },
+ "ids": {
+  "project": "98f8198a-8792-4494-8bc7-4ede8251035f"
+ },
+ "members_list": {
+  "body": {
+   "count": 4,
+   "results": [
+    {
+     "avatar_url": null,
+     "client_id": "",
+     "created_at": "2026-11-26T05:46:46.141423Z",
+     "department": "",
+     "department_id": "",
+     "email": "user@example.test",
+     "id": "d40b38c5-a21f-4d22-aef1-a406db6f8e34",
+     "name": "user@example.test",
+     "projectId": "98f8198a-8792-4494-8bc7-4ede8251035f",
+     "project_code": "CR57",
+     "project_id": "98f8198a-8792-4494-8bc7-4ede8251035f",
+     "project_name": "Member names",
+     "role": "Artist",
+     "role_id": null,
+     "roles": [
+      "Artist"
+     ],
+     "scope": "PROJECT",
+     "show_code": "",
+     "show_id": null,
+     "status": "active",
+     "team_id": "",
+     "updated_at": "2026-11-26T05:46:46.141440Z",
+     "userId": "cc7ad6b3-4455-4090-a6a0-a88888689ed4",
+     "user_id": "cc7ad6b3-4455-4090-a6a0-a88888689ed4",
+     "vendor_id": ""
+    },
+    {
+     "avatar_url": null,
+     "client_id": "",
+     "created_at": "2026-11-26T05:46:46.092461Z",
+     "department": "",
+     "department_id": "",
+     "email": "user@example.test",
+     "id": "f0d93459-d5b5-43b6-82f3-3779122283ad",
+     "name": "Dee Display",
+     "projectId": "98f8198a-8792-4494-8bc7-4ede8251035f",
+     "project_code": "CR57",
+     "project_id": "98f8198a-8792-4494-8bc7-4ede8251035f",
+     "project_name": "Member names",
+     "role": "Artist",
+     "role_id": null,
+     "roles": [
+      "Artist"
+     ],
+     "scope": "PROJECT",
+     "show_code": "",
+     "show_id": null,
+     "status": "active",
+     "team_id": "",
+     "updated_at": "2026-11-26T05:46:46.092476Z",
+     "userId": "7fa93ba9-d6f7-4803-860b-762e8b5cbbec",
+     "user_id": "7fa93ba9-d6f7-4803-860b-762e8b5cbbec",
+     "vendor_id": ""
+    },
+    {
+     "avatar_url": null,
+     "client_id": "",
+     "created_at": "2026-11-26T05:46:46.120089Z",
+     "department": "",
+     "department_id": "",
+     "email": "user@example.test",
+     "id": "90dae96c-94fc-4806-955c-3a6abb6921f6",
+     "name": "Fay Last",
+     "projectId": "98f8198a-8792-4494-8bc7-4ede8251035f",
+     "project_code": "CR57",
+     "project_id": "98f8198a-8792-4494-8bc7-4ede8251035f",
+     "project_name": "Member names",
+     "role": "Artist",
+     "role_id": null,
+     "roles": [
+      "Artist"
+     ],
+     "scope": "PROJECT",
+     "show_code": "",
+     "show_id": null,
+     "status": "active",
+     "team_id": "",
+     "updated_at": "2026-11-26T05:46:46.120103Z",
+     "userId": "cb887cb3-38a9-4269-be19-f99c16432f4f",
+     "user_id": "cb887cb3-38a9-4269-be19-f99c16432f4f",
+     "vendor_id": ""
+    },
+    {
+     "avatar_url": null,
+     "client_id": "",
+     "created_at": "2026-11-26T05:46:46.165895Z",
+     "department": "",
+     "department_id": "",
+     "email": "user@example.test",
+     "id": "3f6f0f33-3da0-4580-9fd4-a606c4304c9f",
+     "name": "Priya Person",
+     "projectId": "98f8198a-8792-4494-8bc7-4ede8251035f",
+     "project_code": "CR57",
+     "project_id": "98f8198a-8792-4494-8bc7-4ede8251035f",
+     "project_name": "Member names",
+     "role": "Lead Artist",
+     "role_id": null,
+     "roles": [
+      "Lead Artist"
+     ],
+     "scope": "PROJECT",
+     "show_code": "",
+     "show_id": null,
+     "status": "active",
+     "team_id": "",
+     "updated_at": "2026-11-26T05:46:46.165905Z",
+     "userId": "c7b662e0-fc0f-41af-9e0a-4753815c0660",
+     "user_id": "c7b662e0-fc0f-41af-9e0a-4753815c0660",
+     "vendor_id": ""
+    }
+   ]
+  },
+  "headers": {
+   "Content-Type": "application/json",
+   "X-Request-ID": "d5465b80-6499-457b-b9ba-7cb9cab4a4af"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/98f8198a-8792-4494-8bc7-4ede8251035f/members/"
+  },
+  "status": 200
+ },
+ "patch_linked": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-26T05:46:46.165895Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "3f6f0f33-3da0-4580-9fd4-a606c4304c9f",
+   "name": "Priya Person",
+   "projectId": "98f8198a-8792-4494-8bc7-4ede8251035f",
+   "project_code": "CR57",
+   "project_id": "98f8198a-8792-4494-8bc7-4ede8251035f",
+   "project_name": "Member names",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-26T05:46:46.213659Z",
+   "userId": "c7b662e0-fc0f-41af-9e0a-4753815c0660",
+   "user_id": "c7b662e0-fc0f-41af-9e0a-4753815c0660",
+   "vendor_id": ""
+  },
+  "headers": {
+   "Content-Type": "application/json",
+   "X-Request-ID": "25ae370c-eb2e-4664-a536-8b5530ad1def"
+  },
+  "request": {
+   "body": {
+    "role": "Artist"
+   },
+   "method": "PATCH",
+   "path": "/api/organizations/projects/98f8198a-8792-4494-8bc7-4ede8251035f/members/3f6f0f33-3da0-4580-9fd4-a606c4304c9f/"
+  },
+  "status": 200
+ },
+ "people_has_user": {
+  "body": {
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "availability_status": "",
+     "created_at": "2026-11-26T05:46:45.674985Z",
+     "date_of_birth": null,
+     "department": null,
+     "department_name": "",
+     "description": "",
+     "email": "",
+     "full_name": "Priya Person",
+     "id": "dd2a7f25-c430-493d-ba74-6ff9d4136490",
+     "name": "Priya Person",
+     "nationality": "",
+     "office": null,
+     "office_name": "",
+     "phone": "",
+     "role": "0389bb04-c0c3-4c4a-9e49-40bbfad41d39",
+     "security_clearance": "",
+     "seniority": "",
+     "skills": [],
+     "status": "active",
+     "team": null,
+     "team_name": "",
+     "timezone": "",
+     "updated_at": "2026-11-26T05:46:45.674992Z",
+     "user": "c7b662e0-fc0f-41af-9e0a-4753815c0660"
+    }
+   ]
+  },
+  "headers": {
+   "Content-Type": "application/json",
+   "X-Request-ID": "e6b0dbc7-b2da-4cfe-afa2-4d8b8e1b8fa8"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/people/?has_user=true"
+  },
+  "status": 200
+ },
+ "people_without_user": {
+  "body": {
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "availability_status": "",
+     "created_at": "2026-11-26T05:46:45.680852Z",
+     "date_of_birth": null,
+     "department": null,
+     "department_name": "",
+     "description": "",
+     "email": "",
+     "full_name": "Omar Offline",
+     "id": "e840a1fd-e0ce-40b8-a976-62cabdaac7c7",
+     "name": "Omar Offline",
+     "nationality": "",
+     "office": null,
+     "office_name": "",
+     "phone": "",
+     "role": null,
+     "security_clearance": "",
+     "seniority": "",
+     "skills": [],
+     "status": "active",
+     "team": null,
+     "team_name": "",
+     "timezone": "",
+     "updated_at": "2026-11-26T05:46:45.680862Z",
+     "user": null
+    }
+   ]
+  },
+  "headers": {
+   "Content-Type": "application/json",
+   "X-Request-ID": "be97abaa-b1ac-4b08-a7b8-002728a650d4"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/people/?has_user=false"
+  },
+  "status": 200
+ },
+ "person_linked": {
+  "body": {
+   "availability_status": "",
+   "created_at": "2026-11-26T05:46:45.674985Z",
+   "date_of_birth": null,
+   "department": null,
+   "department_name": "",
+   "description": "",
+   "email": "",
+   "full_name": "Priya Person",
+   "id": "dd2a7f25-c430-493d-ba74-6ff9d4136490",
+   "name": "Priya Person",
+   "nationality": "",
+   "office": null,
+   "office_name": "",
+   "phone": "",
+   "role": "0389bb04-c0c3-4c4a-9e49-40bbfad41d39",
+   "security_clearance": "",
+   "seniority": "",
+   "skills": [],
+   "status": "active",
+   "team": null,
+   "team_name": "",
+   "timezone": "",
+   "updated_at": "2026-11-26T05:46:45.674992Z",
+   "user": "c7b662e0-fc0f-41af-9e0a-4753815c0660"
+  },
+  "headers": {
+   "Content-Type": "application/json",
+   "X-Request-ID": "2db8dfa0-4b75-411a-a44d-ab2119b50229"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/people/dd2a7f25-c430-493d-ba74-6ff9d4136490/"
+  },
+  "status": 200
+ },
+ "person_unlinked": {
+  "body": {
+   "availability_status": "",
+   "created_at": "2026-11-26T05:46:45.680852Z",
+   "date_of_birth": null,
+   "department": null,
+   "department_name": "",
+   "description": "",
+   "email": "",
+   "full_name": "Omar Offline",
+   "id": "e840a1fd-e0ce-40b8-a976-62cabdaac7c7",
+   "name": "Omar Offline",
+   "nationality": "",
+   "office": null,
+   "office_name": "",
+   "phone": "",
+   "role": null,
+   "security_clearance": "",
+   "seniority": "",
+   "skills": [],
+   "status": "active",
+   "team": null,
+   "team_name": "",
+   "timezone": "",
+   "updated_at": "2026-11-26T05:46:45.680862Z",
+   "user": null
+  },
+  "headers": {
+   "Content-Type": "application/json",
+   "X-Request-ID": "54cd10b7-c4aa-4a7d-b058-9328a595f1b4"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/people/e840a1fd-e0ce-40b8-a976-62cabdaac7c7/"
+  },
+  "status": 200
+ },
+ "positions": {
+  "body": {
+   "count": 4,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "band_level": "",
+     "code": "POS-ARTIST",
+     "created_at": "2026-11-26T05:46:45.583803Z",
+     "department": "f3c95afb-2bdb-4e05-a014-e8808ed33a76",
+     "description": "",
+     "employment_type": "",
+     "id": "d6b7a8a0-5039-4f82-935c-61c517e74b13",
+     "is_managerial": false,
+     "level": 1,
+     "name": "Artist",
+     "parent": null,
+     "salary_range": "",
+     "updated_at": "2026-11-26T05:46:45.583814Z"
+    },
+    {
+     "band_level": "",
+     "code": "POS-LEAD",
+     "created_at": "2026-11-26T05:46:45.581081Z",
+     "department": "f3c95afb-2bdb-4e05-a014-e8808ed33a76",
+     "description": "",
+     "employment_type": "",
+     "id": "0389bb04-c0c3-4c4a-9e49-40bbfad41d39",
+     "is_managerial": true,
+     "level": 2,
+     "name": "Lead Artist",
+     "parent": null,
+     "salary_range": "",
+     "updated_at": "2026-11-26T05:46:45.581093Z"
+    },
+    {
+     "band_level": "",
+     "code": "POS-PIPELINE",
+     "created_at": "2026-11-26T05:46:45.586464Z",
+     "department": "71a1d61d-1d9c-4dfd-b89c-8f19b4494a8d",
+     "description": "",
+     "employment_type": "",
+     "id": "ccd357c4-0121-4360-a279-c6285f670c33",
+     "is_managerial": false,
+     "level": 2,
+     "name": "Pipeline TD",
+     "parent": null,
+     "salary_range": "",
+     "updated_at": "2026-11-26T05:46:45.586476Z"
+    },
+    {
+     "band_level": "",
+     "code": "POS-VFX-SUP",
+     "created_at": "2026-11-26T05:46:45.578040Z",
+     "department": "84e5c337-8fce-4069-89be-34d2b31a41fc",
+     "description": "",
+     "employment_type": "",
+     "id": "441f3d5d-edb9-49f3-8d0c-9f31f9594f22",
+     "is_managerial": true,
+     "level": 2,
+     "name": "VFX Supervisor",
+     "parent": null,
+     "salary_range": "",
+     "updated_at": "2026-11-26T05:46:45.578052Z"
+    }
+   ]
+  },
+  "headers": {
+   "Content-Type": "application/json",
+   "X-Request-ID": "f7426bc1-ebef-4872-a396-aa35a4e30079"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/positions/?ordering=name"
+  },
+  "status": 200
+ }
+}

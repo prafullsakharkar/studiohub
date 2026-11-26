@@ -35,12 +35,12 @@ const members = { count: 3, results: [bound, loose, mine] };
 // The add form picks a directory person (captured rows, given a login and a name) and a studio position.
 type Person = { id: string; name: string; full_name: string; user: string | null; role: string | null };
 type Page<T> = { count: number; next: null; previous: null; results: T[] };
-const peopleFlow = loadSample<Record<string, Captured>>('masterdata/people.json');
-const positions = bodyOf<Page<{ id: string; name: string }>>(loadSample<Record<string, Captured>>('masterdata/positions.json'), 'list_admin');
-const [row0, row1] = bodyOf<Page<Person>>(peopleFlow, 'list_admin').results;
-const lead = positions.results.find((x) => x.name === 'Lead Artist') as { id: string; name: string };
-const newcomer: Person = { ...row0, name: 'Nadia Newcomer', full_name: 'Nadia Newcomer', user: 'a1b2c3d4-0000-4000-8000-000000000001', role: lead.id };
-const nologin: Person = { ...row1, name: 'Omar Offline', full_name: 'Omar Offline', user: null, role: null };
+// Captured for CR-57: a person with a login whose position is Lead Artist (Priya Person), one with no login, the positions.
+const cr57 = loadSample<Record<string, Captured>>('production/_member_name_cr57_flow.json');
+const positions = bodyOf<Page<{ id: string; name: string }>>(cr57, 'positions');
+const newcomer = bodyOf<Page<Person>>(cr57, 'people_has_user').results[0];
+const nologin = bodyOf<Person>(cr57, 'person_unlinked');
+const row1 = nologin;
 const listedPerson = (m: Member): Person => ({ ...row1, id: `person-${m.id}`, name: 'Listed Person', full_name: 'Listed Person', user: m.user_id, role: null });
 let people: Person[];
 
@@ -122,7 +122,7 @@ describe('members and their show (CR-36)', () => {
     const { calls } = mockFetch(server);
     mount(superuser);
     await showSelect(0);
-    await choose('Nadia Newcomer');
+    await choose('Priya Person');
     await waitFor(() => expect((screen.getByLabelText('Role') as HTMLSelectElement).value).toBe('Lead Artist'));
     fireEvent.change(screen.getByLabelText('Show'), { target: { value: show.id } });
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
@@ -130,7 +130,7 @@ describe('members and their show (CR-36)', () => {
     // The person's login is sent, and their position is the role.
     expect(called(calls, 'POST').body).toEqual({ user_id: newcomer.user, role: 'Lead Artist', show: show.id });
 
-    await choose('Nadia Newcomer');
+    await choose('Priya Person');
     fireEvent.change(screen.getByLabelText('Show'), { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
     await waitFor(() => expect(posts(calls)).toHaveLength(2));
@@ -146,7 +146,7 @@ describe('members and their show (CR-36)', () => {
     const role = screen.getByLabelText('Role') as HTMLSelectElement;
     await waitFor(() => expect([...role.options].map((o) => o.value)).toEqual(positions.results.map((x) => x.name)));
     expect(role.value).toBe('Artist');
-    await choose('Nadia Newcomer'); // no position: the role stays
+    await choose('Priya Person'); // no position: the role stays
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
     await waitFor(() => expect(posts(calls)).toHaveLength(1));
     expect(called(calls, 'POST').body).toEqual({ user_id: newcomer.user, role: 'Artist' });
@@ -190,10 +190,14 @@ describe('members and their show (CR-36)', () => {
     const { calls } = mockFetch(server);
     mount(superuser);
     await showSelect(0);
-    await choose('Nadia Newcomer');
+    await choose('Priya Person');
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
     await waitFor(() => expect(posts(calls)).toHaveLength(1));
-    await waitFor(() => expect(useNotificationStore.getState().notifications.map((n) => n.message)).toContain('Nadia Newcomer is on the project.'));
+    await waitFor(() => expect(useNotificationStore.getState().notifications.map((n) => n.message)).toContain('Priya Person is on the project.'));
+    // The dropdown lists only people with a login (CR-57).
+    const lists = calls.filter((c) => path(c) === '/api/v1/people/');
+    expect(lists.length).toBeGreaterThan(0);
+    expect(lists.every((c) => new URL(c.url).searchParams.get('has_user') === 'true')).toBe(true);
   });
 
   it('offers no show picker for a project that has no shows', async () => {

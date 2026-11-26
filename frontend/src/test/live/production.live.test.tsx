@@ -15,7 +15,7 @@ import { RelatedRecords } from '@/modules/directory/RelatedRecords';
 import { ProjectWorkspacePage } from '@/modules/production/pages/ProjectWorkspacePage';
 import { projectsFormConfig, projectsListConfig, sequencesConfig } from '@/modules/production/structure/configs';
 import { MembersPanel, NotesPanel, OverviewPanel } from '@/modules/production/structure/panels';
-import { pickEntity } from '@/test/picker';
+import { openPicker, pickEntity } from '@/test/picker';
 import { peopleApi } from '@/api/masterdata/directory';
 import { freshTotp, live } from './liveBackend';
 import { personFor } from './livePeople';
@@ -91,16 +91,16 @@ describe('projects, end to end', () => {
 });
 
 describe('members, structure and notes, end to end', () => {
-  it('adds a picked person, who then sees the project while a stranger is refused; a person with no login is refused first', async () => {
+  it('adds a picked person, who then sees the project while a stranger is refused; a person with no login is not offered', async () => {
     await signInManager();
     const project = await projectsApi.create({ code: `M${uid()}`, name: 'Members', workflow_type: 'standard' });
     const offline = await peopleApi.create({ name: `Offline ${uid()}` });
     const artist = await personFor(live.users.artist.email, `Live Artist ${uid()}`);
 
     render(tree(<MembersPanel projectId={project.id} />));
-    await pickEntity('Add a member', offline.name, { search: offline.name, timeout: 15000 });
-    fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
-    expect(await screen.findByText(`${offline.name} has no login yet. Link one to them in People first.`, {}, { timeout: 15000 })).toBeTruthy();
+    // Only people with a login are listed (CR-57): the search finds the artist's person, never the one without a login.
+    const { menu } = await openPicker('Add a member', { search: offline.name, timeout: 15000 });
+    expect(await within(menu).findByText(`Nothing matches “${offline.name}”`, {}, { timeout: 15000 })).toBeTruthy();
 
     await pickEntity('Add a member', artist.name, { search: artist.name, timeout: 15000 });
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));

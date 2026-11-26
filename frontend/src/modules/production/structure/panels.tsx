@@ -125,7 +125,7 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
   const onAdd = submit(async (values) => {
     const person = await queryClient.fetchQuery({ queryKey: peopleApi.keys.detail(values.person), queryFn: ({ signal }) => peopleApi.get(values.person, signal), staleTime: 60_000 });
     const label = person.full_name || person.name;
-    // Only a person with a login can be on a project.
+    // The list holds only people with a login (CR-57); one may have been unlinked since it loaded.
     if (!person.user) {
       setError('person', { type: 'login', message: `${label} has no login yet. Link one to them in People first.` });
       return;
@@ -187,6 +187,8 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
                 render={({ field }) => (
                   <PersonPicker
                     label="Add a member"
+                    // Only people with a login can be on a project (CR-57).
+                    filters={{ has_user: true }}
                     value={field.value || null}
                     onChange={(id) => {
                       field.onChange(id ?? '');

@@ -106,6 +106,19 @@ class PersonSelector(_DirectorySelector):
     def _build(cls, manager) -> QuerySet[Any]:
         return manager.select_related("user", "role", "department", "team", "office")
 
+    @classmethod
+    def names_by_user(cls, user_ids) -> dict[str, str]:
+        """The name of the live person linked to each of these logins (docs/sync CR-57), in one query; a login with no person is left out."""
+        ids = [uid for uid in user_ids if uid]
+        if not ids:
+            return {}
+        rows = (
+            Person.objects.filter(user_id__in=ids, is_deleted=False)
+            .exclude(name="")
+            .values_list("user_id", "name")
+        )
+        return {str(user_id): name for user_id, name in rows}
+
 
 class _PartnerSelector(BaseSelector):
     """Selector for clients and vendors, with a live contact count in the same query."""
