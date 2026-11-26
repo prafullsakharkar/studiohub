@@ -16,7 +16,9 @@ import { ProjectWorkspacePage } from '@/modules/production/pages/ProjectWorkspac
 import { projectsFormConfig, projectsListConfig, sequencesConfig } from '@/modules/production/structure/configs';
 import { MembersPanel, NotesPanel, OverviewPanel } from '@/modules/production/structure/panels';
 import { pickEntity } from '@/test/picker';
+import { peopleApi } from '@/api/masterdata/directory';
 import { freshTotp, live } from './liveBackend';
+import { personFor } from './livePeople';
 
 /** Phase 5 against a REAL backend. Run on a fresh live_backend.py seed. */
 beforeEach(() => localStorage.clear());
@@ -89,16 +91,18 @@ describe('projects, end to end', () => {
 });
 
 describe('members, structure and notes, end to end', () => {
-  it('adds a member by e-mail, who then sees the project while a stranger is refused; unknown e-mails say "User not found."', async () => {
+  it('adds a picked person, who then sees the project while a stranger is refused; a person with no login is refused first', async () => {
     await signInManager();
     const project = await projectsApi.create({ code: `M${uid()}`, name: 'Members', workflow_type: 'standard' });
+    const offline = await peopleApi.create({ name: `Offline ${uid()}` });
+    const artist = await personFor(live.users.artist.email, `Live Artist ${uid()}`);
 
     render(tree(<MembersPanel projectId={project.id} />));
-    fireEvent.change(await screen.findByLabelText('Add a member by email', {}, { timeout: 15000 }), { target: { value: 'nobody-here@example.test' } });
+    await pickEntity('Add a member', offline.name, { search: offline.name, timeout: 15000 });
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
-    expect(await screen.findByText('User not found.', {}, { timeout: 15000 })).toBeTruthy();
+    expect(await screen.findByText(`${offline.name} has no login yet. Link one to them in People first.`, {}, { timeout: 15000 })).toBeTruthy();
 
-    fireEvent.change(screen.getByLabelText('Add a member by email'), { target: { value: live.users.artist.email } });
+    await pickEntity('Add a member', artist.name, { search: artist.name, timeout: 15000 });
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
     await waitFor(async () => expect((await projectScopedApi.members(project.id)).results.map((m) => m.email)).toContain(live.users.artist.email), { timeout: 15000 });
     cleanup();
@@ -171,6 +175,6 @@ describe('members, structure and notes, end to end', () => {
       )
     );
     expect((await screen.findAllByText('Workspace', {}, { timeout: 20000 })).length).toBeGreaterThan(0);
-    expect(await screen.findByLabelText('Add a member by email', {}, { timeout: 15000 })).toBeTruthy();
+    expect(await screen.findByLabelText('Add a member', { selector: 'button' }, { timeout: 15000 })).toBeTruthy();
   }, 60000);
 });

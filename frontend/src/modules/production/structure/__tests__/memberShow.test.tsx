@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext } from '@/core/auth/AuthContext';
@@ -10,7 +10,8 @@ import type { MockCall, MockReply } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import type { User } from '@/types/identity';
-import { MembersPanel } from '../panels';
+import { pickEntity } from '@/test/picker';
+import { MembersPanel, visibleMembers } from '../panels';
 
 type Member = { id: string; user_id: string; name: string; email: string; show_id: string | null; show_code: string; role: string; roles: string[]; status: string; scope: string; department: string };
 type Captured = { status: number; body: unknown };
@@ -24,11 +25,24 @@ const bodyOf = <T,>(flow: Record<string, Captured>, name: string) => flow[name].
 const PID = (showFlow.ids as unknown as { project: string }).project;
 const show = bodyOf<{ results: Array<{ id: string; code: string; name: string }> }>(showFlow, 'shows_list').results[0];
 // A member bound to the show (as the server answered after binding), a suspended two-role member on the whole
-// project, and the signed-in administrator's own membership (same row shape, their user id).
-const bound = bodyOf<{ results: Member[] }>(showFlow, 'members_list').results[0];
-const loose = bodyOf<Member>(showFlow, 'other_add');
+// project, and the signed-in administrator's own membership (same row shape, their user id). The captured names are
+// redacted to one address; distinct names keep this order when the table sorts by name.
+const bound: Member = { ...bodyOf<{ results: Member[] }>(showFlow, 'members_list').results[0], name: 'Bea Bound' };
+const loose: Member = { ...bodyOf<Member>(showFlow, 'other_add'), name: 'Lou Loose' };
 const mine: Member = { ...loose, id: 'own-membership', user_id: superuser.id, name: 'The administrator', status: 'active', roles: ['Lead'], role: 'Lead' };
 const members = { count: 3, results: [bound, loose, mine] };
+
+// The add form picks a directory person (captured rows, given a login and a name) and a studio position.
+type Person = { id: string; name: string; full_name: string; user: string | null; role: string | null };
+type Page<T> = { count: number; next: null; previous: null; results: T[] };
+const peopleFlow = loadSample<Record<string, Captured>>('masterdata/people.json');
+const positions = bodyOf<Page<{ id: string; name: string }>>(loadSample<Record<string, Captured>>('masterdata/positions.json'), 'list_admin');
+const [row0, row1] = bodyOf<Page<Person>>(peopleFlow, 'list_admin').results;
+const lead = positions.results.find((x) => x.name === 'Lead Artist') as { id: string; name: string };
+const newcomer: Person = { ...row0, name: 'Nadia Newcomer', full_name: 'Nadia Newcomer', user: 'a1b2c3d4-0000-4000-8000-000000000001', role: lead.id };
+const nologin: Person = { ...row1, name: 'Omar Offline', full_name: 'Omar Offline', user: null, role: null };
+const listedPerson = (m: Member): Person => ({ ...row1, id: `person-${m.id}`, name: 'Listed Person', full_name: 'Listed Person', user: m.user_id, role: null });
+let people: Person[];
 
 const path = (c: MockCall) => new URL(c.url).pathname;
 const membersUrl = `/api/organizations/projects/${PID}/members/`;
@@ -40,6 +54,10 @@ const server = (c: MockCall): MockReply => {
   if (custom) return custom;
   if (path(c) === `/api/organizations/projects/${PID}/members/`) return c.method === 'POST' ? { body: bodyOf(showFlow, 'other_readd_preserving') } : { body: members };
   if (path(c) === '/api/v1/shows/') return { body: shows };
+  if (path(c) === '/api/v1/positions/') return { body: positions };
+  if (path(c) === '/api/v1/people/') return { body: { count: people.length, next: null, previous: null, results: people } };
+  const person = people.find((x) => path(c) === `/api/v1/people/${x.id}/`);
+  if (person) return { body: person };
   return { body: { count: 0, next: null, previous: null, results: [] } };
 };
 
@@ -60,12 +78,15 @@ const called = (calls: MockCall[], method: string) => {
   if (!call) throw new Error(`no ${method} was sent`);
   return call;
 };
+const choose = (name: string) => pickEntity('Add a member', name);
+const posts = (calls: MockCall[]) => calls.filter((c) => c.method === 'POST');
 const showSelect = async (n: number) => ((await screen.findAllByRole('combobox', { name: /^Show for/ })) as HTMLSelectElement[])[n];
 
 beforeEach(() => {
   shows = bodyOf(showFlow, 'shows_list');
+  people = [newcomer, nologin];
   reply = () => undefined;
-  useNotificationStore.setState({ notifications: [] } as never);
+  useNotificationStore.setState({ notifications: [], recentDedupKeys: new Map() } as never);
   localStorage.clear();
   tokenStorage.setTokens({ access: 'a', refresh: 'r' });
 });
@@ -101,40 +122,78 @@ describe('members and their show (CR-36)', () => {
     const { calls } = mockFetch(server);
     mount(superuser);
     await showSelect(0);
-    fireEvent.change(screen.getByLabelText('Add a member by email'), { target: { value: 'new@example.test' } });
+    await choose('Nadia Newcomer');
+    await waitFor(() => expect((screen.getByLabelText('Role') as HTMLSelectElement).value).toBe('Lead Artist'));
     fireEvent.change(screen.getByLabelText('Show'), { target: { value: show.id } });
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
-    await waitFor(() => expect(calls.filter((c) => c.method === 'POST')).toHaveLength(1));
-    expect(called(calls, 'POST').body).toEqual({ email: 'new@example.test', role: 'Artist', show: show.id });
+    await waitFor(() => expect(posts(calls)).toHaveLength(1));
+    // The person's login is sent, and their position is the role.
+    expect(called(calls, 'POST').body).toEqual({ user_id: newcomer.user, role: 'Lead Artist', show: show.id });
 
-    fireEvent.change(screen.getByLabelText('Add a member by email'), { target: { value: 'again@example.test' } });
+    await choose('Nadia Newcomer');
     fireEvent.change(screen.getByLabelText('Show'), { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
-    await waitFor(() => expect(calls.filter((c) => c.method === 'POST')).toHaveLength(2));
-    expect(calls.filter((c) => c.method === 'POST')[1].body).toEqual({ email: 'again@example.test', role: 'Artist' });
+    await waitFor(() => expect(posts(calls)).toHaveLength(2));
+    expect(posts(calls)[1].body).toEqual({ user_id: newcomer.user, role: 'Lead Artist' });
   });
 
-  it('does not add someone who is already listed: no request, and a message that gives their status (CR-38)', async () => {
-    // The server may store an e-mail with capitals; the match ignores case on both sides (the form trims the spaces).
-    const mixed = { ...loose, email: 'Mixed.Case@Example.test' };
-    reply = (c) => (c.method === 'GET' && path(c) === membersUrl ? { body: { count: 1, results: [mixed] } } : undefined);
+  it('offers the studio positions as roles, and keeps a role chosen by hand over the person’s position', async () => {
+    const artistPosition = positions.results.find((x) => x.name === 'Artist') as { id: string };
+    people = [{ ...newcomer, role: null }, { ...newcomer, id: 'with-position', name: 'Paula Positioned', full_name: 'Paula Positioned', role: artistPosition.id }];
     const { calls } = mockFetch(server);
     mount(superuser);
     await showSelect(0);
-    fireEvent.change(screen.getByLabelText('Add a member by email'), { target: { value: '  mixed.case@EXAMPLE.test ' } });
+    const role = screen.getByLabelText('Role') as HTMLSelectElement;
+    await waitFor(() => expect([...role.options].map((o) => o.value)).toEqual(positions.results.map((x) => x.name)));
+    expect(role.value).toBe('Artist');
+    await choose('Nadia Newcomer'); // no position: the role stays
+    fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
+    await waitFor(() => expect(posts(calls)).toHaveLength(1));
+    expect(called(calls, 'POST').body).toEqual({ user_id: newcomer.user, role: 'Artist' });
+
+    fireEvent.change(role, { target: { value: 'Lead Artist' } });
+    await choose('Paula Positioned'); // a position (Artist), but the role was chosen by hand
+    await new Promise((resolve) => setTimeout(resolve, 50)); // time for a fetched position to land, were it fetched
+    expect(calls.some((c) => path(c) === '/api/v1/people/with-position/')).toBe(false);
+    expect(role.value).toBe('Lead Artist');
+    fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
+    await waitFor(() => expect(posts(calls)).toHaveLength(2));
+    expect(posts(calls)[1].body).toEqual({ user_id: newcomer.user, role: 'Lead Artist' });
+  });
+
+  it('asks for a person, and refuses one with no login without a request', async () => {
+    const { calls } = mockFetch(server);
+    mount(superuser);
+    await showSelect(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
+    expect(await screen.findByText('Choose a person')).toBeTruthy();
+    await choose('Omar Offline');
+    fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
+    expect(await screen.findByText('Omar Offline has no login yet. Link one to them in People first.')).toBeTruthy();
+    expect(posts(calls)).toHaveLength(0);
+  });
+
+  it('does not add someone who is already listed: no request, and a message that gives their status (CR-38)', async () => {
+    people = [listedPerson(loose)];
+    reply = (c) => (c.method === 'GET' && path(c) === membersUrl ? { body: { count: 1, results: [loose] } } : undefined);
+    const { calls } = mockFetch(server);
+    mount(superuser);
+    await showSelect(0);
+    await choose('Listed Person');
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
     await waitFor(() => expect(useNotificationStore.getState().notifications.map((n) => n.message).join(' ')).toContain('already on this project (suspended)'));
-    expect(calls.filter((c) => c.method === 'POST')).toHaveLength(0);
-    expect((screen.getByLabelText('Add a member by email') as HTMLInputElement).value).toBe('');
+    expect(posts(calls)).toHaveLength(0);
+    expect(screen.getByLabelText('Add a member', { selector: 'button' }).textContent).not.toContain('Listed Person');
   });
 
   it('still adds someone who is not listed', async () => {
     const { calls } = mockFetch(server);
     mount(superuser);
     await showSelect(0);
-    fireEvent.change(screen.getByLabelText('Add a member by email'), { target: { value: 'someone.else@example.test' } });
+    await choose('Nadia Newcomer');
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
-    await waitFor(() => expect(calls.filter((c) => c.method === 'POST')).toHaveLength(1));
+    await waitFor(() => expect(posts(calls)).toHaveLength(1));
+    await waitFor(() => expect(useNotificationStore.getState().notifications.map((n) => n.message)).toContain('Nadia Newcomer is on the project.'));
   });
 
   it('offers no show picker for a project that has no shows', async () => {
@@ -244,5 +303,53 @@ describe('removing a member (CR-37)', () => {
     fireEvent.click((await screen.findAllByRole('button', { name: /^Remove / }))[1]);
     fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
     expect(calls.some((c) => c.method === 'DELETE')).toBe(false);
+  });
+});
+
+describe('searching and sorting the members', () => {
+  const names = () => within(screen.getByRole('table', { name: 'Project members' })).getAllByRole('row').slice(1).map((r) => r.querySelector('td')?.textContent);
+  const header = (name: string) => within(screen.getByRole('table', { name: 'Project members' })).getByRole('columnheader', { name: new RegExp(`^${name}`) });
+
+  it('narrows the table to the members whose name, e-mail, role, show or department match', async () => {
+    mockFetch(server);
+    mount(superuser);
+    await screen.findByRole('table', { name: 'Project members' });
+    expect(names()).toEqual(['Bea Bound', 'Lou Loose', 'The administrator']);
+    const search = screen.getByRole('textbox', { name: 'Search members' });
+    fireEvent.change(search, { target: { value: '  lou ' } });
+    expect(names()).toEqual(['Lou Loose']);
+    expect(screen.getByText('1 of 3 members')).toBeTruthy();
+    fireEvent.change(search, { target: { value: bound.show_code.toLowerCase() } });
+    expect(names()).toEqual(['Bea Bound']);
+    fireEvent.change(search, { target: { value: 'nobody at all' } });
+    expect(screen.queryByRole('table', { name: 'Project members' })).toBeNull();
+    expect(screen.getByText('No member matches “nobody at all”.')).toBeTruthy();
+    fireEvent.change(search, { target: { value: '' } });
+    expect(names()).toHaveLength(3);
+  });
+
+  it('sorts by name and by role from the headers, and says which way', async () => {
+    mockFetch(server);
+    mount(superuser);
+    await screen.findByRole('table', { name: 'Project members' });
+    expect(header('Name').getAttribute('aria-sort')).toBe('ascending');
+    fireEvent.click(within(header('Name')).getByRole('button'));
+    expect(header('Name').getAttribute('aria-sort')).toBe('descending');
+    expect(names()).toEqual(['The administrator', 'Lou Loose', 'Bea Bound']);
+
+    fireEvent.click(within(header('Role')).getByRole('button'));
+    expect(header('Role').getAttribute('aria-sort')).toBe('ascending');
+    expect(header('Name').getAttribute('aria-sort')).toBeNull();
+    const roles = within(screen.getByRole('table', { name: 'Project members' })).getAllByRole('row').slice(1).map((r) => r.querySelectorAll('td')[2].textContent ?? '');
+    expect(roles).toEqual([...roles].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })));
+    expect(within(header('Email')).queryByRole('button')).toBeNull();
+  });
+
+  it('sorts names without regard to case, then by e-mail', () => {
+    const row = (name: string, email: string, role: string) => ({ ...loose, id: email, name, email, role, roles: [role] });
+    const rows = [row('bea', 'b2@x.test', 'Lead'), row('Adam', 'a@x.test', 'Artist'), row('Bea', 'b1@x.test', 'Artist')];
+    expect(visibleMembers(rows, '', { by: 'Name', direction: 'asc' }).map((m) => m.email)).toEqual(['a@x.test', 'b1@x.test', 'b2@x.test']);
+    expect(visibleMembers(rows, '', { by: 'Role', direction: 'desc' }).map((m) => m.email)).toEqual(['b2@x.test', 'a@x.test', 'b1@x.test']);
+    expect(visibleMembers(rows, 'LEAD', { by: 'Name', direction: 'asc' }).map((m) => m.email)).toEqual(['b2@x.test']);
   });
 });
