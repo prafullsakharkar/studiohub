@@ -6,11 +6,14 @@ from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Project
 
 from .base import BudgetGatedMixin
+from .client import ProjectClientMixin
 from .colour import ProjectColourMixin
 from .vendors import VendorIdsField, VendorNamesField
 
 
-class ProjectCreateSerializer(ProjectColourMixin, BudgetGatedMixin, BaseWriteSerializer[Any]):
+class ProjectCreateSerializer(
+    ProjectClientMixin, ProjectColourMixin, BudgetGatedMixin, BaseWriteSerializer[Any]
+):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
     vendor_ids = VendorIdsField()

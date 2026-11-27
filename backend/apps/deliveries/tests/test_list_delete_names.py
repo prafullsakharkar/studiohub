@@ -44,6 +44,10 @@ class TestListFilters:
     @pytest.fixture
     def rows(self, project):
         client = ClientFactory.create(name="Acme", code="ACME")
+        project.client_id = str(
+            client.pk
+        )  # CR-60: a project's delivery goes to the project's client
+        project.save(update_fields=["client_id"])
         destination = DeliveryDestination.objects.create(
             name="S3", destination_type="AWS S3 Bucket", endpoint="s3://x"
         )

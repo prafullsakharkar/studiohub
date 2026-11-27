@@ -105,9 +105,10 @@ class TestChangingAMember:
             assert response.status_code == 400
             assert response.json()["non_field_errors"] == ["Nothing to update."]
 
-    def test_the_user_the_project_and_the_external_ids_cannot_be_edited(self, admin, project, member):
+    def test_the_user_and_the_project_cannot_be_edited(self, admin, project, member):
+        # Since CR-60 the vendor and the client can be edited, against the project's own (test_cr60_project_partners).
         other = ProjectFactory.create(code="ELSEWHERE")
-        patch(admin, project, member, status="on_leave", user_id=str(UserFactory.create().pk), project_id=str(other.pk), vendor_id="v1", client_id="c1")
+        patch(admin, project, member, status="on_leave", user_id=str(UserFactory.create().pk), project_id=str(other.pk))
         row = fresh(member)
         assert row.project_id == project.pk
         assert row.user_id == member.user_id
