@@ -361,3 +361,11 @@ Found while wiring the screens to the running backend (`docs/sync/backend-change
 | API-DLV-24 (CR-21) | detail, `history/`, `qc/` | people by id only | additive read fields beside the ids: `signed_off_by_name`, `client_answered_by_name`, `actor_name`, `checked_by_name` (profile display name, else email; empty for nobody, e.g. a system move) |
 
 Tests: `apps/deliveries/tests/test_list_delete_names.py`. Frontend change list: the list offers the filters, delete follows the rule, destinations offer the seven types, Remove is offered for a checked item, names replace the lookup of ids.
+
+## 12. A project's delivery goes to the project's client (docs/sync CR-60)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| API-DLV-25 (CR-60) | `POST /deliveries/` (`client_id`, with a `project_id`) | any active client | the project's client only (`Project.client_id`, production C-74): another client, or any client for a project that has none, is 400 `{"client_id": ["This client is not the project's client."]}`. An unknown, inactive or deleted client is still 400 "Unknown client.". A delivery with no client, or one without a project (a platform admin sending a code), is unchanged. Existing deliveries are not touched, and a delivery's client still cannot be edited. |
+
+Tests: `apps/production/tests/test_cr60_project_partners.py` (`TestDeliveryClient`). The delivery form fills in the project's client and offers no other.

@@ -1285,7 +1285,7 @@ Not a security hole: the permission resolver and the user's role label already s
 
 No frontend change: the role page's Delete already returns to the list, which now leaves the role out. Verification: `docs/sync/backend-cr-59-verification.md`.
 
-### CR-60: a project has one checked client and its own vendors, and only those can be chosen on its records (**feature**, **PROPOSED**, branch `feature/project-partners`)
+### CR-60: a project has one checked client and its own vendors, and only those can be chosen on its records (**feature**, **APPLIED** on `feature/project-partners`)
 
 Requested by the owner (2026-11-27): "Add provision to add client and vendor for project so that on project basis they can select provided clients or vendor … whenever required we can select only project client or vendor". Decisions taken with the owner before writing this:
 - a project has **one client** and **several vendors** ("Can you make single client but multiple vendors"). A first draft proposed several clients;
@@ -1337,3 +1337,18 @@ Requested by the owner (2026-11-27): "Add provision to add client and vendor for
 - The external-access rules themselves (`external_scope.py`) do not change: only which values can be stored. So no ADR.
 
 **Risk.** Medium. It touches four write paths and a data migration on every project. Each is a 400 on a named field and is tested both ways. The migration only fills blanks and adds vendor ids; it never removes one.
+
+**Approved** by the owner ("approved", 2026-11-27), all six items including the delivery client (item 4), and applied as proposed. Details settled while building it:
+- **Where the checks sit.**
+  - The project's client: `ProjectClientMixin` on the create and update serializers.
+  - The in-use refusal: `ProjectViewSet.check_update`.
+  - The task vendor: `TaskViewSet.validate_references`, which single and bulk creates and updates all run.
+  - The delivery client: `DeliveryPackageService.create`.
+  - The member's client and vendor: the add and edit serializers.
+  - The shared rules live in `apps/production/validators/partners.py`, and `ClientSelector` now has `names_by_id`, like vendors.
+- **Migration** `production.0019_cr60_project_partners`, data only. It prints a count when values stay unresolved or a project's records name several clients.
+- **Members tab:** a field refusal is shown as the server's own sentence ("This vendor is not on the project."), because the table has no input to put it on. Other refusals are reported as before.
+- **Contracts:** production C-74 to C-78 and deliveries API-DLV-25.
+
+Verification: `docs/sync/backend-cr-60-verification.md`.
+
