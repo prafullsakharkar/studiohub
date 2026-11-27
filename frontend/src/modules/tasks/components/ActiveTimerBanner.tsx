@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { useTimerStore } from '@/shared/stores/useTimerStore';
+import React, { useEffect, useState } from 'react';
+import { timerElapsedSeconds, useTimerStore } from '@/shared/stores/useTimerStore';
 import { LogTimeDialog } from '@/modules/production/work/LogTimeDialog';
-;
 import {
   Play,
   Pause,
@@ -21,6 +20,7 @@ export const ActiveTimerBanner: React.FC = () => {
     activeProjectId,
     activeProjectCode,
     department,
+    startTime,
     elapsedSeconds,
     isBillable,
     notes,
@@ -32,15 +32,24 @@ export const ActiveTimerBanner: React.FC = () => {
   } = useTimerStore();
 
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+  // Re-render once a second while the stopwatch runs; the time itself comes from the clock.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!isRunning) return;
+    setNow(Date.now());
+    const handle = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(handle);
+  }, [isRunning]);
 
   if (!activeTaskId) return null;
 
-  const hours = Math.floor(elapsedSeconds / 3600);
-  const minutes = Math.floor((elapsedSeconds % 3600) / 60);
-  const seconds = elapsedSeconds % 60;
+  const elapsed = timerElapsedSeconds({ isRunning, startTime, elapsedSeconds }, isRunning ? Math.max(now, startTime ?? now) : now);
+  const hours = Math.floor(elapsed / 3600);
+  const minutes = Math.floor((elapsed % 3600) / 60);
+  const seconds = elapsed % 60;
   const timeFormatted = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-  const durationHoursDecimal = Math.max(0.25, parseFloat((elapsedSeconds / 3600).toFixed(2)));
+  const durationHoursDecimal = Math.max(0.25, parseFloat((elapsed / 3600).toFixed(2)));
 
   const handleStopAndSave = () => {
     setIsLogModalOpen(true);
@@ -75,7 +84,7 @@ export const ActiveTimerBanner: React.FC = () => {
             <div className="text-xs font-semibold text-slate-200 truncate mt-0.5" title={activeTaskTitle || ''}>
               {activeTaskTitle}
             </div>
-            <div className="text-sm font-mono font-bold text-white tracking-widest mt-1">
+            <div className="text-sm font-mono font-bold text-white tracking-widest mt-1" role="timer" aria-label="Time on the stopwatch">
               {timeFormatted}
             </div>
           </div>
