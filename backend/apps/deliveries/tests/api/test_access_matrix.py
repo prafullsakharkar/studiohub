@@ -212,6 +212,8 @@ class TestCreating:
             assert response.status_code == 400 and "Unknown client" in response.content.decode()
 
         active = ClientFactory.create(status="Active")
+        project.client_id = str(active.pk)  # CR-60: and it is the project's client
+        project.save(update_fields=["client_id"])
         ok = api.post(
             URL,
             {"name": "x", "project_id": str(project.pk), "client_id": str(active.pk)},

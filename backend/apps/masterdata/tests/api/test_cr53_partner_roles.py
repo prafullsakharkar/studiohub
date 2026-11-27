@@ -114,7 +114,9 @@ def test_an_artist_still_reads_the_client_name_of_their_project(rows):
 
 def test_a_producer_still_creates_a_delivery_for_a_client_and_a_lead_reads_its_name(rows):
     acme = rows["clients"]
-    project = ProjectFactory.create(code="CR53D")
+    project = ProjectFactory.create(
+        code="CR53D", client_id=str(acme.pk)
+    )  # CR-60: the project's client
     producer = as_role("production-admin", project)
 
     created = producer.post(

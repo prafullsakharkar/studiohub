@@ -95,6 +95,8 @@ class TestLinks:
 
     def test_a_delivery_keeps_its_project_and_client(self, project):
         client = Client.objects.create(code="ACME", name="Acme Pictures")
+        project.client_id = str(client.pk)  # CR-60: the project's client
+        project.save(update_fields=["client_id"])
 
         package = _create(project_id=project.pk, client_id=client.pk)
 
@@ -104,6 +106,8 @@ class TestLinks:
         self, project
     ):
         client = Client.objects.create(code="ACME2", name="Acme Two")
+        project.client_id = str(client.pk)  # CR-60: the project's client
+        project.save(update_fields=["client_id"])
         _create(project_id=project.pk, client_id=client.pk)
 
         with pytest.raises(ProtectedError):

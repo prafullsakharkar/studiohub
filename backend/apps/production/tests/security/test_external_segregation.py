@@ -407,17 +407,23 @@ class TestWholeProjectRecordsAreInternalOnly:
 
 class TestAddingExternalMembers:
     def test_the_member_api_sets_vendor_and_client(self, world):
+        from apps.masterdata.tests.factories import VendorFactory
+
         admin = UserFactory(is_superuser=True, is_staff=True)
         newcomer = _user()
         url = f"/api/organizations/projects/{world['project'].pk}/members/"
+        # CR-60: the member's vendor is one of the project's vendors, stored as its UUID.
+        vendor = VendorFactory.create(code="VEN-Q")
+        world["project"].vendor_ids = [*(world["project"].vendor_ids or []), str(vendor.pk)]
+        world["project"].save(update_fields=["vendor_ids"])
 
         response = _client(admin).post(
             url,
-            {"userId": str(newcomer.pk), "role": "Artist", "vendor_id": "vendor-q"},
+            {"userId": str(newcomer.pk), "role": "Artist", "vendor_id": str(vendor.pk)},
             format="json",
         )
 
         assert response.status_code == 201, response.content
         membership = ProjectMembership.objects.get(user=newcomer, project=world["project"])
-        assert membership.vendor_id == "vendor-q"
+        assert membership.vendor_id == str(vendor.pk)
         assert membership.client_id == ""

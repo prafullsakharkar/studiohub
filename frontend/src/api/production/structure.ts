@@ -284,6 +284,9 @@ export interface ProjectMemberPatch {
   /** The text a task's department is matched against (case-insensitive); '' clears. */
   department?: string;
   department_id?: string;
+  /** CR-60: who the member works for. The project's client, or one of its vendors, makes them external; '' clears. */
+  client_id?: string;
+  vendor_id?: string;
 }
 
 export const NOTE_CATEGORIES = ['Director Feedback', 'Supervisor Note', 'Client Note', 'Pipeline Notice', 'Turnover Requirement', 'General'] as const;
@@ -462,7 +465,7 @@ export const projectScopedApi = {
   members: (projectId: string, signal?: AbortSignal) => apiClient.get<{ count: number; results: ProjectMember[] }>(`${scoped(projectId)}/members/`, { signal }),
   /** 201 when new, 200 when already a member, 404 "User not found." for an unknown e-mail. */
   /** Add someone. For a person already on the project only what is named changes (CR-38: a `role` replaces their role and roles; status and the rest stay), and the panel does not send it for a listed member: edit with `updateMember`. `show` (CR-36): omitted keeps, null releases, an id binds. */
-  addMember: (projectId: string, input: { user_id?: string; email?: string; role: string; show?: string | null }) => apiClient.post<ProjectMember>(`${scoped(projectId)}/members/`, input),
+  addMember: (projectId: string, input: { user_id?: string; email?: string; role: string; show?: string | null; client_id?: string; vendor_id?: string }) => apiClient.post<ProjectMember>(`${scoped(projectId)}/members/`, input),
   /** CR-37: change what is sent of a member that is already on the project (`memberId` is the row's `id`). */
   updateMember: (projectId: string, memberId: string, patch: ProjectMemberPatch) => apiClient.patch<ProjectMember>(`${scoped(projectId)}/members/${memberId}/`, patch),
   /** CR-37: take a member off the project (a soft delete; adding them again restores them). */

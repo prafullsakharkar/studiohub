@@ -41,6 +41,7 @@ from apps.masterdata.selectors.directory import ClientSelector
 from apps.production.permissions.checks import has_explicit_permission_code, has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.project import ProjectSelector
+from apps.production.validators.partners import require_project_client
 
 EDITABLE_FIELDS = (
     "name",
@@ -125,7 +126,8 @@ class DeliveryService:
         required unless the caller is a platform admin sending a code. An unknown project, one the
         caller is not in and a malformed id all give the same "Unknown project." (no way to tell
         them apart). Without a ``request`` (internal callers, which are trusted) any existing
-        project is accepted. The client and the destination must exist and be active.
+        project is accepted. The client and the destination must exist and be active, and with a project
+        the client must be the project's client (CR-60).
         """
         data = dict(data)
         project = None
@@ -153,6 +155,9 @@ class DeliveryService:
             )
             if client is None:
                 raise ValidationError({"client_id": ["Unknown client."]})
+            if project is not None:
+                # CR-60: a project's delivery goes to the project's client, and only to it.
+                require_project_client(project, client.pk)
         _, destination = cls._resolve_destination(data)
         cls._check_destination_text(data, destination)
 

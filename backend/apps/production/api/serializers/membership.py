@@ -128,6 +128,30 @@ class _MemberRefsMixin:
             raise serializers.ValidationError({"show": ["Unknown show."]})
         return show
 
+    def _check_partners(self, attrs):
+        """
+        CR-60: a member's client is the project's client and a member's vendor one of its vendors, stored as
+        the UUID. A blank is not checked: on the add it names nothing, on the edit it clears.
+        """
+        from apps.production.validators.partners import (
+            require_project_client,
+            require_project_vendor,
+        )
+
+        project = self.context.get("project")  # pyright: ignore[reportAttributeAccessIssue]
+        for field in ("client_id", "vendor_id"):
+            raw = str(attrs.get(field) or "").strip()
+            if not raw:
+                if field in attrs:
+                    attrs[field] = ""
+                continue
+            if project is None:
+                raise serializers.ValidationError({field: ["Unknown project."]})
+            if field == "client_id":
+                attrs[field] = require_project_client(project, raw)
+            else:
+                attrs[field] = str(require_project_vendor(project, raw).pk)
+
     def _resolve_role_ref(self, role_ref):
         """Resolve a role id against the global identity roles.
 
@@ -190,6 +214,7 @@ class ProjectMembershipCreateSerializer(_MemberRefsMixin, BaseWriteSerializer[An
             attrs["role_ref"] = self._resolve_role_ref(role_ref)
         if attrs.get("show") is not None:
             attrs["show"] = self._resolve_show(attrs["show"])
+        self._check_partners(attrs)
         return attrs
 
 
@@ -207,10 +232,14 @@ class ProjectMembershipUpdateSerializer(_MemberRefsMixin, BaseWriteSerializer[An
     show = serializers.UUIDField(required=False, allow_null=True)
     department = serializers.CharField(required=False, allow_blank=True, max_length=100)
     department_id = serializers.CharField(required=False, allow_blank=True, max_length=50)
+    # CR-60: who the member works for. The project's client or one of its vendors makes them external
+    # (``selectors/external_scope.py``); blank makes them internal again.
+    vendor_id = serializers.CharField(required=False, allow_blank=True, max_length=50)
+    client_id = serializers.CharField(required=False, allow_blank=True, max_length=50)
 
     class Meta:
         model = ProjectMembership
-        fields = ("role", "roles", "role_id", "status", "show", "department", "department_id")
+        fields = ("role", "roles", "role_id", "status", "show", "department", "department_id", "vendor_id", "client_id")
 
     def validate(self, attrs):
         if not attrs:
@@ -222,4 +251,5 @@ class ProjectMembershipUpdateSerializer(_MemberRefsMixin, BaseWriteSerializer[An
         # The display role and the role list must agree, or a role change would not show: a role alone is the list.
         if "role" in attrs and "roles" not in attrs:
             attrs["roles"] = [attrs["role"]]
+        self._check_partners(attrs)
         return attrs

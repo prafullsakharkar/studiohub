@@ -139,21 +139,13 @@ class _PartnerSelector(BaseSelector):
         """Every row, soft-deleted included (restore and hard delete only)."""
         return cls._counted(cls.model.all_objects)  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
 
-
-class ClientSelector(_PartnerSelector):
-    model = Client
-
-
-class VendorSelector(_PartnerSelector):
-    model = Vendor
-
     @classmethod
     def names_by_id(cls, ids: Iterable[object]) -> dict[str, str]:
         """
-        ``{id: name}`` of the live (not soft-deleted) vendors among ``ids``, in one query.
+        ``{id: name}`` of the live (not soft-deleted) rows among ``ids``, in one query.
 
-        An id that is not a UUID, or names no live vendor, is left out (CR-42: a project's
-        ``vendor_names`` and the check of its ``vendor_ids``).
+        An id that is not a UUID, or names no live row, is left out (CR-42: a project's
+        ``vendor_names`` and the check of its ``vendor_ids``; CR-60: a project's client).
         """
         wanted: set[UUID] = set()
         for ref in ids:
@@ -163,8 +155,16 @@ class VendorSelector(_PartnerSelector):
                 continue
         if not wanted:
             return {}
-        rows = Vendor.objects.filter(pk__in=wanted).values_list("pk", "name")
+        rows = cls.model.objects.filter(pk__in=wanted).values_list("pk", "name")  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
         return {str(pk): name for pk, name in rows}
+
+
+class ClientSelector(_PartnerSelector):
+    model = Client
+
+
+class VendorSelector(_PartnerSelector):
+    model = Vendor
 
 
 class _OwnedSelector(BaseSelector):

@@ -92,10 +92,42 @@ class TaskViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
         """Assignee and reviewer must be active members of the task's project."""
         self._resolve_task_type(data)
         self._resolve_entity(project, data, instance)
+        self._resolve_vendor(project, data, instance)
         if project is None:
             return
         for field in ("assignee", "reviewer"):
             require_project_member(project, data.get(field), field=field, label="user")
+
+    @staticmethod
+    def _resolve_vendor(project, data, instance):
+        """
+        CR-60: a task's vendor is one of its project's vendors, and its name and code are the vendor's.
+
+        What a write sends for ``vendor_name`` and ``vendor_code`` is ignored. A ``vendor_id`` that is left out,
+        or sent back unchanged, is not checked again (a task whose vendor has left the project can still be
+        edited); a blank one clears all three.
+        """
+        from apps.production.validators.partners import require_project_vendor
+
+        data.pop("vendor_name", None)
+        data.pop("vendor_code", None)
+        if "vendor_id" not in data:
+            return
+        raw = str(data["vendor_id"] or "").strip()
+        if instance is not None and raw.lower() == str(instance.vendor_id or "").strip().lower():
+            data.pop("vendor_id")
+            return
+        if not raw:
+            data.update(vendor_id="", vendor_name="", vendor_code="")
+            return
+        if project is None:
+            from rest_framework.exceptions import ValidationError
+
+            from apps.production.validators.partners import NOT_PROJECT_VENDOR
+
+            raise ValidationError({"vendor_id": [NOT_PROJECT_VENDOR]})
+        vendor = require_project_vendor(project, raw)
+        data.update(vendor_id=str(vendor.pk), vendor_name=vendor.name, vendor_code=vendor.code)
 
     @staticmethod
     def _resolve_entity(project, data, instance):
