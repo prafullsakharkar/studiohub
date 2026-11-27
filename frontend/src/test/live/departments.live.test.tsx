@@ -79,6 +79,9 @@ afterAll(async () => {
 
 afterEach(cleanup);
 
+/** Department rows in the table (the header row aside). */
+const rowCount = () => within(screen.getByRole('table', { name: 'Departments' })).getAllByRole('row').length - 1;
+
 describe('departments list against the real backend', () => {
   it('shows page 1 of 25 of ALL rows, with the real total', async () => {
     renderPage(<DepartmentsListPage />, admin);
@@ -86,14 +89,14 @@ describe('departments list against the real backend', () => {
     const total = (await apiClient.get<Page<Department>>('/api/v1/departments/?page_size=1')).count;
     expect(total).toBe(5 + BULK);
     expect(screen.getByText(new RegExp(`${total} Registered`))).toBeTruthy();
-    await waitFor(() => expect(screen.getAllByRole('link', { name: /open/i }).length).toBe(25));
+    await waitFor(() => expect(rowCount()).toBe(25));
   });
 
   it('pages to the rest of the rows (a first-page-only list would never show these)', async () => {
     renderPage(<DepartmentsListPage />, admin);
-    await waitFor(() => expect(screen.getAllByRole('link', { name: /open/i }).length).toBe(25));
+    await waitFor(() => expect(rowCount()).toBe(25));
     fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
-    await waitFor(() => expect(screen.getAllByRole('link', { name: /open/i }).length).toBe(5 + BULK - 25));
+    await waitFor(() => expect(rowCount()).toBe(5 + BULK - 25));
   });
 
   it('searches on the server across all pages', async () => {
@@ -120,8 +123,8 @@ describe('departments list against the real backend', () => {
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
 
     renderPage(<DepartmentsListPage />, admin);
-    await waitFor(() => expect(screen.getAllByRole('link', { name: /open/i }).length).toBe(25));
-    fireEvent.click(screen.getByRole('button', { name: /export csv/i }));
+    await waitFor(() => expect(rowCount()).toBe(25));
+    fireEvent.click(screen.getByRole('button', { name: /^export$/i }));
     await waitFor(() => expect(blobs.length).toBe(1));
 
     const text = await new Promise<string>((resolve) => {
@@ -165,11 +168,12 @@ describe('create against the real backend', () => {
 });
 
 describe('permissions against the real backend', () => {
-  it('a user without masterdata.directory.manage can read the list but is not offered Add/Delete', async () => {
+  it('a user without masterdata.directory.manage can read the list but is not offered New, Edit or Delete', async () => {
     renderPage(<DepartmentsListPage />, artist);
-    await waitFor(() => expect(screen.getAllByRole('link', { name: /open/i }).length).toBeGreaterThan(0));
-    expect(screen.queryByRole('link', { name: /add department/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /^delete$/i })).toBeNull();
+    await waitFor(() => expect(rowCount()).toBeGreaterThan(0));
+    expect(screen.queryByRole('link', { name: /new department/i })).toBeNull();
+    expect(screen.queryByRole('link', { name: /^edit /i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^delete /i })).toBeNull();
   });
 
   it('and the server agrees: create and delete are 403 for that user', async () => {
@@ -186,7 +190,7 @@ describe('delete against the real backend', () => {
     fireEvent.change(await screen.findByPlaceholderText(/search name or code/i), { target: { value: 'LIVE-027' } });
     await waitFor(() => expect(screen.getByText(/1 Matching/)).toBeTruthy());
 
-    fireEvent.click(screen.getByRole('button', { name: /^delete$/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Live Dept 027' }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: /^delete$/i }));
 
