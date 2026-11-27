@@ -10,7 +10,9 @@ export interface ActiveTimerState {
   activeProjectCode: string | null;
   activeProjectName: string | null;
   department?: string;
+  /** When the current running stretch began (ms since the epoch); null while paused or idle. */
   startTime: number | null;
+  /** Seconds counted before the current running stretch, i.e. up to the last pause. */
   elapsedSeconds: number;
   isBillable: boolean;
   notes: string;
@@ -44,7 +46,15 @@ interface TimerStoreState extends ActiveTimerState {
   resetTimer: () => void;
   setNotes: (notes: string) => void;
   setIsBillable: (billable: boolean) => void;
-  tick: () => void;
+}
+
+/**
+ * Seconds on the stopwatch at `now`: the time before the last pause plus the current stretch. Worked out from the
+ * clock, not counted, so it stays right in a background tab and after a reload.
+ */
+export function timerElapsedSeconds(state: Pick<ActiveTimerState, 'isRunning' | 'startTime' | 'elapsedSeconds'>, now = Date.now()): number {
+  const running = state.isRunning && state.startTime !== null ? Math.max(0, Math.floor((now - state.startTime) / 1000)) : 0;
+  return state.elapsedSeconds + running;
 }
 
 export const useTimerStore = create<TimerStoreState>()(
@@ -81,17 +91,22 @@ export const useTimerStore = create<TimerStoreState>()(
       },
 
       pauseTimer: () => {
-        set({ isRunning: false });
+        const state = get();
+        if (!state.isRunning) return;
+        set({ isRunning: false, elapsedSeconds: timerElapsedSeconds(state), startTime: null });
       },
 
       resumeTimer: () => {
-        set({ isRunning: true });
+        const state = get();
+        if (state.isRunning || !state.activeTaskId) return;
+        set({ isRunning: true, startTime: Date.now() });
       },
 
       stopTimer: () => {
         const state = get();
-        const durationHours = Math.max(0.1, Number((state.elapsedSeconds / 3600).toFixed(2)));
-        const durationMinutes = Math.floor(state.elapsedSeconds / 60);
+        const elapsed = timerElapsedSeconds(state);
+        const durationHours = Math.max(0.1, Number((elapsed / 3600).toFixed(2)));
+        const durationMinutes = Math.floor(elapsed / 60);
 
         const summary = {
           taskId: state.activeTaskId,
@@ -142,13 +157,6 @@ export const useTimerStore = create<TimerStoreState>()(
 
       setNotes: (notes: string) => set({ notes }),
       setIsBillable: (isBillable: boolean) => set({ isBillable }),
-
-      tick: () => {
-        const { isRunning, elapsedSeconds } = get();
-        if (isRunning) {
-          set({ elapsedSeconds: elapsedSeconds + 1 });
-        }
-      },
     }),
     {
       name: 'studiohub-timer-store',
