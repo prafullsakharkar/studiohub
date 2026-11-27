@@ -93,7 +93,8 @@ describe('departments list', () => {
     renderPage(<DepartmentsListPage />, superuser);
     await screen.findByText('Compositing');
     fireEvent.change(screen.getByPlaceholderText(/search name or code/i), { target: { value: 'zzzz' } });
-    expect(await screen.findByText('No departments match your filters')).toBeTruthy();
+    expect(await screen.findByText('No departments found')).toBeTruthy();
+    expect(screen.getByText('Nothing matches the search or filters.')).toBeTruthy();
   });
 
   it('filters by type on the server', async () => {
@@ -137,20 +138,68 @@ describe('departments list', () => {
 });
 
 describe('departments permissions in the UI', () => {
-  it('hides Add and Delete for a user without masterdata.directory.manage (reads stay open)', async () => {
+  it('hides New, Edit and Delete for a user without masterdata.directory.manage (reads stay open)', async () => {
     mockFetch(() => reply(flow.list_as_artist));
     renderPage(<DepartmentsListPage />, artist);
     await screen.findByText('Compositing');
-    expect(screen.queryByRole('link', { name: /add department/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /^delete$/i })).toBeNull();
+    expect(screen.queryByRole('link', { name: /new department/i })).toBeNull();
+    expect(screen.queryByRole('link', { name: /^edit /i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^delete /i })).toBeNull();
   });
 
   it('offers them to a manager', async () => {
     mockFetch(listServer);
     renderPage(<DepartmentsListPage />, superuser);
     await screen.findByText('Compositing');
-    expect(screen.getByRole('link', { name: /add department/i })).toBeTruthy();
-    expect(screen.getAllByRole('button', { name: /delete/i }).length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: /new department/i }).getAttribute('href')).toBe('/departments/new');
+    expect(screen.getByRole('link', { name: 'Edit Compositing' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Delete Compositing' })).toBeTruthy();
+  });
+});
+
+describe('departments table and cards', () => {
+  const compositing = (flow.list_default.body as { results: Array<{ id: string; name: string }> }).results.find((d) => d.name === 'Compositing')!;
+
+  it('shows a table by default, one row per department, with its code, type and description', async () => {
+    mockFetch(listServer);
+    renderPage(<DepartmentsListPage />, superuser);
+    const table = await screen.findByRole('table', { name: 'Departments' });
+    expect(screen.getByRole('button', { name: 'Table view' }).getAttribute('aria-pressed')).toBe('true');
+    const row = within(table).getByText('Compositing').closest('tr')!;
+    expect(within(row).getByText('DEPT-COMP')).toBeTruthy();
+    expect(within(row).getByText('Creative')).toBeTruthy();
+    expect(within(row).getByText('Compositing department (seeded)')).toBeTruthy();
+    expect(within(row).getByRole('link', { name: 'Compositing' }).getAttribute('href')).toBe(`/departments/${compositing.id}`);
+  });
+
+  it('sorts on the server from a column header', async () => {
+    const { calls } = mockFetch(listServer);
+    renderPage(<DepartmentsListPage />, superuser);
+    const table = await screen.findByRole('table', { name: 'Departments' });
+    fireEvent.click(within(table).getByRole('button', { name: /^name/i }));
+    await waitFor(() => expect(calls.some((c) => q(c).ordering === '-name')).toBe(true));
+  });
+
+  it('Edit opens the department’s edit form', async () => {
+    mockFetch(listServer);
+    renderPage(<DepartmentsListPage />, superuser);
+    fireEvent.click(await screen.findByRole('link', { name: 'Edit Compositing' }));
+    expect((await screen.findByTestId('where')).textContent).toBe(`/departments/${compositing.id}/edit`);
+  });
+
+  it('switches to cards, which keep Edit and Delete, and remembers the choice', async () => {
+    mockFetch(listServer);
+    const first = renderPage(<DepartmentsListPage />, superuser);
+    await screen.findByRole('table', { name: 'Departments' });
+    fireEvent.click(screen.getByRole('button', { name: 'Card view' }));
+    const cards = await screen.findByRole('list', { name: 'Departments' });
+    expect(screen.queryByRole('table')).toBeNull();
+    expect(within(cards).getByRole('link', { name: 'Edit Compositing' }).getAttribute('href')).toBe(`/departments/${compositing.id}/edit`);
+    expect(within(cards).getByRole('button', { name: 'Delete Compositing' })).toBeTruthy();
+    first.unmount();
+
+    renderPage(<DepartmentsListPage />, superuser);
+    expect(await screen.findByRole('list', { name: 'Departments' })).toBeTruthy();
   });
 });
 
@@ -160,7 +209,7 @@ describe('departments delete', () => {
     renderPage(<DepartmentsListPage />, superuser);
     await screen.findByText('Compositing');
 
-    fireEvent.click(screen.getAllByRole('button', { name: /^delete$/i })[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Compositing' }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: /^delete$/i }));
 
@@ -174,7 +223,7 @@ describe('departments delete', () => {
     renderPage(<DepartmentsListPage />, superuser);
     await screen.findByText('Compositing');
 
-    fireEvent.click(screen.getAllByRole('button', { name: /^delete$/i })[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Compositing' }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: /^delete$/i }));
 
@@ -198,7 +247,7 @@ describe('departments export', () => {
     fireEvent.change(screen.getByPlaceholderText(/search name or code/i), { target: { value: 'comp' } });
     await screen.findByText(/1 Matching/);
 
-    fireEvent.click(screen.getByRole('button', { name: /export csv/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^export$/i }));
     await waitFor(() => expect(urls).toEqual(['departments.csv']));
     const exportCalls = calls.filter((c) => q(c).page_size === '500');
     expect(exportCalls.length).toBeGreaterThan(0);
