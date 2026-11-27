@@ -6,9 +6,8 @@ import { clientsApi } from '@/api/masterdata/directory';
 import { projectsApi } from '@/api/production/structure';
 import { EntityPicker } from '@/components/forms/EntityPicker';
 import type { BulkAction, DirectoryFormConfig, DirectoryListConfig, FieldDef } from '@/modules/directory/types';
-import { ClientPicker } from '@/modules/directory/pickers';
 import { useCan } from '@/core/permissions/useCan';
-import { ProjectPicker } from '@/modules/production/work/pickers';
+import { ProjectClientSelect, ProjectPicker } from '@/modules/production/work/pickers';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { deliveryErrorMessage } from './errors';
 import { formatBytes, formatDay } from './format';
@@ -103,7 +102,8 @@ export function useDeliveriesListConfig(scope?: { projectId: string }): Director
 export const deliveriesFormFields: ReadonlyArray<FieldDef> = [
   // The project, client and code are chosen once: the server does not change them afterwards.
   { kind: 'entity', name: 'project_id', rowKey: 'project', label: 'Project', required: true, onlyOnCreate: true, render: (p) => <ProjectPicker label="Project *" value={p.value} onChange={(id) => p.onChange(id ?? '')} error={p.error} /> },
-  { kind: 'entity', name: 'client_id', rowKey: 'client', label: 'Client', onlyOnCreate: true, render: (p) => <ClientPicker label="Client" value={p.value} onChange={(id) => p.onChange(id ?? '')} error={p.error} /> },
+  // CR-60: a project's delivery goes to the project's client, filled in when the project is picked.
+  { kind: 'entity', name: 'client_id', rowKey: 'client', label: 'Client', onlyOnCreate: true, render: (p) => <ProjectClientSelect projectId={String(p.values.project_id ?? '') || undefined} value={p.value} onChange={p.onChange} error={p.error} /> },
   { kind: 'text', name: 'code', label: 'Code', maxLength: 50, onlyOnCreate: true, hint: 'Leave empty for DLV-<project>-<number>.' },
   { kind: 'text', name: 'name', label: 'Name', required: true, maxLength: 255 },
   { kind: 'select', name: 'delivery_method', label: 'Method', options: options(DELIVERY_METHODS), initial: 'S3' },

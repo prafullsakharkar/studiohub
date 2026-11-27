@@ -40,6 +40,7 @@ from apps.production.services.grade_import import GradeImportService
 from apps.production.services.project import ProjectService
 from apps.production.services.project_scoped import ProjectMembershipService
 from apps.production.services.review_media import ReviewMediaService
+from apps.production.validators.partners import refuse_partners_in_use
 
 
 class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
@@ -97,6 +98,8 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
 
     def check_update(self, instance, data):
         self._guard_budget(data)
+        # CR-60: the client cannot change, nor a vendor leave, while a record of the project still names it.
+        refuse_partners_in_use(instance, data)
         super().check_update(instance, data)
 
     def perform_create(self, serializer):

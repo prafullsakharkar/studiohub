@@ -4,12 +4,14 @@ from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Project
 
 from .base import BudgetGatedMixin
+from .client import ProjectClientMixin
 from .colour import ProjectColourMixin
 from .review_folder import ProjectReviewFolderMixin, ReviewFolderGatedMixin
 from .vendors import VendorIdsField, VendorNamesField
 
 
 class ProjectUpdateSerializer(
+    ProjectClientMixin,
     ProjectReviewFolderMixin,
     ProjectColourMixin,
     BudgetGatedMixin,

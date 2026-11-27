@@ -20,7 +20,11 @@ import { fetchAllRows } from '@/shared/data/listing';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { RowActionButton } from '@/shared/components/RowActionButton';
 import { SearchInput } from '@/shared/components/SearchInput';
+import { mapHttpError } from '@/api/errors/errorMapper';
+import { serverMessage } from '@/api/errors/serverMessage';
 import { PersonPicker } from '@/modules/directory/pickers';
+import { useProjectPartners } from '@/modules/production/work/pickers';
+import type { ProjectPartner } from '@/modules/production/work/pickers';
 
 const key = (projectId: string, name: string) => ['production', 'scoped', projectId, name] as const;
 
@@ -64,7 +68,49 @@ export const OverviewPanel: React.FC<{ projectId: string }> = ({ projectId }) =>
 };
 
 // ---------------------------------------------------------------- members
-const memberSchema = z.object({ person: z.string().min(1, 'Choose a person'), role: z.string().trim().min(1, 'Choose a role'), show: z.string() });
+const memberSchema = z.object({ person: z.string().min(1, 'Choose a person'), role: z.string().trim().min(1, 'Choose a role'), show: z.string(), worksFor: z.string() });
+
+/**
+ * Who a member works for (CR-60): the studio, the project's client or one of its vendors, as one select value
+ * (`''`, `client:<id>`, `vendor:<id>`). The client or a vendor makes them external: they see only what they are given.
+ */
+const STUDIO = '';
+const worksForValue = (m: Pick<ProjectMember, 'client_id' | 'vendor_id'>) => (m.client_id ? `client:${m.client_id}` : m.vendor_id ? `vendor:${m.vendor_id}` : STUDIO);
+const worksForPatch = (value: string): { client_id: string; vendor_id: string } =>
+  value.startsWith('client:') ? { client_id: value.slice(7), vendor_id: '' } : value.startsWith('vendor:') ? { client_id: '', vendor_id: value.slice(7) } : { client_id: '', vendor_id: '' };
+const sameId = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+
+interface Partners {
+  client: ProjectPartner | null;
+  vendors: ProjectPartner[];
+}
+
+function worksForLabel(m: Pick<ProjectMember, 'client_id' | 'vendor_id'>, partners: Partners): string {
+  if (m.client_id) return partners.client && sameId(partners.client.id, m.client_id) ? `Client: ${partners.client.name}` : 'A client not on the project';
+  if (m.vendor_id) {
+    const vendor = partners.vendors.find((v) => sameId(v.id, m.vendor_id));
+    return vendor ? `Vendor: ${vendor.name}` : 'A vendor not on the project';
+  }
+  return 'Studio';
+}
+
+/** The choices; a member's value that is no longer one of them stays shown so the select does not silently change it. */
+const WorksForOptions: React.FC<{ partners: Partners; current?: Pick<ProjectMember, 'client_id' | 'vendor_id'> }> = ({ partners, current }) => {
+  const known = [STUDIO, ...(partners.client ? [`client:${partners.client.id}`] : []), ...partners.vendors.map((v) => `vendor:${v.id}`)];
+  const value = current ? worksForValue(current) : STUDIO;
+  return (
+    <>
+      <option value={STUDIO}>Studio</option>
+      {partners.client && <option value={`client:${partners.client.id}`}>Client: {partners.client.name}</option>}
+      {partners.vendors.map((v) => (
+        <option key={v.id} value={`vendor:${v.id}`}>
+          Vendor: {v.name}
+        </option>
+      ))}
+      {current && !known.some((k) => sameId(k, value)) && <option value={value}>{worksForLabel(current, partners)}</option>}
+    </>
+  );
+};
 const WHOLE_PROJECT = '';
 /** The role a new member gets when the studio has no positions yet (the server's own default). */
 const DEFAULT_ROLE = 'Artist';
@@ -112,7 +158,8 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
     serverError,
     clearServerError,
     formState: { errors, isSubmitting },
-  } = useServerForm<z.infer<typeof memberSchema>>({ resolver: zodResolver(memberSchema), defaultValues: { person: '', role: DEFAULT_ROLE, show: WHOLE_PROJECT } });
+  } = useServerForm<z.infer<typeof memberSchema>>({ resolver: zodResolver(memberSchema), defaultValues: { person: '', role: DEFAULT_ROLE, show: WHOLE_PROJECT, worksFor: STUDIO } });
+  const partners = useProjectPartners(projectId);
 
   /** A picked person's position becomes the role, unless a role was already chosen by hand. */
   const pickPerson = async (personId: string | null) => {
@@ -135,14 +182,16 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
     // form, and their status stays as it is, so say so and point to the table, where each field is edited on its own.
     const already = (members.data?.results ?? []).find((m) => m.user_id === person.user);
     if (already) {
-      reset({ person: '', role: values.role, show: values.show });
+      reset({ person: '', role: values.role, show: values.show, worksFor: values.worksFor });
       notify.info(`${already.name} is already on this project (${already.status}). Change their status, show or department in the table below.`);
       return;
     }
     // The whole project sends no show: a new member belongs to it.
-    const member = { user_id: person.user, role: values.role };
+    // Only who they work for is sent (the add never clears: an existing member is edited in the table).
+    const worksFor = worksForPatch(values.worksFor);
+    const member = { user_id: person.user, role: values.role, ...(worksFor.client_id ? { client_id: worksFor.client_id } : {}), ...(worksFor.vendor_id ? { vendor_id: worksFor.vendor_id } : {}) };
     await projectScopedApi.addMember(projectId, values.show === WHOLE_PROJECT ? member : { ...member, show: values.show });
-    reset({ person: '', role: values.role, show: values.show });
+    reset({ person: '', role: values.role, show: values.show, worksFor: values.worksFor });
     await queryClient.invalidateQueries({ queryKey: key(projectId, 'members') });
     notify.success(`${label} is on the project.`);
   });
@@ -154,7 +203,11 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
       await projectScopedApi.updateMember(projectId, member.id, patch);
       notify.success(done);
     } catch (error) {
-      notify.fromError(error);
+      // A refusal on a field (CR-60: "This vendor is not on the project.") has no input here to show it on, so its sentence
+      // is the message; anything else is reported as before.
+      const fields = Object.keys(mapHttpError(error).fieldErrors).filter((field) => field !== 'error');
+      if (fields.length > 0) notify.error(serverMessage(error));
+      else notify.fromError(error);
     } finally {
       await queryClient.invalidateQueries({ queryKey: key(projectId, 'members') });
       setChanging(null);
@@ -163,6 +216,11 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
   const changeShow = (member: ProjectMember, show: string) =>
     change(member, { show: show === WHOLE_PROJECT ? null : show }, show === WHOLE_PROJECT ? `${member.name} is back on the whole project.` : `${member.name} is bound to that show.`);
   const changeStatus = (member: ProjectMember, status: MemberStatus) => change(member, { status }, `${member.name} is now ${MEMBER_STATUSES.find((s) => s.value === status)?.label.toLowerCase()}.`);
+  const changeWorksFor = (member: ProjectMember, value: string) => {
+    const patch = worksForPatch(value);
+    const label = worksForLabel(patch, partners);
+    return change(member, patch, label === 'Studio' ? `${member.name} works for the studio and sees the whole project.` : `${member.name} now works for ${label.replace(/^(Client|Vendor): /, '')} and sees only what they are given.`);
+  };
   const changeDepartment = (member: ProjectMember, department: string) =>
     change(member, { department }, department ? `${member.name} is limited to ${department}.` : `${member.name} is no longer limited to a department.`);
   const remove = async (member: ProjectMember) => {
@@ -225,10 +283,20 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
                 </Field>
               </div>
             )}
+            {(partners.client || partners.vendors.length > 0) && (
+              <div className="sm:w-56">
+                <Field id="member-works-for" label="Works for" error={errors.worksFor?.message}>
+                  <select id="member-works-for" className={inputClass(Boolean(errors.worksFor))} {...register('worksFor')}>
+                    <WorksForOptions partners={partners} />
+                  </select>
+                </Field>
+              </div>
+            )}
             <Button type="submit" size="sm" variant="primary" isLoading={isSubmitting}>
               Add member
             </Button>
           </div>
+          {(partners.client || partners.vendors.length > 0) && <p className="text-xs text-slate-500">Someone who works for the client or a vendor sees only what they are given: a vendor their vendor's tasks, the client the reviews they take part in.</p>}
           {showList.length > 0 && <p className="text-xs text-slate-500">A member bound to a show sees only that show's records. Someone already on the project keeps their show unless you pick one.</p>}
         </form>
       )}
@@ -249,7 +317,7 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
         ) : (
         <Table
           label="Project members"
-          columns={canAdd ? ['Name', 'Email', 'Role', 'Show', 'Department', 'Status', 'Added', ''] : ['Name', 'Email', 'Role', 'Show', 'Department', 'Status', 'Added']}
+          columns={canAdd ? ['Name', 'Email', 'Role', 'Show', 'Department', 'Works for', 'Status', 'Added', ''] : ['Name', 'Email', 'Role', 'Show', 'Department', 'Works for', 'Status', 'Added']}
           sort={{ columns: SORTABLE, by: sort.by, direction: sort.direction, onSort: (column) => setSort((now) => ({ by: column as MemberSort['by'], direction: now.by === column && now.direction === 'asc' ? 'desc' : 'asc' })) }}
         >
           {shown.map((m) => (
@@ -293,6 +361,22 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
                   />
                 ) : (
                   m.department || 'Whole project'
+                )}
+              </td>
+              <td className="px-4 py-2 text-slate-300">
+                {canAdd ? (
+                  <select
+                    aria-label={`Works for, ${m.name}`}
+                    className={inputClass(false)}
+                    disabled={changing === m.id || isMe(m)}
+                    title={isMe(m) ? 'You cannot change who you work for on this project.' : undefined}
+                    value={worksForValue(m)}
+                    onChange={(event) => void changeWorksFor(m, event.target.value)}
+                  >
+                    <WorksForOptions partners={partners} current={m} />
+                  </select>
+                ) : (
+                  worksForLabel(m, partners)
                 )}
               </td>
               <td className="px-4 py-2">

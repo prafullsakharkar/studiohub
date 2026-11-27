@@ -1,0 +1,682 @@
+{
+ "delivery_bare_refused": {
+  "body": {
+   "client_id": [
+    "This client is not the project's client."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "f920f7f4-cfba-4108-b490-a2af9631777f"
+   }
+  },
+  "request": {
+   "body": {
+    "client_id": "27533ebf-4be8-474c-99bb-5d98b5f0d0d1",
+    "name": "Bare",
+    "project_id": "d10fa9dd-a811-434f-bca9-b3b9b5b6eb2d"
+   },
+   "method": "POST",
+   "path": "/api/v1/deliveries/"
+  },
+  "status": 400
+ },
+ "delivery_client": {
+  "body": {
+   "client_id": "27533ebf-4be8-474c-99bb-5d98b5f0d0d1",
+   "client_notes": "",
+   "code": "DLV-CR60-0001",
+   "delivery_destination": "",
+   "delivery_method": "S3",
+   "destination_id": null,
+   "expires_at": null,
+   "id": "5f1d8788-ec75-4359-a6ec-b79502da3786",
+   "name": "Turnover",
+   "notes": "",
+   "project_id": "bedf62ad-719e-4a66-94b5-8709d08afd03"
+  },
+  "request": {
+   "body": {
+    "client_id": "27533ebf-4be8-474c-99bb-5d98b5f0d0d1",
+    "name": "Turnover",
+    "project_id": "bedf62ad-719e-4a66-94b5-8709d08afd03"
+   },
+   "method": "POST",
+   "path": "/api/v1/deliveries/"
+  },
+  "status": 201
+ },
+ "delivery_client_refused": {
+  "body": {
+   "client_id": [
+    "This client is not the project's client."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "f109c122-b2ed-4126-b8c8-1b610e1c9bd6"
+   }
+  },
+  "request": {
+   "body": {
+    "client_id": "0cef5121-ef6a-4d8f-bda6-d84169adb85f",
+    "name": "Wrong",
+    "project_id": "bedf62ad-719e-4a66-94b5-8709d08afd03"
+   },
+   "method": "POST",
+   "path": "/api/v1/deliveries/"
+  },
+  "status": 400
+ },
+ "ids": {
+  "acme": "27533ebf-4be8-474c-99bb-5d98b5f0d0d1",
+  "ember": "7d26ea4f-780d-43f8-89d8-72e8efc2672c",
+  "globex": "0cef5121-ef6a-4d8f-bda6-d84169adb85f",
+  "north": "9b29adf8-d0c4-418b-b4dd-20182b7067f7",
+  "other": "071b02f3-aa2f-4c49-9c7c-ec26e23e5f01",
+  "project": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+  "project_bare": "d10fa9dd-a811-434f-bca9-b3b9b5b6eb2d"
+ },
+ "member_add_client": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "27533ebf-4be8-474c-99bb-5d98b5f0d0d1",
+   "created_at": "2026-11-27T04:41:01.424304Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "e6d2665a-3f7a-4f6a-b014-c5ffecc277fb",
+   "name": "user@example.test",
+   "projectId": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "project_code": "CR60",
+   "project_id": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "project_name": "Partners",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-27T04:41:01.424312Z",
+   "userId": "06309456-69c7-4178-af3c-25723d9ee089",
+   "user_id": "06309456-69c7-4178-af3c-25723d9ee089",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "client_id": "27533ebf-4be8-474c-99bb-5d98b5f0d0d1",
+    "role": "Artist",
+    "user_id": "06309456-69c7-4178-af3c-25723d9ee089"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/bedf62ad-719e-4a66-94b5-8709d08afd03/members/"
+  },
+  "status": 201
+ },
+ "member_add_vendor": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-27T04:41:01.446982Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "4c94b17f-3534-45a1-9778-6150f55d7cea",
+   "name": "user@example.test",
+   "projectId": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "project_code": "CR60",
+   "project_id": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "project_name": "Partners",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-27T04:41:01.446992Z",
+   "userId": "33a51a4f-4d54-4188-b2fe-20bce643dd40",
+   "user_id": "33a51a4f-4d54-4188-b2fe-20bce643dd40",
+   "vendor_id": "7d26ea4f-780d-43f8-89d8-72e8efc2672c"
+  },
+  "request": {
+   "body": {
+    "role": "Artist",
+    "user_id": "33a51a4f-4d54-4188-b2fe-20bce643dd40",
+    "vendor_id": "7d26ea4f-780d-43f8-89d8-72e8efc2672c"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/bedf62ad-719e-4a66-94b5-8709d08afd03/members/"
+  },
+  "status": 201
+ },
+ "member_client_refused": {
+  "body": {
+   "client_id": [
+    "This client is not the project's client."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "9ad6b506-aacd-429b-9839-1c8fcaa83b3b"
+   }
+  },
+  "request": {
+   "body": {
+    "client_id": "0cef5121-ef6a-4d8f-bda6-d84169adb85f",
+    "role": "Artist",
+    "user_id": "3adbcec1-c0ab-47b3-bc71-05fda76d84b8"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/bedf62ad-719e-4a66-94b5-8709d08afd03/members/"
+  },
+  "status": 400
+ },
+ "member_patch_studio": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-27T04:41:01.479562Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "e74f0d75-4dce-4750-83c8-2442009c30aa",
+   "name": "user@example.test",
+   "projectId": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "project_code": "CR60",
+   "project_id": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "project_name": "Partners",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-27T04:41:01.532151Z",
+   "userId": "022778bc-980a-41cc-9b02-73ce1f6b8646",
+   "user_id": "022778bc-980a-41cc-9b02-73ce1f6b8646",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "client_id": "",
+    "vendor_id": ""
+   },
+   "method": "PATCH",
+   "path": "/api/organizations/projects/bedf62ad-719e-4a66-94b5-8709d08afd03/members/e74f0d75-4dce-4750-83c8-2442009c30aa/"
+  },
+  "status": 200
+ },
+ "member_patch_vendor": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-27T04:41:01.479562Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "e74f0d75-4dce-4750-83c8-2442009c30aa",
+   "name": "user@example.test",
+   "projectId": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "project_code": "CR60",
+   "project_id": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "project_name": "Partners",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-27T04:41:01.502381Z",
+   "userId": "022778bc-980a-41cc-9b02-73ce1f6b8646",
+   "user_id": "022778bc-980a-41cc-9b02-73ce1f6b8646",
+   "vendor_id": "9b29adf8-d0c4-418b-b4dd-20182b7067f7"
+  },
+  "request": {
+   "body": {
+    "client_id": "",
+    "vendor_id": "9b29adf8-d0c4-418b-b4dd-20182b7067f7"
+   },
+   "method": "PATCH",
+   "path": "/api/organizations/projects/bedf62ad-719e-4a66-94b5-8709d08afd03/members/e74f0d75-4dce-4750-83c8-2442009c30aa/"
+  },
+  "status": 200
+ },
+ "member_vendor_refused": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "a9e435dc-20f4-4ae4-8af1-bbdc20f9499e"
+   },
+   "vendor_id": [
+    "This vendor is not on the project."
+   ]
+  },
+  "request": {
+   "body": {
+    "role": "Artist",
+    "user_id": "3adbcec1-c0ab-47b3-bc71-05fda76d84b8",
+    "vendor_id": "071b02f3-aa2f-4c49-9c7c-ec26e23e5f01"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/bedf62ad-719e-4a66-94b5-8709d08afd03/members/"
+  },
+  "status": 400
+ },
+ "members_list": {
+  "body": {
+   "count": 3,
+   "results": [
+    {
+     "avatar_url": null,
+     "client_id": "27533ebf-4be8-474c-99bb-5d98b5f0d0d1",
+     "created_at": "2026-11-27T04:41:01.424304Z",
+     "department": "",
+     "department_id": "",
+     "email": "user@example.test",
+     "id": "e6d2665a-3f7a-4f6a-b014-c5ffecc277fb",
+     "name": "user@example.test",
+     "projectId": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+     "project_code": "CR60",
+     "project_id": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+     "project_name": "Partners",
+     "role": "Artist",
+     "role_id": null,
+     "roles": [
+      "Artist"
+     ],
+     "scope": "PROJECT",
+     "show_code": "",
+     "show_id": null,
+     "status": "active",
+     "team_id": "",
+     "updated_at": "2026-11-27T04:41:01.424312Z",
+     "userId": "06309456-69c7-4178-af3c-25723d9ee089",
+     "user_id": "06309456-69c7-4178-af3c-25723d9ee089",
+     "vendor_id": ""
+    },
+    {
+     "avatar_url": null,
+     "client_id": "",
+     "created_at": "2026-11-27T04:41:01.446982Z",
+     "department": "",
+     "department_id": "",
+     "email": "user@example.test",
+     "id": "4c94b17f-3534-45a1-9778-6150f55d7cea",
+     "name": "user@example.test",
+     "projectId": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+     "project_code": "CR60",
+     "project_id": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+     "project_name": "Partners",
+     "role": "Artist",
+     "role_id": null,
+     "roles": [
+      "Artist"
+     ],
+     "scope": "PROJECT",
+     "show_code": "",
+     "show_id": null,
+     "status": "active",
+     "team_id": "",
+     "updated_at": "2026-11-27T04:41:01.446992Z",
+     "userId": "33a51a4f-4d54-4188-b2fe-20bce643dd40",
+     "user_id": "33a51a4f-4d54-4188-b2fe-20bce643dd40",
+     "vendor_id": "7d26ea4f-780d-43f8-89d8-72e8efc2672c"
+    },
+    {
+     "avatar_url": null,
+     "client_id": "",
+     "created_at": "2026-11-27T04:41:01.479562Z",
+     "department": "",
+     "department_id": "",
+     "email": "user@example.test",
+     "id": "e74f0d75-4dce-4750-83c8-2442009c30aa",
+     "name": "user@example.test",
+     "projectId": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+     "project_code": "CR60",
+     "project_id": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+     "project_name": "Partners",
+     "role": "Artist",
+     "role_id": null,
+     "roles": [
+      "Artist"
+     ],
+     "scope": "PROJECT",
+     "show_code": "",
+     "show_id": null,
+     "status": "active",
+     "team_id": "",
+     "updated_at": "2026-11-27T04:41:01.532151Z",
+     "userId": "022778bc-980a-41cc-9b02-73ce1f6b8646",
+     "user_id": "022778bc-980a-41cc-9b02-73ce1f6b8646",
+     "vendor_id": ""
+    }
+   ]
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/bedf62ad-719e-4a66-94b5-8709d08afd03/members/"
+  },
+  "status": 200
+ },
+ "project_bare": {
+  "body": {
+   "approve_task_on_version_approval": false,
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "CR60B",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-27T04:41:01.269253Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "d10fa9dd-a811-434f-bca9-b3b9b5b6eb2d",
+   "in_progress_shots": 0,
+   "name": "No partners",
+   "project_code": "CR60B",
+   "resolution": "4096x2160 (4K DCI)",
+   "review_burn_ins": false,
+   "review_downloads": "internal",
+   "review_grades": false,
+   "review_look": "",
+   "review_slate_note": "",
+   "review_slates": false,
+   "review_source_folder": "",
+   "review_source_root": "",
+   "review_view": "",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-27T04:41:01.269260Z",
+   "uuid": "d10fa9dd-a811-434f-bca9-b3b9b5b6eb2d",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/d10fa9dd-a811-434f-bca9-b3b9b5b6eb2d/"
+  },
+  "status": 200
+ },
+ "project_client_code": {
+  "body": {
+   "client_id": [
+    "Unknown client."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "b143edeb-d8a2-4fc4-94ab-7da9fbf8c66e"
+   }
+  },
+  "request": {
+   "body": {
+    "client_id": "CLI-ACME",
+    "code": "CR60",
+    "name": "Partners",
+    "type": "Feature Film",
+    "workflow_type": "standard"
+   },
+   "method": "POST",
+   "path": "/api/v1/projects/"
+  },
+  "status": 400
+ },
+ "project_client_in_use": {
+  "body": {
+   "client_id": [
+    "Acme Pictures is still the client of 1 delivery and 1 member."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "e980a1b3-8e47-4188-b779-f8719dad2f5d"
+   }
+  },
+  "request": {
+   "body": {
+    "client_id": "0cef5121-ef6a-4d8f-bda6-d84169adb85f"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/projects/bedf62ad-719e-4a66-94b5-8709d08afd03/"
+  },
+  "status": 400
+ },
+ "project_create": {
+  "body": {
+   "approve_task_on_version_approval": false,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "27533ebf-4be8-474c-99bb-5d98b5f0d0d1",
+   "client_name": "Acme Pictures",
+   "code": "CR60",
+   "color_space": "ACEScg",
+   "coordinator": null,
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "name": "Partners",
+   "resolution": "4096x2160 (4K DCI)",
+   "review_burn_ins": false,
+   "review_downloads": "internal",
+   "review_grades": false,
+   "review_look": "",
+   "review_slate_note": "",
+   "review_slates": false,
+   "review_view": "",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor": null,
+   "thumbnail_url": "",
+   "type": "Feature Film",
+   "uuid": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "vendor_ids": [
+    "9b29adf8-d0c4-418b-b4dd-20182b7067f7",
+    "7d26ea4f-780d-43f8-89d8-72e8efc2672c"
+   ],
+   "vendor_names": [
+    "Northlight",
+    "Ember FX"
+   ],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": {
+    "client_id": "27533ebf-4be8-474c-99bb-5d98b5f0d0d1",
+    "client_name": "Typed",
+    "code": "CR60",
+    "name": "Partners",
+    "type": "Feature Film",
+    "vendor_ids": [
+     "9b29adf8-d0c4-418b-b4dd-20182b7067f7",
+     "7d26ea4f-780d-43f8-89d8-72e8efc2672c"
+    ],
+    "workflow_type": "standard"
+   },
+   "method": "POST",
+   "path": "/api/v1/projects/"
+  },
+  "status": 201
+ },
+ "project_detail": {
+  "body": {
+   "approve_task_on_version_approval": false,
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "27533ebf-4be8-474c-99bb-5d98b5f0d0d1",
+   "client_name": "Acme Pictures",
+   "code": "CR60",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-27T04:41:01.243694Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "in_progress_shots": 0,
+   "name": "Partners",
+   "project_code": "CR60",
+   "resolution": "4096x2160 (4K DCI)",
+   "review_burn_ins": false,
+   "review_downloads": "internal",
+   "review_grades": false,
+   "review_look": "",
+   "review_slate_note": "",
+   "review_slates": false,
+   "review_source_folder": "",
+   "review_source_root": "",
+   "review_view": "",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-27T04:41:01.243701Z",
+   "uuid": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "vendor_ids": [
+    "9b29adf8-d0c4-418b-b4dd-20182b7067f7",
+    "7d26ea4f-780d-43f8-89d8-72e8efc2672c"
+   ],
+   "vendor_names": [
+    "Northlight",
+    "Ember FX"
+   ],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/bedf62ad-719e-4a66-94b5-8709d08afd03/"
+  },
+  "status": 200
+ },
+ "project_vendor_in_use": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "c0f3e5fb-be13-4218-ad17-3f508c06d4f2"
+   },
+   "vendor_ids": [
+    "Ember FX is still the vendor of 1 member."
+   ]
+  },
+  "request": {
+   "body": {
+    "vendor_ids": [
+     "9b29adf8-d0c4-418b-b4dd-20182b7067f7"
+    ]
+   },
+   "method": "PATCH",
+   "path": "/api/v1/projects/bedf62ad-719e-4a66-94b5-8709d08afd03/"
+  },
+  "status": 400
+ },
+ "task_vendor": {
+  "body": {
+   "assignee": null,
+   "code": "CR60_T1",
+   "department": "",
+   "department_id": "",
+   "dependencies": {},
+   "description": "",
+   "due_date": null,
+   "entity_code": "",
+   "entity_id": "",
+   "entity_name": "",
+   "entity_type": "General",
+   "estimated_hours": "0.00",
+   "id": "fd6b6910-2c46-43ad-8a01-a96abc3cd191",
+   "is_archived": false,
+   "logged_hours": "0.00",
+   "pending_hours": "0.00",
+   "priority": "Medium",
+   "project": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+   "reviewer": null,
+   "schedule": {},
+   "software": "",
+   "status": "Not Started",
+   "tags": [],
+   "team": null,
+   "title": "Comp",
+   "uuid": "fd6b6910-2c46-43ad-8a01-a96abc3cd191",
+   "vendor_code": "VEN-NORTH",
+   "vendor_id": "9b29adf8-d0c4-418b-b4dd-20182b7067f7",
+   "vendor_name": "Northlight",
+   "workflow": {}
+  },
+  "request": {
+   "body": {
+    "code": "CR60_T1",
+    "entity_type": "General",
+    "project_id": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+    "title": "Comp",
+    "vendor_id": "9b29adf8-d0c4-418b-b4dd-20182b7067f7",
+    "vendor_name": "Typed"
+   },
+   "method": "POST",
+   "path": "/api/v1/tasks/"
+  },
+  "status": 201
+ },
+ "task_vendor_refused": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "14d09a62-b001-4353-b3b6-c659238064de"
+   },
+   "vendor_id": [
+    "This vendor is not on the project."
+   ]
+  },
+  "request": {
+   "body": {
+    "code": "CR60_T2",
+    "entity_type": "General",
+    "project_id": "bedf62ad-719e-4a66-94b5-8709d08afd03",
+    "title": "Comp",
+    "vendor_id": "071b02f3-aa2f-4c49-9c7c-ec26e23e5f01"
+   },
+   "method": "POST",
+   "path": "/api/v1/tasks/"
+  },
+  "status": 400
+ }
+}

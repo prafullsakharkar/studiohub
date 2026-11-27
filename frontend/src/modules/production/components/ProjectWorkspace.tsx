@@ -603,6 +603,14 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
                     <span>•</span>
                   </>
                 )}
+                {(project.vendor_names ?? []).length > 0 && (
+                  <>
+                    <span className="text-slate-300 font-sans" title="The project's vendors: a task or a member of the project can name only these.">
+                      Vendors: {(project.vendor_names ?? []).join(', ')}
+                    </span>
+                    <span>•</span>
+                  </>
+                )}
                 {project.delivery_date && (
                   <>
                     <span>
