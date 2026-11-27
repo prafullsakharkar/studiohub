@@ -15,7 +15,7 @@ import { TaskBoardLanes } from './TaskBoard';
 import { TaskTimeCell } from './TaskTimeCell';
 import { StatusMenu } from './StatusMenu';
 import { formatHours } from './format';
-import { AssetPicker, MemberSelect, ProjectPicker, SequencePicker, ShotPicker, TaskTypePicker } from './pickers';
+import { AssetPicker, MemberSelect, ProjectPicker, ProjectVendorSelect, SequencePicker, ShotPicker, TaskTypePicker } from './pickers';
 
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
 
@@ -162,6 +162,8 @@ export const tasksFormFields: ReadonlyArray<FieldDef> = [
   { kind: 'entity', name: 'task_type_id', rowKey: 'task_type_id', label: 'Task type', render: (p) => <TaskTypePicker label="Task type" value={p.value} onChange={(id) => p.onChange(id ?? '')} error={p.error} /> },
   { kind: 'entity', name: 'assignee', rowKey: 'assignee_id', label: 'Assignee', render: (p) => <MemberSelect projectId={String(p.values.project ?? '') || undefined} value={p.value} onChange={p.onChange} label="Assignee" error={p.error} /> },
   { kind: 'entity', name: 'reviewer', rowKey: 'reviewer_id', label: 'Reviewer', render: (p) => <MemberSelect projectId={String(p.values.project ?? '') || undefined} value={p.value} onChange={p.onChange} label="Reviewer" error={p.error} /> },
+  // CR-60: outsourced work goes to one of the project's vendors; the server fills the vendor's name and code.
+  { kind: 'entity', name: 'vendor_id', label: 'Vendor', textValue: true, render: (p) => <ProjectVendorSelect projectId={String(p.values.project ?? '') || undefined} value={p.value} onChange={p.onChange} error={p.error} /> },
   { kind: 'select', name: 'priority', label: 'Priority', options: options(TASK_PRIORITIES), initial: 'Medium' },
   { kind: 'date', name: 'due_date', label: 'Due date' },
   { kind: 'number', name: 'estimated_hours', label: 'Estimated hours' },
