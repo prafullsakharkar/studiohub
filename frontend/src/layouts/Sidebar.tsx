@@ -27,6 +27,7 @@ import {
   Building2,
   Briefcase,
   ListVideo,
+  MonitorPlay,
   Tv,
   Sliders,
   ToggleLeft,
@@ -261,6 +262,15 @@ export const Sidebar: React.FC = () => {
           pagePermission: 'page.project.reviews',
           permissions: ['review.view'],
           hotkey: '6',
+        },
+        {
+          // Review playlists, also reached from the Reviews page header; gated like the /playlists route.
+          id: 'playlists',
+          to: '/playlists',
+          label: 'Playlists',
+          icon: MonitorPlay,
+          pagePermission: 'page.project.playlists',
+          permissions: ['playlist.view'],
         },
         {
           id: 'workflows',
