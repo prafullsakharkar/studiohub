@@ -142,6 +142,36 @@ describe('Sidebar direct navigation (org-free)', () => {
   });
 });
 
+describe('Sidebar playlists entry', () => {
+  const mount = (permissions: string[], is_superuser = false) => {
+    userSpy.mockReturnValue({ user: { ...baseUser, is_superuser, role: 'Artist', permissions } });
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+  };
+
+  it('links the playlists list right after Reviews', () => {
+    mount([], true);
+    const link = screen.getByRole('link', { name: /^Playlists$/ });
+    expect(link.getAttribute('href')).toBe('/playlists');
+    const hrefs = (screen.getAllByRole('link') as HTMLAnchorElement[]).map((a) => a.getAttribute('href'));
+    expect(hrefs.indexOf('/playlists')).toBe(hrefs.indexOf('/reviews') + 1);
+  });
+
+  it('is shown under the same codes as the /playlists route', () => {
+    mount(ROUTE_PERMISSIONS_REGISTRY['/playlists'].permissions ?? []);
+    expect(screen.getByRole('link', { name: /^Playlists$/ })).toBeTruthy();
+  });
+
+  it('is hidden from a member who may not view playlists', () => {
+    mount(['page.project.reviews', 'review.view']);
+    expect(screen.getByRole('link', { name: /^Reviews/ })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /^Playlists$/ })).toBeNull();
+  });
+});
+
 describe('Sidebar settings section', () => {
   const settingsLinks = (permissions: string[], is_superuser = false) => {
     userSpy.mockReturnValue({ user: { ...baseUser, is_superuser, role: 'Artist', permissions } });
