@@ -1284,3 +1284,54 @@ Not a security hole: the permission resolver and the user's role label already s
 - **Contract.** DOM-RBAC-03 (`docs/identity/CONTRACTS.md`) now says how a deleted row's code is renamed. The trust model is unchanged, so no ADR.
 
 No frontend change: the role page's Delete already returns to the list, which now leaves the role out. Verification: `docs/sync/backend-cr-59-verification.md`.
+
+### CR-60: a project has its own clients and vendors, and only those can be chosen on its records (**feature**, **PROPOSED**, branch `feature/project-partners`)
+
+Requested by the owner (2026-11-27): "Add provision to add client and vendor for project so that on project basis they can select provided clients or vendor … whenever required we can select only project client or vendor". Decisions taken with the owner before writing this:
+- a project can have **several clients**, like its vendors;
+- a project with no clients (or no vendors) yet offers **nothing** until one is added;
+- the rule applies to the **task vendor** and the **member's client or vendor**. The **delivery client** is item 4 below: the request names deliveries ("like in delivery we need client"), but the choice of places did not tick it. Strike item 4 if it should stay open.
+
+**Problem.** Today:
+- `Project.client_id` is one unchecked text value (`CharField(50)`); any string is stored. `client_name` is never filled by the server, so the project list's Client column, the project switcher and the dashboard header show nothing. The seed commands store a client **code** there, others a UUID.
+- `Project.vendor_ids` is a checked list of live vendors (CR-42), but nothing else uses it.
+- A delivery's `client_id` may be any active client in the studio, whatever the project (`DeliveryPackageService.create`).
+- A task's `vendor_id`, `vendor_name` and `vendor_code` are free text, written as sent.
+- A member's `vendor_id` and `client_id` (`POST …/members/`) are free text too. These are what make a member **external** (`selectors/external_scope.py`: a vendor member sees only their vendor's tasks, matched by `vendor_id` or `vendor_code`). A mistyped value silently shows an external member nothing, or the wrong vendor's tasks.
+
+**Minimal diff.**
+1. **The project's clients.**
+   - New `Project.client_ids` (`JSONField(default=list)`): live client UUIDs, each once, checked like `vendor_ids` (`validate_client_ids`, beside `validate_vendor_ids`).
+   - New read-only `client_names`, in the same order, looked up once per page, as for `vendor_names` (`ClientSelector.names_by_id`).
+   - `client_id` and `client_name` become **read-only**: the first client's id and name, kept in step by the project service, so the project list, the switcher and the dashboard header show the client again. A write naming `client_id` is ignored (DRF read-only).
+   - Same visibility as today: hidden from external members (`EXTERNAL_HIDDEN_FIELDS` gains `client_ids` and `client_names`).
+2. **Data migration** (`production.00NN_project_client_ids`, reverse is a no-op). For every project:
+   - `client_ids` gets the client its `client_id` names (by UUID, or by code ignoring case), then the clients of its deliveries, then those its members name;
+   - `vendor_ids` gains the vendors its tasks and its members name (by UUID, or by code ignoring case), after the ones already there;
+   - values that name no live client or vendor are left alone and counted in the migration's output.
+   So existing data already follows the rule, and nothing in use drops out of a picker.
+3. **Task vendor.** On create, and on an update that changes it, a task's `vendor_id` must be one of its project's `vendor_ids`: otherwise 400 on `vendor_id` "This vendor is not on the project.". The server then fills `vendor_name` and `vendor_code` from the vendor (what a client sends for these two is ignored). A blank `vendor_id` clears all three. A task that keeps a vendor no longer on the project can still be edited.
+4. **Delivery client** (strike if not wanted). On create, when the delivery has a project, `client_id` must be one of the project's `client_ids`: otherwise 400 on `client_id` "This client is not on the project.". A delivery without a project (a platform admin sending a code) keeps today's rule (any active client). Existing deliveries are not touched.
+5. **Member client or vendor.** On add (`POST …/members/`), a `vendor_id` must be one of the project's `vendor_ids` and a `client_id` one of its `client_ids`: otherwise 400 on that field "This vendor is not on the project." or "This client is not on the project.". The update route (`PATCH …/members/{id}/`, CR-37) gains both fields with the same check. A blank clears it, which makes the member internal again. That is the only way to clear it today short of removing the member.
+6. **Taking a client or vendor off a project** is refused while something on the project still uses it. The 400 is on `client_ids` or `vendor_ids`, and names who uses it, for example "Acme is still the client of 2 deliveries and 1 member.". Records that already use it are never rewritten.
+
+**Frontend** (after approval, same branch):
+- **Project form:** Clients becomes a multi-picker beside Vendors. The project page shows both.
+- **Delivery create:** the Client picker offers only the chosen project's clients. With none, it says "Add clients to the project first", with a link to the project's edit form.
+- **Task form:** a Vendor picker offering only the project's vendors (the vendor and the outsourced work are stored today but cannot be chosen anywhere).
+- **Members tab:** the add and edit forms get a "Works for" choice: the studio (internal), one of the project's clients, or one of its vendors. It says what an external member sees.
+- These pickers read the project's own `client_ids`/`client_names` and `vendor_ids`/`vendor_names`, so no new list route is needed.
+
+**Why no frontend workaround.** The pickers alone would narrow the screens but not the API: any script or old screen could still store a client or vendor that is not on the project. For members this decides what an external user can see, so the check belongs on the server.
+
+**Compatibility.**
+- **Breaking for API clients that write `client_id` on a project:** it is ignored; they must send `client_ids`.
+- Writes that name a client or vendor not on the project become a 400: a delivery's client, a task's vendor, a member's client or vendor.
+- A task's `vendor_name` and `vendor_code` are now the server's.
+- One schema migration and one data migration; `apps/core/tests/test_bootstrap.py`'s per-app limit goes up for `production`.
+- Contracts: the project, task, membership and delivery entries in `docs/production/` and `docs/deliveries/` are updated.
+- The external-access rules themselves (`external_scope.py`) do not change: only which values can be stored. So no ADR.
+
+**Risk.** Medium. It touches four write paths and a data migration on every project. Each is a 400 on a named field and is tested both ways. The migration only adds ids and never removes one.
+
+**Alternative.** A `ProjectPartner` table (project, client or vendor, role), instead of JSON id lists. It is cleaner for queries, but not proposed: `vendor_ids` is already a JSON list with a contract (CR-42), and the frontend reads it. A second shape for clients would make the two differ.
